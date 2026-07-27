@@ -45,3 +45,15 @@ Key patterns:
 - Reference users with `auth.users(id)`; use `auth.uid()` in RLS policies.
 - For storage uploads, persist both the returned `url` and `key`.
 <!-- INSFORGE:END -->
+
+## Jules environment & setup
+
+- **Working Directory:** Repo cloned automatically into `/app`.
+- **Package Manager:** `pnpm` (`pnpm install`).
+- **Setup Script:** `bash scripts/jules-setup.sh`.
+- **Validation Commands:**
+  - Type Check: `pnpm type-check`
+  - Tests: `pnpm test`
+  - Local CI Build Check: `pnpm ci:local`
+- **Environment Variables:** Build-time placeholders `NEXT_PUBLIC_CONVEX_URL=https://placeholder.convex.cloud` and `STRIPE_SECRET_KEY=sk_test_placeholder`.
+
