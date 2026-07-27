@@ -1,5 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { defineRoute, z } from "@/lib/api-validation";
+import { DeerFlowService } from "@/services/deerflow.service";
 
 function getGeminiModel() {
   const apiKey = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
