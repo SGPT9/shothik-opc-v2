@@ -5,6 +5,8 @@ import { fileURLToPath } from "node:url";
 const turbopackRoot = fileURLToPath(new URL("./", import.meta.url));
 const externalApiOrigin =
   (process.env.NEXT_PUBLIC_API_URL || "https://shothik.work").replace(/\/+$/, "");
+const deerflowBackendOrigin =
+  (process.env.DEERFLOW_BACKEND_URL || "http://localhost:8000").replace(/\/+$/, "");
 
 const nextConfig: NextConfig = {
   reactCompiler: false,
@@ -46,7 +48,16 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return {
       beforeFiles: [],
-      afterFiles: [],
+      afterFiles: [
+        {
+          source: '/api/langgraph/:path*',
+          destination: `${deerflowBackendOrigin}/api/langgraph/:path*`,
+        },
+        {
+          source: '/api/deerflow/:path*',
+          destination: `${deerflowBackendOrigin}/api/:path*`,
+        },
+      ],
       fallback: [
         {
           source: '/api/:path*',
