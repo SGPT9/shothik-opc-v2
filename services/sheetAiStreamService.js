@@ -32,26 +32,26 @@ class SheetAiStreamService {
     this.abortController = new AbortController();
 
     try {
-      // Use fetch with streaming instead of EventSource
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL_WITH_PREFIX}/${process.env.NEXT_PUBLIC_SHEET_REDIRECT_PREFIX}/conversation/create-stream`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-            "Content-Type": "application/json",
-            Accept: "text/event-stream",
-            "Cache-Control": "no-cache",
-            Connection: "keep-alive", // Help prevent buffering
-          },
-          body: JSON.stringify({
-            chatId,
-            prompt,
-            userEmail,
-          }),
-          signal: this.abortController.signal,
+      const streamUrl = process.env.NEXT_PUBLIC_DEERFLOW_BACKEND_URL
+        ? '/api/langgraph/stream'
+        : `${process.env.NEXT_PUBLIC_API_URL_WITH_PREFIX}/${process.env.NEXT_PUBLIC_SHEET_REDIRECT_PREFIX}/conversation/create-stream`;
+
+      const response = await fetch(streamUrl, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          "Content-Type": "application/json",
+          Accept: "text/event-stream",
+          "Cache-Control": "no-cache",
         },
-      );
+        body: JSON.stringify({
+          chatId,
+          prompt,
+          userEmail,
+          task_type: "sheet_analysis",
+        }),
+        signal: this.abortController.signal,
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
