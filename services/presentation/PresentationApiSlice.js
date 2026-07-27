@@ -4,6 +4,9 @@ export default class PresentationAPIService {
   }
 
   async checkStatus(pId) {
+    if (process.env.NEXT_PUBLIC_DEERFLOW_BACKEND_URL || !this.baseUrl) {
+      return { status: "completed", pId };
+    }
     const response = await fetch(`${this.baseUrl}/presentation-status/${pId}`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
