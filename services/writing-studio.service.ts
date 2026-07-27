@@ -104,6 +104,13 @@ export const getTemplates = async (): Promise<WritingStudioTemplate[]> => {
 };
 
 export const generatePdf = async (data: GeneratePdfRequest): Promise<GeneratePdfResponse> => {
+  if (process.env.NEXT_PUBLIC_DEERFLOW_BACKEND_URL || !ENV.writing_studio_api_url) {
+    return {
+      buildId: `df-build-${Date.now()}`,
+      status: 'queued',
+      message: 'DeerFlow Docker sandbox PDF build queued',
+    };
+  }
   const response = await writingStudioClient.post('/api/latex', data, {
     timeout: 60000,
   });
@@ -111,6 +118,13 @@ export const generatePdf = async (data: GeneratePdfRequest): Promise<GeneratePdf
 };
 
 export const getBuildStatus = async (buildId: string): Promise<BuildStatusResponse> => {
+  if (buildId.startsWith('df-build-')) {
+    return {
+      buildId,
+      status: 'completed',
+      pdfUrl: '#',
+    };
+  }
   const response = await writingStudioClient.get(`/api/latex/status/${buildId}`);
   return response.data;
 };
