@@ -23,6 +23,7 @@ import {
 import { useWritingInsights, type Insight, type InsightType } from '@/hooks/useWritingInsights';
 import dynamic from 'next/dynamic';
 import { cn } from '@/lib/utils';
+import { useDeerFlowStream } from '@/hooks/useDeerFlowStream';
 import { NeuralPanel } from '@/components/writing-studio/nobel/NeuralPanel';
 import { UXAgentPanel } from '@/components/writing-studio/ux/UXAgentPanel';
 import { useQuery } from 'convex/react';
@@ -458,52 +459,69 @@ function useTabAI(systemPrompt: string, content: string) {
 
 function ResearchTab({ content }: { content: string }) {
   const [query, setQuery] = useState('');
-  const { result, isLoading, error, run } = useTabAI(
-    'You are an academic research assistant. Based on the document content provided, suggest 4-6 relevant academic citations, sources, or further reading that would strengthen the writing. Format each as: [Author(s), Year] Title. Brief 1-sentence relevance note.',
-    content
-  );
+  const [researchText, setResearchText] = useState('');
+
+  const { isStreaming, activeNode, activeAgent, startStream, error } = useDeerFlowStream({
+    onToken: (token) => setResearchText((prev) => prev + token),
+  });
 
   const handleSearch = () => {
-    const instruction = query.trim()
-      ? `Find academic citations and sources related to: "${query}". Also consider the document context.`
-      : 'Suggest academic citations and sources that would strengthen the arguments and claims in this document.';
-    run(instruction);
+    const prompt = query.trim() || 'Find academic citations, sources, and literature for this manuscript.';
+    setResearchText('');
+    startStream(prompt, 'deep_research', { documentContext: content.slice(0, 1000) });
   };
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden p-4 gap-3">
-      <div className="flex items-center gap-2">
-        <Search className="w-4 h-4 text-brand" />
-        <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Research & Citations</span>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Search className="w-4 h-4 text-brand" />
+          <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">
+            DeerFlow Deep Research
+          </span>
+        </div>
+        {isStreaming && (
+          <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-2 py-0.5 rounded font-mono font-medium animate-pulse">
+            {activeAgent || activeNode || 'Researching...'}
+          </span>
+        )}
       </div>
+
       <div className="flex gap-2">
         <input
           value={query}
-          onChange={e => setQuery(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleSearch(); }}
-          placeholder="Topic or keyword (optional)"
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') handleSearch();
+          }}
+          placeholder="Topic, paper title, or keyword..."
           className="flex-1 px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 outline-none focus:ring-1 focus:ring-brand"
-          disabled={isLoading}
+          disabled={isStreaming}
         />
         <button
           onClick={handleSearch}
-          disabled={isLoading}
+          disabled={isStreaming}
           className="px-3 py-2 bg-brand text-white text-xs rounded-lg hover:bg-brand/90 disabled:opacity-50 transition-colors flex items-center gap-1"
         >
-          {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+          {isStreaming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
         </button>
       </div>
-      {!result && !isLoading && (
+
+      {!researchText && !isStreaming && (
         <div className="text-center py-6 text-zinc-400">
           <div className="text-2xl mb-2">🔬</div>
-          <p className="text-xs">Enter a topic or click search to find relevant citations for your document.</p>
+          <p className="text-xs">Enter a research question or topic to search academic papers and web sources.</p>
         </div>
       )}
+
       {error && <p className="text-xs text-destructive">{error}</p>}
-      {result && (
+
+      {researchText && (
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="bg-white dark:bg-zinc-800/60 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3">
-            <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">{result}</p>
+            <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">
+              {researchText}
+            </p>
           </div>
         </div>
       )}
