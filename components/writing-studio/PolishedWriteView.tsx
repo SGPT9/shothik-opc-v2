@@ -31,6 +31,8 @@ import { getWordCount, stripHtml } from '@/lib/writing-utils';
 import { computeReadinessScore, GENRE_TARGETS } from '@/lib/projectMetrics';
 import { NeuralCouplingEngine } from '@/lib/nobel-engine/NeuralCouplingEngine';
 import { NobelImpactEngine } from '@/lib/nobel-engine/NobelImpactEngine';
+import { useDeerFlowStream } from '@/hooks/useDeerFlowStream';
+import { DeerFlowStatusBanner } from './ux/DeerFlowStatusBanner';
 
 type Mode = 'write' | 'format' | 'publish';
 type MobilePanel = 'left' | 'center' | 'right';
@@ -101,6 +103,20 @@ export function PolishedWriteView({
   }, [mobilePanel]);
   const [sidebarView, setSidebarView] = useState<'chapters' | 'search' | 'research' | 'goals'>('chapters');
   const [isAiWriting, setIsAiWriting] = useState(false);
+
+  const {
+    isStreaming: isDeerFlowStreaming,
+    activeNode: deerFlowActiveNode,
+    activeAgent: deerFlowActiveAgent,
+    activeTool: deerFlowActiveTool,
+    error: deerFlowError,
+    startStream: startDeerFlowStream,
+    stopStream: stopDeerFlowStream,
+  } = useDeerFlowStream({
+    onToken: (token) => {
+      setContent((prev) => prev + token);
+    },
+  });
   const hasRestoredRef = useRef(false);
 
   const wordCount = getWordCount(content);
