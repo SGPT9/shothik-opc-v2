@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { defineRoute, z } from "@/lib/api-validation";
 import { withRetry, CircuitBreaker } from "@/lib/resiliency";
+import { DeerFlowService } from "@/services/deerflow.service";
 
 // Global Circuit Breaker for Gemini API
 const geminiCircuitBreaker = new CircuitBreaker({
