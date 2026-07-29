@@ -15,6 +15,7 @@ export default defineConfig({
       'node_modules/**',
       '.next/**',
       'e2e/**',
+      'deer-flow-backend/**',
     ],
     coverage: {
       provider: 'v8',
