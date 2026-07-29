@@ -332,19 +332,34 @@ export function ReplitBookWorkspace({
 
                 {/* Interactive Node Graph Preview */}
                 <div className="flex-1 grid grid-cols-3 gap-4 overflow-y-auto pr-2">
-                  <div className="bg-slate-900/90 border border-purple-500/40 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                  <div
+                    onClick={() => {
+                      setActiveTab('editor');
+                    }}
+                    className="bg-slate-900/90 border border-purple-500/40 rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:scale-[1.02] transition"
+                  >
                     <span className="text-[10px] font-mono bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded w-fit mb-2">Core Thesis / Main Concept</span>
                     <h4 className="text-sm font-bold text-white">{initialTitle}</h4>
                     <p className="text-xs text-slate-400 mt-1">Central plot structure and overarching narrative arc.</p>
                   </div>
 
-                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-md hover:border-slate-700 transition">
+                  <div
+                    onClick={() => {
+                      setActiveTab('editor');
+                    }}
+                    className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:scale-[1.02] hover:border-slate-700 transition"
+                  >
                     <span className="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded w-fit mb-2">Character Arc 1</span>
                     <h4 className="text-sm font-bold text-white">Protagonist Journey</h4>
                     <p className="text-xs text-slate-400 mt-1">Conflict $\rightarrow$ Discovery $\rightarrow$ Resolution.</p>
                   </div>
 
-                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-md hover:border-slate-700 transition">
+                  <div
+                    onClick={() => {
+                      setActiveTab('editor');
+                    }}
+                    className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-md cursor-pointer hover:scale-[1.02] hover:border-slate-700 transition"
+                  >
                     <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded w-fit mb-2">Chapter Swarm Node</span>
                     <h4 className="text-sm font-bold text-white">Parallel Authoring Graph</h4>
                     <p className="text-xs text-slate-400 mt-1">Chapters 1-5 drafting in parallel via Docker.</p>
@@ -365,12 +380,13 @@ export function ReplitBookWorkspace({
                   </div>
                   <button
                     onClick={() => {
-                      alert('Triggering DeerFlow PowerPoint (.pptx) deck compile in Docker...');
+                      handleRunAgent('slide_generation');
+                      onExport?.('pdf');
                     }}
                     className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-medium transition"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Export PPTX</span>
+                    <span>Export PPTX / PDF</span>
                   </button>
                 </div>
 
