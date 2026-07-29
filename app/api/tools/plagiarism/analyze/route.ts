@@ -4,7 +4,7 @@ import { checkRateLimit, getRateLimitKey, rateLimitResponse } from "@/lib/rateLi
 import { enforceUsageLimit, recordToolUsage } from "@/lib/usage-enforcement";
 import { checkTieredToolRateLimit } from "@/lib/tool-rate-limiter";
 
-const EXTERNAL_PLAGIARISM_API = process.env.PLAGIARISM_API_URL || "https://api-qa.shothik.ai";
+const EXTERNAL_PLAGIARISM_API = process.env.PLAGIARISM_API_URL || "http://localhost:8000";
 const EXTERNAL_ENDPOINT = "/api/tools/plagiarism/analyze";
 const FALLBACK_ENGINE_URL = process.env.PLAGIARISM_ENGINE_URL || "http://localhost:8000";
 const MAX_TEXT_LENGTH = 50_000;

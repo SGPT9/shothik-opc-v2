@@ -6,7 +6,7 @@ import {
   type RateLimitRouteConfig,
 } from "./rate-limit-config";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://prod-api.shothik.ai";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://staging.shothikgpt.com";
 
 export interface AuthenticatedUser {
   userId: string;
