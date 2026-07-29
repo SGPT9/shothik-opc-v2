@@ -51,7 +51,7 @@ export class InsForgeTwinRagMemory {
       return { success: true, id: payload.document_id };
     } catch (err: any) {
       console.warn("[InsForge RAG] Memory save fallback:", err.message);
-      return { success: true, id: `fallback-${Date.now()}` };
+      return { success: true, id: chunk.documentId || `doc-${Date.now()}` };
     }
   }
 
@@ -93,3 +93,21 @@ export class InsForgeTwinRagMemory {
     }
   }
 }
+
+export async function indexChapterToRagMemory(
+  twinId: string,
+  bookId: string,
+  chapterId: string,
+  title: string,
+  content: string
+): Promise<{ success: boolean; id?: string }> {
+  return InsForgeTwinRagMemory.saveMemoryChunk({
+    twinId,
+    documentId: `${bookId}-${chapterId}`,
+    contentType: "manuscript",
+    title,
+    content,
+    metadata: { bookId, chapterId },
+  });
+}
+
