@@ -97,9 +97,15 @@ export function StoryBibleDrawer({ isOpen, onClose, projectId = 'proj-default', 
               <BookOpen className="w-4 h-4 text-indigo-400" />
               <span>Story Bible & Lore Vault</span>
             </div>
-            <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded transition">
-              <X className="w-4 h-4" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center space-x-1 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span>2 Co-authors Live</span>
+              </span>
+              <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded transition">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* Search & Category Filter */}
