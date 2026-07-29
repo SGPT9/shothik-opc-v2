@@ -32,6 +32,8 @@ import { ManuscriptAuditor } from '@/components/writing-studio/ManuscriptAuditor
 import { StemToolbar } from '@/components/writing-studio/StemToolbar';
 import { WebMCPWidget } from '@/components/writing-studio/WebMCPWidget';
 import { DeerFlowStatusBanner } from '@/components/writing-studio/ux/DeerFlowStatusBanner';
+import { CollaborativePresence } from '@/components/writing-studio/CollaborativePresence';
+import { CoverArtGenerator } from '@/components/writing-studio/CoverArtGenerator';
 import { cn } from '@/lib/utils';
 
 export interface ReplitBookWorkspaceProps {
@@ -185,7 +187,8 @@ export function ReplitBookWorkspace({
         </div>
 
         {/* Right Header Actions */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-3">
+          <CollaborativePresence />
           <button
             onClick={() => setStoryBibleOpen(true)}
             className="flex items-center space-x-1 px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-xs text-indigo-300 rounded border border-indigo-500/40 transition font-medium"
@@ -264,9 +267,10 @@ export function ReplitBookWorkspace({
                 <textarea
                   value={editorText}
                   onChange={(e) => setEditorText(e.target.value)}
-                  className="w-full flex-1 bg-transparent text-slate-200 font-mono text-sm leading-relaxed outline-none resize-none min-h-[400px]"
+                  className="w-full flex-1 bg-transparent text-slate-200 font-mono text-sm leading-relaxed outline-none resize-none min-h-[320px]"
                   placeholder="Start typing or trigger DeerFlow AI Co-Writer..."
                 />
+                <CoverArtGenerator bookTitle={initialTitle} />
               </>
             )}
 
