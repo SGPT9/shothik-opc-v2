@@ -29,43 +29,47 @@ async function getInsforgeAuthenticatedUser(): Promise<User | null> {
     const hasInsforgeRefreshToken = Boolean(cookieStore.get("insforge_refresh_token")?.value);
 
     // #region debug-point B:server-auth-cookie-state
-    void fetch("http://127.0.0.1:7777/event", {
-      method: "POST",
-      body: JSON.stringify({
-        sessionId: "chat-auth-session",
-        runId: "pre-fix",
-        hypothesisId: "B",
-        location: "lib/server-auth.ts:getInsforgeAuthenticatedUser:cookie-state",
-        msg: "[DEBUG] Server auth inspected Insforge cookies",
-        data: {
-          hasInsforgeAccessToken,
-          hasInsforgeRefreshToken,
-        },
-        ts: Date.now(),
-      }),
-    }).catch(() => undefined);
+    try {
+      void fetch("http://127.0.0.1:7777/event", {
+        method: "POST",
+        body: JSON.stringify({
+          sessionId: "chat-auth-session",
+          runId: "pre-fix",
+          hypothesisId: "B",
+          location: "lib/server-auth.ts:getInsforgeAuthenticatedUser:cookie-state",
+          msg: "[DEBUG] Server auth inspected Insforge cookies",
+          data: {
+            hasInsforgeAccessToken,
+            hasInsforgeRefreshToken,
+          },
+          ts: Date.now(),
+        }),
+      }).catch(() => undefined);
+    } catch {}
     // #endregion
 
     const insforge = await createInsforgeServerClient();
     const { data, error } = await insforge.auth.getCurrentUser();
 
     // #region debug-point B:server-auth-current-user
-    void fetch("http://127.0.0.1:7777/event", {
-      method: "POST",
-      body: JSON.stringify({
-        sessionId: "chat-auth-session",
-        runId: "pre-fix",
-        hypothesisId: "B",
-        location: "lib/server-auth.ts:getInsforgeAuthenticatedUser:current-user",
-        msg: "[DEBUG] Server auth resolved Insforge current user",
-        data: {
-          hasError: Boolean(error),
-          errorMessage: error?.message ?? null,
-          hasUser: Boolean(data?.user),
-        },
-        ts: Date.now(),
-      }),
-    }).catch(() => undefined);
+    try {
+      void fetch("http://127.0.0.1:7777/event", {
+        method: "POST",
+        body: JSON.stringify({
+          sessionId: "chat-auth-session",
+          runId: "pre-fix",
+          hypothesisId: "B",
+          location: "lib/server-auth.ts:getInsforgeAuthenticatedUser:current-user",
+          msg: "[DEBUG] Server auth resolved Insforge current user",
+          data: {
+            hasError: Boolean(error),
+            errorMessage: error?.message ?? null,
+            hasUser: Boolean(data?.user),
+          },
+          ts: Date.now(),
+        }),
+      }).catch(() => undefined);
+    } catch {}
     // #endregion
 
     if (error || !data?.user) {
