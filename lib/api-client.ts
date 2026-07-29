@@ -14,7 +14,7 @@ const removeTokenAndRedirect = (): void => {
 
 // Create an axios instance
 const apiClient: AxiosInstance = axios.create({
-  baseURL: ENV.api_url || 'https://prod-api.shothik.ai',
+  baseURL: ENV.api_url || 'https://staging.shothikgpt.com',
   timeout: 10000, // 10 seconds timeout
 });
 
