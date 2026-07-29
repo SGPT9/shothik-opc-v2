@@ -280,10 +280,19 @@ export function ReplitBookWorkspace({
                       <p className="text-xs text-slate-400">DeerFlow Docker Python REPL data analyst connected</p>
                     </div>
                   </div>
-                  <span className="text-xs font-mono bg-cyan-500/20 text-cyan-300 px-2.5 py-1 rounded border border-cyan-500/30 flex items-center space-x-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>pandas v2.2 active</span>
-                  </span>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => handleRunAgent('sheet_analysis')}
+                      className="flex items-center space-x-1 px-3 py-1 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 rounded text-xs font-medium transition"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Clean Data (Python REPL)</span>
+                    </button>
+                    <span className="text-xs font-mono bg-cyan-500/10 text-cyan-300 px-2.5 py-1 rounded border border-cyan-500/20 flex items-center space-x-1">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>pandas v2.2 active</span>
+                    </span>
+                  </div>
                 </div>
 
                 {/* Interactive Data Table Matrix Preview */}
