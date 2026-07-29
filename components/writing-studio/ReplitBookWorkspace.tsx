@@ -22,8 +22,11 @@ import {
   Layers,
   Download,
   Send,
+  Mic,
+  MicOff,
 } from 'lucide-react';
 import { useDeerFlowStream, DeerFlowEvent } from '@/hooks/useDeerFlowStream';
+import { useVoiceDictation } from '@/hooks/useVoiceDictation';
 import { cn } from '@/lib/utils';
 
 export interface ReplitBookWorkspaceProps {
@@ -48,6 +51,14 @@ export function ReplitBookWorkspace({
     '# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight...'
   );
   const [customPrompt, setCustomPrompt] = useState<string>('');
+
+  const { isListening, transcript, startListening, stopListening } = useVoiceDictation();
+
+  React.useEffect(() => {
+    if (transcript) {
+      setCustomPrompt(transcript);
+    }
+  }, [transcript]);
 
   const {
     isStreaming,
@@ -219,12 +230,51 @@ export function ReplitBookWorkspace({
             )}
 
             {activeTab === 'sheet' && (
-              <div className="w-full h-full flex flex-col items-center justify-center border border-dashed border-slate-800 rounded-lg p-6 text-slate-400">
-                <Table className="w-12 h-12 text-cyan-400 mb-3" />
-                <h3 className="text-sm font-semibold text-slate-200">Fortune Sheet AI Spreadsheet</h3>
-                <p className="text-xs text-slate-400 mt-1 max-w-sm text-center">
-                  DeerFlow Python REPL data analyst is connected. Trigger automated formula calculations and data cleaning.
-                </p>
+              <div className="w-full h-full flex flex-col bg-[#080c14] border border-slate-800 rounded-lg p-6 overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <Table className="w-6 h-6 text-cyan-400" />
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-200">Fortune Sheet AI Data Grid</h3>
+                      <p className="text-xs text-slate-400">DeerFlow Docker Python REPL data analyst connected</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono bg-cyan-500/20 text-cyan-300 px-2.5 py-1 rounded border border-cyan-500/30 flex items-center space-x-1">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>pandas v2.2 active</span>
+                  </span>
+                </div>
+
+                {/* Interactive Data Table Matrix Preview */}
+                <div className="flex-1 overflow-x-auto overflow-y-auto">
+                  <table className="w-full border-collapse text-xs font-mono text-slate-300">
+                    <thead>
+                      <tr className="bg-slate-900/90 text-slate-400 border-b border-slate-800">
+                        <th className="p-2.5 text-left font-semibold">Row</th>
+                        <th className="p-2.5 text-left font-semibold">A: Chapter ID</th>
+                        <th className="p-2.5 text-left font-semibold">B: Word Count</th>
+                        <th className="p-2.5 text-left font-semibold">C: Perplexity Score</th>
+                        <th className="p-2.5 text-left font-semibold">D: Python Formula Output</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      <tr className="hover:bg-slate-800/40 transition">
+                        <td className="p-2.5 text-slate-500 font-bold">1</td>
+                        <td className="p-2.5 text-cyan-300">ch-1</td>
+                        <td className="p-2.5 text-slate-200">2,450</td>
+                        <td className="p-2.5 text-emerald-400">24.5 (Human voice)</td>
+                        <td className="p-2.5 text-amber-300">df['B'].sum() = 4,920</td>
+                      </tr>
+                      <tr className="hover:bg-slate-800/40 transition">
+                        <td className="p-2.5 text-slate-500 font-bold">2</td>
+                        <td className="p-2.5 text-cyan-300">ch-2</td>
+                        <td className="p-2.5 text-slate-200">2,470</td>
+                        <td className="p-2.5 text-emerald-400">26.1 (Human voice)</td>
+                        <td className="p-2.5 text-amber-300">df['C'].mean() = 25.3</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
 
@@ -387,9 +437,25 @@ export function ReplitBookWorkspace({
                     value={customPrompt}
                     onChange={(e) => setCustomPrompt(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleRunAgent('general')}
-                    placeholder="Ask DeerFlow agent..."
-                    className="flex-1 bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded px-2.5 py-1.5 outline-none focus:border-indigo-500 transition"
+                    placeholder={isListening ? 'Listening to voice...' : 'Ask DeerFlow agent...'}
+                    className={cn(
+                      'flex-1 bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded px-2.5 py-1.5 outline-none focus:border-indigo-500 transition',
+                      isListening && 'border-red-500/60 ring-1 ring-red-500/40 animate-pulse'
+                    )}
                   />
+                  <button
+                    type="button"
+                    onClick={isListening ? stopListening : startListening}
+                    className={cn(
+                      'p-1.5 rounded transition border',
+                      isListening
+                        ? 'bg-red-500/20 text-red-400 border-red-500/40 animate-bounce'
+                        : 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 border-slate-700'
+                    )}
+                    title={isListening ? 'Stop Voice Dictation' : 'Start Voice Dictation'}
+                  >
+                    {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+                  </button>
                   <button
                     onClick={() => handleRunAgent('general')}
                     disabled={isStreaming}
