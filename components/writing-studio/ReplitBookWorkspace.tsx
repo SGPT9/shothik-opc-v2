@@ -29,6 +29,9 @@ import { useDeerFlowStream, DeerFlowEvent } from '@/hooks/useDeerFlowStream';
 import { useVoiceDictation } from '@/hooks/useVoiceDictation';
 import { StoryBibleDrawer } from '@/components/writing-studio/StoryBibleDrawer';
 import { ManuscriptAuditor } from '@/components/writing-studio/ManuscriptAuditor';
+import { StemToolbar } from '@/components/writing-studio/StemToolbar';
+import { WebMCPWidget } from '@/components/writing-studio/WebMCPWidget';
+import { DeerFlowStatusBanner } from '@/components/writing-studio/ux/DeerFlowStatusBanner';
 import { cn } from '@/lib/utils';
 
 export interface ReplitBookWorkspaceProps {
@@ -257,6 +260,7 @@ export function ReplitBookWorkspace({
             {activeTab === 'editor' && (
               <>
                 <ManuscriptAuditor text={editorText} />
+                <StemToolbar onInsertFormula={(snippet) => setEditorText((prev) => prev + '\n' + snippet)} />
                 <textarea
                   value={editorText}
                   onChange={(e) => setEditorText(e.target.value)}
@@ -452,16 +456,16 @@ export function ReplitBookWorkspace({
                 )}
               </div>
 
-              {/* Status Banner */}
-              <div className="bg-slate-900/60 p-3 border-b border-slate-800/50 space-y-1.5 text-xs">
-                <div className="flex items-center justify-between text-slate-400">
-                  <span>Active Agent:</span>
-                  <span className="font-mono text-indigo-300 font-semibold">{activeAgent || 'LeadEditor'}</span>
-                </div>
-                <div className="flex items-center justify-between text-slate-400">
-                  <span>Current Node:</span>
-                  <span className="font-mono text-cyan-300">{activeNode || 'idle'}</span>
-                </div>
+              {/* Status Banner & WebMCP Inspector */}
+              <div className="p-3 border-b border-slate-800/60 bg-[#070a12] space-y-2">
+                <DeerFlowStatusBanner
+                  isStreaming={isStreaming}
+                  activeNode={activeNode}
+                  activeAgent={activeAgent}
+                  activeTool={activeTool}
+                  error={error}
+                />
+                <WebMCPWidget />
               </div>
 
               {/* Event & Terminal Logs */}
