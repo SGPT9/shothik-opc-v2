@@ -229,12 +229,40 @@ export function ReplitBookWorkspace({
             )}
 
             {activeTab === 'mindmap' && (
-              <div className="w-full h-full flex flex-col items-center justify-center border border-dashed border-slate-800 rounded-lg p-6 text-slate-400">
-                <Network className="w-12 h-12 text-purple-400 mb-3" />
-                <h3 className="text-sm font-semibold text-slate-200">Mind Elixir Narrative Canvas</h3>
-                <p className="text-xs text-slate-400 mt-1 max-w-sm text-center">
-                  Hierarchical story mind map powered by DeerFlow LeadAgent outline planner.
-                </p>
+              <div className="w-full h-full flex flex-col bg-[#080c14] border border-slate-800 rounded-lg p-6 overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                  <div className="flex items-center space-x-3">
+                    <Network className="w-6 h-6 text-purple-400" />
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-200">Mind Map Narrative Canvas</h3>
+                      <p className="text-xs text-slate-400">Hierarchical story graph powered by DeerFlow LeadEditor outline planner</p>
+                    </div>
+                  </div>
+                  <span className="text-xs font-mono bg-purple-500/20 text-purple-300 px-2.5 py-1 rounded border border-purple-500/30">
+                    4 Active Story Nodes
+                  </span>
+                </div>
+
+                {/* Interactive Node Graph Preview */}
+                <div className="flex-1 grid grid-cols-3 gap-4 overflow-y-auto pr-2">
+                  <div className="bg-slate-900/90 border border-purple-500/40 rounded-xl p-4 flex flex-col justify-between shadow-md">
+                    <span className="text-[10px] font-mono bg-purple-500/20 text-purple-300 px-2 py-0.5 rounded w-fit mb-2">Core Thesis / Main Concept</span>
+                    <h4 className="text-sm font-bold text-white">{initialTitle}</h4>
+                    <p className="text-xs text-slate-400 mt-1">Central plot structure and overarching narrative arc.</p>
+                  </div>
+
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-md hover:border-slate-700 transition">
+                    <span className="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded w-fit mb-2">Character Arc 1</span>
+                    <h4 className="text-sm font-bold text-white">Protagonist Journey</h4>
+                    <p className="text-xs text-slate-400 mt-1">Conflict $\rightarrow$ Discovery $\rightarrow$ Resolution.</p>
+                  </div>
+
+                  <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between shadow-md hover:border-slate-700 transition">
+                    <span className="text-[10px] font-mono bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded w-fit mb-2">Chapter Swarm Node</span>
+                    <h4 className="text-sm font-bold text-white">Parallel Authoring Graph</h4>
+                    <p className="text-xs text-slate-400 mt-1">Chapters 1-5 drafting in parallel via Docker.</p>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -250,8 +278,6 @@ export function ReplitBookWorkspace({
                   </div>
                   <button
                     onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = '#';
                       alert('Triggering DeerFlow PowerPoint (.pptx) deck compile in Docker...');
                     }}
                     className="flex items-center space-x-1.5 px-3 py-1.5 rounded-md bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 text-xs font-medium transition"
@@ -333,12 +359,6 @@ export function ReplitBookWorkspace({
                   <span>Current Node:</span>
                   <span className="font-mono text-cyan-300">{activeNode || 'idle'}</span>
                 </div>
-                {activeTool && (
-                  <div className="flex items-center justify-between text-slate-400">
-                    <span>Active Tool:</span>
-                    <span className="font-mono text-amber-300">{activeTool}</span>
-                  </div>
-                )}
               </div>
 
               {/* Event & Terminal Logs */}
