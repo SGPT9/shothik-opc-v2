@@ -188,7 +188,13 @@ export function ReplitBookWorkspace({
 
         {/* Right Header Actions */}
         <div className="flex items-center space-x-3">
-          <CollaborativePresence />
+          <CollaborativePresence
+            currentChapterTitle={initialChapters.find((c) => c.id === activeChapterId)?.title}
+            onSelectChapter={(chapTitle) => {
+              const matched = initialChapters.find((c) => c.title === chapTitle || chapTitle.includes(c.title));
+              if (matched) setActiveChapterId(matched.id);
+            }}
+          />
           <button
             onClick={() => setStoryBibleOpen(true)}
             className="flex items-center space-x-1 px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-xs text-indigo-300 rounded border border-indigo-500/40 transition font-medium"
