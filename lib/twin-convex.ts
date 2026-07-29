@@ -139,7 +139,8 @@ const twinApi = api as typeof api & {
 export { twinApi };
 
 export function createTwinClient(token?: string): ConvexHttpClient {
-  const client = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+  const url = process.env.NEXT_PUBLIC_CONVEX_URL || "https://dashing-mandrill-233.convex.cloud";
+  const client = new ConvexHttpClient(url);
   if (token) client.setAuth(token);
   return client;
 }

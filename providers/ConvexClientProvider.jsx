@@ -4,9 +4,9 @@ import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://dashing-mandrill-233.convex.cloud";
 
-const convex = convexUrl ? new ConvexReactClient(convexUrl) : null;
+const convex = new ConvexReactClient(convexUrl);
 
 function useAuthFromRedux() {
   const accessToken = useSelector((state) => state.auth?.accessToken);
