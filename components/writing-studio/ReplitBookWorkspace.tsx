@@ -531,6 +531,13 @@ export function ReplitBookWorkspace({
                       <span>/sheet</span>
                       <span className="text-[10px] text-slate-500">Python REPL Data Analysis</span>
                     </button>
+                    <button
+                      onClick={() => applySlashCommand('/reach')}
+                      className="w-full text-left px-2 py-1 rounded hover:bg-slate-800 text-xs text-purple-300 flex items-center justify-between"
+                    >
+                      <span>/reach</span>
+                      <span className="text-[10px] text-slate-500">YouTube Transcript & Reddit Lore</span>
+                    </button>
                   </div>
                 )}
 
