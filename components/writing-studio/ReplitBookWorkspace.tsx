@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { useDeerFlowStream, DeerFlowEvent } from '@/hooks/useDeerFlowStream';
 import { useVoiceDictation } from '@/hooks/useVoiceDictation';
+import { StoryBibleDrawer } from '@/components/writing-studio/StoryBibleDrawer';
+import { ManuscriptAuditor } from '@/components/writing-studio/ManuscriptAuditor';
 import { cn } from '@/lib/utils';
 
 export interface ReplitBookWorkspaceProps {
@@ -47,6 +49,8 @@ export function ReplitBookWorkspace({
   const [activeChapterId, setActiveChapterId] = useState<string>(initialChapters[0]?.id || 'ch-1');
   const [leftNavOpen, setLeftNavOpen] = useState<boolean>(true);
   const [rightConsoleOpen, setRightConsoleOpen] = useState<boolean>(true);
+  const [storyBibleOpen, setStoryBibleOpen] = useState<boolean>(false);
+  const [showSlashMenu, setShowSlashMenu] = useState<boolean>(false);
   const [editorText, setEditorText] = useState<string>(
     '# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight...'
   );
@@ -59,6 +63,26 @@ export function ReplitBookWorkspace({
       setCustomPrompt(transcript);
     }
   }, [transcript]);
+
+  const handlePromptChange = (val: string) => {
+    setCustomPrompt(val);
+    if (val.startsWith('/')) {
+      setShowSlashMenu(true);
+    } else {
+      setShowSlashMenu(false);
+    }
+  };
+
+  const applySlashCommand = (cmd: string) => {
+    if (cmd === '/research') {
+      setCustomPrompt('Perform deep research across arXiv and PubMed on ');
+    } else if (cmd === '/slides') {
+      setCustomPrompt('Compile an 8-slide presentation deck on ');
+    } else if (cmd === '/sheet') {
+      setCustomPrompt('Analyze chapter word counts and perplexity metrics in Python REPL');
+    }
+    setShowSlashMenu(false);
+  };
 
   const {
     isStreaming,
@@ -160,6 +184,14 @@ export function ReplitBookWorkspace({
         {/* Right Header Actions */}
         <div className="flex items-center space-x-2">
           <button
+            onClick={() => setStoryBibleOpen(true)}
+            className="flex items-center space-x-1 px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-xs text-indigo-300 rounded border border-indigo-500/40 transition font-medium"
+          >
+            <BookOpen className="w-3.5 h-3.5" />
+            <span>Story Bible</span>
+          </button>
+
+          <button
             onClick={() => onExport?.('epub')}
             className="flex items-center space-x-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 rounded border border-slate-700 transition"
           >
@@ -170,7 +202,9 @@ export function ReplitBookWorkspace({
       </header>
 
       {/* Main Multi-Pane Body */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative">
+        <StoryBibleDrawer isOpen={storyBibleOpen} onClose={() => setStoryBibleOpen(false)} />
+
         {/* Left Explorer & Outline Pane */}
         <AnimatePresence initial={false}>
           {leftNavOpen && (
@@ -219,14 +253,17 @@ export function ReplitBookWorkspace({
 
         {/* Center Canvas Area */}
         <main className="flex-1 flex flex-col bg-[#0b0f19] overflow-hidden relative">
-          <div className="flex-1 p-6 overflow-y-auto">
+          <div className="flex-1 p-6 overflow-y-auto flex flex-col space-y-4">
             {activeTab === 'editor' && (
-              <textarea
-                value={editorText}
-                onChange={(e) => setEditorText(e.target.value)}
-                className="w-full h-full bg-transparent text-slate-200 font-mono text-sm leading-relaxed outline-none resize-none"
-                placeholder="Start typing or trigger DeerFlow AI Co-Writer..."
-              />
+              <>
+                <ManuscriptAuditor text={editorText} />
+                <textarea
+                  value={editorText}
+                  onChange={(e) => setEditorText(e.target.value)}
+                  className="w-full flex-1 bg-transparent text-slate-200 font-mono text-sm leading-relaxed outline-none resize-none min-h-[400px]"
+                  placeholder="Start typing or trigger DeerFlow AI Co-Writer..."
+                />
+              </>
             )}
 
             {activeTab === 'sheet' && (
@@ -430,14 +467,41 @@ export function ReplitBookWorkspace({
               </div>
 
               {/* Prompt Execution Input */}
-              <div className="p-3 border-t border-slate-800 bg-[#0d1322] space-y-2">
+              <div className="p-3 border-t border-slate-800 bg-[#0d1322] space-y-2 relative">
+                {showSlashMenu && (
+                  <div className="absolute bottom-14 left-3 right-3 bg-slate-900 border border-slate-800 rounded-lg p-2 shadow-2xl z-30 space-y-1">
+                    <div className="text-[10px] font-semibold text-slate-500 uppercase px-2 py-0.5">Quick Actions</div>
+                    <button
+                      onClick={() => applySlashCommand('/research')}
+                      className="w-full text-left px-2 py-1 rounded hover:bg-slate-800 text-xs text-cyan-300 flex items-center justify-between"
+                    >
+                      <span>/research</span>
+                      <span className="text-[10px] text-slate-500">Deep Research arXiv & PubMed</span>
+                    </button>
+                    <button
+                      onClick={() => applySlashCommand('/slides')}
+                      className="w-full text-left px-2 py-1 rounded hover:bg-slate-800 text-xs text-amber-300 flex items-center justify-between"
+                    >
+                      <span>/slides</span>
+                      <span className="text-[10px] text-slate-500">Compile Marp PPTX Deck</span>
+                    </button>
+                    <button
+                      onClick={() => applySlashCommand('/sheet')}
+                      className="w-full text-left px-2 py-1 rounded hover:bg-slate-800 text-xs text-emerald-300 flex items-center justify-between"
+                    >
+                      <span>/sheet</span>
+                      <span className="text-[10px] text-slate-500">Python REPL Data Analysis</span>
+                    </button>
+                  </div>
+                )}
+
                 <div className="flex items-center space-x-1.5">
                   <input
                     type="text"
                     value={customPrompt}
-                    onChange={(e) => setCustomPrompt(e.target.value)}
+                    onChange={(e) => handlePromptChange(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleRunAgent('general')}
-                    placeholder={isListening ? 'Listening to voice...' : 'Ask DeerFlow agent...'}
+                    placeholder={isListening ? 'Listening to voice...' : 'Ask DeerFlow agent (or type /)...'}
                     className={cn(
                       'flex-1 bg-slate-900 border border-slate-800 text-xs text-slate-200 rounded px-2.5 py-1.5 outline-none focus:border-indigo-500 transition',
                       isListening && 'border-red-500/60 ring-1 ring-red-500/40 animate-pulse'
