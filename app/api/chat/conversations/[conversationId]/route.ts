@@ -18,15 +18,16 @@ function unauthorized() {
 }
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const user = await getChatAuthenticatedUser();
-  if (!user?._id) return unauthorized();
+  const deviceId = request.headers.get("x-chat-device-id");
+  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : "guest-user";
 
   const { conversationId } = await params;
   try {
-    const conversation = await getConversationForUser(conversationId, String(user._id));
+    const conversation = await getConversationForUser(conversationId, effectiveUserId);
     return Response.json({ data: conversation });
   } catch {
     return Response.json({ error: "Conversation not found" }, { status: 404 });
@@ -38,7 +39,8 @@ export async function PATCH(
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const user = await getChatAuthenticatedUser();
-  if (!user?._id) return unauthorized();
+  const deviceId = request.headers.get("x-chat-device-id");
+  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : "guest-user";
 
   const { conversationId } = await params;
   const body = await request.json();
@@ -46,7 +48,7 @@ export async function PATCH(
   try {
     const conversation = await updateConversationForUser({
       conversationId,
-      userId: String(user._id),
+      userId: effectiveUserId,
       title: body.title,
       pinned: body.pinned,
       archived: body.archived,
@@ -58,15 +60,16 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ conversationId: string }> }
 ) {
   const user = await getChatAuthenticatedUser();
-  if (!user?._id) return unauthorized();
+  const deviceId = request.headers.get("x-chat-device-id");
+  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : "guest-user";
 
   const { conversationId } = await params;
   try {
-    const result = await softDeleteConversationForUser(conversationId, String(user._id));
+    const result = await softDeleteConversationForUser(conversationId, effectiveUserId);
     return Response.json({ data: result });
   } catch {
     return Response.json({ error: "Conversation not found" }, { status: 404 });
