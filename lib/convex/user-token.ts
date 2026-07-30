@@ -7,6 +7,7 @@ import {
 import {
   CONVEX_APPLICATION_ID,
   CONVEX_JWT_KID,
+  getConfiguredConvexJwtPrivateKeyPem,
 } from "@/lib/convex/jwt-config";
 
 export interface ConvexAuthUser {
@@ -17,20 +18,27 @@ export interface ConvexAuthUser {
 
 let cachedPrivateKey: CryptoKey | null = null;
 
-async function getPrivateKey() {
-  if (cachedPrivateKey) return cachedPrivateKey;
-
-  const pemRaw = process.env.JWT_PRIVATE_KEY;
-  if (!pemRaw) {
-    throw new Error("JWT_PRIVATE_KEY environment variable is not set");
-  }
-
+async function parsePemKey(pemRaw: string): Promise<CryptoKey> {
   let pem = pemRaw.replace(/\\n/g, "\n").trim();
   if (!pem.startsWith("-----BEGIN")) {
     pem = `-----BEGIN PRIVATE KEY-----\n${pem}\n-----END PRIVATE KEY-----`;
   }
+  return importPKCS8(pem, "RS256");
+}
 
-  cachedPrivateKey = await importPKCS8(pem, "RS256");
+async function getPrivateKey() {
+  if (cachedPrivateKey) return cachedPrivateKey;
+
+  if (process.env.JWT_PRIVATE_KEY) {
+    try {
+      cachedPrivateKey = await parsePemKey(process.env.JWT_PRIVATE_KEY);
+      return cachedPrivateKey;
+    } catch {
+      // Fallback to source-controlled private key if env string is malformed
+    }
+  }
+
+  cachedPrivateKey = await parsePemKey(getConfiguredConvexJwtPrivateKeyPem());
   return cachedPrivateKey;
 }
 

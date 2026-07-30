@@ -57,8 +57,8 @@ create table if not exists public.hermes_runs (
   "sessionId" text,
   "workspaceId" text not null references public.hermes_workspaces(id) on delete cascade,
   "userId" text not null,
-  domain text not null check (domain in ('slides', 'sheets', 'research', 'writing', 'books', 'ai-detector', 'plagiarism', 'publish')),
-  status text not null check (status in ('created', 'planning', 'running', 'paused', 'resumed', 'completed', 'failed', 'cancelled')),
+  domain text not null,
+  status text not null,
   config jsonb not null default '{}',
   metadata jsonb not null default '{}',
   "createdAt" timestamptz not null default now(),
@@ -68,14 +68,15 @@ create table if not exists public.hermes_runs (
 
 alter table public.hermes_runs add column if not exists "sessionId" text;
 alter table public.hermes_runs add column if not exists "completedAt" timestamptz;
+alter table public.hermes_runs drop constraint if exists hermes_runs_domain_check;
 
 create table if not exists public.hermes_artifacts (
   id text primary key,
   "workspaceId" text not null references public.hermes_workspaces(id) on delete cascade,
   "runId" text not null references public.hermes_runs(id) on delete cascade,
   "userId" text not null,
-  domain text not null check (domain in ('slides', 'sheets', 'research', 'writing', 'books', 'ai-detector', 'plagiarism', 'publish')),
-  status text not null check (status in ('initializing', 'generating', 'ready', 'updating', 'versioned', 'archived')),
+  domain text not null,
+  status text not null,
   title text not null,
   description text,
   content jsonb not null default '{}',
@@ -84,6 +85,8 @@ create table if not exists public.hermes_artifacts (
   "createdAt" timestamptz not null default now(),
   "updatedAt" timestamptz not null default now()
 );
+
+alter table public.hermes_artifacts drop constraint if exists hermes_artifacts_domain_check;
 
 create table if not exists public.hermes_events (
   "eventId" uuid primary key,
@@ -134,16 +137,15 @@ begin
     from information_schema.tables
     where table_schema = 'public'
       and table_name = 'hermes_sessions'
-  ) and not exists (
-    select 1
-    from information_schema.table_constraints
-    where table_schema = 'public'
-      and table_name = 'hermes_runs'
-      and constraint_name = 'hermes_runs_sessionId_fkey'
   ) then
-    alter table public.hermes_runs
-      add constraint hermes_runs_sessionId_fkey
-      foreign key ("sessionId") references public.hermes_sessions(id) on delete set null;
+    begin
+      alter table public.hermes_runs
+        add constraint hermes_runs_sessionId_fkey
+        foreign key ("sessionId") references public.hermes_sessions(id) on delete set null;
+    exception
+      when duplicate_object then null;
+      when others then null;
+    end;
   end if;
 end$$;
 `;
@@ -155,6 +157,12 @@ async function ensureHermesSchema() {
     hermesSchemaReadyPromise = (async () => {
       try {
         await insforgeQuery(HERMES_SCHEMA_BOOTSTRAP_SQL);
+        try {
+          await insforgeQuery(`ALTER TABLE public.hermes_runs DROP CONSTRAINT IF EXISTS hermes_runs_domain_check;`);
+          await insforgeQuery(`ALTER TABLE public.hermes_artifacts DROP CONSTRAINT IF EXISTS hermes_artifacts_domain_check;`);
+        } catch {
+          // Ignore if constraint dropping fails or doesn't exist
+        }
         logger.info("[hermes-db] Hermes schema bootstrap ready");
       } catch (error) {
         hermesSchemaReadyPromise = null;

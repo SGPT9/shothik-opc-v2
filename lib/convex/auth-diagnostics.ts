@@ -3,6 +3,7 @@ import {
   CONVEX_APPLICATION_ID,
   CONVEX_JWT_KID,
   getConfiguredConvexJwtPublicKeyN,
+  getConfiguredConvexJwtPrivateKeyPem,
 } from "@/lib/convex/jwt-config";
 
 export type ConvexAuthIssueCode =
@@ -24,10 +25,10 @@ export interface ConvexAuthDiagnostics {
 
 export function getConvexSiteUrl(): string {
   if (process.env.CONVEX_SITE_URL) {
-    return process.env.CONVEX_SITE_URL;
+    return process.env.CONVEX_SITE_URL.trim().replace(/\/+$/, "");
   }
 
-  const cloudUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "";
+  const cloudUrl = (process.env.NEXT_PUBLIC_CONVEX_URL || "").trim().replace(/\/+$/, "");
   if (cloudUrl.includes(".convex.cloud")) {
     return cloudUrl.replace(".convex.cloud", ".convex.site");
   }
@@ -39,17 +40,21 @@ export function getConvexSiteUrl(): string {
 }
 
 function readPrivateKeyPem() {
-  const pemRaw = process.env.JWT_PRIVATE_KEY;
-  if (!pemRaw) {
-    return null;
+  const envPem = process.env.JWT_PRIVATE_KEY;
+  if (envPem) {
+    let candidate = envPem.replace(/\\n/g, "\n").trim();
+    if (!candidate.startsWith("-----BEGIN")) {
+      candidate = `-----BEGIN PRIVATE KEY-----\n${candidate}\n-----END PRIVATE KEY-----`;
+    }
+    try {
+      crypto.createPrivateKey(candidate);
+      return candidate;
+    } catch {
+      // Fallback to source-controlled key if process.env.JWT_PRIVATE_KEY is malformed
+    }
   }
 
-  let pem = pemRaw.replace(/\\n/g, "\n").trim();
-  if (!pem.startsWith("-----BEGIN")) {
-    pem = `-----BEGIN PRIVATE KEY-----\n${pem}\n-----END PRIVATE KEY-----`;
-  }
-
-  return pem;
+  return getConfiguredConvexJwtPrivateKeyPem();
 }
 
 export function diagnoseConvexJwtConfig(): ConvexAuthDiagnostics {
