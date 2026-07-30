@@ -1,6 +1,6 @@
 import SvgColor from "@/components/common/SvgColor";
 import { PATH_ACCOUNT, PATH_TOOLS } from "@/config/route";
-import { PenLine, Presentation, Search, Table, Target, Compass, Users, Clapperboard, UserRound, Hash } from "lucide-react";
+import { PenLine, Presentation, Search, Table, Target, Compass, Users, Clapperboard, UserRound, Hash, ShieldCheck } from "lucide-react";
 import { ReactElement } from "react";
 
 const icon = (name: string): ReactElement => (
@@ -29,6 +29,7 @@ export const NAV_ICONS = {
   community: <Users className="size-3.5 text-violet-500 sm:size-4" />,
   animation: <Clapperboard className="size-3.5 text-pink-500 sm:size-4" />,
   second_me: <UserRound className="size-3.5 text-indigo-500 sm:size-4" />,
+  governance: <ShieldCheck className="size-3.5 text-amber-500 sm:size-4" />,
 };
 
 export const NAV_TOOLS = [
@@ -213,4 +214,18 @@ export const NAV_ITEMS = [
       },
     ],
   },
+  {
+    subheader: "admin",
+    roles: ["admin"],
+    items: [
+      {
+        titleKey: "admin.governance",
+        title: "System Governance",
+        path: "/admin/governance",
+        icon: NAV_ICONS.governance,
+        iconColor: "#F59E0B",
+      },
+    ],
+  },
 ];
+
