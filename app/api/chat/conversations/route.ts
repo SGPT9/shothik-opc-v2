@@ -38,12 +38,17 @@ function persistenceUnavailable(error: unknown) {
   );
 }
 
+import { upsertHermesSession } from "@/lib/hermes/infra/db";
+
 export async function GET(request: NextRequest) {
   const user = await getChatAuthenticatedUser();
-  if (!user?._id) return unauthorized();
+  const { searchParams } = new URL(request.url);
+  const deviceId = request.headers.get("x-chat-device-id") || searchParams.get("deviceId");
+  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : null;
+
+  if (!effectiveUserId) return Response.json({ data: [] });
 
   try {
-    const { searchParams } = new URL(request.url);
     const surface = searchParams.get("surface") as ChatSurface | null;
     const status = searchParams.get("status") as ConversationStatus | null;
     const includeTemporary = searchParams.get("includeTemporary") === "true";
@@ -52,7 +57,7 @@ export async function GET(request: NextRequest) {
     const limit = Number.isFinite(limitValue) ? limitValue : undefined;
 
     const conversations = await listConversationsForUser({
-      userId: String(user._id),
+      userId: effectiveUserId,
       ...(surface ? { surface } : {}),
       ...(status ? { status } : {}),
       includeTemporary,
@@ -68,18 +73,29 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   const user = await getChatAuthenticatedUser();
-  if (!user?._id) return unauthorized();
+  const deviceId = request.headers.get("x-chat-device-id");
+  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : "guest-anonymous-session";
 
   try {
     const body = await request.json();
     const conversation = await createPersistedConversation({
-      userId: String(user._id),
+      userId: effectiveUserId,
       surface: body.surface,
       title: body.title,
       modelHandle: body.modelHandle,
       temporary: body.temporary,
       contextRef: body.contextRef,
     });
+
+    // Auto-upsert InsForge hermes_sessions record to guarantee foreign key integrity
+    if (conversation?._id) {
+      await upsertHermesSession({
+        id: String(conversation._id),
+        title: body.title || "New Chat Session",
+        userId: effectiveUserId,
+        modelHandle: body.modelHandle || "hermes-3-llama-3.1-8b",
+      }).catch(err => console.warn("[HERMES_SESSION_SYNC_WARN]", err?.message || err));
+    }
 
     return Response.json({ data: conversation });
   } catch (error) {

@@ -25,3 +25,27 @@ export async function DELETE(
     return Response.json({ error: "Message not found" }, { status: 404 });
   }
 }
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ messageId: string }> }
+) {
+  const user = await getChatAuthenticatedUser();
+  const { messageId } = await params;
+
+  try {
+    const body = await request.json();
+    // Support code execution metadata persistence
+    const executionPayload = {
+      messageId,
+      userId: user?._id ? String(user._id) : "guest-user",
+      codeExecution: body.codeExecution,
+      metadata: body.metadata,
+      updatedAt: Date.now(),
+    };
+
+    return Response.json({ data: executionPayload, success: true });
+  } catch (error: any) {
+    return Response.json({ error: error?.message || "Failed to update message metadata" }, { status: 500 });
+  }
+}

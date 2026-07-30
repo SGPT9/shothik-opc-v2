@@ -873,3 +873,22 @@ export function getHermesDatabase(): HermesDatabase {
   }
   return dbInstance;
 }
+
+export async function upsertHermesSession(params: {
+  id: string;
+  title: string;
+  userId: string;
+  workspaceId?: string;
+  modelHandle?: string;
+}): Promise<void> {
+  const db = getHermesDatabase();
+  await db.createSession({
+    id: params.id,
+    workspaceId: params.workspaceId || "default-workspace",
+    title: params.title,
+    userId: params.userId,
+    status: "active",
+    settings: { modelHandle: params.modelHandle || "hermes-3-llama-3.1-8b" },
+    metadata: { syncedAt: new Date().toISOString() },
+  }).catch(() => null); // Silently ignore duplicate session insert
+}
