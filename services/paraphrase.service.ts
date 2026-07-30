@@ -1,5 +1,5 @@
 import { ENV } from "@/config/env";
-import { executeWithGateway } from "@/lib/ai-gateway";
+import { executeWithMultiTierFallback } from "@/lib/ai-gateway";
 import { normalizeError } from "@/lib/tool-errors";
 import { computeContentHash, getCachedResult, setCachedResult } from "@/lib/result-cache";
 import { fetchWithRetry } from "@/lib/fetchWithRetry";
@@ -70,32 +70,60 @@ export const detectAutoFreezeTerms = async ({
       return cached.data;
     }
 
-    const result = await executeWithGateway(
-      async (gatewaySignal) => {
-        const headers: Record<string, string> = {
-          "Content-Type": "application/json",
-        };
-        if (accessToken) {
-          headers.Authorization = `Bearer ${accessToken}`;
-        }
+    const primaryFetcher = async (gatewaySignal?: AbortSignal) => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
 
-        const combinedSignal = signal && gatewaySignal
-          ? AbortSignal.any([signal, gatewaySignal])
-          : signal || gatewaySignal;
+      const combinedSignal = signal && gatewaySignal
+        ? AbortSignal.any([signal, gatewaySignal])
+        : signal || gatewaySignal;
 
-        const response = await fetch(`${API_BASE}/auto-freeze/detect`, {
-          method: "POST",
-          headers,
-          body: JSON.stringify({ text, language, useLLM }),
-          signal: combinedSignal,
-        });
+      const response = await fetch(`${API_BASE}/auto-freeze/detect`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ text, language, useLLM }),
+        signal: combinedSignal,
+      });
 
-        if (!response.ok) {
-          return handleFetchError(response);
-        }
+      if (!response.ok) {
+        return handleFetchError(response);
+      }
 
-        return await response.json();
-      },
+      return await response.json();
+    };
+
+    const fallbackFetcher = async (gatewaySignal?: AbortSignal) => {
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json",
+      };
+      if (accessToken) {
+        headers.Authorization = `Bearer ${accessToken}`;
+      }
+
+      const combinedSignal = signal && gatewaySignal
+        ? AbortSignal.any([signal, gatewaySignal])
+        : signal || gatewaySignal;
+
+      const response = await fetch(`${API_BASE}/auto-freeze/detect?provider=fallback`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ text, language, useLLM }),
+        signal: combinedSignal,
+      });
+
+      if (!response.ok) {
+        return handleFetchError(response);
+      }
+
+      return await response.json();
+    };
+
+    const result = await executeWithMultiTierFallback(
+      [primaryFetcher, fallbackFetcher],
       { tool: "paraphrase", signal }
     );
 
