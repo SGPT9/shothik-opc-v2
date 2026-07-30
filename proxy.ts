@@ -30,7 +30,11 @@ const JWKS_URL = process.env.NEXT_PUBLIC_CONVEX_URL
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 if (JWKS_URL) {
-  jwks = createRemoteJWKSet(new URL(JWKS_URL));
+  try {
+    jwks = createRemoteJWKSet(new URL(JWKS_URL));
+  } catch {
+    jwks = null;
+  }
 }
 
 function getClientId(request: NextRequest): string {
@@ -427,12 +431,15 @@ export async function proxy(req: NextRequest) {
     const isStripeWebhook = pathname.startsWith("/api/stripe/") && pathname.endsWith("/webhook");
     const isPublicApi =
       pathname === "/api/health" ||
+      pathname === "/api/health-check" ||
       pathname === "/api/user-limit" ||
       pathname.startsWith("/api/.well-known") ||
       pathname.startsWith("/api/forum/og/") ||
       pathname === "/api/zoho-webhook" ||
       pathname === "/api/writing-studio/quality-check" ||
       pathname.startsWith("/api/auth/") ||
+      pathname.startsWith("/api/webhooks/") ||
+      pathname.startsWith("/api/vibe/") ||
       isStripeWebhook;
 
     const authHeader = req.headers.get("authorization");
@@ -638,8 +645,8 @@ export async function proxy(req: NextRequest) {
 
     if (requiresAuth && !hasValidApiKey) {
       if (!token) {
-        if (isInsforgeChatApiPath && hasInsforgeSession) {
-          // Chat routes are migrating to native InsForge auth; let route-level auth resolve the user.
+        if (isInsforgeChatApiPath) {
+          // Chat routes allow guest playground access; let route-level auth resolve the user.
         } else {
           if (
             pathname === "/api/user-limit" ||
@@ -834,6 +841,9 @@ export async function proxy(req: NextRequest) {
   }
 
   const response = NextResponse.next();
+  if (pathname === "/agents/chat" || pathname.startsWith("/agents/chat/")) {
+    response.headers.set("X-Guest-Session-ID", "guest-playground-user");
+  }
   response.headers.set("X-Response-Time", `${Date.now() - startTime}ms`);
   return finalizeResponse(response);
 }

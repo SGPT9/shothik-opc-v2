@@ -55,11 +55,14 @@ const securityChecks: SecurityCheck[] = [
         pathname.startsWith("/api/auth/oauth/");
       const isPublic =
         pathname === "/api/health" ||
+        pathname === "/api/health-check" ||
         pathname === "/api/user-limit" ||
         pathname.startsWith("/api/.well-known") ||
         pathname === "/api/zoho-webhook" ||
         pathname.startsWith("/api/forum/og/") ||
         pathname === "/api/writing-studio/quality-check" ||
+        pathname.startsWith("/api/webhooks/") ||
+        pathname.startsWith("/api/vibe/") ||
         isStripeWebhook;
 
       // Chat routes perform their own authentication resolution and are
