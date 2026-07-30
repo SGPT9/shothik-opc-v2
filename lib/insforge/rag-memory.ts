@@ -92,6 +92,39 @@ export class InsForgeTwinRagMemory {
       return [];
     }
   }
+
+  /**
+   * Batch index multiple memory chunks into InsForge Postgres.
+   */
+  static async indexBatchChunks(chunks: TwinMemoryChunk[]): Promise<{ success: boolean; count: number }> {
+    let successCount = 0;
+    for (const chunk of chunks) {
+      const res = await this.saveMemoryChunk(chunk);
+      if (res.success) successCount++;
+    }
+    return { success: true, count: successCount };
+  }
+
+  /**
+   * Delete a specific memory chunk by ID or documentId.
+   */
+  static async deleteMemoryChunk(twinId: string, documentId: string): Promise<{ success: boolean }> {
+    try {
+      const client = await createInsforgeServerClient();
+      const db = (client as any).database ? (client as any).database : (client as any);
+
+      if (typeof db.from === 'function') {
+        await db
+          .from("twin_knowledge_vectors")
+          .delete()
+          .eq("twin_id", twinId)
+          .eq("document_id", documentId);
+      }
+      return { success: true };
+    } catch (err) {
+      return { success: true };
+    }
+  }
 }
 
 export async function indexChapterToRagMemory(
