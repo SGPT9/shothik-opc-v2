@@ -65,16 +65,14 @@ grant select, insert, update, delete on public.hermes_sessions to authenticated;
 -- Add foreign key constraint for sessionId if it doesn't exist
 do $$
 begin
-  if not exists (
-    select 1 from information_schema.table_constraints 
-    where table_name = 'hermes_runs' 
-    and constraint_type = 'FOREIGN KEY' 
-    and constraint_name = 'hermes_runs_sessionId_fkey'
-  ) then
+  begin
     alter table public.hermes_runs 
     add constraint hermes_runs_sessionId_fkey 
     foreign key ("sessionId") references public.hermes_sessions(id) on delete set null;
-  end if;
+  exception
+    when duplicate_object then null;
+    when others then null;
+  end;
 end$$;
 
 -- Comments for documentation
