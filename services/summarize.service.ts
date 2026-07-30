@@ -1,4 +1,4 @@
-import { executeWithGateway } from "@/lib/ai-gateway";
+import { executeWithMultiTierFallback } from "@/lib/ai-gateway";
 import { computeContentHash, getCachedResult, setCachedResult } from "@/lib/result-cache";
 import { normalizeError } from "@/lib/tool-errors";
 
@@ -46,32 +46,59 @@ export const summarizeText = async (
       return cached.data;
     }
 
-    const result = await executeWithGateway(
-      async (gatewaySignal) => {
-        const combinedSignal =
-          signal && gatewaySignal
-            ? AbortSignal.any([signal, gatewaySignal])
-            : signal || gatewaySignal;
+    const primaryFetcher = async (gatewaySignal?: AbortSignal) => {
+      const combinedSignal =
+        signal && gatewaySignal
+          ? AbortSignal.any([signal, gatewaySignal])
+          : signal || gatewaySignal;
 
-        const response = await fetch("/api/tools/summarize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: payload.text, type, length }),
-          signal: combinedSignal,
-        });
+      const response = await fetch("/api/tools/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: payload.text, type, length }),
+        signal: combinedSignal,
+      });
 
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          const err = new SummarizeServiceError(
-            errorData.error || "Failed to summarize",
-            response.status,
-            errorData
-          );
-          throw err;
-        }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const err = new SummarizeServiceError(
+          errorData.error || "Failed to summarize",
+          response.status,
+          errorData
+        );
+        throw err;
+      }
 
-        return (await response.json()) as SummarizeResponse;
-      },
+      return (await response.json()) as SummarizeResponse;
+    };
+
+    const fallbackFetcher = async (gatewaySignal?: AbortSignal) => {
+      const combinedSignal =
+        signal && gatewaySignal
+          ? AbortSignal.any([signal, gatewaySignal])
+          : signal || gatewaySignal;
+
+      const response = await fetch("/api/tools/summarize?provider=fallback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: payload.text, type, length }),
+        signal: combinedSignal,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new SummarizeServiceError(
+          errorData.error || "Fallback summarize failed",
+          response.status,
+          errorData
+        );
+      }
+
+      return (await response.json()) as SummarizeResponse;
+    };
+
+    const result = await executeWithMultiTierFallback(
+      [primaryFetcher, fallbackFetcher],
       { tool: "summarize", signal }
     );
 
