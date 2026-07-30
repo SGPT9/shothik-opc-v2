@@ -7,6 +7,7 @@ import { Loader2, Sparkles, Globe } from "lucide-react";
 import { Composer } from "@/components/chat/Composer";
 import { Transcript } from "@/components/chat/Transcript";
 import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
+import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { parseFlagshipSlashCommand } from "@/lib/chat/commands";
 import {
   getLocalDraftConversationId,
@@ -182,7 +183,7 @@ export default function ChatAgentPage() {
     enabled: chatEnabled,
   });
   const messages = messagesQuery.data;
-  const { deleteMessage } = useChatService();
+  const { deleteMessage, deleteConversation } = useChatService();
   const { conversations, error: conversationHistoryError } = useChatHistory({
     surface: "flagship",
     limit: 20,
@@ -977,6 +978,31 @@ export default function ChatAgentPage() {
 
   return (
     <div className="flex h-[calc(100dvh-64px)] w-full overflow-hidden bg-background">
+      {/* Open WebUI Left Session Sidebar */}
+      <div className="hidden md:block shrink-0 h-full">
+        <ChatSidebar
+          conversations={fallbackConversations.map(c => ({
+            _id: String(c._id),
+            title: c.title,
+            updatedAt: c.updatedAt,
+            _creationTime: c.updatedAt,
+            pinned: c.pinned,
+            modelHandle: c.modelHandle,
+            messageCount: c.messageCount,
+          }))}
+          activeConversationId={conversationId}
+          onSelectConversation={(id) => router.push(`/agents/chat?conversationId=${id}`)}
+          onNewChat={() => {
+            const nextId = user?._id ? `conv_${Date.now()}` : getLocalDraftConversationId("flagship");
+            router.push(`/agents/chat?conversationId=${nextId}`);
+          }}
+          onDeleteConversation={(id) => deleteConversation(id)}
+          onOpenParallelSpace={() => setIsParallelSpaceOpen(true)}
+          onOpenDataSheet={() => router.push("/agents/chat")}
+          onOpenWritingStudio={() => router.push("/writing-studio")}
+        />
+      </div>
+
       {/* Primary Chat Column */}
       <div className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300">
         <div className="flex-1 overflow-y-auto px-4 py-6">
