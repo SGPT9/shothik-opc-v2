@@ -18,8 +18,9 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: 'NEXT_PUBLIC_CONVEX_URL=https://placeholder.convex.cloud STRIPE_SECRET_KEY=sk_test_placeholder NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_placeholder CLERK_SECRET_KEY=sk_test_placeholder pnpm dev',
+        command: 'npx cross-env NEXT_PUBLIC_CONVEX_URL=https://dashing-mandrill-233.convex.cloud STRIPE_SECRET_KEY=sk_test_placeholder NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_placeholder CLERK_SECRET_KEY=sk_test_placeholder npx next dev --port 3000',
         url: 'http://localhost:3000',
-        reuseExistingServer: !process.env.CI,
+        reuseExistingServer: true,
+        timeout: 120000,
     },
 });
