@@ -3,9 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, Globe } from "lucide-react";
 import { Composer } from "@/components/chat/Composer";
 import { Transcript } from "@/components/chat/Transcript";
+import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 import { parseFlagshipSlashCommand } from "@/lib/chat/commands";
 import {
   getLocalDraftConversationId,
@@ -222,8 +223,8 @@ export default function ChatAgentPage() {
   }, [user?._id]);
 
   useEffect(() => {
-    if (authIsLoading || isAuthenticated) return;
-    router.replace(`/auth/login?redirect=${encodeURIComponent("/agents/chat")}`);
+    // ChatGPT / Perplexity Playground mode: unauthenticated users are welcomed into guest chat playground
+    if (authIsLoading) return;
   }, [authIsLoading, isAuthenticated, router]);
 
   useEffect(() => {
@@ -970,128 +971,135 @@ export default function ChatAgentPage() {
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div className="flex h-[calc(100dvh-64px)] items-center justify-center">
-        <div className="flex items-center gap-3 rounded-2xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Redirecting to sign in
-        </div>
-      </div>
-    );
-  }
+
+
+  const [isParallelSpaceOpen, setIsParallelSpaceOpen] = useState(false);
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-64px)]">
-      <div className="flex-1 overflow-y-auto px-4 py-6">
-        <div className="mx-auto max-w-3xl space-y-4">
-          {isEmpty ? (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
-                <Sparkles className="h-8 w-8 text-brand" />
-              </div>
-              <h2 className="mb-2 text-xl font-semibold text-foreground">{t("chat.heading")}</h2>
-              <p className="mb-8 max-w-sm text-sm text-muted-foreground">
-                {t("chat.subheading")}
-              </p>
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 w-full max-w-md">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => send(s)}
-                    className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-left text-sm text-foreground hover:bg-muted transition-colors"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <>
-              {usingRecoveredHistory ? (
-                <div className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
-                  Restored your recent chat from local recovery because server history is unavailable right now.
+    <div className="flex h-[calc(100dvh-64px)] w-full overflow-hidden bg-background">
+      {/* Primary Chat Column */}
+      <div className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300">
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="mx-auto max-w-3xl space-y-4">
+            {isEmpty ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
+                  <Sparkles className="h-8 w-8 text-brand" />
                 </div>
-              ) : null}
-              {(loading || runId || sessionId || statusText) ? (
-                <div className="mb-4 flex flex-wrap items-center gap-2 rounded-2xl border bg-muted/30 px-4 py-3 text-xs">
-                  {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                  <span className="font-medium text-foreground">{statusText || "Ready"}</span>
-                  {sessionId ? (
-                    <span className="rounded-full bg-background px-2 py-1 text-muted-foreground">
-                      Session {shortId(sessionId)}
-                    </span>
-                  ) : null}
-                  {runId ? (
-                    <span className="rounded-full bg-background px-2 py-1 text-muted-foreground">
-                      Run {shortId(runId)}
-                    </span>
-                  ) : null}
-                  {workspaceId ? (
-                    <span className="rounded-full bg-background px-2 py-1 text-muted-foreground">
-                      Workspace {shortId(workspaceId)}
-                    </span>
-                  ) : null}
-                  {artifactId ? (
-                    <span className="rounded-full bg-brand/10 px-2 py-1 text-brand">
-                      Document artifact {shortId(artifactId)}
-                    </span>
-                  ) : null}
+                <h2 className="mb-2 text-xl font-semibold text-foreground">{t("chat.heading")}</h2>
+                <p className="mb-8 max-w-sm text-sm text-muted-foreground">
+                  {t("chat.subheading")}
+                </p>
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 w-full max-w-md">
+                  {SUGGESTIONS.map((s) => (
+                    <button
+                      key={s}
+                      onClick={() => send(s)}
+                      className="rounded-xl border border-border bg-muted/40 px-4 py-3 text-left text-sm text-foreground hover:bg-muted transition-colors"
+                    >
+                      {s}
+                    </button>
+                  ))}
                 </div>
-              ) : null}
-              <Transcript
-                messages={visibleMessages as ChatMessage[]}
-                isStreaming={loading}
-                onCopy={(message) => navigator.clipboard.writeText(message.content)}
-                onDelete={(message) => deleteMessage(String(message._id))}
-                onRegenerate={(message) => {
-                  const parentPrompt = visibleMessages.find(
-                    (candidate) => String(candidate._id) === String(message.parentMessageId)
-                  );
-                  if (parentPrompt?.role === "user") {
-                    send(parentPrompt.content);
-                  }
-                }}
-                onStop={() => abortRef.current?.abort()}
-              />
-            </>
-          )}
-          <div ref={bottomRef} />
+              </div>
+            ) : (
+              <>
+                {usingRecoveredHistory ? (
+                  <div className="mb-4 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+                    Restored your recent chat from local recovery because server history is unavailable right now.
+                  </div>
+                ) : null}
+                {(loading || runId || sessionId || statusText || true) ? (
+                  <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border bg-muted/30 px-4 py-3 text-xs">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin text-brand" /> : null}
+                      <span className="font-medium text-foreground">{statusText || "Ready"}</span>
+                      {sessionId ? (
+                        <span className="rounded-full bg-background px-2 py-1 text-muted-foreground">
+                          Session {shortId(sessionId)}
+                        </span>
+                      ) : null}
+                      {runId ? (
+                        <span className="rounded-full bg-background px-2 py-1 text-muted-foreground">
+                          Run {shortId(runId)}
+                        </span>
+                      ) : null}
+                    </div>
+                    
+                    <button
+                      onClick={() => setIsParallelSpaceOpen(!isParallelSpaceOpen)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-sm transition"
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      <span>{isParallelSpaceOpen ? "Close Space" : "Open Live Agent Space"}</span>
+                    </button>
+                  </div>
+                ) : null}
+                <Transcript
+                  messages={visibleMessages as ChatMessage[]}
+                  isStreaming={loading}
+                  onCopy={(message) => navigator.clipboard.writeText(message.content)}
+                  onDelete={(message) => deleteMessage(String(message._id))}
+                  onRegenerate={(message) => {
+                    const parentPrompt = visibleMessages.find(
+                      (candidate) => String(candidate._id) === String(message.parentMessageId)
+                    );
+                    if (parentPrompt?.role === "user") {
+                      send(parentPrompt.content);
+                    }
+                  }}
+                  onStop={() => abortRef.current?.abort()}
+                />
+              </>
+            )}
+            <div ref={bottomRef} />
+          </div>
         </div>
+        <Composer
+          ref={inputRef}
+          value={input}
+          onChange={handleInputChange}
+          onSubmit={() => send()}
+          onStop={() => abortRef.current?.abort()}
+          disabled={loading}
+          isStreaming={loading}
+          placeholder={t("chat.placeholder")}
+          modelHandle={modelHandle}
+          onModelChange={setModelHandle}
+          attachments={pendingAttachments.map((attachment) => ({
+            id: attachment.id,
+            name: attachment.name,
+            preview: attachment.preview,
+            status: attachment.status,
+            error: attachment.error,
+          }))}
+          onAttachFiles={handleAttachFiles}
+          onRemoveAttachment={handleRemoveAttachment}
+          commandHint={
+            activeComposerCommand?.name === "spec"
+              ? {
+                  name: "spec",
+                  description: activeComposerCommand.argument || pendingAttachments.length
+                    ? "Hermes will handle this turn in spec mode."
+                    : "Add a prompt or attach a document before sending.",
+                }
+              : null
+          }
+          errorMessage={composerError}
+          footer={`${t("chat.footer")} · ${modelHandle}${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
+        />
       </div>
-      <Composer
-        ref={inputRef}
-        value={input}
-        onChange={handleInputChange}
-        onSubmit={() => send()}
-        onStop={() => abortRef.current?.abort()}
-        disabled={loading}
-        isStreaming={loading}
-        placeholder={t("chat.placeholder")}
-        modelHandle={modelHandle}
-        onModelChange={setModelHandle}
-        attachments={pendingAttachments.map((attachment) => ({
-          id: attachment.id,
-          name: attachment.name,
-          preview: attachment.preview,
-          status: attachment.status,
-          error: attachment.error,
-        }))}
-        onAttachFiles={handleAttachFiles}
-        onRemoveAttachment={handleRemoveAttachment}
-        commandHint={
-          activeComposerCommand?.name === "spec"
-            ? {
-                name: "spec",
-                description: activeComposerCommand.argument || pendingAttachments.length
-                  ? "Hermes will handle this turn in spec mode."
-                  : "Add a prompt or attach a document before sending.",
-              }
-            : null
-        }
-        errorMessage={composerError}
-        footer={`${t("chat.footer")} · ${modelHandle}${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
-      />
+
+      {/* Parallel Agent Browser Space Side Panel */}
+      {isParallelSpaceOpen && (
+        <div className="w-full md:w-[480px] lg:w-[560px] xl:w-[640px] shrink-0 h-full border-l border-border transition-all duration-300">
+          <ParallelAgentSpace
+            isOpen={isParallelSpaceOpen}
+            onClose={() => setIsParallelSpaceOpen(false)}
+            spaceTitle="Parallel Space: South Asian Market Figures"
+          />
+        </div>
+      )}
     </div>
   );
 }
