@@ -106,10 +106,13 @@ function getOrCreateCircuit(key: string, config: GatewayConfig): CircuitState {
   return state;
 }
 
+export type ExecutionMode = "realtime" | "colibri_async" | "airllm_frontier" | "deepthink_async";
+
 export interface GatewayRequestOptions {
   tool: ToolName;
   signal?: AbortSignal;
   skipCircuitBreaker?: boolean;
+  mode?: ExecutionMode;
 }
 
 export interface GatewayResult<T> {
@@ -236,6 +239,39 @@ export async function executeWithGateway<T>(
 
     throw new GatewayError(message, status, tool, retriable);
   }
+}
+
+/**
+ * Execute LLM call with 3-tier multi-provider resiliency fallback:
+ * Tier 1: Gemini 2.5 Flash / Primary Provider
+ * Tier 2: OpenRouter Gateway
+ * Tier 3: Direct Provider / Fallback
+ */
+export async function executeWithMultiTierFallback<T>(
+  providers: Array<(signal?: AbortSignal) => Promise<T>>,
+  options: GatewayRequestOptions
+): Promise<GatewayResult<T> & { tierUsed: number }> {
+  let lastError: any = null;
+
+  for (let tierIndex = 0; tierIndex < providers.length; tierIndex++) {
+    try {
+      const providerFn = providers[tierIndex];
+      const result = await executeWithGateway(providerFn, {
+        ...options,
+        skipCircuitBreaker: options.skipCircuitBreaker ?? (tierIndex > 0),
+      });
+
+      return {
+        ...result,
+        tierUsed: tierIndex + 1,
+      };
+    } catch (err: any) {
+      lastError = err;
+      logger.warn(`Gateway Tier ${tierIndex + 1} failed for ${options.tool}: ${err?.message || err}. Trying next tier...`);
+    }
+  }
+
+  throw lastError || new GatewayError("All AI Gateway provider tiers failed.", 503, options.tool, true);
 }
 
 export function getCircuitStatus(tool: ToolName): {
