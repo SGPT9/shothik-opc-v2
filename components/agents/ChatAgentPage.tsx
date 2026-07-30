@@ -1097,6 +1097,7 @@ export default function ChatAgentPage() {
             isOpen={isParallelSpaceOpen}
             onClose={() => setIsParallelSpaceOpen(false)}
             spaceTitle="Parallel Space: South Asian Market Figures"
+            onSendToChat={(tableText) => setInput(tableText)}
           />
         </div>
       )}
