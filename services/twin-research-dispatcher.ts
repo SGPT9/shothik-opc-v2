@@ -55,4 +55,34 @@ export class TwinResearchDispatcher {
       pdfUrl: `/api/latex/export/${taskId}`,
     };
   }
+
+  /**
+   * Process pending /community forum mentions on heartbeat cycles
+   * if twinCommunityRole auto_heartbeat governance is enabled.
+   */
+  static async processHeartbeatCommunityMentions(twinId: string, mentions: Array<{ mentionId: string; forumId: string; author: string; content: string }>) {
+    const { isTwinAutoHeartbeatEnabled } = await import("@/lib/config/system-governance");
+    
+    if (!isTwinAutoHeartbeatEnabled()) {
+      return {
+        processed: false,
+        reason: "Twin community auto-response disabled. Manual approval required.",
+        replies: [],
+      };
+    }
+
+    const replies = mentions.map((m) => ({
+      mentionId: m.mentionId,
+      forumId: m.forumId,
+      replyContent: `Hi @${m.author}, Twin bot auto-reply via heartbeat cycle: Thanks for your mention regarding "${m.content.slice(0, 50)}...".`,
+      processedAt: new Date().toISOString(),
+    }));
+
+    return {
+      processed: true,
+      reason: "Auto-responded on heartbeat tick",
+      replies,
+    };
+  }
 }
+
