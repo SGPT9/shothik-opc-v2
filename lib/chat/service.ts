@@ -9,6 +9,12 @@ import type {
   SearchConversationsInput,
 } from "./types";
 import { isLocalDraftConversationId } from "./local-history";
+import { getGuestDeviceId } from "./guest-device-id";
+
+function guestHeaders(): HeadersInit {
+  const deviceId = getGuestDeviceId();
+  return deviceId ? { "x-chat-device-id": deviceId } : {};
+}
 
 async function readJson<T>(response: Response): Promise<T> {
   const json = await response.json().catch(() => null);
@@ -56,6 +62,7 @@ export function useConversationHistory(
       return readJson<ConversationSummary[]>(
         await fetch(`/api/chat/conversations${query ? `?${query}` : ""}`, {
           credentials: "same-origin",
+          headers: guestHeaders(),
         })
       );
     },
@@ -80,6 +87,7 @@ export function useConversationSearch(
       return readJson<ConversationSummary[]>(
         await fetch(`/api/chat/conversations?${query}`, {
           credentials: "same-origin",
+          headers: guestHeaders(),
         })
       );
     },
@@ -95,6 +103,7 @@ export function useConversation(conversationId?: string | null) {
       readJson<ConversationSummary>(
         await fetch(`/api/chat/conversations/${conversationId}`, {
           credentials: "same-origin",
+          headers: guestHeaders(),
         })
       ),
   });
@@ -118,6 +127,7 @@ export function useConversationMessages(
       readJson<ChatMessage[]>(
         await fetch(`/api/chat/conversations/${conversationId}/messages?limit=${limit}`, {
           credentials: "same-origin",
+          headers: guestHeaders(),
         })
       ),
   });
@@ -132,7 +142,7 @@ export function useChatService() {
       readJson<ConversationSummary>(
         await fetch("/api/chat/conversations", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...guestHeaders() },
           body: JSON.stringify(input),
         })
       ),
