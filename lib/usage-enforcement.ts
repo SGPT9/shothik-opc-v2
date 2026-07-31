@@ -3,13 +3,18 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { verifyAuthToken } from "./api-middleware";
 
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+
 function getConvexClient(): ConvexHttpClient | null {
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL;
-  if (!url) return null;
-  return new ConvexHttpClient(url);
+  try {
+    return new ConvexHttpClient(getSanitizedConvexUrl());
+  } catch {
+    return null;
+  }
 }
 
 const ANON_LIMITS: Record<string, number> = {
+  chat: 15,
   plagiarism: 2,
   "ai-detector": 2,
   paraphrase: 3,

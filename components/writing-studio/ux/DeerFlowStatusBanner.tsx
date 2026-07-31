@@ -9,6 +9,7 @@ export interface DeerFlowStatusBannerProps {
   activeNode: string | null;
   activeAgent: string | null;
   activeTool: string | null;
+  executionMode?: 'realtime' | 'colibri_async' | 'airllm_frontier' | 'deepthink_async';
   error?: string | null;
   className?: string;
 }
@@ -18,6 +19,7 @@ export function DeerFlowStatusBanner({
   activeNode,
   activeAgent,
   activeTool,
+  executionMode,
   error,
   className,
 }: DeerFlowStatusBannerProps) {
@@ -56,6 +58,18 @@ export function DeerFlowStatusBanner({
             <span className="bg-amber-500/20 text-amber-300 px-1.5 py-0.5 rounded text-[11px] flex items-center space-x-1">
               <Terminal className="w-3 h-3 inline" />
               <span>{activeTool}</span>
+            </span>
+          )}
+          {(executionMode === 'deepthink_async' || executionMode === 'colibri_async') && (
+            <span className="bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded text-[10px] flex items-center space-x-1 font-sans">
+              <Cpu className="w-3 h-3 inline text-purple-400" />
+              <span>Colibri MoE</span>
+            </span>
+          )}
+          {executionMode === 'airllm_frontier' && (
+            <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded text-[10px] flex items-center space-x-1 font-sans">
+              <Sparkles className="w-3 h-3 inline text-emerald-400" />
+              <span>AirLLM Kimi 2.8T</span>
             </span>
           )}
         </div>

@@ -19,7 +19,15 @@ export async function getAuthenticatedUser(): Promise<User | null> {
 }
 
 export async function getChatAuthenticatedUser(): Promise<User | null> {
-  return getInsforgeAuthenticatedUser();
+  const user = await getInsforgeAuthenticatedUser();
+  if (user) return user;
+  return {
+    _id: "guest-playground-user",
+    id: "guest-playground-user",
+    email: "guest@shothik.ai",
+    name: "Guest Playground User",
+    role: "guest",
+  } as User;
 }
 
 async function getInsforgeAuthenticatedUser(): Promise<User | null> {

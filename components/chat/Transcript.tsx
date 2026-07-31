@@ -4,6 +4,7 @@ import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, Use
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
+import { OvernightJobCard } from "./OvernightJobCard";
 import { getSlashCommandDisplayText } from "@/lib/chat/commands";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/chat/types";
@@ -82,6 +83,12 @@ export function Transcript({
                       })}
                     </div>
                   ) : null}
+                  {(message.metadata?.isOvernight || message.metadata?.executionMode === 'airllm_frontier') && (
+                    <OvernightJobCard
+                      taskTitle={displayContent}
+                      status={message.status === 'completed' ? 'completed' : message.status === 'streaming' ? 'processing' : 'queued'}
+                    />
+                  )}
                   {!isUser && (statusLabel || progress.length > 0) ? (
                     <div className="mb-3 rounded-xl border border-border/70 bg-muted/30 px-3 py-2">
                       {statusLabel ? (
@@ -122,7 +129,7 @@ export function Transcript({
                       ) : null}
                     </div>
                   ) : null}
-                  {message.contentFormat === "markdown" && !isUser ? (
+                  {!isUser ? (
                     <MarkdownMessage
                       content={
                         displayContent ||

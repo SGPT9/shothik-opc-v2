@@ -14,3 +14,4 @@ allowBuilds:
   tree-sitter: true
   tree-sitter-json: true
   unrs-resolver: true
+  workerd: set this to true or false

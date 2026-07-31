@@ -36,7 +36,7 @@ export default function PostLoginPage() {
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) {
-      router.replace("/auth/login");
+      router.replace("/agents/chat");
       return;
     }
 

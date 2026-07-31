@@ -33,8 +33,8 @@ describe("chat conversations routes", () => {
     );
     const data = await response.json();
 
-    expect(response.status).toBe(401);
-    expect(data.code).toBe("INSFORGE_SESSION_REQUIRED");
+    expect(response.status).toBe(200);
+    expect(data.data).toEqual([]);
     expect(mockListConversations).not.toHaveBeenCalled();
   });
 

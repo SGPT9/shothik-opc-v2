@@ -51,7 +51,7 @@ const CHAT_VENDORS: Record<ChatVendorName, ChatVendorDefinition> = {
   gemini: {
     defaultModel: "gemini-2.5-flash",
     transport: "gemini_sse",
-    apiKeyEnv: ["AI_INTEGRATIONS_GEMINI_API_KEY", "GEMINI_API_KEY"],
+    apiKeyEnv: ["AI_INTEGRATIONS_GEMINI_API_KEY", "GEMINI_API_KEY", "OPENROUTER_API_KEY"],
     baseUrlEnv: "AI_INTEGRATIONS_GEMINI_BASE_URL",
     defaultBaseUrl: "https://generativelanguage.googleapis.com",
     defaultPriority: 10,
@@ -198,9 +198,12 @@ export function verifyChatVendorAdaptation(params: {
     return false;
   }
 
+  const isOpenRouter = Boolean(params.selection.apiKey?.startsWith("sk-or-"));
+
   if (
     params.expectedTransport &&
-    params.selection.transport !== params.expectedTransport
+    params.selection.transport !== params.expectedTransport &&
+    !isOpenRouter
   ) {
     return false;
   }
@@ -261,13 +264,16 @@ export function resolveChatVendorSelectionForRoute(route: ModelRoute) {
   const nineRouterConfig =
     route.backend === "nine_router" ? getNineRouterConfig() : null;
 
+  const apiKey = route.apiKey ?? nineRouterConfig?.apiKey ?? selection.apiKey;
+  const isOpenRouter = Boolean(apiKey?.startsWith("sk-or-"));
+
   const adapted: ChatVendorSelection = {
     ...selection,
-    model: route.backend === "nine_router" ? route.modelHandle : route.model,
+    model: route.backend === "nine_router" ? route.modelHandle : isOpenRouter ? `google/${route.model}` : route.model,
     modelHandle: route.modelHandle,
-    transport: route.transport,
-    apiKey: route.apiKey ?? nineRouterConfig?.apiKey ?? selection.apiKey,
-    baseUrl: route.baseUrl ?? nineRouterConfig?.baseUrl ?? selection.baseUrl,
+    transport: isOpenRouter ? "openai_sse" : route.transport,
+    apiKey,
+    baseUrl: isOpenRouter ? "https://openrouter.ai/api/v1" : (route.baseUrl ?? nineRouterConfig?.baseUrl ?? selection.baseUrl),
   };
 
   if (

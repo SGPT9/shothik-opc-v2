@@ -47,7 +47,11 @@ export function useDeerFlowStream(options: UseDeerFlowStreamOptions = {}) {
   const abortControllerRef = useRef<AbortController | null>(null);
 
   const startStream = useCallback(
-    async (prompt: string, taskType: "deep_research" | "slide_generation" | "sheet_analysis" | "general" = "general", metadata: Record<string, any> = {}) => {
+    async (
+      prompt: string,
+      taskType: "deep_research" | "slide_generation" | "sheet_analysis" | "code_generation" | "overnight_deepthink" | "general" = "general",
+      metadata: Record<string, any> = {}
+    ) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }

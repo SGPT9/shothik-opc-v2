@@ -1,3 +1,5 @@
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+
 /**
  * Server-side Convex client utilities for Next.js API routes.
  *
@@ -43,7 +45,7 @@ async function runInternalMutation(
     throw new Error(`Unknown internal mutation path: ${functionPath}`);
   }
 
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL || "https://dashing-mandrill-233.convex.cloud";
+  const url = getSanitizedConvexUrl();
 
   const deployKey = process.env.CONVEX_DEPLOY_KEY;
   if (!deployKey) throw new Error("CONVEX_DEPLOY_KEY not configured — required for agent mutations");
@@ -75,7 +77,7 @@ async function runInternalQuery(
     throw new Error(`Unknown internal query path: ${functionPath}`);
   }
 
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL || "https://dashing-mandrill-233.convex.cloud";
+  const url = getSanitizedConvexUrl();
 
   const deployKey = process.env.CONVEX_DEPLOY_KEY;
   if (!deployKey) throw new Error("CONVEX_DEPLOY_KEY not configured — required for internal queries");

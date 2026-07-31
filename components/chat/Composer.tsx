@@ -1,9 +1,10 @@
 "use client";
 
-import { Paperclip, Send, Square, X } from "lucide-react";
-import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
+import { Paperclip, Send, Square, X, Rocket, Microscope, Briefcase, Moon } from "lucide-react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ChatPersona } from "@/lib/chat/types";
 
 export interface ComposerAttachment {
   id: string;
@@ -24,6 +25,10 @@ export interface ComposerProps {
   placeholder?: string;
   modelHandle?: string;
   onModelChange?: (value: string) => void;
+  persona?: ChatPersona;
+  onPersonaChange?: (persona: ChatPersona) => void;
+  isOvernight?: boolean;
+  onToggleOvernight?: (enabled: boolean) => void;
   footer?: string;
   attachments?: ComposerAttachment[];
   onAttachFiles?: (files: FileList | File[]) => void;
@@ -46,6 +51,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
   placeholder,
   modelHandle,
   onModelChange,
+  persona = "cofounder",
+  onPersonaChange,
+  isOvernight = false,
+  onToggleOvernight,
   footer,
   attachments = [],
   onAttachFiles,
@@ -69,6 +78,67 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
   return (
     <div className="border-t bg-background p-4">
       <div className="mx-auto flex max-w-3xl flex-col gap-3">
+        {/* AI Partner Persona Selector & Overnight Mode Bar */}
+        <div className="flex items-center justify-between overflow-x-auto pb-1 text-xs border-b border-border/40 mb-1">
+          <div className="flex items-center gap-1.5 font-mono">
+            <span className="text-[10px] text-muted-foreground uppercase font-bold mr-1">AI Partner:</span>
+            <button
+              type="button"
+              onClick={() => onPersonaChange?.("cofounder")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition",
+                persona === "cofounder"
+                  ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shadow-sm"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Rocket className="w-3 h-3 text-indigo-400" />
+              <span>Co-Founder</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onPersonaChange?.("researcher")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition",
+                persona === "researcher"
+                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-sm"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Microscope className="w-3 h-3 text-cyan-400" />
+              <span>Co-Researcher</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onPersonaChange?.("coworker")}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium transition",
+                persona === "coworker"
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-sm"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground"
+              )}
+            >
+              <Briefcase className="w-3 h-3 text-amber-400" />
+              <span>Co-Worker</span>
+            </button>
+          </div>
+
+          {onToggleOvernight && (
+            <button
+              type="button"
+              onClick={() => onToggleOvernight(!isOvernight)}
+              className={cn(
+                "flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono transition border",
+                isOvernight
+                  ? "bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm animate-pulse"
+                  : "bg-muted/40 text-muted-foreground border-border/40 hover:bg-muted"
+              )}
+            >
+              <Moon className="w-3 h-3 text-purple-400" />
+              <span>🌙 Tonight Engine</span>
+            </button>
+          )}
+        </div>
         {attachments.length > 0 ? (
           <div className="flex flex-wrap gap-2">
             {attachments.map((attachment) => (
