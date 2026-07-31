@@ -63,6 +63,9 @@ const securityChecks: SecurityCheck[] = [
         pathname === "/api/writing-studio/quality-check" ||
         pathname.startsWith("/api/webhooks/") ||
         pathname.startsWith("/api/vibe/") ||
+        pathname === "/api/book-agent" ||
+        pathname.startsWith("/api/tools/") ||
+        pathname === "/api/templates" ||
         isStripeWebhook;
 
       // Chat routes perform their own authentication resolution and are
