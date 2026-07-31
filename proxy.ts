@@ -440,6 +440,9 @@ export async function proxy(req: NextRequest) {
       pathname.startsWith("/api/auth/") ||
       pathname.startsWith("/api/webhooks/") ||
       pathname.startsWith("/api/vibe/") ||
+      pathname === "/api/book-agent" ||
+      pathname.startsWith("/api/tools/") ||
+      pathname === "/api/templates" ||
       isStripeWebhook;
 
     const authHeader = req.headers.get("authorization");
