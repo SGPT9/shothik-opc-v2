@@ -5,7 +5,7 @@ import logger from "@/lib/logger";
 import { decodeJwt } from "jose";
 import { CREDIT_PACKS, type PackId } from "@/lib/payment-config";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
 
 function getUserIdFromToken(token: string): string | null {
   try {

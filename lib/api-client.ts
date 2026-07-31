@@ -9,7 +9,7 @@ const getToken = (): string | null => {
 const removeTokenAndRedirect = (): void => {
   if (typeof window === "undefined") return;
   localStorage.removeItem('jwt_token');
-  window.location.href = '/auth/login';
+  // In Guest Playground mode, do not force hard browser redirect to login
 };
 
 // Create an axios instance

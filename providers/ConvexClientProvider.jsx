@@ -4,7 +4,9 @@ import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
-const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL || "https://dashing-mandrill-233.convex.cloud";
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+
+const convexUrl = getSanitizedConvexUrl();
 
 const convex = new ConvexReactClient(convexUrl);
 

@@ -5,7 +5,7 @@ import { api } from "@/convex/_generated/api";
 import { defineRoute, z } from "@/lib/api-validation";
 import logger from "@/lib/logger";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 // We must read the raw body for Stripe signature verification

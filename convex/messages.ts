@@ -1,7 +1,20 @@
 import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { buildConversationPreviewForPrivacy } from "@/lib/chat/privacy";
-import type { ChatPrivacyProfile } from "@/lib/chat/types";
+
+export type ChatPrivacyProfile = {
+  retentionMode?: "zero_retention" | "standard" | "extended";
+  allowModelTraining?: boolean;
+};
+
+export function buildConversationPreviewForPrivacy(
+  content: string,
+  privacy?: Partial<ChatPrivacyProfile>,
+): string {
+  if (privacy?.retentionMode === "zero_retention") {
+    return "[Zero-retention session]";
+  }
+  return content.slice(0, 120);
+}
 
 async function requireUserId(ctx: any): Promise<string> {
   const identity = await ctx.auth.getUserIdentity();

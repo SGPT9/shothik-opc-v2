@@ -23,12 +23,14 @@ const VALID_MUTATION_PATHS = new Set([
   "bookService:setBookStatus",
 ]);
 
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+
 async function callConvex(
   endpoint: "query" | "mutation",
   functionPath: string,
   args: Record<string, unknown>
 ): Promise<unknown> {
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL || "https://dashing-mandrill-233.convex.cloud";
+  const url = getSanitizedConvexUrl();
 
   const deployKey = process.env.CONVEX_DEPLOY_KEY;
   if (!deployKey) {

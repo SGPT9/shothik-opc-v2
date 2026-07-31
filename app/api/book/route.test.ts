@@ -39,10 +39,10 @@ const authed = { _id: 'user-1' };
 beforeEach(() => vi.clearAllMocks());
 
 describe('POST /api/book', () => {
-    it('returns 401 when unauthenticated', async () => {
+    it('creates book under guest session when unauthenticated', async () => {
         (getAuthenticatedUser as ReturnType<typeof vi.fn>).mockResolvedValue(null);
         const res: any = await POST(req({ title: 'T', document: 'x' }));
-        expect(res.status).toBe(401);
+        expect(res.status).toBe(201);
     });
 
     it('returns 400 on invalid JSON', async () => {

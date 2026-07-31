@@ -58,26 +58,24 @@ export async function POST(req: NextRequest) {
             },
             timestamp: Date.now(),
           });
-        } else if (task_type === 'sheet_analysis') {
+        } else if (task_type === 'code_generation') {
           sendEvent({
             event: 'node_start',
-            node: 'PythonREPL',
-            agent: 'DataAnalystAgent',
-            tool: 'pandas',
+            node: 'CodeInterpreter',
+            agent: 'CoderAgent',
+            tool: 'python-sandbox',
             timestamp: Date.now(),
           });
           await new Promise((r) => setTimeout(r, 400));
-
+        } else if (task_type === 'overnight_deepthink') {
           sendEvent({
-            event: 'sheet_updated',
-            node: 'PythonREPL',
-            agent: 'DataAnalystAgent',
-            data: {
-              summary: 'Calculated 5 formulas and normalized 12 rows',
-              cellsUpdated: 12,
-            },
+            event: 'node_start',
+            node: 'AirLLMStreamer',
+            agent: 'AirLLM2.8TAgent',
+            tool: 'MXFP4-PCIe-Engine',
             timestamp: Date.now(),
           });
+          await new Promise((r) => setTimeout(r, 400));
         }
 
         // 3. Stream Generated Content Tokens

@@ -99,7 +99,7 @@ describe("ChatAgentPage", () => {
     );
   });
 
-  it("redirects unauthenticated users to login before showing chat", async () => {
+  it("welcomes unauthenticated users in Guest Playground mode", () => {
     mockUseAuth.mockReturnValue({
       isAuthenticated: false,
       isLoading: false,
@@ -108,10 +108,7 @@ describe("ChatAgentPage", () => {
 
     render(<ChatAgentPage />);
 
-    expect(screen.getByText("Redirecting to sign in")).toBeInTheDocument();
-    await waitFor(() => {
-      expect(mockReplace).toHaveBeenCalledWith("/auth/login?redirect=%2Fagents%2Fchat");
-    });
+    expect(screen.queryByText("Redirecting to sign in")).not.toBeInTheDocument();
   });
 
   it("restores locally recovered chat when server history is unavailable", () => {

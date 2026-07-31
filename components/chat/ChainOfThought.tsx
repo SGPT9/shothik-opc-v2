@@ -18,10 +18,11 @@ export interface AgentReasoningStep {
 export interface ChainOfThoughtProps {
   steps: AgentReasoningStep[];
   isStreaming?: boolean;
+  executionMode?: 'realtime' | 'colibri_async' | 'airllm_frontier' | 'deepthink_async';
   className?: string;
 }
 
-export function ChainOfThought({ steps, isStreaming, className }: ChainOfThoughtProps) {
+export function ChainOfThought({ steps, isStreaming, executionMode, className }: ChainOfThoughtProps) {
   const [isOpen, setIsOpen] = useState<boolean>(true);
 
   if (!steps || steps.length === 0) return null;
@@ -47,6 +48,18 @@ export function ChainOfThought({ steps, isStreaming, className }: ChainOfThought
           <span className="text-[10px] bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded font-mono">
             {completedCount}/{steps.length} steps
           </span>
+          {(executionMode === 'colibri_async' || executionMode === 'deepthink_async') && (
+            <span className="text-[10px] bg-purple-500/20 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded font-mono flex items-center space-x-1">
+              <Cpu className="w-3 h-3 text-purple-400 inline" />
+              <span>Colibri MoE</span>
+            </span>
+          )}
+          {executionMode === 'airllm_frontier' && (
+            <span className="text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono flex items-center space-x-1">
+              <Cpu className="w-3 h-3 text-emerald-400 inline" />
+              <span>Tonight Frontier Engine</span>
+            </span>
+          )}
         </div>
 
         <div className="flex items-center space-x-2">

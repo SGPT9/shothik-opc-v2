@@ -138,9 +138,10 @@ const twinApi = api as typeof api & {
 
 export { twinApi };
 
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+
 export function createTwinClient(token?: string): ConvexHttpClient {
-  const url = process.env.NEXT_PUBLIC_CONVEX_URL || "https://dashing-mandrill-233.convex.cloud";
-  const client = new ConvexHttpClient(url);
+  const client = new ConvexHttpClient(getSanitizedConvexUrl());
   if (token) client.setAuth(token);
   return client;
 }

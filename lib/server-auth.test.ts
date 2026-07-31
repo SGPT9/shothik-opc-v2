@@ -142,7 +142,7 @@ describe("getChatAuthenticatedUser", () => {
 
     const user = await getChatAuthenticatedUser();
 
-    expect(user).toBeNull();
+    expect(user?._id).toBe("guest-playground-user");
     expect(mockLegacyGetUser).not.toHaveBeenCalled();
   });
 });

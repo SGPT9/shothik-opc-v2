@@ -16,7 +16,11 @@ const JWKS_URL = process.env.NEXT_PUBLIC_CONVEX_URL
 
 let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
 if (JWKS_URL) {
-  jwks = createRemoteJWKSet(new URL(JWKS_URL));
+  try {
+    jwks = createRemoteJWKSet(new URL(JWKS_URL));
+  } catch {
+    jwks = null;
+  }
 }
 
 export interface TwinAuthResult {
