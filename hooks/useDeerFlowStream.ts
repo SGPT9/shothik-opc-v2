@@ -29,6 +29,11 @@ export interface DeerFlowStreamState {
   slides: any[];
   sheetData: any | null;
   error: string | null;
+  /** Set when an overnight job is enqueued — use to poll /api/tonight-engine/status */
+  overnightRunId: string | null;
+  overnightStatusUrl: string | null;
+  overnightEstimatedCompletion: string | null;
+  overnightModelLabel: string | null;
 }
 
 export function useDeerFlowStream(options: UseDeerFlowStreamOptions = {}) {
@@ -42,6 +47,10 @@ export function useDeerFlowStream(options: UseDeerFlowStreamOptions = {}) {
     slides: [],
     sheetData: null,
     error: null,
+    overnightRunId: null,
+    overnightStatusUrl: null,
+    overnightEstimatedCompletion: null,
+    overnightModelLabel: null,
   });
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -69,9 +78,51 @@ export function useDeerFlowStream(options: UseDeerFlowStreamOptions = {}) {
         slides: [],
         sheetData: null,
         error: null,
+        overnightRunId: null,
+        overnightStatusUrl: null,
+        overnightEstimatedCompletion: null,
+        overnightModelLabel: null,
       });
 
       try {
+        // ── Overnight tasks: enqueue via Tonight Engine, don't stream inline ──
+        if (taskType === "overnight_deepthink") {
+          const enqueueRes = await fetch("/api/tonight-engine/enqueue", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              workspaceId: metadata.workspaceId ?? "default-workspace",
+              prompt,
+              depth: (metadata.depth as string) ?? "standard",
+              attachmentUrls: metadata.attachmentUrls ?? [],
+              notifyOnComplete: metadata.notifyOnComplete ?? false,
+            }),
+            signal: controller.signal,
+          });
+
+          if (!enqueueRes.ok) {
+            const errData = await enqueueRes.json().catch(() => ({}));
+            throw new Error(
+              (errData as any).message ?? `Overnight enqueue failed (${enqueueRes.status})`
+            );
+          }
+
+          const { data } = await enqueueRes.json();
+          setState((prev) => ({
+            ...prev,
+            isStreaming: false,
+            activeNode: "overnight_queued",
+            activeAgent: "TonightEngine",
+            overnightRunId: data.runId ?? null,
+            overnightStatusUrl: data.statusUrl ?? null,
+            overnightEstimatedCompletion: data.estimatedCompletion ?? null,
+            overnightModelLabel: data.modelLabel ?? null,
+          }));
+          options.onComplete?.(data.runId ?? "");
+          return;
+        }
+
+        // ── All other tasks: standard SSE stream ──
         const response = await fetch("/api/langgraph/stream", {
           method: "POST",
           headers: {

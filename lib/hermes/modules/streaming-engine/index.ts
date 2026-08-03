@@ -5,6 +5,7 @@
  * Uses polling for simplicity and immediate deployment readiness.
  */
 
+import { randomUUID } from "crypto";
 import { getRedis } from "@/lib/infrastructure/redis";
 import logger from "@/lib/logger";
 import type { 
@@ -155,6 +156,58 @@ export class HermesStreamingEngine {
 
   private getHotStateKey(runId: RunId): string {
     return `hermes:hot:${runId}`;
+  }
+
+  /**
+   * Emit a raw text token as a progress_update event.
+   * Used by the Tonight Engine to stream LLM output tokens into the SSE replay log.
+   */
+  async emitProgressToken(runId: RunId, token: string): Promise<void> {
+    const event = {
+      eventId: randomUUID(),
+      runId,
+      workspaceId: 'unknown', // Populated from hot-state context at read time
+      eventType: 'progress_update' as const,
+      timestamp: new Date().toISOString(),
+      sequence: 0,
+      payload: { token, isToken: true },
+      metadata: {},
+    };
+    try {
+      // Only store in replay log — no DB write for per-token events (too noisy)
+      const eventWithSeq = await this.withSequence(event);
+      await this.storeEventForReplay(eventWithSeq);
+      await this.storeRunHotState(eventWithSeq);
+    } catch {
+      // Token emit failure is non-fatal
+    }
+  }
+
+  /**
+   * Emit a structured progress event (non-token, e.g. step transitions).
+   */
+  async emitProgressEvent(
+    runId: RunId,
+    step: string,
+    payload: Record<string, unknown> = {}
+  ): Promise<void> {
+    const event = {
+      eventId: randomUUID(),
+      runId,
+      workspaceId: 'unknown',
+      eventType: 'progress_update' as const,
+      timestamp: new Date().toISOString(),
+      sequence: 0,
+      payload: { step, ...payload },
+      metadata: {},
+    };
+    try {
+      const eventWithSeq = await this.withSequence(event);
+      await this.storeEventForReplay(eventWithSeq);
+      await this.storeRunHotState(eventWithSeq);
+    } catch {
+      // Non-fatal
+    }
   }
 
   createSSEStream(runId: RunId): ReadableStream {

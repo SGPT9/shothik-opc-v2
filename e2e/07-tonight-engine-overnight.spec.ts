@@ -37,16 +37,39 @@ test.describe("TASK-CHAT-07: 🌙 Tonight Engine Overnight Batch Mode (20 Scenar
   });
 
   test("TC-TONIGHT-07: Stores scheduled task in Hermes runs table with status: 'planning'", async ({ request }) => {
-    const response = await request.get("/api/hermes/runs");
-    expect([200, 401, 403, 404, 500]).toContain(response.status());
+    // Perform a direct backend API request validation for enqueuing
+    const enqueueRes = await request.post("/api/tonight-engine/enqueue", {
+      data: {
+        workspaceId: "test-workspace-e2e",
+        prompt: "Write a comprehensive market research report on carbon capture tech",
+        depth: "standard",
+        attachmentUrls: [],
+        notifyOnComplete: false
+      }
+    });
+
+    // Accept 201 (success), 401 (unauthorized), 402 (needs credits), or 403 (forbidden)
+    expect([201, 401, 402, 403]).toContain(enqueueRes.status());
+    
+    if (enqueueRes.status() === 201) {
+      const body = await enqueueRes.json();
+      expect(body.data).toBeDefined();
+      expect(body.data.runId).toBeDefined();
+      expect(body.data.statusUrl).toBeDefined();
+      expect(body.data.streamUrl).toBeDefined();
+      expect(body.data.modelLabel).toContain("Ornith"); // VPS model verified
+    }
   });
 
   test("TC-TONIGHT-08: User can attach documents or datasets for overnight batch processing", async ({ page }) => {
     await expect(page.locator("body")).toBeVisible();
   });
 
-  test("TC-TONIGHT-09: Tonight Engine queue card displays progress status (Queued / Processing / Ready)", async ({ page }) => {
-    await expect(page.locator("body")).toBeVisible();
+  test("TC-TONIGHT-09: Tonight Engine queue card displays progress status (Queued / Processing / Ready)", async ({ request }) => {
+    // Verify status endpoint resolves correctly
+    const statusRes = await request.get("/api/tonight-engine/status/test-invalid-run");
+    // Should return 404 (Not Found), 403 (Forbidden), or 401 (Unauthorized) for fake ID
+    expect([401, 403, 404]).toContain(statusRes.status());
   });
 
   test("TC-TONIGHT-10: Email or Push notification checkbox is selectable for morning completion alert", async ({ page }) => {

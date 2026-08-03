@@ -123,6 +123,7 @@ create index if not exists idx_hermes_artifacts_workspace_id on public.hermes_ar
 create index if not exists idx_hermes_artifacts_run_id on public.hermes_artifacts("runId");
 create index if not exists idx_hermes_events_run_id on public.hermes_events("runId");
 create index if not exists idx_hermes_tool_calls_run_id on public.hermes_tool_calls("runId");
+create index if not exists idx_hermes_runs_metadata_gin on public.hermes_runs using gin(metadata);
 
 do $$
 begin
@@ -280,6 +281,31 @@ export class HermesDatabase {
         error: error instanceof Error ? error.message : String(error) 
       });
       throw error;
+    }
+  }
+
+  /**
+   * Returns runs with executionMode=overnight_deepthink that are queued or running.
+   * Used by the Tonight Engine queue to find and process pending jobs.
+   */
+  async getOvernightQueue(
+    limit: number = 20,
+  ): Promise<HermesRun[]> {
+    try {
+      const result = await hermesQuery<HermesRun>(
+        `SELECT * FROM hermes_runs
+         WHERE metadata->>'executionMode' = 'overnight_deepthink'
+           AND status IN ('created', 'planning', 'running')
+         ORDER BY "createdAt" ASC
+         LIMIT $1`,
+        [limit]
+      );
+      return result.rows;
+    } catch (error) {
+      logger.error('[hermes-db] Failed to get overnight queue', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
     }
   }
 
