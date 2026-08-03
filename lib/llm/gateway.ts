@@ -1,17 +1,17 @@
 import { logger } from '@/lib/logger';
 
-type ProviderName = 'kimi' | 'deepseek' | 'gemini';
+type ProviderName = 'kimi' | 'deepseek' | 'gemini' | 'colibri';
 type ToolName = 'humanize' | 'summarize' | 'cowriter' | 'book-agent' | 'grammar' | 'translator' | 'ai-detector' | 'paraphrase' | 'twin-task';
 
 const TOOL_ROUTING: Record<ToolName, ProviderName> = {
   humanize: 'gemini',
   summarize: 'gemini',
-  cowriter: 'gemini',
+  cowriter: 'colibri', // Local VPS Autocomplete
   'book-agent': 'gemini',
-  grammar: 'gemini',
-  translator: 'gemini',
+  grammar: 'colibri',  // Local VPS Grammar check
+  translator: 'colibri', // Local VPS Translation
   'ai-detector': 'gemini',
-  paraphrase: 'gemini',
+  paraphrase: 'colibri', // Local VPS Paraphrasing
   'twin-task': 'gemini',
 };
 
@@ -19,12 +19,14 @@ const PROVIDER_COSTS: Record<ProviderName, { input: number; output: number }> = 
   kimi:     { input: 0.6,   output: 2.5  },
   deepseek: { input: 0.14,  output: 0.28 },
   gemini:   { input: 0.075, output: 0.30 },
+  colibri:  { input: 0.0,   output: 0.0  }, // Free self-hosted VPS
 };
 
 const FALLBACK_CHAIN: Record<ProviderName, ProviderName[]> = {
   kimi:     ['kimi', 'gemini', 'deepseek'],
   deepseek: ['deepseek', 'kimi', 'gemini'],
   gemini:   ['gemini', 'deepseek', 'kimi'],
+  colibri:  ['colibri', 'gemini', 'deepseek'], // Falls back to cheap Gemini if VPS offline
 };
 
 export const TOOL_SYSTEM_INSTRUCTIONS: Partial<Record<ToolName, string>> = {
@@ -199,10 +201,50 @@ async function callGemini(request: GatewayRequest): Promise<GatewayResponse> {
   };
 }
 
+async function callColibri(request: GatewayRequest): Promise<GatewayResponse> {
+  const baseUrl = process.env.TONIGHT_ENGINE_COLIBRI_URL || 'http://187.127.125.115:8080';
+  
+  const messages = request.systemInstruction
+    ? [
+        { role: 'system', content: request.systemInstruction },
+        { role: 'user', content: request.prompt },
+      ]
+    : [{ role: 'user', content: request.prompt }];
+
+  const res = await fetch(`${baseUrl}/v1/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'qwen-moe', // Matches default Colibri qwen_moe.gguf loaded on VPS
+      messages,
+      temperature: request.temperature ?? 0.3,
+      max_tokens: request.maxTokens ?? 2000,
+    }),
+    signal: AbortSignal.timeout(10_000), // Realtime low latency constraint
+  });
+
+  if (!res.ok) throw new Error(`Colibri ${res.status}: ${await res.text()}`);
+
+  const data = await res.json();
+  const text = data.choices[0].message.content.trim();
+  const inputTokens = data.usage?.prompt_tokens || Math.ceil(request.prompt.length / 4);
+  const outputTokens = data.usage?.completion_tokens || Math.ceil(text.length / 4);
+
+  return {
+    text,
+    tokensUsed: inputTokens + outputTokens,
+    inputTokens,
+    outputTokens,
+    provider: 'colibri',
+    costUsd: 0.0, // Self-hosted
+  };
+}
+
 const PROVIDERS: Record<ProviderName, (r: GatewayRequest) => Promise<GatewayResponse>> = {
   kimi: callKimi,
   deepseek: callDeepSeek,
   gemini: callGemini,
+  colibri: callColibri,
 };
 
 const LLM_TIMEOUT_MS = 30_000;
