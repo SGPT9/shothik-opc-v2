@@ -9,6 +9,7 @@ import { randomUUID } from "crypto";
 import { getHermesDatabase } from "../../infra/db";
 import { getHermesStreamingEngine } from "../streaming-engine";
 import { getHermesArtifactManager } from "../artifact-manager";
+import { InsForgeTwinRagMemory } from "@/lib/insforge/rag-memory";
 import logger from "@/lib/logger";
 import type { 
   GenerateSlidesCommand,
@@ -61,6 +62,12 @@ export function getHermesSlidesOrchestrator(): SlidesOrchestrator {
       });
 
       try {
+        const ragContext = await InsForgeTwinRagMemory.searchWorkspaceContext(
+          command.workspaceId,
+          command.topic,
+          4
+        );
+
         // Create Hermes run record
         const run: HermesRun = {
           id: runId,
@@ -77,6 +84,7 @@ export function getHermesSlidesOrchestrator(): SlidesOrchestrator {
           },
           metadata: {
             requestId: command.requestId,
+            hasRagContext: Boolean(ragContext),
           },
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -91,10 +99,11 @@ export function getHermesSlidesOrchestrator(): SlidesOrchestrator {
           userId: command.userId as UserId,
           domain: "slides",
           title: `Slides: ${command.topic}`,
-          content: { slides: [], status: "generating" },
+          content: { slides: [], status: "generating", ragContext: ragContext || undefined },
           metadata: {
             template: command.template,
             slideCount: command.slideCount,
+            hasRagContext: Boolean(ragContext),
           },
         });
         

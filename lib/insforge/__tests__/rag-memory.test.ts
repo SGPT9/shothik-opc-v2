@@ -52,4 +52,16 @@ describe("InsForge Twin RAG Memory System", () => {
 
     expect(chapterRes.success).toBe(true);
   });
+
+  it("should support new multi-surface content types and searchWorkspaceContext", async () => {
+    await InsForgeTwinRagMemory.saveMemoryChunk({
+      twinId: "twin_delta",
+      contentType: "slide_deck",
+      title: "Q3 Market Analysis Deck",
+      content: "Slide 1: Executive Summary of Market Growth.",
+    });
+
+    const contextStr = await InsForgeTwinRagMemory.searchWorkspaceContext("twin_delta", "Market Analysis");
+    expect(typeof contextStr).toBe("string");
+  });
 });

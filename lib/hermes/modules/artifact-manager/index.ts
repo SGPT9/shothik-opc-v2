@@ -248,20 +248,40 @@ export class HermesArtifactManager {
         snapshotSize: JSON.stringify(finalArtifact.content).length
       });
 
-      logger.info('[hermes-artifacts] Artifact version created', { 
-        artifactId,
-        version: newVersion,
-        label 
-      });
-
       return finalArtifact;
     } catch (error) {
-      logger.error('[hermes-artifacts] Failed to create artifact version', { 
+      logger.error('[hermes-artifacts] Failed to create artifact version', {
         artifactId,
-        error: error instanceof Error ? error.message : String(error) 
+        error: error instanceof Error ? error.message : String(error)
       });
       throw error;
     }
+  }
+
+  /**
+   * Branch an artifact into a new independent artifact fork.
+   */
+  async branchArtifact(artifactId: ArtifactId, newTitle?: string): Promise<HermesArtifact> {
+    const existing = await this.getArtifact(artifactId);
+    if (!existing) {
+      throw new Error(`Artifact not found: ${artifactId}`);
+    }
+
+    return this.createArtifact({
+      workspaceId: existing.workspaceId,
+      runId: existing.runId,
+      userId: existing.userId,
+      domain: existing.domain,
+      title: newTitle || `${existing.title} (Fork)`,
+      description: `Branched from artifact ${existing.id} (v${existing.version})`,
+      content: { ...existing.content },
+      metadata: {
+        ...existing.metadata,
+        parentArtifactId: existing.id,
+        branchedFromVersion: existing.version,
+        branchedAt: new Date().toISOString(),
+      },
+    });
   }
 
   /**
