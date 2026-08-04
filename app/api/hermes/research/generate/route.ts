@@ -1,36 +1,33 @@
-/**
- * Hermes Deep Research Generation API
- * 
- * Provides artifact-first research report generation through the Hermes backend.
- */
-
 import { NextRequest } from "next/server";
 import { getChatAuthenticatedUser } from "@/lib/server-auth";
-import { getHermesOrchestrator } from "@/lib/hermes";
-import { z } from "zod";
+import { getHermesResearchOrchestrator } from "@/lib/hermes";
 import logger from "@/lib/logger";
-
-const GenerateResearchRequestSchema = z.object({
-  workspaceId: z.string().min(1),
-  topic: z.string().min(1),
-  depth: z.enum(["quick", "standard", "deep"]).default("standard"),
-  preferredSources: z.array(z.string()).optional(),
-  requestId: z.string().optional(),
-});
+import { z } from "zod";
 
 function unauthorized() {
   return Response.json(
     {
       error: "Authentication required",
-      code: "AUTH_REQUIRED",
-      message: "Please sign in to generate research.",
+      code: "HERMES_AUTH_REQUIRED",
+      message: "Please sign in to execute research runs.",
     },
     { status: 401 }
   );
 }
 
+const GenerateResearchRequestSchema = z.object({
+  workspaceId: z.string().min(1),
+  query: z.string().min(1).optional(),
+  topic: z.string().min(1).optional(),
+  depth: z.enum(["quick", "standard", "deep"]).optional(),
+  metadata: z.record(z.unknown()).optional(),
+}).refine((data) => !!(data.query || data.topic), {
+  message: "Either 'query' or 'topic' must be provided",
+  path: ["query"],
+});
+
 /**
- * POST /api/hermes/research/generate - Create new research artifact run
+ * POST /api/hermes/research/generate - Initiate a deep web research run
  */
 export async function POST(request: NextRequest) {
   const user = await getChatAuthenticatedUser();
@@ -39,38 +36,28 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const validated = GenerateResearchRequestSchema.parse(body);
+    const searchQuery = validated.query || validated.topic || "";
 
-    const hermes = getHermesOrchestrator();
-
-    const run = await hermes.createRun({
+    const researchOrchestrator = getHermesResearchOrchestrator();
+    const result = await researchOrchestrator.generateResearch({
       workspaceId: validated.workspaceId,
       userId: String(user._id),
-      domain: "research",
-      config: {
-        topic: validated.topic,
-        depth: validated.depth,
-        preferredSources: validated.preferredSources || [],
-      },
-      metadata: {
-        requestId: validated.requestId || `research-${Date.now()}`,
-      },
+      query: searchQuery,
+      depth: validated.depth,
+      metadata: validated.metadata,
     });
 
-    await hermes.startRun(run.id);
-
-    logger.info("[hermes-research] Research generation started", {
-      runId: run.id,
-      workspaceId: validated.workspaceId,
-      topic: validated.topic,
+    logger.info("[api] Research run dispatched successfully", {
+      runId: result.runId,
+      artifactId: result.artifactId,
       userId: String(user._id),
     });
 
     return Response.json(
       {
         data: {
-          runId: run.id,
-          streamUrl: `/api/hermes/runs/${run.id}`,
-          workspaceId: validated.workspaceId,
+          runId: result.runId,
+          artifactId: result.artifactId,
         },
       },
       { status: 201 }
@@ -87,15 +74,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    logger.error("[hermes-research] Research generation failed", {
+    logger.error("[api] Failed to start research run", {
       userId: String(user._id),
       error: error instanceof Error ? error.message : String(error),
     });
 
     return Response.json(
       {
-        error: "Failed to start research generation",
-        code: "GENERATION_ERROR",
+        error: "Failed to start research run",
+        code: "RESEARCH_RUN_ERROR",
         message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
