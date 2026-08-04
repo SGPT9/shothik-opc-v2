@@ -154,6 +154,7 @@ export default function ChatAgentPage() {
   const [composerError, setComposerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [modelHandle, setModelHandle] = useState("gemini-2.5-flash");
+  const [activeSkill, setActiveSkill] = useState("general");
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const [statusText, setStatusText] = useState<string | null>(null);
@@ -592,6 +593,7 @@ export default function ChatAgentPage() {
           surface: "flagship",
           messages: history,
           modelHandle,
+          activeSkill: activeSkill !== "general" ? activeSkill : undefined,
           context: turnContext,
           attachments: attachmentMeta,
           // Pass the current Hermes sessionId so the orchestrator can resume
@@ -976,6 +978,52 @@ export default function ChatAgentPage() {
 
   const [isParallelSpaceOpen, setIsParallelSpaceOpen] = useState(false);
 
+  const resolvedWorkspaceType = useMemo<"browser" | "sheet" | "slides" | "staging" | "editor">(() => {
+    for (let i = visibleMessages.length - 1; i >= 0; i--) {
+      const msg = visibleMessages[i];
+      const metadata = msg.metadata as any;
+      if (metadata?.workspaceType) {
+        const type = metadata.workspaceType;
+        if (type === "browser" || type === "sheet" || type === "slides" || type === "staging" || type === "editor") {
+          return type;
+        }
+      }
+    }
+    return "browser";
+  }, [visibleMessages]);
+
+  const resolvedStagingUrl = useMemo(() => {
+    for (let i = visibleMessages.length - 1; i >= 0; i--) {
+      const msg = visibleMessages[i];
+      if (msg.role === "assistant" && msg.metadata?.stagingUrl) {
+        return msg.metadata.stagingUrl;
+      }
+    }
+    return null;
+  }, [visibleMessages]);
+
+  const resolvedRunId = useMemo(() => {
+    if (runId) return runId;
+    for (let i = visibleMessages.length - 1; i >= 0; i--) {
+      const msg = visibleMessages[i];
+      if (msg.role === "assistant" && msg.metadata?.runId) {
+        return msg.metadata.runId;
+      }
+    }
+    return null;
+  }, [visibleMessages, runId]);
+
+  const resolvedSessionId = useMemo(() => {
+    if (sessionId) return sessionId;
+    for (let i = visibleMessages.length - 1; i >= 0; i--) {
+      const msg = visibleMessages[i];
+      if (msg.role === "assistant" && msg.metadata?.sessionId) {
+        return msg.metadata.sessionId;
+      }
+    }
+    return null;
+  }, [visibleMessages, sessionId]);
+
   return (
     <div className="flex h-[calc(100dvh-64px)] w-full overflow-hidden bg-background">
       {/* Open WebUI Left Session Sidebar */}
@@ -1092,6 +1140,8 @@ export default function ChatAgentPage() {
           placeholder={t("chat.placeholder")}
           modelHandle={modelHandle}
           onModelChange={setModelHandle}
+          activeSkill={activeSkill}
+          onSkillChange={setActiveSkill}
           attachments={pendingAttachments.map((attachment) => ({
             id: attachment.id,
             name: attachment.name,
@@ -1122,8 +1172,15 @@ export default function ChatAgentPage() {
           <ParallelAgentSpace
             isOpen={isParallelSpaceOpen}
             onClose={() => setIsParallelSpaceOpen(false)}
-            spaceTitle="Parallel Space: South Asian Market Figures"
-            onSendToChat={(tableText) => setInput(tableText)}
+            spaceTitle="Workspace Canvas"
+            runId={resolvedRunId}
+            sessionId={resolvedSessionId}
+            stagingUrl={resolvedStagingUrl}
+            workspaceType={resolvedWorkspaceType}
+            onCommentSelection={(text) => {
+              setInput((prev) => `${prev}\n> ${text}\n`);
+              inputRef.current?.focus();
+            }}
           />
         </div>
       )}

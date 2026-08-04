@@ -117,6 +117,8 @@ export interface ChatMessage {
     workspaceId?: string;
     artifactId?: string;
     statusLabel?: string;
+    stagingUrl?: string;
+    activeSkill?: string;
     slashCommand?: ChatSlashCommand;
     progress?: ChatTurnProgressItem[];
     inlineError?: ChatInlineError;

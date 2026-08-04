@@ -50,7 +50,9 @@
   "exclude": [
     "node_modules",
     "deer-flow-backend",
-    "prisma.config.ts"
+    "prisma.config.ts",
+    "cloudflare-worker",
+    "tmp"
   ]
 }
 

@@ -1,5 +1,6 @@
 packages:
   - "."
+  - "cloudflare-worker"
 allowBuilds:
   '@prisma/engines': true
   '@scarf/scarf': true
@@ -14,4 +15,4 @@ allowBuilds:
   tree-sitter: true
   tree-sitter-json: true
   unrs-resolver: true
-  workerd: set this to true or false
+  workerd: true

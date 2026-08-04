@@ -24,8 +24,12 @@ import { getHermesDatabase } from "@/lib/hermes/infra/db";
 import { getHermesStreamingEngine } from "@/lib/hermes/modules/streaming-engine";
 import { streamOvernightLLM, resolveOvernightModel, type OvernightDepth } from "./llm-overnight-client";
 import { getRedis } from "@/lib/infrastructure/redis";
+import { getDokployClient } from "@/lib/dokploy/dokploy-client";
+import { getGitWorkspaceClient } from "@/lib/git/git-workspace-client";
 import logger from "@/lib/logger";
 import type { RunId } from "@/lib/hermes/contracts/core";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "@/convex/_generated/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -244,45 +248,107 @@ export class TonightEngineQueue {
       // ── Step 1: Start run ───────────────────────────────────────────────
       await this.hermes.startRun(runId);
       await this._updateJobState(runId, { step: "research", progressPercent: 5 });
+      await this._logActivityToConvex(payload.userId, "overnight_research_started", prompt.slice(0, 80));
 
       // ── Step 2: Web context gathering ───────────────────────────────────
       await this.streaming.emitProgressToken(runId, "🔍 Gathering web research context…\n\n");
       const webContext = await gatherWebContext(prompt, runId);
       await this._updateJobState(runId, { step: "synthesizing", progressPercent: 25 });
 
-      // ── Step 3: Build enriched prompt ───────────────────────────────────
-      const enrichedPrompt = [
-        "## Research Task\n",
-        prompt,
-        "\n\n---\n",
-        webContext,
-        "\n\n---\n",
-        "Based on the research context above, provide a comprehensive, well-structured analysis.",
+      // ── Step 3: Stage 1 — Planning Phase ─────────────────────────────────
+      await this.streaming.emitProgressToken(runId, "📋 Formulating strategic multi-step plan…\n\n");
+      await this._updateJobState(runId, { step: "planning", progressPercent: 10 });
+
+      const plannerPrompt = [
+        "You are an expert project planner. Analyze the following research request and context, and break it down into a list of 3 sequential, modular sub-tasks to build the final response.",
+        "Your output must be a simple, valid JSON array containing exactly 3 strings representing the titles of these sequential steps.",
+        "Do not include markdown backticks or any other text around the JSON array.",
+        "Example output: [\"Task 1: Overview\", \"Task 2: Technical Deep Dive\", \"Task 3: Cost Analysis\"]",
+        "\n---",
+        `Request: "${prompt}"`,
+        "\n---",
+        webContext
       ].join("\n");
 
-      // ── Step 4: Stream LLM output ────────────────────────────────────────
-      await this.streaming.emitProgressToken(runId, "🤖 Generating deep analysis…\n\n");
-      await this._updateJobState(runId, { step: "generating", progressPercent: 30 });
+      let plannerOutput = "";
+      for await (const token of streamOvernightLLM(plannerPrompt, { depth })) {
+        plannerOutput += token;
+      }
 
-      let fullOutput = "";
-      let tokenCount = 0;
+      let subtasks: string[] = [];
+      try {
+        const cleanedJson = plannerOutput.replace(/```json/g, "").replace(/```/g, "").trim();
+        subtasks = JSON.parse(cleanedJson);
+      } catch (err) {
+        logger.warn("[tonight-engine] Failed to parse planned tasks JSON — using fallback plan", { runId, output: plannerOutput });
+        subtasks = [
+          "Phase 1: Foundation & Web Research Synthesis",
+          "Phase 2: Comparative Analysis & Deep Investigation",
+          "Phase 3: Final Recommendations & Strategic Executive Summary"
+        ];
+      }
+
+      // Output the plan checklist to the stream
+      await this.streaming.emitProgressToken(runId, "### 📋 Strategic Execution Plan:\n");
+      for (const task of subtasks) {
+        await this.streaming.emitProgressToken(runId, `• [ ] ${task}\n`);
+      }
+      await this.streaming.emitProgressToken(runId, "\n");
+
+      // ── Step 4: Stage 2 — Sequential Execution Phase ─────────────────────
+      let cumulativeOutput = "# Analysis Report\n\n";
+      let totalTokenCount = 0;
       const { model } = await resolveOvernightModel({ depth });
 
-      for await (const token of streamOvernightLLM(enrichedPrompt, { depth })) {
-        fullOutput += token;
-        tokenCount++;
+      for (let i = 0; i < subtasks.length; i++) {
+        const taskTitle = subtasks[i];
+        const stepProgress = 15 + Math.floor((i / subtasks.length) * 55);
+        await this._updateJobState(runId, { step: `executing_step_${i + 1}`, progressPercent: stepProgress });
 
-        // Emit token event every token
-        await this.streaming.emitProgressToken(runId, token);
+        await this.streaming.emitProgressToken(
+          runId,
+          `\n⚡ **Executing Step ${i + 1}/${subtasks.length}: ${taskTitle}**…\n\n`
+        );
+        await this._logActivityToConvex(payload.userId, "executing_step", taskTitle, { step: i + 1 });
 
-        // Update progress periodically (every 100 tokens)
-        if (tokenCount % 100 === 0) {
-          const progressPercent = Math.min(30 + Math.floor(tokenCount / 50), 85);
-          await this._updateJobState(runId, {
-            step: "generating",
-            progressPercent,
-          });
+        const stepPrompt = [
+          `You are an expert research analyst executing Step ${i + 1} of a 3-step research plan.`,
+          `Step Title: "${taskTitle}"`,
+          `Full Research Goal: "${prompt}"`,
+          "\n---\n",
+          `Web Context:\n${webContext}`,
+          "\n---\n",
+          i > 0 ? `Previous Sections Output:\n${cumulativeOutput}` : "",
+          `Write the response for this specific step only. Be thorough, detailed, and structure it cleanly with markdown. Do not repeat content from previous sections.`
+        ].join("\n");
+
+        let stepOutput = "";
+        for await (const token of streamOvernightLLM(stepPrompt, { depth })) {
+          stepOutput += token;
+          totalTokenCount++;
+          await this.streaming.emitProgressToken(runId, token);
         }
+
+        cumulativeOutput += `\n## ${taskTitle}\n\n${stepOutput}\n`;
+      }
+
+      // ── Step 4b: Stage 3 — Synthesis Phase ───────────────────────────────
+      await this._updateJobState(runId, { step: "synthesizing_report", progressPercent: 80 });
+      await this.streaming.emitProgressToken(runId, "\n\n✍️ Synthesizing final report & executive summary…\n\n");
+
+      const synthesisPrompt = [
+        "You are an expert editor. Synthesize the following multi-section analysis report into a final polished report.",
+        "Add a clear, professional Executive Summary at the top, and clean up any formatting or repetitiveness in the body.",
+        "Keep the full detailed sections intact, but make the report read as a cohesive document.",
+        "\n---",
+        cumulativeOutput
+      ].join("\n");
+
+      let finalReport = "";
+      for await (const token of streamOvernightLLM(synthesisPrompt, { depth })) {
+        finalReport += token;
+        totalTokenCount++;
+        await this.streaming.emitProgressToken(runId, token);
       }
 
       // ── Step 5: Save artifact ────────────────────────────────────────────
@@ -299,11 +365,11 @@ export class TonightEngineQueue {
         title: `Overnight Research: ${prompt.slice(0, 60)}${prompt.length > 60 ? "…" : ""}`,
         description: `Generated by Tonight Engine (${model.label})`,
         content: {
-          markdown: fullOutput,
+          markdown: finalReport,
           prompt,
           webContext,
           model: model.id,
-          tokenCount,
+          tokenCount: totalTokenCount,
           generatedAt: new Date().toISOString(),
         },
         metadata: {
@@ -316,12 +382,84 @@ export class TonightEngineQueue {
         version: 1,
       });
 
+      // ── Step 5b: Hybrid Staging Deploy ────────────────────────────────────
+      const containsDeployKeyword = /deploy|publish|launch|hosting|host|live/i.test(prompt);
+      let stagingUrl = "";
+      
+      if (containsDeployKeyword) {
+        await this._updateJobState(runId, { step: "deploying_staging", progressPercent: 95 });
+        await this.streaming.emitProgressToken(runId, "\n\n🚀 **[Staging Deploy] Provisioning preview container on Dokploy…**\n");
+
+        const appName = `shothik-app-${runId.slice(0, 8)}`.toLowerCase();
+        const fallbackDomain = `${appName}.shothik.app`;
+
+        const requiresDatabase = /postgres|mysql|redis|mongodb|db|drizzle|prisma/i.test(finalReport) ||
+                                 /postgres|mysql|redis|mongodb|db|drizzle|prisma/i.test(prompt);
+
+        let envVariables: Record<string, string> = {};
+
+        if (requiresDatabase) {
+          await this.streaming.emitProgressToken(runId, "🗄️ **Database dependency detected. Provisioning database instance on Dokploy…**\n");
+          try {
+            const dbName = `${appName}-db`;
+            if (process.env.DOKPLOY_API_KEY) {
+              const { connectionString } = await getDokployClient().createDatabase({
+                name: dbName,
+                type: "postgres",
+              });
+              envVariables["DATABASE_URL"] = connectionString;
+              await this.streaming.emitProgressToken(runId, `✅ **Database provisioned!** Internal connection string bound to DATABASE_URL.\n`);
+              await this._logActivityToConvex(payload.userId, "database_provisioned", dbName);
+            } else {
+              envVariables["DATABASE_URL"] = `postgresql://postgres:postgres@localhost:5432/${dbName}`;
+              await this.streaming.emitProgressToken(runId, `✅ **[Mock Mode] Database registered!** Mock connection string bound to DATABASE_URL.\n`);
+              await this._logActivityToConvex(payload.userId, "database_provisioned", dbName, { mock: true });
+            }
+          } catch (dbErr) {
+            const dbErrMsg = dbErr instanceof Error ? dbErr.message : String(dbErr);
+            logger.error("[tonight-engine] Database provisioning failed", { runId, error: dbErrMsg });
+            await this.streaming.emitProgressToken(runId, `⚠️ **Database provisioning failed, skipping database bind:** ${dbErrMsg}\n`);
+          }
+        }
+
+        try {
+          const dokploy = getDokployClient();
+          const appConfig = {
+            name: appName,
+            repository: "ahsanhab919-ux/shothik-web",
+            branch: "main",
+            domain: fallbackDomain,
+            envVariables,
+          };
+          
+          if (process.env.DOKPLOY_API_KEY) {
+            const { cleanUrl } = await dokploy.createApplication(appConfig);
+            stagingUrl = cleanUrl ? `https://${cleanUrl}` : `https://${fallbackDomain}`;
+            await dokploy.deployApplication(appName);
+            await this.streaming.emitProgressToken(runId, `🌐 **Live preview successfully deployed on Dokploy!**\nLink: [${stagingUrl}](${stagingUrl})\n`);
+            await this._logActivityToConvex(payload.userId, "staging_deploy_triggered", appName, { url: stagingUrl });
+          } else {
+            stagingUrl = `https://${fallbackDomain}`;
+            await this.streaming.emitProgressToken(runId, `🌐 **[Mock Mode] Live preview registered!**\nLink: [${stagingUrl}](${stagingUrl}) (Configure DOKPLOY_API_KEY on host VPS for live deployment)\n`);
+            await this._logActivityToConvex(payload.userId, "staging_deploy_triggered", appName, { url: stagingUrl, mock: true });
+          }
+        } catch (err) {
+          const errMsg = err instanceof Error ? err.message : String(err);
+          logger.error("[tonight-engine] Staging deployment failed", { runId, error: errMsg });
+          await this.streaming.emitProgressToken(runId, `⚠️ **Staging deploy skipped:** ${errMsg}\n`);
+          await this._logActivityToConvex(payload.userId, "staging_deploy_failed", appName, { error: errMsg });
+        }
+      }
+
       // ── Step 6: Complete ─────────────────────────────────────────────────
       await this.hermes.completeRun(runId, {
         artifactId,
         artifactUrl: `/api/hermes/artifacts/${artifactId}`,
-        tokenCount,
+        tokenCount: totalTokenCount,
         modelId: model.id,
+        metadata: {
+          stagingUrl: stagingUrl || undefined,
+        }
       });
 
       await this._updateJobState(runId, {
@@ -330,13 +468,14 @@ export class TonightEngineQueue {
         artifactId,
         completedAt: new Date().toISOString(),
       });
+      await this._logActivityToConvex(payload.userId, "overnight_research_completed", `Artifact: ${artifactId}`);
 
       await this.streaming.emitProgressToken(
         runId,
         `\n\n---\n🌙 **Tonight Engine complete.** Your research artifact is ready.\n`
       );
 
-      logger.info("[tonight-engine] Job completed", { runId, artifactId, tokenCount });
+      logger.info("[tonight-engine] Job completed", { runId, artifactId, tokenCount: totalTokenCount });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error("[tonight-engine] Job failed", { runId, error: message });
@@ -347,6 +486,7 @@ export class TonightEngineQueue {
         progressPercent: 0,
         errorMessage: message,
       });
+      await this._logActivityToConvex(payload.userId, "overnight_research_failed", message);
 
       await this.streaming.emitProgressToken(
         runId,
@@ -452,6 +592,37 @@ export class TonightEngineQueue {
       }
     } catch {
       // State update failure is non-fatal
+    }
+  }
+
+  private async _logActivityToConvex(
+    userId: string,
+    action: string,
+    targetResource?: string,
+    metadata?: any
+  ): Promise<void> {
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const systemSecret = process.env.CREDIT_PURCHASE_SECRET || "dev-system-secret";
+    if (!convexUrl) return;
+
+    try {
+      const client = new ConvexHttpClient(convexUrl);
+      const twin = await client.query(api.twin.getByMasterFromSystem, {
+        masterId: userId,
+        systemSecret,
+      });
+
+      if (twin?._id) {
+        await client.mutation(api.twin.logActivityFromSystem, {
+          twinId: twin._id,
+          action,
+          targetResource,
+          metadata,
+          systemSecret,
+        });
+      }
+    } catch (err) {
+      logger.warn("[tonight-engine] Failed to sync activity log to Convex", { userId, action, error: err });
     }
   }
 }
