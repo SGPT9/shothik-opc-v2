@@ -11,12 +11,14 @@ import { getHermesStreamingEngine } from "./modules/streaming-engine";
 import { getHermesArtifactManager } from "./modules/artifact-manager";
 import { getHermesWorkspaceManager } from "./modules/workspace-manager";
 import { getHermesSlidesOrchestrator } from "./modules/slides-orchestrator";
+import { getHermesResearchOrchestrator } from "./modules/research-orchestrator";
 import logger from "@/lib/logger";
 export { getHermesCapabilityRegistry } from "./modules/capability-registry";
 export {
   getHermesCapabilityRegistry as getCapabilityRegistry,
 } from "./modules/capability-registry";
 export { resolveHermesModelRoute } from "./modules/model-router";
+export { getHermesResearchOrchestrator, type GenerateResearchCommand } from "./modules/research-orchestrator";
 
 // Frontend Client Exports
 export { hermesClient, HermesClient, HermesClientError, type ListSessionsParams, type SessionContext, type RunContext, type SessionAction, type RunAction } from "./client";

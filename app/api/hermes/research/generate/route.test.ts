@@ -5,15 +5,19 @@ vi.mock("@/lib/server-auth", () => ({
   getChatAuthenticatedUser: vi.fn(),
 }));
 
-const { mockCreateRun, mockStartRun } = vi.hoisted(() => ({
+const { mockCreateRun, mockStartRun, mockGenerateResearch } = vi.hoisted(() => ({
   mockCreateRun: vi.fn(),
   mockStartRun: vi.fn(),
+  mockGenerateResearch: vi.fn(),
 }));
 
 vi.mock("@/lib/hermes", () => ({
   getHermesOrchestrator: vi.fn(() => ({
     createRun: mockCreateRun,
     startRun: mockStartRun,
+  })),
+  getHermesResearchOrchestrator: vi.fn(() => ({
+    generateResearch: mockGenerateResearch,
   })),
 }));
 
@@ -42,7 +46,7 @@ describe("Hermes Research Generate API Route", () => {
 
   it("creates and starts a research run for authenticated user", async () => {
     mockGetChatAuthenticatedUser.mockResolvedValue({ _id: "user-1" } as any);
-    mockCreateRun.mockResolvedValue({ id: "run-res-1", workspaceId: "ws-1", domain: "research" });
+    mockGenerateResearch.mockResolvedValue({ runId: "run-res-1", artifactId: "art-res-1" });
 
     const response = await POST(
       new NextRequest("http://localhost/api/hermes/research/generate", {
@@ -54,10 +58,9 @@ describe("Hermes Research Generate API Route", () => {
 
     expect(response.status).toBe(201);
     expect(data.data.runId).toBe("run-res-1");
-    expect(mockCreateRun).toHaveBeenCalledWith(
-      expect.objectContaining({ workspaceId: "ws-1", userId: "user-1", domain: "research" })
+    expect(mockGenerateResearch).toHaveBeenCalledWith(
+      expect.objectContaining({ workspaceId: "ws-1", userId: "user-1", query: "Quantum Computing" })
     );
-    expect(mockStartRun).toHaveBeenCalledWith("run-res-1");
   });
 
   it("validates request body parameters", async () => {
@@ -71,6 +74,6 @@ describe("Hermes Research Generate API Route", () => {
     );
 
     expect(response.status).toBe(400);
-    expect(mockCreateRun).not.toHaveBeenCalled();
+    expect(mockGenerateResearch).not.toHaveBeenCalled();
   });
 });
