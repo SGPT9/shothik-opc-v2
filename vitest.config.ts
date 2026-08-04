@@ -16,6 +16,7 @@ export default defineConfig({
       '.next/**',
       'e2e/**',
       'deer-flow-backend/**',
+      'tmp/**',
     ],
     coverage: {
       provider: 'v8',

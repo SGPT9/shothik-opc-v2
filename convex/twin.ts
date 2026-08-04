@@ -1823,3 +1823,46 @@ export const twinReactToPost = mutation({
     }
   },
 });
+
+export const getByMasterFromSystem = query({
+  args: { masterId: v.string(), systemSecret: v.string() },
+  handler: async (ctx, args) => {
+    const expectedSecret = process.env.CREDIT_PURCHASE_SECRET || "dev-system-secret";
+    if (args.systemSecret !== expectedSecret) {
+      throw new Error("Unauthorized system call");
+    }
+    const twin = await ctx.db
+      .query("twins")
+      .withIndex("by_master", (q) => q.eq("masterId", args.masterId))
+      .first();
+    return twin;
+  },
+});
+
+export const logActivityFromSystem = mutation({
+  args: {
+    twinId: v.id("twins"),
+    action: v.string(),
+    targetResource: v.optional(v.string()),
+    metadata: v.optional(v.any()),
+    systemSecret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const expectedSecret = process.env.CREDIT_PURCHASE_SECRET || "dev-system-secret";
+    if (args.systemSecret !== expectedSecret) {
+      throw new Error("Unauthorized system call");
+    }
+    const twin = await ctx.db.get(args.twinId);
+    if (!twin) throw new Error("Twin not found");
+
+    return await ctx.db.insert("twin_activity_log", {
+      twinId: args.twinId,
+      masterId: twin.masterId,
+      action: args.action,
+      targetResource: args.targetResource,
+      metadata: args.metadata,
+      timestamp: Date.now(),
+    });
+  },
+});
+

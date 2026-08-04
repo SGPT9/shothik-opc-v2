@@ -9,6 +9,10 @@ vi.mock('@/lib/ai-gateway', () => ({
     const result = await fn(undefined);
     return { data: result };
   }),
+  executeWithMultiTierFallback: vi.fn(async (fetchers: Array<(signal: AbortSignal | undefined) => Promise<unknown>>, config: { tool: string; signal?: AbortSignal }) => {
+    const result = await fetchers[0](config.signal);
+    return { data: result };
+  }),
 }));
 
 vi.mock('@/lib/result-cache', () => ({

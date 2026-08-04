@@ -23,7 +23,8 @@ export async function GET(
 ) {
   const user = await getChatAuthenticatedUser();
   const deviceId = request.headers.get("x-chat-device-id");
-  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : "guest-user";
+  if (!user?._id && !deviceId) return unauthorized();
+  const effectiveUserId = user?._id ? String(user._id) : `guest-${deviceId}`;
 
   const { conversationId } = await params;
   try {
@@ -40,7 +41,8 @@ export async function PATCH(
 ) {
   const user = await getChatAuthenticatedUser();
   const deviceId = request.headers.get("x-chat-device-id");
-  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : "guest-user";
+  if (!user?._id && !deviceId) return unauthorized();
+  const effectiveUserId = user?._id ? String(user._id) : `guest-${deviceId}`;
 
   const { conversationId } = await params;
   const body = await request.json();
@@ -65,7 +67,8 @@ export async function DELETE(
 ) {
   const user = await getChatAuthenticatedUser();
   const deviceId = request.headers.get("x-chat-device-id");
-  const effectiveUserId = user?._id ? String(user._id) : deviceId ? `guest-${deviceId}` : "guest-user";
+  if (!user?._id && !deviceId) return unauthorized();
+  const effectiveUserId = user?._id ? String(user._id) : `guest-${deviceId}`;
 
   const { conversationId } = await params;
   try {
