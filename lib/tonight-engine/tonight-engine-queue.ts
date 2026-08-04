@@ -24,6 +24,8 @@ import { getHermesDatabase } from "@/lib/hermes/infra/db";
 import { getHermesStreamingEngine } from "@/lib/hermes/modules/streaming-engine";
 import { streamOvernightLLM, resolveOvernightModel, type OvernightDepth } from "./llm-overnight-client";
 import { AGENCY_PERSONAS } from "./agency-personas";
+import { OutboundMarketingService } from "./outbound-marketing";
+import { TonightGraphRuntime } from "./tonight-graph-runtime";
 import { getRedis } from "@/lib/infrastructure/redis";
 import { getDokployClient } from "@/lib/dokploy/dokploy-client";
 import { getGitWorkspaceClient } from "@/lib/git/git-workspace-client";
@@ -472,6 +474,24 @@ export class TonightEngineQueue {
         },
         version: 1,
       });
+
+      // ── Step 5a: Campaign Extractor (Outbound Leads & Social Drafts) ──────
+      try {
+        const campaignData = await OutboundMarketingService.extractAndRegisterCampaigns({
+          runId,
+          workspaceId,
+          finalReport,
+          prompt
+        });
+        if (campaignData.leadsCount > 0) {
+          await this.streaming.emitProgressToken(runId, `\n📢 **[Campaign Manager] Extracted ${campaignData.leadsCount} lead contacts.** Draft stored in campaigns directory.\n`);
+        }
+        if (campaignData.postsCount > 0) {
+          await this.streaming.emitProgressToken(runId, `\n🐦 **[Social Publisher] Extracted ${campaignData.postsCount} social media draft posts.** Saved to workspace campaigns.\n`);
+        }
+      } catch (campErr) {
+        logger.error("[tonight-engine] Outbound campaigns processing failed", { runId, error: campErr });
+      }
 
       // ── Step 5b: Hybrid Staging Deploy ────────────────────────────────────
       const containsDeployKeyword = /deploy|publish|launch|hosting|host|live/i.test(prompt);

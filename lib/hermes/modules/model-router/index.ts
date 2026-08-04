@@ -53,6 +53,7 @@ export const ModelRouteDomainSchema = z.enum([
   "ai-detector",
   "plagiarism",
   "publish",
+  "tonight-engine",
 ]);
 
 

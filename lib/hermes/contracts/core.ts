@@ -98,7 +98,8 @@ export const ArtifactDomainSchema = z.enum([
   "books",
   "ai-detector",
   "plagiarism",
-  "publish"
+  "publish",
+  "tonight-engine"
 ]);
 
 export type ArtifactDomain = z.infer<typeof ArtifactDomainSchema>;
@@ -251,12 +252,27 @@ export const HermesEventTypeSchema = z.enum([
   "document_semantics_ready",
   "export_started",
   "export_completed",
+  "graph_state_transition",
+  "swarm_topology_updated",
+  "vector_memory_indexed",
   "run_completed",
   "run_failed",
   "run_cancelled"
 ]);
 
 export type HermesEventType = z.infer<typeof HermesEventTypeSchema>;
+
+/**
+ * Ruflo Swarm Topology Schema
+ */
+export const SwarmTopologySchema = z.enum([
+  "hierarchical",
+  "mesh",
+  "coordinator",
+  "ring",
+]);
+
+export type SwarmTopology = z.infer<typeof SwarmTopologySchema>;
 
 /**
  * Enhanced Event Envelope (extends existing slides contract)

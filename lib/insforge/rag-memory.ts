@@ -4,7 +4,7 @@ export interface TwinMemoryChunk {
   id?: string;
   twinId: string;
   documentId?: string;
-  contentType: "manuscript" | "research_paper" | "story_bible" | "sheet_data";
+  contentType: "manuscript" | "research_paper" | "story_bible" | "sheet_data" | "slide_deck" | "writing_draft" | "research_report" | "tonight_run";
   title: string;
   content: string;
   metadata?: Record<string, any>;
@@ -91,6 +91,21 @@ export class InsForgeTwinRagMemory {
     } catch (err) {
       return [];
     }
+  }
+
+  /**
+   * Search RAG memory and return a formatted markdown context string for LLM prompt hydration.
+   */
+  static async searchWorkspaceContext(twinId: string, query: string, limit = 5): Promise<string> {
+    const results = await this.searchMemory(twinId, query, limit);
+    if (!results || results.length === 0) return "";
+
+    return (
+      `\n\n[Workspace RAG Knowledge Vault Context]\n` +
+      results
+        .map((r, i) => `${i + 1}. **${r.chunk.title}** (${r.chunk.contentType}):\n${r.chunk.content.slice(0, 400)}`)
+        .join("\n\n")
+    );
   }
 
   /**

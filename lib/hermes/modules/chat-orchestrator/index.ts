@@ -37,6 +37,7 @@ import type {
   ChatSyncDescriptor,
 } from "@/lib/chat/types";
 import { getHermesOrchestrator } from "@/lib/hermes";
+import { InsForgeTwinRagMemory } from "@/lib/insforge/rag-memory";
 import { getDocumentIngestionOrchestrator } from "@/lib/hermes/modules/document-ingestion-orchestrator";
 import {
   mapChatPrivacyModeToModelRouteClass,
@@ -580,6 +581,28 @@ export class ChatOrchestrator {
         role: "assistant",
         content: "Understood. I'll use this document context to inform my responses.",
       });
+    }
+
+    if (retrievalPlan.mode !== "none" || retrievalPlan.preferredSources.length > 0) {
+      try {
+        const ragContext = await InsForgeTwinRagMemory.searchWorkspaceContext(
+          workspace.id,
+          lastUserMessage.content,
+          3
+        );
+        if (ragContext) {
+          providerMessages.push({
+            role: "user",
+            content: ragContext,
+          });
+          providerMessages.push({
+            role: "assistant",
+            content: "Understood. I will synthesize these historical workspace memories for context.",
+          });
+        }
+      } catch (ragErr) {
+        // Non-blocking fallback
+      }
     }
 
     for (const m of messages) {
