@@ -299,10 +299,36 @@ export class TonightEngineQueue {
 
       let subtasks: string[] = [];
       try {
-        const cleanedJson = plannerOutput.replace(/```json/g, "").replace(/```/g, "").trim();
-        subtasks = JSON.parse(cleanedJson);
+        const firstBracket = plannerOutput.indexOf("[");
+        const lastBracket = plannerOutput.lastIndexOf("]");
+        let cleanedJson = plannerOutput;
+        if (firstBracket !== -1 && lastBracket !== -1 && lastBracket > firstBracket) {
+          cleanedJson = plannerOutput.substring(firstBracket, lastBracket + 1);
+        } else {
+          cleanedJson = plannerOutput.replace(/```json/g, "").replace(/```/g, "").trim();
+        }
+        const parsed = JSON.parse(cleanedJson);
+        if (Array.isArray(parsed) && parsed.every(item => typeof item === "string")) {
+          subtasks = parsed;
+        } else {
+          throw new Error("Parsed JSON is not an array of strings.");
+        }
       } catch (err) {
-        logger.warn("[tonight-engine] Failed to parse planned tasks JSON — using fallback plan", { runId, output: plannerOutput });
+        logger.warn("[tonight-engine] Failed to parse planned tasks JSON — attempting regex lines recovery", { runId, output: plannerOutput, error: err });
+        const lineMatches = plannerOutput.match(/"([^"\\]|\\.)*"/g) || plannerOutput.match(/'([^'\\]|\\.)*'/g);
+        if (lineMatches && lineMatches.length >= 2) {
+          subtasks = lineMatches.map(m => m.slice(1, -1).trim()).filter(Boolean);
+        } else {
+          const lines = plannerOutput.split("\n")
+            .map(line => line.replace(/^[-\*\d\.\s\[\]]+/, "").trim())
+            .filter(line => line.length > 5 && !line.includes("{") && !line.includes("}"));
+          if (lines.length >= 2) {
+            subtasks = lines.slice(0, 3);
+          }
+        }
+      }
+
+      if (!subtasks || subtasks.length < 2) {
         subtasks = [
           "Phase 1: Foundation & Web Research Synthesis",
           "Phase 2: Comparative Analysis & Deep Investigation",
