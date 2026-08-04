@@ -22,6 +22,7 @@ const EnqueueBodySchema = z.object({
   workspaceId: z.string().min(1),
   prompt: z.string().min(1).max(32_000),
   depth: z.enum(["quick", "standard", "deep"]).default("standard"),
+  activeSkill: z.string().optional(),
   attachmentUrls: z.array(z.string().url()).optional(),
   notifyOnComplete: z.boolean().optional(),
 });
@@ -129,6 +130,7 @@ export async function POST(request: NextRequest) {
       workspaceId: body.workspaceId,
       prompt: body.prompt,
       depth: body.depth,
+      activeSkill: body.activeSkill,
       attachmentUrls: body.attachmentUrls,
       notifyOnComplete: body.notifyOnComplete,
     });

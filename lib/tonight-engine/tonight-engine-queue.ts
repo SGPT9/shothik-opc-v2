@@ -23,6 +23,7 @@ import { getHermesOrchestrator } from "@/lib/hermes";
 import { getHermesDatabase } from "@/lib/hermes/infra/db";
 import { getHermesStreamingEngine } from "@/lib/hermes/modules/streaming-engine";
 import { streamOvernightLLM, resolveOvernightModel, type OvernightDepth } from "./llm-overnight-client";
+import { AGENCY_PERSONAS } from "./agency-personas";
 import { getRedis } from "@/lib/infrastructure/redis";
 import { getDokployClient } from "@/lib/dokploy/dokploy-client";
 import { getGitWorkspaceClient } from "@/lib/git/git-workspace-client";
@@ -39,6 +40,7 @@ export interface OvernightJobPayload {
   workspaceId: string;
   prompt: string;
   depth: OvernightDepth;
+  activeSkill?: string;
   attachmentUrls?: string[];
   notifyOnComplete?: boolean;
   enqueuedAt: string;
@@ -337,10 +339,17 @@ export class TonightEngineQueue {
         );
         await this._logActivityToConvex(payload.userId, "executing_step", taskTitle, { step: i + 1 });
 
+        const personaKey = payload.activeSkill || "researcher";
+        const persona = AGENCY_PERSONAS[personaKey] || AGENCY_PERSONAS["researcher"];
+
         const stepPrompt = [
-          `You are an expert research analyst executing Step ${i + 1} of a 3-step research plan.`,
+          `You are a ${persona.role} executing Step ${i + 1} of a 3-step execution plan.`,
+          `Behavioral Directives: ${persona.systemDirective}`,
+          `Guidelines to follow:`,
+          ...persona.instructions.map(ins => `• ${ins}`),
+          "\n---\n",
           `Step Title: "${taskTitle}"`,
-          `Full Research Goal: "${prompt}"`,
+          `Full Goal: "${prompt}"`,
           "\n---\n",
           `Web Context:\n${webContext}`,
           "\n---\n",
