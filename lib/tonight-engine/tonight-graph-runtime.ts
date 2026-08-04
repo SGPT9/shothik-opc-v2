@@ -6,10 +6,11 @@ import { AGENCY_PERSONAS, type AgencyPersona } from "./agency-personas";
 import { OutboundMarketingService } from "./outbound-marketing";
 import { TonightMemoryService } from "./tonight-memory-rag";
 import { SwarmRouter, ConsensusEngine } from "./swarm-router";
+import { SelfHealingRuntime } from "@/lib/infrastructure/self-healing-runtime";
 import logger from "@/lib/logger";
 import type { RunId, SwarmTopology, HermesEventEnvelope } from "@/lib/hermes/contracts/core";
 
-export type StateNode = "NODE_PLAN" | "NODE_DEEP_SCAN" | "NODE_SWARM_EXECUTE" | "NODE_VERIFY" | "NODE_SYNTHESIZE";
+export type StateNode = "NODE_PLAN" | "NODE_DEEP_SCAN" | "NODE_SWARM_EXECUTE" | "NODE_VERIFY" | "NODE_REPAIR" | "NODE_SYNTHESIZE";
 
 export interface GraphStepResult {
   node: StateNode;
@@ -135,13 +136,42 @@ ${accumulatedContext}
         accumulatedContext += `\n\n[Output from ${persona.role} (${step.personaKey})]:\n${stepOutput.slice(0, 1000)}`;
       }
 
-      // 4. NODE_VERIFY & SYNTHESIZE: Verify outputs & compile final synthesized report
+      // 4. NODE_VERIFY & REPAIR: Verify outputs & execute closed-loop self-healing repair if needed
       state.activeNode = "NODE_VERIFY";
-      const consensus = ConsensusEngine.verifyConsensus(state.swarmOutputs);
+      let consensus = ConsensusEngine.verifyConsensus(state.swarmOutputs);
       await this.emitGraphState(
         state,
         `Auditing outputs — Swarm consensus score: ${consensus.score}% (${consensus.passed ? "Verified" : "Degraded"})`
       );
+
+      if (!consensus.passed || consensus.missingPersonas.length > 0) {
+        state.activeNode = "NODE_REPAIR";
+        await this.emitGraphState(state, "Consensus degraded — triggering closed-loop self-healing repair");
+
+        for (const missingPersona of consensus.missingPersonas) {
+          const repair = await SelfHealingRuntime.attemptClosedLoopRepair({
+            runId,
+            workspaceId,
+            failedPersonaKey: missingPersona,
+            errorMessage: `Degraded output or low consensus score for persona '${missingPersona}'`,
+          });
+
+          if (repair.success) {
+            const idx = state.swarmOutputs.findIndex((s) => s.personaKey === missingPersona);
+            if (idx >= 0) {
+              state.swarmOutputs[idx].output = repair.repairedOutput;
+            } else {
+              state.swarmOutputs.push({ personaKey: missingPersona, output: repair.repairedOutput });
+            }
+          }
+        }
+
+        consensus = ConsensusEngine.verifyConsensus(state.swarmOutputs);
+        await this.emitGraphState(
+          state,
+          `Post-repair consensus score: ${consensus.score}% (${consensus.passed ? "Verified" : "Degraded"})`
+        );
+      }
 
       const coordinatorPrompt = `
 You are the Lead Swarm Coordinator compiling the final synthesized overnight report for the user.
