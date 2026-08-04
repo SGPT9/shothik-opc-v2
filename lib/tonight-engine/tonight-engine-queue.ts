@@ -141,6 +141,24 @@ async function gatherWebContext(
   }
 }
 
+async function retryWithBackoff<T>(
+  fn: () => Promise<T>,
+  retries = 3,
+  delayMs = 1500
+): Promise<T> {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === retries) throw err;
+      logger.warn(`[tonight-engine] Operation failed, retrying in ${delayMs}ms...`, { error: err });
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      delayMs *= 2;
+    }
+  }
+  throw new Error("Execution retries exhausted.");
+}
+
 // ─── Main queue service ───────────────────────────────────────────────────────
 
 export class TonightEngineQueue {
@@ -221,6 +239,8 @@ export class TonightEngineQueue {
         try {
           // Atomic increment to try and acquire a slot
           const currentActive = await this.redis.incr(activeJobsKey);
+          // Set TTL of 20 minutes to prevent permanent ghost lock on crash
+          await this.redis.expire(activeJobsKey, 1200);
           if (currentActive <= maxConcurrent) {
             // Acquired slot
             break;
@@ -252,7 +272,7 @@ export class TonightEngineQueue {
 
       // ── Step 2: Web context gathering ───────────────────────────────────
       await this.streaming.emitProgressToken(runId, "🔍 Gathering web research context…\n\n");
-      const webContext = await gatherWebContext(prompt, runId);
+      const webContext = await retryWithBackoff(() => gatherWebContext(prompt, runId));
       await this._updateJobState(runId, { step: "synthesizing", progressPercent: 25 });
 
       // ── Step 3: Stage 1 — Planning Phase ─────────────────────────────────
@@ -301,6 +321,12 @@ export class TonightEngineQueue {
       const { model } = await resolveOvernightModel({ depth });
 
       for (let i = 0; i < subtasks.length; i++) {
+        // Check abort status before starting task
+        const activeRun = await this.db.getRun(runId);
+        if (activeRun?.status === "cancelled" || activeRun?.status === "failed") {
+          throw new Error("Job execution aborted by user cancel signal.");
+        }
+
         const taskTitle = subtasks[i];
         const stepProgress = 15 + Math.floor((i / subtasks.length) * 55);
         await this._updateJobState(runId, { step: `executing_step_${i + 1}`, progressPercent: stepProgress });
@@ -423,10 +449,13 @@ export class TonightEngineQueue {
         }
 
         try {
+          const workspace = await this.db.getWorkspace(workspaceId);
+          const repository = (workspace?.metadata?.repository as string) || "ahsanhab919-ux/shothik-web";
+
           const dokploy = getDokployClient();
           const appConfig = {
             name: appName,
-            repository: "ahsanhab919-ux/shothik-web",
+            repository,
             branch: "main",
             domain: fallbackDomain,
             envVariables,
