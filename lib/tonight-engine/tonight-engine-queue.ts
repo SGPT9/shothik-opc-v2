@@ -34,6 +34,11 @@ import { api } from "@/convex/_generated/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface PlanStep {
+  title: string;
+  persona: string;
+}
+
 export interface OvernightJobPayload {
   runId: RunId;
   userId: string;
@@ -282,10 +287,27 @@ export class TonightEngineQueue {
       await this._updateJobState(runId, { step: "planning", progressPercent: 10 });
 
       const plannerPrompt = [
-        "You are an expert project planner. Analyze the following research request and context, and break it down into a list of 3 sequential, modular sub-tasks to build the final response.",
-        "Your output must be a simple, valid JSON array containing exactly 3 strings representing the titles of these sequential steps.",
+        "You are an expert project planner and collaborative swarm orchestrator.",
+        "Analyze the following research request and context, and break it down into a list of 3 sequential, modular sub-tasks to build the final response.",
+        "For each sub-task, assign the most suitable specialized agent persona key from this list:",
+        "  - \"github-fixer\" (For code implementation, bug fixing, scripting)",
+        "  - \"cloud-deployer\" (For DevOps, containerization, staging configs)",
+        "  - \"db-migrator\" (For databases, SQL queries, schemas)",
+        "  - \"ui-designer\" (For design, visual hierarchy, theme systems)",
+        "  - \"security-auditor\" (For audits, checking code vulnerabilities/secrets)",
+        "  - \"product-manager\" (For product requirements, goals, stories)",
+        "  - \"test-automator\" (For Playwright, testing scripts)",
+        "  - \"seo-specialist\" (For search optimization, INP, LCP)",
+        "  - \"content-creator\" (For copywriting, documentation blog posts)",
+        "  - \"sales-outreach\" (For cold outreach, templates, proposals)",
+        "  - \"technical-writer\" (For API reference, README guides)",
+        "  - \"sre-architect\" (For SRE, alerting, error budgets)",
+        "  - \"ux-architect\" (For Tailwind layouts, CSS tokens, touch targets)",
+        "  - \"researcher\" (Default fallback, for research and calculations)",
+        "",
+        "Your output must be a simple, valid JSON array containing exactly 3 objects matching the schema: { \"title\": string, \"persona\": string }",
         "Do not include markdown backticks or any other text around the JSON array.",
-        "Example output: [\"Task 1: Overview\", \"Task 2: Technical Deep Dive\", \"Task 3: Cost Analysis\"]",
+        "Example output: [{\"title\": \"Task 1: Design Layout\", \"persona\": \"ui-designer\"}, {\"title\": \"Task 2: Implement Code\", \"persona\": \"github-fixer\"}, {\"title\": \"Task 3: Run Audit\", \"persona\": \"security-auditor\"}]",
         "\n---",
         `Request: "${prompt}"`,
         "\n---",
@@ -297,7 +319,7 @@ export class TonightEngineQueue {
         plannerOutput += token;
       }
 
-      let subtasks: string[] = [];
+      let planSteps: PlanStep[] = [];
       try {
         const firstBracket = plannerOutput.indexOf("[");
         const lastBracket = plannerOutput.lastIndexOf("]");
@@ -308,38 +330,45 @@ export class TonightEngineQueue {
           cleanedJson = plannerOutput.replace(/```json/g, "").replace(/```/g, "").trim();
         }
         const parsed = JSON.parse(cleanedJson);
-        if (Array.isArray(parsed) && parsed.every(item => typeof item === "string")) {
-          subtasks = parsed;
+        if (Array.isArray(parsed) && parsed.every(item => typeof item === "object" && typeof item.title === "string")) {
+          planSteps = parsed.map(item => ({
+            title: item.title,
+            persona: typeof item.persona === "string" ? item.persona : (payload.activeSkill || "researcher")
+          }));
         } else {
-          throw new Error("Parsed JSON is not an array of strings.");
+          throw new Error("Parsed JSON is not an array of plan step objects.");
         }
       } catch (err) {
         logger.warn("[tonight-engine] Failed to parse planned tasks JSON — attempting regex lines recovery", { runId, output: plannerOutput, error: err });
-        const lineMatches = plannerOutput.match(/"([^"\\]|\\.)*"/g) || plannerOutput.match(/'([^'\\]|\\.)*'/g);
-        if (lineMatches && lineMatches.length >= 2) {
-          subtasks = lineMatches.map(m => m.slice(1, -1).trim()).filter(Boolean);
-        } else {
-          const lines = plannerOutput.split("\n")
-            .map(line => line.replace(/^[-\*\d\.\s\[\]]+/, "").trim())
-            .filter(line => line.length > 5 && !line.includes("{") && !line.includes("}"));
-          if (lines.length >= 2) {
-            subtasks = lines.slice(0, 3);
+        const titles: string[] = [];
+        const titleMatches = plannerOutput.match(/"title"\s*:\s*"([^"]+)"/g) || plannerOutput.match(/'title'\s*:\s*'([^']+)'/g);
+        if (titleMatches && titleMatches.length >= 2) {
+          for (const match of titleMatches) {
+            const titleVal = match.split(":")[1].trim().slice(1, -1);
+            titles.push(titleVal);
           }
+        }
+        
+        if (titles.length >= 2) {
+          planSteps = titles.map(title => ({
+            title,
+            persona: payload.activeSkill || "researcher"
+          }));
         }
       }
 
-      if (!subtasks || subtasks.length < 2) {
-        subtasks = [
-          "Phase 1: Foundation & Web Research Synthesis",
-          "Phase 2: Comparative Analysis & Deep Investigation",
-          "Phase 3: Final Recommendations & Strategic Executive Summary"
+      if (!planSteps || planSteps.length < 2) {
+        planSteps = [
+          { title: "Phase 1: Foundation & Web Research Synthesis", persona: "researcher" },
+          { title: "Phase 2: Comparative Analysis & Deep Investigation", persona: "researcher" },
+          { title: "Phase 3: Final Recommendations & Strategic Executive Summary", persona: "researcher" }
         ];
       }
 
       // Output the plan checklist to the stream
       await this.streaming.emitProgressToken(runId, "### 📋 Strategic Execution Plan:\n");
-      for (const task of subtasks) {
-        await this.streaming.emitProgressToken(runId, `• [ ] ${task}\n`);
+      for (const step of planSteps) {
+        await this.streaming.emitProgressToken(runId, `• [ ] **${step.title}** (Delegated to: *${step.persona}*)\n`);
       }
       await this.streaming.emitProgressToken(runId, "\n");
 
@@ -348,24 +377,25 @@ export class TonightEngineQueue {
       let totalTokenCount = 0;
       const { model } = await resolveOvernightModel({ depth });
 
-      for (let i = 0; i < subtasks.length; i++) {
+      for (let i = 0; i < planSteps.length; i++) {
         // Check abort status before starting task
         const activeRun = await this.db.getRun(runId);
         if (activeRun?.status === "cancelled" || activeRun?.status === "failed") {
           throw new Error("Job execution aborted by user cancel signal.");
         }
 
-        const taskTitle = subtasks[i];
-        const stepProgress = 15 + Math.floor((i / subtasks.length) * 55);
+        const step = planSteps[i];
+        const taskTitle = step.title;
+        const stepProgress = 15 + Math.floor((i / planSteps.length) * 55);
         await this._updateJobState(runId, { step: `executing_step_${i + 1}`, progressPercent: stepProgress });
 
         await this.streaming.emitProgressToken(
           runId,
-          `\n⚡ **Executing Step ${i + 1}/${subtasks.length}: ${taskTitle}**…\n\n`
+          `\n⚡ **Executing Step ${i + 1}/${planSteps.length}: ${taskTitle}** (Delegated Agent: \`${step.persona}\`)…\n\n`
         );
-        await this._logActivityToConvex(payload.userId, "executing_step", taskTitle, { step: i + 1 });
+        await this._logActivityToConvex(payload.userId, "executing_step", taskTitle, { step: i + 1, agent: step.persona });
 
-        const personaKey = payload.activeSkill || "researcher";
+        const personaKey = step.persona || payload.activeSkill || "researcher";
         const persona = AGENCY_PERSONAS[personaKey] || AGENCY_PERSONAS["researcher"];
 
         const stepPrompt = [
