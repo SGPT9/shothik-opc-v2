@@ -255,6 +255,7 @@ export const HermesEventTypeSchema = z.enum([
   "graph_state_transition",
   "swarm_topology_updated",
   "vector_memory_indexed",
+  "repair_patch_applied",
   "run_completed",
   "run_failed",
   "run_cancelled"
