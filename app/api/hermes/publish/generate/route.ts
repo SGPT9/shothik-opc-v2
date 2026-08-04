@@ -7,6 +7,7 @@
 import { NextRequest } from "next/server";
 import { getChatAuthenticatedUser } from "@/lib/server-auth";
 import { getHermesOrchestrator } from "@/lib/hermes";
+import { CoolifyDokployDeployer } from "@/lib/infrastructure/coolify-deployer";
 import { z } from "zod";
 import logger from "@/lib/logger";
 
@@ -58,10 +59,19 @@ export async function POST(request: NextRequest) {
 
     await hermes.startRun(run.id);
 
-    logger.info("[hermes-publish] Publish job started", {
+    const deployment = await CoolifyDokployDeployer.deployWebsite({
+      workspaceId: validated.workspaceId,
+      siteTitle: validated.title || "Published Application",
+      userEmail: (user as any).email || "guest@shothik.ai",
+      provider: "coolify",
+      enableMonetization: true,
+    });
+
+    logger.info("[hermes-publish] Publish job started & site deployed live", {
       runId: run.id,
       workspaceId: validated.workspaceId,
       artifactId: validated.artifactId,
+      liveUrl: deployment.liveUrl,
       userId: String(user._id),
     });
 
@@ -71,6 +81,9 @@ export async function POST(request: NextRequest) {
           runId: run.id,
           streamUrl: `/api/hermes/runs/${run.id}`,
           workspaceId: validated.workspaceId,
+          liveUrl: deployment.liveUrl,
+          docsUrl: deployment.docsUrl,
+          deployment,
         },
       },
       { status: 201 }
