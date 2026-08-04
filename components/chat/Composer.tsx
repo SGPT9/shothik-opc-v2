@@ -239,6 +239,16 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                   <option value="cloud-deployer">🚀 Cloud Deployer</option>
                   <option value="db-migrator">🗄️ Database Migrator</option>
                   <option value="researcher">🔬 Twin Researcher</option>
+                  <option value="ui-designer">🎨 UI Designer</option>
+                  <option value="security-auditor">🛡️ Security Auditor</option>
+                  <option value="product-manager">📋 Product Manager</option>
+                  <option value="test-automator">🧪 Test Automator</option>
+                  <option value="seo-specialist">🔎 SEO Specialist</option>
+                  <option value="content-creator">📝 Content Creator</option>
+                  <option value="sales-outreach">🎯 Sales Outreach</option>
+                  <option value="technical-writer">📚 Technical Writer</option>
+                  <option value="sre-architect">🛡️ SRE Architect</option>
+                  <option value="ux-architect">🏛️ UX Architect</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
                   <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
