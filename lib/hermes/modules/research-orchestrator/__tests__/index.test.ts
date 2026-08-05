@@ -4,6 +4,7 @@ vi.mock("../../../infra/db", () => ({
   getHermesDatabase: vi.fn(() => ({
     createRun: vi.fn().mockResolvedValue({ id: "run_mock_123" }),
     updateRun: vi.fn().mockResolvedValue({ status: "completed" }),
+    updateRunStatus: vi.fn().mockResolvedValue({ status: "completed" }),
   })),
 }));
 
