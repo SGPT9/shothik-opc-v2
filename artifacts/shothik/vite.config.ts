@@ -76,7 +76,7 @@ export default defineConfig({
       'next/server': path.resolve(import.meta.dirname, 'src/lib/stubs/next-server.ts'),
       'next': path.resolve(import.meta.dirname, 'src/lib/stubs/next-root.ts'),
       // "motion" package is not installed; framer-motion provides the same API
-      'motion/react-client': 'framer-motion',
+      'motion/react-client': path.resolve(import.meta.dirname, 'src/lib/stubs/motion-react-client.ts'),
       'motion/react': 'framer-motion',
     },
     dedupe: ['react', 'react-dom'],
@@ -100,7 +100,8 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
-      '/paraphrase': {
+      // API endpoint is /paraphrase-with-variantV2; must not swallow the /paraphrase page route
+      '/paraphrase-with-variant': {
         target: externalApiOrigin,
         changeOrigin: true,
         secure: false,
