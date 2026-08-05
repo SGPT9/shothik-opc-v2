@@ -4,4 +4,5 @@
 - [Gemini model availability](gemini-model-availability.md) — new GEMINI_API_KEYs 404 on 2.x models despite ListModels; use gemini-flash-latest; no AI-integrations callback here.
 - [Convex connection](convex-connection.md) — frontend live on dashing-mandrill-233 via VITE_CONVEX_URL; deploy-key prefix/permission pitfalls; anyApi shim is official codegen pattern.
 - [Shared db package builds](db-package-builds.md) — composite db package emits d.ts to dist; rebuild with tsc -b --force after schema changes or consumers see stale exports.
+- [Hostinger VPS deployment](vps-deployment.md) — self-hosted stack at /opt/shothik-web, Caddy HTTPS on app.shothikgpt.com; proxy via compose network, not 172.17.0.1.
 - [Live web search grounding](live-web-search-grounding.md) — use Gemini google_search grounding for live sources; DDG scraping rate-limits; keep testable logic out of the orchestrator's pg-heavy import chain.
