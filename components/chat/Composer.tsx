@@ -1,6 +1,6 @@
 "use client";
 
-import { Paperclip, Send, Square, X, Rocket, Microscope, Briefcase, Moon } from "lucide-react";
+import { Paperclip, Send, Square, X, Rocket, Microscope, Briefcase, Moon, Sparkles } from "lucide-react";
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -273,6 +273,19 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                   <span>Tonight Engine</span>
                 </button>
               )}
+
+              {/* ChatGPT LiveKit Voice Orb Mode */}
+              <button
+                type="button"
+                onClick={() => {
+                  window.location.href = "/voice";
+                }}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[11px] font-medium transition border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 shadow-sm cursor-pointer"
+                title="Launch LiveKit ChatGPT Advanced Voice Orb"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
+                <span>LiveKit Voice</span>
+              </button>
             </div>
 
             {/* Right controls: Submit or Stop Button */}
