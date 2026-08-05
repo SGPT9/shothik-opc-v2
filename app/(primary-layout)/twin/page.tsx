@@ -37,6 +37,7 @@ import {
   Sparkles,
   BookOpen,
   Bot,
+  Moon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { saveWritingStudioSeed } from "@/lib/writing-studio-seed";
@@ -1031,6 +1032,9 @@ export default function TwinPage() {
           <Tabs defaultValue="tasks">
             <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-none">
               <TabsTrigger value="tasks" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.tasks")}</TabsTrigger>
+              <TabsTrigger value="tonight" className="flex-1 min-w-[4.5rem] whitespace-nowrap flex items-center gap-1 font-semibold text-purple-400">
+                <Moon className="h-3.5 w-3.5 text-purple-400 animate-pulse" /> Tonight Engine
+              </TabsTrigger>
               <TabsTrigger value="train" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.train")}</TabsTrigger>
               <TabsTrigger value="permissions" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.permissions")}</TabsTrigger>
               <TabsTrigger value="activity" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.activity")}</TabsTrigger>
@@ -1039,6 +1043,49 @@ export default function TwinPage() {
 
             <TabsContent value="tasks">
               <TaskFeed tasks={tasks as any} onContinueInWritingStudio={handleContinueInWritingStudio} />
+            </TabsContent>
+
+            <TabsContent value="tonight">
+              <Card className="border-purple-500/30 bg-purple-950/10">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2 text-purple-300">
+                    <Moon className="h-5 w-5 text-purple-400 animate-pulse" />
+                    Tonight Engine — Overnight Autonomous Task Queue
+                  </CardTitle>
+                  <p className="text-xs text-muted-foreground">
+                    Delegate complex multi-step research, code audits, or manuscript generation to run autonomously overnight while you sleep.
+                  </p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col gap-3">
+                    <textarea
+                      id="tonight-prompt-input"
+                      rows={3}
+                      placeholder="Describe the overnight task (e.g., Run full security audit, dependency upgrade, and synthesize research paper)..."
+                      className="w-full rounded-xl border border-border bg-muted/50 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <Button
+                      onClick={async () => {
+                        const el = document.getElementById("tonight-prompt-input") as HTMLTextAreaElement;
+                        const promptVal = el?.value || "Overnight autonomous batch task";
+                        const res = await fetch("/api/tonight-engine/enqueue", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ prompt: promptVal, topology: "hierarchical" }),
+                        });
+                        if (res.ok) {
+                          alert("Overnight task enqueued into Tonight Engine queue!");
+                          if (el) el.value = "";
+                        }
+                      }}
+                      className="bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md transition"
+                    >
+                      <Moon className="h-4 w-4 mr-2" />
+                      Enqueue Overnight Task
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
 
             <TabsContent value="train">
