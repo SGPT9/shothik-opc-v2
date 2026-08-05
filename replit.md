@@ -1,45 +1,46 @@
-# [Project name]
+# Shothik AI — Replit Workspace
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+## Project Overview
 
-## Run & Operate
+**Shothik AI** is a comprehensive AI-powered writing and productivity platform. It provides tools for:
+- AI chat (multi-agent conversations)
+- Paraphrasing, humanizing AI text
+- Grammar checking, summarizing, translating
+- AI slide generation, research, plagiarism checking
+- Community forums, marketplace, agent studio
+- Writing studio, books/projects management
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
-- `pnpm run typecheck` — full typecheck across all packages
-- `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+### Architecture
 
-## Stack
+This is a **pnpm monorepo** with three artifacts:
+- `artifacts/shothik` — Main React+Vite web frontend (serves at `/`)
+- `artifacts/api-server` — Express API server (serves at `/api`)
+- `artifacts/mockup-sandbox` — Design mockup canvas
 
-- pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+### External API
 
-## Where things live
+Most API functionality proxies to `https://shothik.work` via Vite's proxy config in `artifacts/shothik/vite.config.ts`. The frontend also uses:
+- **Convex** for real-time features (URL configured via `VITE_CONVEX_URL`)
+- **Redux** for global state management
+- **TanStack Query** for server state
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+### Running the App
 
-## Architecture decisions
+The app runs via Replit workflows:
+- `artifacts/shothik: web` — starts the Vite dev server
+- `artifacts/api-server: API Server` — starts the Express backend
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+### Porting Notes
 
-## Product
+This app was ported from Next.js to Vite+React:
+- `next/navigation` → `@/lib/navigation` (wouter-based shim)
+- `next/link` → `<Link>` from wouter
+- `next/image` → `<img>` tags
+- API routes → proxied to external API via Vite config
+- Convex and InsForge are stubbed; real credentials needed in `.env`
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+## User Preferences
 
-## User preferences
-
-_Populate as you build — explicit user instructions worth remembering across sessions._
-
-## Gotchas
-
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Keep all API calls proxied to `https://shothik.work` for the external backend
+- Use oklch color values matching the Shothik design system
+- Primary color: `oklch(64.91% 0.163 163.97)` (green)
