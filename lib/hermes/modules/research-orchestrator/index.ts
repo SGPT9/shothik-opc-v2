@@ -42,7 +42,8 @@ export function getHermesResearchOrchestrator(): ResearchOrchestrator {
         workspaceId: command.workspaceId,
         userId: command.userId,
         domain: "research",
-        status: "active",
+        status: "running",
+        config: {},
         metadata: { query: command.query, depth, ...command.metadata },
       });
 
@@ -56,6 +57,7 @@ export function getHermesResearchOrchestrator(): ResearchOrchestrator {
         sequence: 1,
         timestamp: new Date().toISOString(),
         payload: { intent: command.query, depth },
+        metadata: {},
       });
 
       // 2. Query Historical Workspace RAG Context
@@ -68,6 +70,7 @@ export function getHermesResearchOrchestrator(): ResearchOrchestrator {
         sequence: 2,
         timestamp: new Date().toISOString(),
         payload: { progressPercent: 25, statusMessage: "Searching historical workspace vector memory" },
+        metadata: {},
       });
 
       const ragContext = await InsForgeTwinRagMemory.searchWorkspaceContext(command.workspaceId, command.query, 4);
@@ -82,6 +85,7 @@ export function getHermesResearchOrchestrator(): ResearchOrchestrator {
         sequence: 3,
         timestamp: new Date().toISOString(),
         payload: { progressPercent: 60, statusMessage: "Executing deep web research & source aggregation" },
+        metadata: {},
       });
 
       const researchPrompt = `
@@ -110,13 +114,11 @@ Instructions:
       await InsForgeTwinRagMemory.saveMemoryChunk({
         twinId: command.workspaceId,
         documentId: `doc_${randomUUID()}`,
-        chunkId: `rag_res_${randomUUID()}`,
+        id: `rag_res_${randomUUID()}`,
         title: `Research Report: ${command.query.slice(0, 40)}`,
-        snippet: reportMarkdown.slice(0, 300),
         content: reportMarkdown,
         contentType: "research_report",
-        tags: ["research", "deep-web", depth],
-        metadata: { runId, query: command.query },
+        metadata: { runId, query: command.query, depth },
       });
 
       // 5. Register Hermes Artifact
@@ -132,7 +134,7 @@ Instructions:
       });
 
       // 6. Complete Run
-      await db.updateRun(runId, { status: "completed" });
+      await db.updateRunStatus(runId, "completed");
 
       await streaming.emitRunEvent({
         eventId: randomUUID(),
@@ -143,6 +145,7 @@ Instructions:
         sequence: 4,
         timestamp: new Date().toISOString(),
         payload: { artifactId: artifact.id, progressPercent: 100 },
+        metadata: {},
       });
 
       logger.info("[hermes-research] Deep research run completed successfully", {
