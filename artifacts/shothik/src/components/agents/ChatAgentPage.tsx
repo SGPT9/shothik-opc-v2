@@ -23,7 +23,9 @@ import { useTranslation } from "@/i18n";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { useAuth } from "@/providers/AuthProvider";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
-import { friendlyStatusLabel, isStreamingEnabled } from "@/lib/chat/streaming";
+import { extractPlanFromPayload, friendlyStatusLabel, isStreamingEnabled } from "@/lib/chat/streaming";
+import { controlHermesRun } from "@/lib/chat/run-control";
+import { guestChatHeaders } from "@/lib/chat/guest-device-id";
 
 type PendingAttachment = ChatAttachment & {
   text: string;
@@ -101,7 +103,7 @@ function saveStoredChatMode(conversationId: string | null, mode: ComposerChatMod
   }
 }
 
-const TURN_PROGRESS_ORDER = ["mode", "queue", "session", "run", "document", "response"] as const;
+const TURN_PROGRESS_ORDER = ["mode", "queue", "session", "run", "plan", "document", "response"] as const;
 
 function upsertProgressItem(
   progress: ChatTurnProgressItem[] | undefined,
@@ -649,6 +651,13 @@ export default function ChatAgentPage() {
 
     setInput("");
     setLoading(true);
+    // Per-turn run state: each turn gets its own Hermes run, so the previous
+    // turn's runId must not leak into this one. Run controls (cancel/pause/
+    // resume) stay disabled until this turn's run_started event arrives —
+    // otherwise Stop clicked early would cancel the prior, already-completed
+    // run. The sessionId is kept: it grounds the turn on prior session
+    // context (resume_session).
+    setRunId(null);
     setStatusText(initialStatus);
     activeAssistantIdRef.current = optimisticAssistantId;
     setLiveMessages((current) => [
@@ -679,7 +688,6 @@ export default function ChatAgentPage() {
         contentFormat: "markdown",
         status: "streaming",
         metadata: {
-          runId: runId ?? undefined,
           sessionId: sessionId ?? undefined,
           workspaceId: workspaceId ?? undefined,
           artifactId: artifactId ?? undefined,
@@ -707,7 +715,9 @@ export default function ChatAgentPage() {
 
       const res = await fetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // Guest access contract: chat routes authorize unauthenticated
+        // users via the `x-chat-device-id` header (value prefixed `guest-`).
+        headers: { "Content-Type": "application/json", ...guestChatHeaders() },
         body: JSON.stringify({
           conversationId:
             conversationId && !isLocalDraftConversationId(conversationId)
@@ -720,12 +730,12 @@ export default function ChatAgentPage() {
           activeSkill: chatMode === "web-search" ? "research" : undefined,
           context: turnContext,
           attachments: attachmentMeta,
-          // Pass the current Hermes sessionId so the orchestrator can resume
-          // the same session across multiple chat turns.
+          // Resume mode: pass the current Hermes sessionId so the
+          // orchestrator grounds this turn on prior session context
+          // (resume_session). The previous turn's runId is intentionally NOT
+          // sent — each turn gets a fresh run; resuming a completed run
+          // would target stale run state.
           sessionId: sessionId ?? undefined,
-          // Pass the current Hermes runId so the orchestrator can resume
-          // the same run context across multiple chat turns.
-          runId: runId ?? undefined,
           // Document intelligence: signal an ingest intent when the turn
           // carries a document attachment, and pass the current artifactId
           // so follow-up turns can reference the durable document artifact.
@@ -779,17 +789,24 @@ export default function ChatAgentPage() {
           // replay, hot state, sequence). They carry sessionId, runId,
           // workspaceId, eventType, sequence, and payload.
           if (data.__hermes) {
-            if (data.eventType === "session_created" && data.sessionId) {
+            if (
+              (data.eventType === "session_created" ||
+                data.eventType === "session_resumed") &&
+              data.sessionId
+            ) {
+              const resumed = data.eventType === "session_resumed";
               setSessionId(data.sessionId);
               if (data.workspaceId) setWorkspaceId(data.workspaceId);
-              setStatusText("Session connected");
+              setStatusText(resumed ? "Session resumed" : "Session connected");
               patchCurrentAssistant({
-                statusLabel: "Session connected",
+                statusLabel: resumed ? "Session resumed" : "Session connected",
                 progressItem: {
                   id: "session",
                   label: "Session",
                   state: "completed",
-                  detail: "Connected to the Hermes session",
+                  detail: resumed
+                    ? "Resumed the previous session context"
+                    : "Connected to the Hermes session",
                   updatedAt: Date.now(),
                 },
                 metadata: {
@@ -824,6 +841,23 @@ export default function ChatAgentPage() {
                   workspaceId: data.workspaceId ?? workspaceId ?? undefined,
                 },
               });
+            }
+            if (data.eventType === "plan_generated") {
+              const plan = extractPlanFromPayload(data.payload);
+              if (plan) {
+                setStatusText("Plan ready");
+                patchCurrentAssistant({
+                  statusLabel: "Plan ready",
+                  progressItem: {
+                    id: "plan",
+                    label: "Plan",
+                    state: "completed",
+                    detail: plan.steps[0] ?? plan.intent ?? "Plan generated",
+                    updatedAt: Date.now(),
+                  },
+                  metadata: { plan },
+                });
+              }
             }
             if (data.eventType === "progress_update") {
               const progressMessage =
@@ -1167,6 +1201,52 @@ export default function ChatAgentPage() {
     return null;
   }, [visibleMessages, sessionId]);
 
+  // --- Hermes run control -------------------------------------------------
+  // The kill switch sends a real server-side cancel (POST
+  // /api/hermes/runs/[runId] { action: "cancel" }) in addition to aborting
+  // the local fetch, so the engine stops the run instead of streaming into
+  // a closed connection. Pause/resume use the same endpoint.
+  //
+  // Which run id is targeted:
+  // - While a turn is in flight (`loading`), only THIS turn's run id (the
+  //   `runId` state, cleared at send start and set by its run_started event)
+  //   may be targeted. Before that event arrives there is nothing to cancel
+  //   server-side — using a fallback here would cancel the previous,
+  //   already-completed run.
+  // - When no turn is in flight (e.g. a resumed conversation showing a
+  //   still-streaming persisted message), fall back to the run id persisted
+  //   in message metadata (`resolvedRunId`).
+  const [runPaused, setRunPaused] = useState(false);
+  const activeControlRunId = loading ? runId : resolvedRunId;
+
+  const handleStop = () => {
+    const targetRunId = activeControlRunId;
+    // Abort first so the UI settles immediately; the cancel POST is
+    // fire-and-forget best-effort against the engine.
+    abortRef.current?.abort();
+    setRunPaused(false);
+    if (targetRunId) {
+      void controlHermesRun(targetRunId, "cancel");
+    }
+  };
+
+  const handlePauseResume = async () => {
+    if (!activeControlRunId) return;
+    const action = runPaused ? "resume" : "pause";
+    const result = await controlHermesRun(activeControlRunId, action);
+    if (result.ok) {
+      setRunPaused(!runPaused);
+      setStatusText(action === "pause" ? "Run paused" : "Run resumed");
+    } else {
+      setStatusText(result.error ?? `Could not ${action} the run`);
+    }
+  };
+
+  // A new turn always starts unpaused.
+  useEffect(() => {
+    if (loading) setRunPaused(false);
+  }, [loading]);
+
   if (authIsLoading) {
     return (
       <div className="flex h-[calc(100dvh-64px)] items-center justify-center">
@@ -1226,7 +1306,16 @@ export default function ChatAgentPage() {
                             : "Ready"}
                       </span>
                     </div>
-                    
+
+                    {loading && runId ? (
+                      <button
+                        onClick={() => void handlePauseResume()}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-background hover:bg-muted text-foreground font-medium text-xs transition"
+                      >
+                        {runPaused ? "Resume run" : "Pause run"}
+                      </button>
+                    ) : null}
+
                     <button
                       onClick={() => setIsArtifactPaneOpen(!isArtifactPaneOpen)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-sm transition"
@@ -1249,7 +1338,7 @@ export default function ChatAgentPage() {
                       send(parentPrompt.content);
                     }
                   }}
-                  onStop={() => abortRef.current?.abort()}
+                  onStop={handleStop}
                   onRetry={(message) => {
                     const parentPrompt = visibleMessages.find(
                       (candidate) => String(candidate._id) === String(message.parentMessageId)
@@ -1305,7 +1394,7 @@ export default function ChatAgentPage() {
           value={input}
           onChange={handleInputChange}
           onSubmit={() => send()}
-          onStop={() => abortRef.current?.abort()}
+          onStop={handleStop}
           disabled={loading}
           isStreaming={loading}
           placeholder="What are you building?"

@@ -15,6 +15,7 @@
 
 export type ChatStreamEvent =
   | { kind: "token"; text: string }
+  | { kind: "plan"; plan: ChatTurnPlan }
   | { kind: "tool_call"; name?: string; detail?: string }
   | { kind: "status"; stage: ChatStreamStage; detail?: string }
   | { kind: "error"; message: string }
@@ -32,7 +33,72 @@ export type ChatStreamStage =
   | "cancelled"
   | "failed";
 
+/** Friendly, UI-ready summary of a Hermes `plan_generated` event. */
+export interface ChatTurnPlan {
+  intent?: string;
+  steps: string[];
+  workflow?: string;
+}
+
 const STREAMING_FLAG_STORAGE_KEY = "streaming_enabled";
+
+/**
+ * Extract a friendly plan preview from a `plan_generated` payload.
+ * Handles both upstream shapes:
+ * - `{ intent, steps }` (documented contract) where steps may be strings or
+ *   objects with a label/title/description
+ * - `{ workflow, execution }` (orchestrator variant) where execution carries
+ *   intent + retrieval plan metadata
+ */
+export function extractPlanFromPayload(payload: any): ChatTurnPlan | null {
+  if (!payload || typeof payload !== "object") return null;
+
+  const readStep = (step: any): string | null => {
+    if (typeof step === "string" && step.trim()) return step.trim();
+    if (step && typeof step === "object") {
+      const label =
+        step.label ?? step.title ?? step.description ?? step.name ?? step.message;
+      if (typeof label === "string" && label.trim()) return label.trim();
+    }
+    return null;
+  };
+
+  const steps: string[] = Array.isArray(payload.steps)
+    ? payload.steps.map(readStep).filter((s: string | null): s is string => Boolean(s))
+    : [];
+
+  const execution = payload.execution;
+  const rawIntent =
+    typeof payload.intent === "string"
+      ? payload.intent
+      : typeof payload.intent?.intentClass === "string"
+        ? payload.intent.intentClass
+        : typeof execution?.intent?.intentClass === "string"
+          ? execution.intent.intentClass
+          : undefined;
+
+  const workflow =
+    typeof payload.workflow === "string"
+      ? payload.workflow
+      : typeof execution?.workflow === "string"
+        ? execution.workflow
+        : undefined;
+
+  // Orchestrator variant carries no explicit steps — synthesize a short,
+  // friendly preview from the execution metadata so the UI still has a plan.
+  if (!steps.length && execution && typeof execution === "object") {
+    if (workflow === "spec") {
+      steps.push("Draft a specification from your prompt and attachments");
+    }
+    if (execution.retrievalPlan?.shouldRetrieve || execution.lane === "lane_1") {
+      steps.push("Gather relevant context before answering");
+    }
+    steps.push("Compose the response");
+  }
+
+  if (!steps.length && !rawIntent && !workflow) return null;
+  return { intent: rawIntent, steps, workflow };
+}
 
 /**
  * Whether incremental streaming rendering is enabled.
@@ -114,8 +180,18 @@ export function normalizeStreamEvent(data: any): ChatStreamEvent[] {
   if (data && data.__hermes) {
     switch (data.eventType) {
       case "session_created":
+      case "session_resumed":
         events.push({ kind: "status", stage: "connecting" });
         break;
+      case "plan_generated": {
+        const plan = extractPlanFromPayload(data.payload);
+        if (plan) {
+          events.push({ kind: "plan", plan });
+        } else {
+          events.push({ kind: "status", stage: "thinking" });
+        }
+        break;
+      }
       case "run_started":
         events.push({ kind: "status", stage: "thinking" });
         break;
