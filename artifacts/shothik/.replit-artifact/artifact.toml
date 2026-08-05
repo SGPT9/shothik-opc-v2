@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Shothik AI"
+description = "Shothik AI is a comprehensive AI-powered writing and productivity platform. It provides tools for paraphrasing, humanizing AI text, grammar checking, summarizing, translating, slide generation, community forums, AI chat agents, research tools, and more. Built for students, writers, and professionals who want AI assistance across their creative and academic work."
+version = "1.0.0"
+id = "artifacts/shothik"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22581
+
+[services.development]
+run = "pnpm --filter @workspace/shothik run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/shothik", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/shothik/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22581"
+BASE_PATH = "/"

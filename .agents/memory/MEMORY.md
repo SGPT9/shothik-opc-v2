@@ -1,0 +1,1 @@
+- [Next.js → Vite port conventions](nextjs-to-vite-port.md) — durable rules: alias next/* not patch files; hoist HOC routes; JSX needs .jsx for prod builds; verify with build not dev.
