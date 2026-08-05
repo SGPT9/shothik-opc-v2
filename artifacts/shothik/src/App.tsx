@@ -92,8 +92,20 @@ const TonightEnginePage = lazy(() => import('@/app-next/(dashboard)/tonight-engi
 
 // Slide layout pages
 const EditSlidesPage = lazy(() => import('@/app-next/(slide-layout)/_edit-slides/page'));
-const SlidesPage = lazy(() => import('@/app-next/(slide-layout)/slides/page'));
-const SlideSharePage = lazy(() => import('@/app-next/(slide-layout)/slide-share/[shareLink]/page'));
+const SlidesPage = lazy(async () => {
+  const [{ default: Layout }, { default: Page }] = await Promise.all([
+    import('@/app-next/(slide-layout)/slides/layout'),
+    import('@/app-next/(slide-layout)/slides/page'),
+  ]);
+  return { default: () => <Layout><Page /></Layout> };
+});
+const SlideSharePage = lazy(async () => {
+  const [{ default: Layout }, { default: Page }] = await Promise.all([
+    import('@/app-next/(slide-layout)/slide-share/[shareLink]/layout'),
+    import('@/app-next/(slide-layout)/slide-share/[shareLink]/page'),
+  ]);
+  return { default: (props: any) => <Layout><Page {...props} /></Layout> };
+});
 
 // Misc
 const SharedContentPage = lazy(() => import('@/app-next/shared/[contentType]/[shareId]/page'));

@@ -136,7 +136,8 @@ const processSheetData = (sheetData, onCellValueChange, editingCell) => {
 };
 
 export default function SharedSheetPage({ params }) {
-  const { shareId } = use(params);
+  // wouter passes route params as a plain object (not a Promise like Next 15)
+  const { shareId } = params;
   const [sharedData, setSharedData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

@@ -5,6 +5,7 @@ import { useParams } from "@/lib/navigation";
 // Convex queries stubbed for frontend-only mode — returns null (loading skeleton shown)
 function useQuery(_ref: unknown, _args?: unknown) { return null; }
 function useMutation(_ref: unknown) { return async (..._args: unknown[]) => { console.log("[stub] mutation called — backend not connected"); }; }
+import { api } from "@/convex/_generated/api";
 import { useSelector } from "react-redux";
 import { Link } from "wouter";
 import {

@@ -1,9 +1,8 @@
 import ArticleDetailClient from "@/components/(secondary-layout)/(blogs-page)/ArticleDetailClient";
 
-export default async function ArticleDetail({ params }) {
-  // In Next.js 15+, params is a Promise
-  const resolvedParams = await params;
-  const slug = resolvedParams?.slug;
+export default function ArticleDetail({ params }) {
+  // wouter passes params as a plain object (not a Promise like Next 15)
+  const slug = params?.slug;
 
 
   // Return client component with the resolved slug
