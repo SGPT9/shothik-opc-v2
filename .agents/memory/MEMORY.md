@@ -1,3 +1,4 @@
 - [Next.js → Vite port conventions](nextjs-to-vite-port.md) — durable rules: alias next/* not patch files; hoist HOC routes; JSX needs .jsx for prod builds; verify with build not dev.
 - [API gateway routing](api-gateway-routing.md) — /api goes to the api-server gateway, not the web artifact's vite proxy; backend-bound routes must be handled or forwarded there.
 - [Route sweep & proxy pitfalls](route-sweep-and-proxy-pitfalls.md) — headless CDP sweep via nix chromium; Vite proxy keys are prefixes and can swallow SPA page routes.
+- [Gemini model availability](gemini-model-availability.md) — new GEMINI_API_KEYs 404 on 2.x models despite ListModels; use gemini-flash-latest; no AI-integrations callback here.

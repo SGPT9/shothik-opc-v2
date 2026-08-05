@@ -95,6 +95,13 @@ export default defineConfig({
       strict: false,
     },
     proxy: {
+      // Implemented by the local api-server artifact (Express), not the external
+      // upstream. Must precede the general '/api' rule — Vite matches proxy keys
+      // in declaration order.
+      '/api/twin/seed': {
+        target: process.env.API_SERVER_ORIGIN ?? 'http://localhost:8080',
+        changeOrigin: true,
+      },
       '/api': {
         target: externalApiOrigin,
         changeOrigin: true,
