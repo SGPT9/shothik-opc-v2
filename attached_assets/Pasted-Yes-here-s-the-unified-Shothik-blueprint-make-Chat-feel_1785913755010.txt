@@ -1,0 +1,124 @@
+Yes — here’s the unified Shothik blueprint: make Chat feel like Perplexity’s answer engine, structure the workspace more like Open WebUI, use Vane as a search-first UI/code reference, and keep Voice as a dedicated popup experience that returns results into the same thread. Perplexity’s Deep Research emphasizes iterative multi-search planning and structured reports, Open WebUI validates chat-centered extensibility with files/tools/connectors, and ChatGPT Voice shows that voice works best when it can be launched from the composer and then return a transcript into chat. [docs.openwebui](https://docs.openwebui.com/features/)
+
+## Product model
+
+Shothik should be a unified AI workspace with three visible pillars: Chat for fast answers and search, Twin for autonomous long-running research/workflows, and Artifacts for rendered outputs like slides, sheets, markdown reports, and PDFs. Perplexity-style research products now separate quick answers from deeper iterative investigations, while Open WebUI-style systems show that users also expect files, tools, models, and knowledge sources to remain accessible from the same shell. [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/)
+
+A strong one-line positioning is: Shothik is a research-and-creation workspace where conversation controls the work, artifacts render beside it, and autonomous systems run when the task becomes too large for a normal chat. That gives you a cleaner mental model than exposing users to raw agent jargon. [perplexity](https://www.perplexity.ai/hub/blog/deep-research-now-in-computer)
+
+## 3-fold UX
+
+Your 3-fold behavior should become a first-class product rule:
+
+| Layer | Purpose | UI behavior |
+|---|---|---|
+| Thread | Ask, refine, direct | Search answers, citations, clarifications, follow-ups, voice transcript return  [perplexity](https://www.perplexity.ai/hub/blog/deep-research-now-in-computer) |
+| Artifact pane | Render and inspect | Slides, sheets, markdown, PDF, source map, export, preview tabs  [docs.openwebui](https://docs.openwebui.com/features/) |
+| Workspace shell | Organize and connect | Sidebar nav, files, connectors, saved work, Twin runs, history, settings  [docs.openwebui](https://docs.openwebui.com/features/) |
+
+This model avoids noise because the thread stays conversational, the artifact pane stays task-specific, and the workspace shell handles persistence and system-level context. That is much cleaner than stuffing search, files, voice state, models, connectors, and render previews into one overloaded composer. [linkedin](https://www.linkedin.com/pulse/complete-guide-chatgpts-new-voice-mode-gpt-live-work-eric-eden-kgo0e)
+
+## Navigation structure
+
+The left sidebar should become a real workspace navigator, not just a chat list. Open WebUI’s materials reinforce the value of a visible workspace area for tools, knowledge, and organization, which maps directly to your missing Connectors concept. [documentation.suse](https://documentation.suse.com/suse-ai-factory/latest/html/openwebui-using/openwebui-ui.html)
+
+Recommended left sidebar:
+
+- New Chat
+- Recents
+- Deep Research
+- Files
+- Connectors
+- Skills
+- Twin
+- Saved Reports
+- Community
+- Settings
+
+“Connectors” should be a first-class item because users need to know what data Shothik can access and what sources are authorized. “Skills” should replace scary visible agent labels like General Agent, while the actual backend agent routing remains hidden. [shapeof](https://www.shapeof.ai/patterns/connectors)
+
+## Chat behavior
+
+Chat should learn from Perplexity and Vane by being answer-engine first, not chatbot-first. The ideal behavior is: ask a question, get a cited answer quickly, expand into deeper research when needed, and keep follow-up control in the same thread. Vane is explicitly an answering engine, and Perplexity Deep Research is built around iterative search, evidence gathering, and structured synthesis rather than generic assistant banter. [github](https://github.com/ItzCrazyKns/Vane)
+
+Core Chat features you need:
+
+- Search-first responses with citations and source chips. [perplexity](https://www.perplexity.ai/hub/blog/deep-research-now-in-computer)
+- Clarification prompts before launching deep research. [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/)
+- “Upgrade to Deep Research” action inside the thread. [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/)
+- In-thread artifact cards such as “Slides ready,” “Sheet created,” or “PDF report available.” [docs.openwebui](https://docs.openwebui.com/features/)
+- Follow-up actions like “turn into slides,” “export PDF,” “analyze as sheet,” and “save to project.” [docs.openwebui](https://docs.openwebui.com/features/)
+- Skill picker using user language: Research, Write, Slides, Sheet, PDF, Summarize File, Publish Draft. [docs.openwebui](https://docs.openwebui.com/features/)
+
+The composer should remain simple: prompt box, attach, mic, and a compact skill switcher. Advanced controls like model, autonomy, or source policy should stay secondary so the core UI feels calm. [linkedin](https://www.linkedin.com/pulse/complete-guide-chatgpts-new-voice-mode-gpt-live-work-eric-eden-kgo0e)
+
+## Voice model
+
+Voice should not live permanently inside the main thread chrome. ChatGPT Voice patterns show the best starting point: voice is launched from the composer, starts a focused voice session, supports microphone permissions and interruption, and leaves a transcript or text answer behind in the main chat. [wondertools.substack](https://wondertools.substack.com/p/chatgpt-avm)
+
+Recommended voice flow:
+
+1. Tap mic in composer. [linkedin](https://www.linkedin.com/pulse/complete-guide-chatgpts-new-voice-mode-gpt-live-work-eric-eden-kgo0e)
+2. Open floating voice popup with listening state, waveform, mute/end controls, and live transcript. [coursera](https://www.coursera.org/articles/what-is-chatgpt-voice-mode)
+3. Allow interruption while Shothik is speaking. [linkedin](https://www.linkedin.com/pulse/complete-guide-chatgpts-new-voice-mode-gpt-live-work-eric-eden-kgo0e)
+4. On end, inject transcript summary or final answer into the main thread. [wondertools.substack](https://wondertools.substack.com/p/chatgpt-avm)
+
+This gives you ChatGPT-like voice entry without polluting the default text chat experience. It also fits your LiveKit goal much better than trying to make the normal composer handle every voice state inline. [linkedin](https://www.linkedin.com/pulse/complete-guide-chatgpts-new-voice-mode-gpt-live-work-eric-eden-kgo0e)
+
+## Artifact system
+
+This is where Shothik can surpass the references. Open WebUI proves the workspace idea, but your product needs a stronger artifact experience for slides, sheets, markdown research, and PDFs. Users should never have to abandon chat to inspect deliverables. [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/)
+
+Right pane requirements:
+
+- Resizable split view. [docs.openwebui](https://docs.openwebui.com/features/)
+- Tabs: Preview, Source, Outline, Markdown, PDF, Sheet, Slides, Export. [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/)
+- Persistent bottom composer while pane is open. [docs.openwebui](https://docs.openwebui.com/features/)
+- Type-aware controls:
+  - Slides: thumbnail rail, current slide preview, “rewrite this slide,” “change tone,” export deck. [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/)
+  - Sheet: grid preview, summary mode, chart mode, CSV/XLSX export, transformation actions. [docs.openwebui](https://docs.openwebui.com/features/)
+  - PDF: embedded viewer, page navigation, citation jumps, download/share. [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/)
+  - Markdown report: reader mode, raw markdown mode, preserved citations, copy/export. [perplexity](https://www.perplexity.ai/hub/blog/deep-research-now-in-computer)
+
+The product rule should be: thread controls, pane renders, workspace organizes. That is the clearest implementation of your 3-fold behavior. [docs.openwebui](https://docs.openwebui.com/features/)
+
+## Twin role
+
+Twin should not be the place for routine chat, file preview, or voice. Twin should become Shothik’s autonomous research and orchestration layer for delegated work that runs longer than a normal conversation. Perplexity-style deep research validates the importance of planned, iterative research, while broader agent UX trends show the value of visible long-running task states and orchestration boundaries. [openai](https://openai.com/index/introducing-deep-research/)
+
+Twin v1 should include:
+
+- Goal input and clarification.
+- Visible plan.
+- Source collection.
+- Progress timeline.
+- Evidence review.
+- Final report generation.
+- Export to markdown/PDF/doc.
+- Save to project or continue in chat. [fuselabcreative](https://fuselabcreative.com/ui-design-for-ai-agents/)
+
+The Polsia-like engine can power Twin underneath, but it should not become a noisy top-level term for ordinary users. Twin is the user-facing brand; orchestration is the infrastructure. [uxmag](https://uxmag.com/articles/beyond-copilots-the-rise-of-the-ai-agent-orchestration-platform)
+
+## Must-have features
+
+Here is the consolidated Shothik feature blueprint:
+
+| Priority | Feature | Why it matters |
+|---|---|---|
+| Must | Search-first chat with citations | Core Perplexity/Vane behavior for trust and research utility.  [github](https://github.com/ItzCrazyKns/Vane) |
+| Must | Deep Research upgrade inside thread | Smooth path from quick answer to iterative report.  [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/) |
+| Must | 3-fold layout: thread + artifact pane + workspace shell | Prevents clutter and supports slides/sheets/PDFs cleanly.  [docs.openwebui](https://docs.openwebui.com/features/) |
+| Must | Right pane with tabs for preview/source/export | Makes artifacts first-class, not detached files.  [docs.openwebui](https://docs.openwebui.com/features/) |
+| Must | Connectors in left sidebar | Users need visible source and permission awareness.  [shapeof](https://www.shapeof.ai/patterns/connectors) |
+| Must | Skills replacing “General Agent” jargon | Cleaner UX and lower cognitive load.  [docs.openwebui](https://docs.openwebui.com/features/) |
+| Must | Mic-triggered voice popup | Best way to add voice without destabilizing chat UI.  [linkedin](https://www.linkedin.com/pulse/complete-guide-chatgpts-new-voice-mode-gpt-live-work-eric-eden-kgo0e) |
+| Must | In-thread artifact cards | Clear bridge between conversation and rendered outputs.  [docs.openwebui](https://docs.openwebui.com/features/) |
+| Should | Saved projects, folders, pins, tags | Better long-term organization like advanced AI workspaces.  [docs.openwebui](https://docs.openwebui.com/features/) |
+| Should | Twin autonomous research runs | Distinct delegated-work system for larger tasks.  [perplexity](https://www.perplexity.ai/hub/blog/deep-research-now-in-computer) |
+| Should | Export stack for markdown/PDF/doc/slides/sheets | Users need portable deliverables, not trapped chat output.  [secondtalent](https://www.secondtalent.com/resources/perplexity-deep-research-review/) |
+| Later | Multi-agent visible orchestration in Twin | Advanced transparency once core UX is stable.  [fuselabcreative](https://fuselabcreative.com/ui-design-for-ai-agents/) |
+| Later | Advanced memory/project context linking | Useful, but should follow core navigation and artifact UX.  [docs.openwebui](https://docs.openwebui.com/features/) |
+
+My direct recommendation is to build Shothik Chat v2 around this hierarchy: Perplexity for answer flow, Vane for answering-engine structure, ChatGPT for voice entry, and Open WebUI for workspace architecture. That combination is coherent because each reference contributes a different layer of the product rather than overlapping randomly. [github](https://github.com/ItzCrazyKns/Vane)
+
+The practical end state is simple: users ask in Chat, inspect outputs in the pane, manage context in the sidebar, speak through the mic popup, and hand big tasks to Twin only when the job becomes autonomous. [perplexity](https://www.perplexity.ai/hub/blog/deep-research-now-in-computer)
