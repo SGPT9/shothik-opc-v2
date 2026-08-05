@@ -1,6 +1,6 @@
 
 
-import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, User } from "lucide-react";
+import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, User, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
@@ -9,6 +9,8 @@ import { getSlashCommandDisplayText } from "@/lib/chat/commands";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/chat/types";
 
+import { SourcesBadge } from "./SourcesBadge";
+
 interface TranscriptProps {
   messages: ChatMessage[];
   isStreaming?: boolean;
@@ -16,6 +18,8 @@ interface TranscriptProps {
   onDelete?: (message: ChatMessage) => void;
   onRegenerate?: (message: ChatMessage) => void;
   onStop?: (message: ChatMessage) => void;
+  onActionClick?: (action: string, message: ChatMessage) => void;
+  onOpenArtifact?: (type: string, message: ChatMessage) => void;
   className?: string;
 }
 
@@ -26,6 +30,8 @@ export function Transcript({
   onDelete,
   onRegenerate,
   onStop,
+  onActionClick,
+  onOpenArtifact,
   className,
 }: TranscriptProps) {
   return (
@@ -159,18 +165,37 @@ export function Transcript({
                     </div>
                   ) : null}
                   {Array.isArray(message.metadata?.citations) && message.metadata.citations.length > 0 ? (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      <span className="text-muted-foreground text-xs font-medium">Sources</span>
-                      {message.metadata.citations.slice(0, 3).map((citation, index) => (
-                        <span
-                          key={`${message._id}-citation-${index}`}
-                          className="bg-muted text-muted-foreground rounded-full px-2 py-1 text-[11px]"
-                        >
-                          {typeof citation === "string" ? citation : `Source ${index + 1}`}
-                        </span>
-                      ))}
-                    </div>
+                    <SourcesBadge sources={message.metadata.citations.map((c: any) => ({
+                      id: typeof c === 'string' ? c : c.id || String(Math.random()),
+                      title: typeof c === 'string' ? c : c.title || 'Source',
+                      url: typeof c === 'object' ? c.url : undefined
+                    }))} />
                   ) : null}
+
+                  {/* Artifact Card / Follow-up Actions */}
+                  {!isUser && !canStop && (
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button 
+                        onClick={() => onActionClick?.('deep-research', message)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-brand/30 bg-brand/5 hover:bg-brand/10 text-brand text-xs font-medium transition-colors"
+                      >
+                        <Search className="w-3.5 h-3.5" />
+                        Upgrade to Deep Research
+                      </button>
+                      <button 
+                        onClick={() => onOpenArtifact?.('slides', message)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-medium transition-colors"
+                      >
+                        Turn into slides
+                      </button>
+                      <button 
+                        onClick={() => onOpenArtifact?.('pdf', message)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-border bg-background hover:bg-muted text-foreground text-xs font-medium transition-colors"
+                      >
+                        Export PDF
+                      </button>
+                    </div>
+                  )}
                 </div>
                 <div className={cn("flex items-center gap-2", isUser ? "justify-end" : "justify-start")}>
                   <span className="text-muted-foreground text-xs">

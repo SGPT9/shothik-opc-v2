@@ -99,6 +99,12 @@ const SlideSharePage = lazy(() => import('@/app-next/(slide-layout)/slide-share/
 const SharedContentPage = lazy(() => import('@/app-next/shared/[contentType]/[shareId]/page'));
 const AgentDemoPage = lazy(() => import('@/app-next/agent-demo/page'));
 
+// New Workspace Pages
+const FilesPage = lazy(() => import('@/app-next/(primary-layout)/files/page'));
+const ConnectorsPage = lazy(() => import('@/app-next/(primary-layout)/connectors/page'));
+const SavedReportsPage = lazy(() => import('@/app-next/(primary-layout)/saved-reports/page'));
+const DeepResearchPage = lazy(() => import('@/app-next/(primary-layout)/deep-research/page'));
+const SettingsWorkspacePage = lazy(() => import('@/app-next/(primary-layout)/settings/page'));
 
 // Hoisted so route component identities are stable across renders
 const AccountAgentsPageWithLayout = withPrimaryLayout(AccountAgentsPage);
@@ -137,6 +143,12 @@ const TranslatorPageWithLayout = withPrimaryLayout(TranslatorPage);
 const TwinPageWithLayout = withPrimaryLayout(TwinPage);
 const WritingStudioChatPageWithLayout = withPrimaryLayout(WritingStudioChatPage);
 const WritingStudioPageWithLayout = withPrimaryLayout(WritingStudioPage);
+
+const FilesPageWithLayout = withPrimaryLayout(FilesPage);
+const ConnectorsPageWithLayout = withPrimaryLayout(ConnectorsPage);
+const SavedReportsPageWithLayout = withPrimaryLayout(SavedReportsPage);
+const DeepResearchPageWithLayout = withPrimaryLayout(DeepResearchPage);
+const SettingsWorkspacePageWithLayout = withPrimaryLayout(SettingsWorkspacePage);
 
 // Stub page for unimplemented routes
 function PlaceholderPage({ name }: { name: string }) {
@@ -284,6 +296,12 @@ function AppRoutes() {
         <Route path="/agent-studio" component={AgentStudioPageWithLayout} />
         <Route path="/writing-studio/chat" component={WritingStudioChatPageWithLayout} />
         <Route path="/writing-studio" component={WritingStudioPageWithLayout} />
+        
+        <Route path="/files" component={FilesPageWithLayout} />
+        <Route path="/connectors" component={ConnectorsPageWithLayout} />
+        <Route path="/saved-reports" component={SavedReportsPageWithLayout} />
+        <Route path="/deep-research" component={DeepResearchPageWithLayout} />
+        <Route path="/settings" component={SettingsWorkspacePageWithLayout} />
 
         <Route component={NotFound} />
       </Switch>

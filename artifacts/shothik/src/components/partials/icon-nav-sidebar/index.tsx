@@ -1,263 +1,203 @@
 import Image from "next/image";
-
-
-import SvgColor from '@/components/common/SvgColor';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { cn } from '@/lib/utils';
-import { useTranslation } from '@/i18n';
-import {
-  BookOpen,
-  Brain,
-  FolderOpen,
-  Home,
-  MessageCircle,
-  Plus,
-  Presentation,
-  Search,
-  Table,
-  Users,
-} from 'lucide-react';
-;
 import { Link } from 'wouter';
-import { usePathname } from '@/lib/navigation';
+import { usePathname, useRouter } from '@/lib/navigation';
 import { useSelector } from 'react-redux';
+import { useTranslation } from '@/i18n';
 import NotificationBell from '@/components/forum/NotificationBell';
+import { useChatHistory } from "@/hooks/useChatHistory";
+import {
+  MessageSquare,
+  Search,
+  FolderOpen,
+  Link2,
+  Cpu,
+  Brain,
+  FileText,
+  Users,
+  Settings,
+  Plus,
+  Home
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from "@/components/ui/button";
 
-const svgIcon = (name: string, className = 'h-4 w-4 bg-current') => (
-  <SvgColor src={`/navbar/${name}.svg`} className={className} />
-);
-
-const WRITING_TOOL_KEYS = [
-  { key: 'sidebar.write', icon: svgIcon('diamond'), href: '/writing-studio' },
-  { key: 'sidebar.paraphrase', icon: svgIcon('paraphrase'), href: '/paraphrase' },
-  { key: 'sidebar.aiDetector', icon: svgIcon('ai_detector'), href: '/ai-detector' },
-  { key: 'sidebar.humanize', icon: svgIcon('humanize'), href: '/humanize-gpt' },
-  { key: 'sidebar.plagiarism', icon: svgIcon('plagiarism_checker'), href: '/plagiarism-checker' },
-  { key: 'sidebar.grammar', icon: svgIcon('grammar_checker'), href: '/grammar-checker' },
-  { key: 'sidebar.summarize', icon: svgIcon('summarize'), href: '/summarize' },
-  { key: 'sidebar.translate', icon: svgIcon('translator'), href: '/translator' },
-];
-
-const AGENT_TOOL_KEYS = [
-  { key: 'sidebar.aiChat', icon: <MessageCircle className="h-4 w-4" />, href: '/agents/chat' },
-  { key: 'sidebar.aiSlides', icon: <Presentation className="h-4 w-4" />, href: '/agents/presentation' },
-  { key: 'sidebar.aiSheets', icon: <Table className="h-4 w-4" />, href: '/agents/sheets' },
-  { key: 'sidebar.deepResearch', icon: <Search className="h-4 w-4" />, href: '/agents/research' },
-];
-
-function NavIcon({
+function NavItem({
   icon,
   label,
   href,
   isActive,
-  tooltip,
 }: {
   icon: React.ReactNode;
   label: string;
   href: string;
   isActive: boolean;
-  tooltip?: string;
 }) {
   return (
-    <TooltipProvider delayDuration={300}>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Link
-            href={href}
-            aria-label={label}
-            className={cn(
-              'flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl mx-1 w-[54px] cursor-pointer transition-colors no-underline',
-              isActive
-                ? 'bg-brand/10 text-brand'
-                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-            )}
-          >
-            <span className="flex items-center justify-center">{icon}</span>
-            <span className="text-[9px] font-medium text-center leading-tight truncate w-full text-current">
-              {label}
-            </span>
-          </Link>
-        </TooltipTrigger>
-        <TooltipContent side="right" className="text-xs">
-          {tooltip ?? label}
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  );
-}
-
-function Divider() {
-  return <div className="mx-3 my-1 border-t border-sidebar-border" />;
-}
-
-function NewButtonWithPopup() {
-  const { t } = useTranslation();
-  const WRITING_TOOLS = WRITING_TOOL_KEYS.map((tool) => ({ ...tool, label: t(tool.key) }));
-  const AGENT_TOOLS = AGENT_TOOL_KEYS.map((tool) => ({ ...tool, label: t(tool.key) }));
-
-  return (
-    <div className="group relative mx-1 w-[54px]">
-      <button
-        aria-label="New / Tools"
-        className="flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl w-full cursor-pointer transition-colors text-muted-foreground hover:bg-muted hover:text-foreground"
-      >
-        <span className="flex items-center justify-center">
-          <Plus className="h-5 w-5" />
-        </span>
-        <span className="text-[9px] font-medium text-center leading-tight text-current">
-          {t('nav.new')}
-        </span>
-      </button>
-
-      <div className="pointer-events-none group-hover:pointer-events-auto opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-all duration-150 absolute left-[calc(100%+8px)] top-0 z-50 w-52 rounded-2xl border border-border bg-popover shadow-xl p-3">
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-          {t('sidebar.writingTools')}
-        </p>
-        <div className="flex flex-col gap-0.5 mb-3">
-          {WRITING_TOOLS.map((tool) => (
-            <Link
-              key={tool.href}
-              href={tool.href}
-              className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors no-underline"
-            >
-              <span className="flex-shrink-0 flex items-center justify-center w-4 h-4 text-muted-foreground">
-                {tool.icon}
-              </span>
-              <span>{tool.label}</span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="border-t border-border mb-2" />
-
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-          {t('sidebar.aiAgents')}
-        </p>
-        <div className="flex flex-col gap-0.5 mb-3">
-          {AGENT_TOOLS.map((tool) => (
-            <Link
-              key={tool.href}
-              href={tool.href}
-              className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors no-underline"
-            >
-              <span className="flex-shrink-0 flex items-center justify-center w-4 h-4 text-muted-foreground">
-                {tool.icon}
-              </span>
-              <span>{tool.label}</span>
-            </Link>
-          ))}
-        </div>
-
-        <div className="border-t border-border mb-2" />
-
-        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
-          {t('sidebar.discover')}
-        </p>
-        <Link
-          href="/marketplace"
-          className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg text-sm text-foreground hover:bg-muted transition-colors no-underline"
-        >
-          <span className="flex-shrink-0 flex items-center justify-center w-4 h-4 text-muted-foreground">
-            <BookOpen className="h-4 w-4" />
-          </span>
-          <span>{t('sidebar.bookMarketplace')}</span>
-        </Link>
+    <Link
+      href={href}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline",
+        isActive
+          ? "bg-brand/10 text-brand font-semibold shadow-sm"
+          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+      )}
+    >
+      <div className={cn("flex items-center justify-center", isActive ? "text-brand" : "text-muted-foreground")}>
+        {icon}
       </div>
-    </div>
+      <span className="truncate">{label}</span>
+    </Link>
   );
 }
 
 export default function IconNavSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const isActive = (match: string) => pathname.startsWith(match);
   const user = useSelector((state: any) => state.auth?.user);
   const masterId: string | null = user?._id ?? user?.email ?? null;
   const { t } = useTranslation();
+  const { conversations } = useChatHistory({
+    surface: "flagship",
+    limit: 5,
+    enabled: !!user?._id,
+  });
 
   return (
-    <aside className="hidden md:flex sticky top-0 h-screen w-16 flex-shrink-0 flex-col bg-sidebar border-r border-sidebar-border z-40 overflow-visible">
-      <div className="flex items-center justify-center h-12 lg:h-16 border-b border-sidebar-border flex-shrink-0">
-        <Link href="/" aria-label="Shothik AI Home">
+    <aside className="hidden md:flex flex-col h-screen w-64 bg-sidebar border-r border-sidebar-border z-40 overflow-hidden flex-shrink-0">
+      {/* Brand Header */}
+      <div className="flex items-center h-16 px-4 border-b border-sidebar-border flex-shrink-0">
+        <Link href="/" className="flex items-center gap-2">
           <Image
             src="/moscot.png"
             alt="Shothik AI"
-            width={32}
-            height={32}
-            className="h-8 w-8 object-contain"
+            width={28}
+            height={28}
+            className="object-contain"
           />
+          <span className="font-semibold text-lg tracking-tight text-foreground">Shothik</span>
         </Link>
       </div>
 
-      <div className="flex flex-col flex-1 overflow-visible py-2 items-center">
-        <NewButtonWithPopup />
+      <div className="flex-1 overflow-y-auto p-3 space-y-6">
+        
+        {/* Workspace Actions */}
+        <div className="space-y-2">
+          <Link 
+            href={`/agents/chat?conversationId=new_${Date.now()}`}
+            className="flex items-center w-full justify-start gap-2 shadow-sm font-medium h-9 px-3 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+          >
+            <Plus className="h-4 w-4" />
+            New Chat
+          </Link>
+        </div>
 
-        <NavIcon
-          icon={<Home className="h-5 w-5" />}
-          label={t('nav.home')}
-          href="/writing-studio"
-          isActive={pathname === '/writing-studio'}
-          tooltip={t('sidebar.writingStudio')}
-        />
+        {/* Primary Nav */}
+        <div className="space-y-1">
+          <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Workspace
+          </div>
+          <NavItem
+            icon={<MessageSquare className="h-4 w-4" />}
+            label="Chat"
+            href="/agents/chat"
+            isActive={isActive('/agents/chat') && !pathname.includes('/research')}
+          />
+          <NavItem
+            icon={<Search className="h-4 w-4" />}
+            label="Deep Research"
+            href="/deep-research"
+            isActive={isActive('/deep-research')}
+          />
+          <NavItem
+            icon={<Brain className="h-4 w-4" />}
+            label="Twin"
+            href="/twin"
+            isActive={isActive('/twin')}
+          />
+          <NavItem
+            icon={<FolderOpen className="h-4 w-4" />}
+            label="Files"
+            href="/files"
+            isActive={isActive('/files')}
+          />
+          <NavItem
+            icon={<Link2 className="h-4 w-4" />}
+            label="Connectors"
+            href="/connectors"
+            isActive={isActive('/connectors')}
+          />
+          <NavItem
+            icon={<FileText className="h-4 w-4" />}
+            label="Saved Reports"
+            href="/saved-reports"
+            isActive={isActive('/saved-reports')}
+          />
+        </div>
 
-        <NavIcon
-          icon={<FolderOpen className="h-5 w-5" />}
-          label={t('nav.projects')}
-          href="/writing-studio?projects=1"
-          isActive={false}
-          tooltip={t('sidebar.yourProjects')}
-        />
-
-        <NavIcon
-          icon={<MessageCircle className="h-5 w-5" />}
-          label={t('nav.chat')}
-          href="/agents/chat"
-          isActive={isActive('/agents/chat')}
-          tooltip={t('sidebar.aiChat')}
-        />
-
-        <NavIcon
-          icon={<Users className="h-5 w-5" />}
-          label={t('nav.community')}
-          href="/community"
-          isActive={isActive('/community')}
-          tooltip={t('sidebar.communityForums')}
-        />
-
-        <NavIcon
-          icon={<BookOpen className="h-5 w-5" />}
-          label={t('nav.books')}
-          href="/marketplace"
-          isActive={isActive('/marketplace') || isActive('/books')}
-          tooltip={t('sidebar.bookMarketplaceTooltip')}
-        />
-
-        <Divider />
-
-        <NavIcon
-          icon={<Brain className="h-5 w-5" />}
-          label={t('sidebar.twin')}
-          href="/twin"
-          isActive={isActive('/twin')}
-          tooltip={t('sidebar.twinTooltip')}
-        />
-
-        <div className="flex-1" />
-
-        <Divider />
-
-        {masterId && (
-          <div className="mx-auto mb-1">
-            <NotificationBell masterId={masterId} />
+        {/* Recents */}
+        {conversations && conversations.length > 0 && (
+          <div className="space-y-1">
+            <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Recents
+            </div>
+            {conversations.map((chat) => (
+              <button
+                key={chat._id}
+                onClick={() => router.push(`/agents/chat?conversationId=${chat._id}`)}
+                className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+              >
+                <div className="w-1.5 h-1.5 rounded-full bg-brand/50 shrink-0" />
+                <span className="truncate">{chat.title || "Untitled Chat"}</span>
+              </button>
+            ))}
           </div>
         )}
 
-        <NavIcon
-          icon={svgIcon('user', 'h-5 w-5 bg-current')}
-          label={t('nav.account')}
-          href="/account"
-          isActive={isActive('/account')}
-          tooltip={t('sidebar.yourAccount')}
-        />
+        {/* Knowledge & Organization */}
+        <div className="space-y-1">
+          <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            Community & Settings
+          </div>
+          <NavItem
+            icon={<Cpu className="h-4 w-4" />}
+            label="Skills"
+            href="/agents"
+            isActive={isActive('/agents') && !isActive('/agents/chat')}
+          />
+          <NavItem
+            icon={<Users className="h-4 w-4" />}
+            label="Community"
+            href="/community"
+            isActive={isActive('/community')}
+          />
+          <NavItem
+            icon={<Settings className="h-4 w-4" />}
+            label="Settings"
+            href="/settings"
+            isActive={isActive('/settings')}
+          />
+        </div>
+
+      </div>
+
+      {/* Footer / Account */}
+      <div className="p-4 border-t border-sidebar-border mt-auto flex items-center gap-3">
+        {masterId && (
+          <div className="flex-shrink-0">
+            <NotificationBell masterId={masterId} />
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <Link href="/account" className="flex flex-col min-w-0 group cursor-pointer no-underline">
+            <span className="text-sm font-medium text-foreground truncate group-hover:text-brand transition-colors">
+              {user?.name || "Account"}
+            </span>
+            <span className="text-xs text-muted-foreground truncate">
+              {user?.email || "Manage profile"}
+            </span>
+          </Link>
+        </div>
       </div>
     </aside>
   );

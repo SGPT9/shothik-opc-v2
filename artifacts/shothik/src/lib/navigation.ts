@@ -1,7 +1,7 @@
 /**
  * Navigation compatibility shim — replaces next/navigation for Vite+wouter.
  */
-import { useLocation, useParams as useWouterParams } from 'wouter';
+import { useLocation, useSearch, useParams as useWouterParams } from 'wouter';
 
 export function usePathname(): string {
   const [location] = useLocation();
@@ -22,9 +22,9 @@ export function useRouter() {
 
 export function useSearchParams(): URLSearchParams {
   // Next.js useSearchParams returns a ReadonlyURLSearchParams (has .get/.has/etc.)
-  return new URLSearchParams(
-    typeof window !== 'undefined' ? window.location.search : ''
-  );
+  // wouter's useSearch is reactive to navigation, unlike reading window.location directly.
+  const search = useSearch();
+  return new URLSearchParams(search);
 }
 
 export function useParams<T extends Record<string, string>>(): T {
