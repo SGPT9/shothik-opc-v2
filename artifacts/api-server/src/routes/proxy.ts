@@ -6,7 +6,7 @@ import { logger } from "../lib/logger";
 // Upstream origin for all /api routes the local server doesn't implement
 // (chat, conversations, auth, etc.). Overridable for development/testing
 // (e.g. pointing at a local mock while the real backend is unreachable).
-const UPSTREAM_ORIGIN = process.env.CHAT_API_ORIGIN ?? "https://shothik.work";
+const UPSTREAM_ORIGIN = process.env.CHAT_API_ORIGIN ?? "https://www.shothikgpt.com";
 
 const HOP_BY_HOP = new Set([
   "host",
