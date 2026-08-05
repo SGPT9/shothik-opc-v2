@@ -1,13 +1,14 @@
 
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "@/lib/navigation";
+import { useRouter, useSearchParams } from "@/lib/navigation";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Sparkles, Globe } from "lucide-react";
 import { Composer } from "@/components/chat/Composer";
 import { Transcript } from "@/components/chat/Transcript";
-import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
-import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { ArtifactPane } from "@/components/chat/ArtifactPane";
+import { VoicePopup } from "@/components/chat/VoicePopup";
 import { parseFlagshipSlashCommand } from "@/lib/chat/commands";
 import {
   getLocalDraftConversationId,
@@ -261,10 +262,31 @@ export default function ChatAgentPage() {
     user?._id,
   ]);
 
+  // Sync conversation selection with the URL (?conversationId=...).
+  // Sidebar Recents, Deep Research, and Saved Reports all deep-link here.
+  // A "new_*" id means the user explicitly asked for a fresh chat.
+  const searchParams = useSearchParams();
+  const urlConversationId = searchParams.get("conversationId");
+  const requestedNewChat = Boolean(urlConversationId?.startsWith("new_"));
   useEffect(() => {
-    if (conversationId || !fallbackConversations.length) return;
+    if (!urlConversationId) return;
+    if (requestedNewChat) {
+      setConversationId(null);
+      setInput("");
+      setComposerError(null);
+      return;
+    }
+    setConversationId((current) =>
+      current === urlConversationId ? current : urlConversationId,
+    );
+  }, [urlConversationId, requestedNewChat]);
+
+  useEffect(() => {
+    // Don't auto-select a recent conversation when the user explicitly
+    // requested a new chat or deep-linked to a specific conversation.
+    if (conversationId || requestedNewChat || urlConversationId || !fallbackConversations.length) return;
     setConversationId(String(fallbackConversations[0]._id));
-  }, [conversationId, fallbackConversations]);
+  }, [conversationId, fallbackConversations, requestedNewChat, urlConversationId]);
 
   // Reset Hermes session/run state when the user switches conversations.
   // Each conversation maps to its own Hermes session; switching conversations
@@ -963,20 +985,9 @@ export default function ChatAgentPage() {
   };
   const isEmpty = visibleMessages.length === 0;
 
-  if (authIsLoading) {
-    return (
-      <div className="flex h-[calc(100dvh-64px)] items-center justify-center">
-        <div className="flex items-center gap-3 rounded-2xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Checking your session
-        </div>
-      </div>
-    );
-  }
-
-
-
-  const [isParallelSpaceOpen, setIsParallelSpaceOpen] = useState(false);
+  const [isArtifactPaneOpen, setIsArtifactPaneOpen] = useState(false);
+  const [artifactType, setArtifactType] = useState<"markdown" | "slides" | "sheet" | "pdf">("markdown");
+  const [isVoiceOpen, setIsVoiceOpen] = useState(false);
 
   const resolvedWorkspaceType = useMemo<"browser" | "sheet" | "slides" | "staging" | "editor">(() => {
     for (let i = visibleMessages.length - 1; i >= 0; i--) {
@@ -1024,37 +1035,24 @@ export default function ChatAgentPage() {
     return null;
   }, [visibleMessages, sessionId]);
 
+  if (authIsLoading) {
+    return (
+      <div className="flex h-[calc(100dvh-64px)] items-center justify-center">
+        <div className="flex items-center gap-3 rounded-2xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Checking your session
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-[calc(100dvh-64px)] w-full overflow-hidden bg-background">
-      {/* Open WebUI Left Session Sidebar */}
-      <div className="hidden md:block shrink-0 h-full">
-        <ChatSidebar
-          conversations={fallbackConversations.map(c => ({
-            _id: String(c._id),
-            title: c.title,
-            updatedAt: c.updatedAt,
-            _creationTime: c.updatedAt,
-            pinned: c.pinned,
-            modelHandle: c.modelHandle,
-            messageCount: c.messageCount,
-          }))}
-          activeConversationId={conversationId}
-          onSelectConversation={(id) => router.push(`/agents/chat?conversationId=${id}`)}
-          onNewChat={() => {
-            const nextId = user?._id ? `conv_${Date.now()}` : getLocalDraftConversationId("flagship");
-            router.push(`/agents/chat?conversationId=${nextId}`);
-          }}
-          onDeleteConversation={(id) => deleteConversation(id)}
-          onOpenParallelSpace={() => setIsParallelSpaceOpen(true)}
-          onOpenDataSheet={() => router.push("/agents/chat")}
-          onOpenWritingStudio={() => router.push("/writing-studio")}
-        />
-      </div>
-
-      {/* Primary Chat Column */}
-      <div className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300">
-        <div className="flex-1 overflow-y-auto px-4 py-6">
-          <div className="mx-auto max-w-3xl space-y-4">
+      <ResizablePanelGroup direction="horizontal" className="h-full w-full">
+        {/* Primary Chat Column */}
+        <ResizablePanel defaultSize={isArtifactPaneOpen ? 60 : 100} minSize={30} className="flex flex-col h-full min-w-0">
+          <div className="flex-1 overflow-y-auto px-4 py-6">
+            <div className="mx-auto max-w-3xl space-y-4">
             {isEmpty ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
@@ -1101,11 +1099,11 @@ export default function ChatAgentPage() {
                     </div>
                     
                     <button
-                      onClick={() => setIsParallelSpaceOpen(!isParallelSpaceOpen)}
+                      onClick={() => setIsArtifactPaneOpen(!isArtifactPaneOpen)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-sm transition"
                     >
                       <Globe className="w-3.5 h-3.5" />
-                      <span>{isParallelSpaceOpen ? "Close Space" : "Open Live Agent Space"}</span>
+                      <span>{isArtifactPaneOpen ? "Close Pane" : "Open Artifact Pane"}</span>
                     </button>
                   </div>
                 ) : null}
@@ -1123,6 +1121,15 @@ export default function ChatAgentPage() {
                     }
                   }}
                   onStop={() => abortRef.current?.abort()}
+                  onActionClick={(action, message) => {
+                    if (action === 'deep-research') {
+                      router.push('/deep-research');
+                    }
+                  }}
+                  onOpenArtifact={(type) => {
+                    setArtifactType(type as any);
+                    setIsArtifactPaneOpen(true);
+                  }}
                 />
               </>
             )}
@@ -1142,6 +1149,7 @@ export default function ChatAgentPage() {
           onModelChange={setModelHandle}
           activeSkill={activeSkill}
           onSkillChange={setActiveSkill}
+          onVoiceClick={() => setIsVoiceOpen(true)}
           attachments={pendingAttachments.map((attachment) => ({
             id: attachment.id,
             name: attachment.name,
@@ -1162,28 +1170,30 @@ export default function ChatAgentPage() {
               : null
           }
           errorMessage={composerError}
-          footer={`${t("chat.footer")} · ${modelHandle}${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
+          footer={`${t("chat.footer")}${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
         />
-      </div>
+        </ResizablePanel>
 
-      {/* Parallel Agent Browser Space Side Panel */}
-      {isParallelSpaceOpen && (
-        <div className="w-full md:w-[480px] lg:w-[560px] xl:w-[640px] shrink-0 h-full border-l border-border transition-all duration-300">
-          <ParallelAgentSpace
-            isOpen={isParallelSpaceOpen}
-            onClose={() => setIsParallelSpaceOpen(false)}
-            spaceTitle="Workspace Canvas"
-            runId={resolvedRunId}
-            sessionId={resolvedSessionId}
-            stagingUrl={resolvedStagingUrl}
-            workspaceType={resolvedWorkspaceType}
-            onCommentSelection={(text) => {
-              setInput((prev) => `${prev}\n> ${text}\n`);
-              inputRef.current?.focus();
-            }}
-          />
-        </div>
-      )}
+        {isArtifactPaneOpen && (
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={40} minSize={25} className="h-full">
+              <ArtifactPane
+                isOpen={isArtifactPaneOpen}
+                onClose={() => setIsArtifactPaneOpen(false)}
+                artifactType={artifactType}
+                title="Generated Output"
+              />
+            </ResizablePanel>
+          </>
+        )}
+      </ResizablePanelGroup>
+
+      <VoicePopup 
+        isOpen={isVoiceOpen} 
+        onClose={() => setIsVoiceOpen(false)} 
+        onSendTranscript={(text) => send(text)}
+      />
     </div>
   );
 }

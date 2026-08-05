@@ -40,6 +40,7 @@ export interface ComposerProps {
     description: string;
   } | null;
   errorMessage?: string | null;
+  onVoiceClick?: () => void;
 }
 
 export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function Composer({
@@ -65,6 +66,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
   onRemoveAttachment,
   commandHint,
   errorMessage,
+  onVoiceClick,
 }: ComposerProps, ref) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -208,24 +210,6 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                 <Paperclip className="h-4 w-4" />
               </Button>
 
-              {/* Stylish Model Selector Dropdown Pill */}
-              <div className="relative">
-                <select
-                  value={modelHandle ?? "gemini-2.5-flash"}
-                  onChange={(event) => onModelChange?.(event.target.value)}
-                  className="bg-muted/80 hover:bg-muted text-foreground border border-border/60 rounded-xl px-2.5 py-1 text-[11px] font-medium cursor-pointer transition outline-none h-8 appearance-none pr-6 pl-2.5"
-                  disabled={disabled || activeStreaming}
-                >
-                  <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-                  <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
-                  <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                  </svg>
-                </div>
-              </div>
-
               {/* Stylish Skill Selector Dropdown Pill */}
               <div className="relative">
                 <select
@@ -234,21 +218,13 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                   className="bg-muted/80 hover:bg-muted text-foreground border border-border/60 rounded-xl px-2.5 py-1 text-[11px] font-medium cursor-pointer transition outline-none h-8 appearance-none pr-6 pl-2.5"
                   disabled={disabled || activeStreaming}
                 >
-                  <option value="general">🛠️ General Agent</option>
-                  <option value="github-fixer">💻 GitHub Auto-Fixer</option>
-                  <option value="cloud-deployer">🚀 Cloud Deployer</option>
-                  <option value="db-migrator">🗄️ Database Migrator</option>
-                  <option value="researcher">🔬 Twin Researcher</option>
-                  <option value="ui-designer">🎨 UI Designer</option>
-                  <option value="security-auditor">🛡️ Security Auditor</option>
-                  <option value="product-manager">📋 Product Manager</option>
-                  <option value="test-automator">🧪 Test Automator</option>
-                  <option value="seo-specialist">🔎 SEO Specialist</option>
-                  <option value="content-creator">📝 Content Creator</option>
-                  <option value="sales-outreach">🎯 Sales Outreach</option>
-                  <option value="technical-writer">📚 Technical Writer</option>
-                  <option value="sre-architect">🛡️ SRE Architect</option>
-                  <option value="ux-architect">🏛️ UX Architect</option>
+                  <option value="general">Research</option>
+                  <option value="write">Write</option>
+                  <option value="slides">Slides</option>
+                  <option value="sheet">Sheet</option>
+                  <option value="pdf">PDF</option>
+                  <option value="summarize">Summarize File</option>
+                  <option value="publish">Publish Draft</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-muted-foreground">
                   <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -257,34 +233,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                 </div>
               </div>
 
-              {/* Tonight Engine Toggle Mode */}
-              {onToggleOvernight && (
-                <button
-                  type="button"
-                  onClick={() => onToggleOvernight(!isOvernight)}
-                  className={cn(
-                    "flex items-center gap-1.5 h-8 px-3 rounded-xl text-[11px] font-medium transition border cursor-pointer",
-                    isOvernight
-                      ? "bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm animate-pulse"
-                      : "bg-muted/60 text-muted-foreground border-border/60 hover:bg-muted"
-                  )}
-                >
-                  <Moon className="w-3.5 h-3.5 text-purple-400" />
-                  <span>Tonight Engine</span>
-                </button>
-              )}
-
-              {/* ChatGPT LiveKit Voice Orb Mode */}
+              {/* Voice Button */}
               <button
                 type="button"
-                onClick={() => {
-                  window.location.href = "/voice";
-                }}
-                className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[11px] font-medium transition border border-indigo-500/40 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 shadow-sm cursor-pointer"
-                title="Launch LiveKit ChatGPT Advanced Voice Orb"
+                onClick={onVoiceClick}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[11px] font-medium transition border border-indigo-500/40 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 shadow-sm cursor-pointer"
+                title="Start Voice Session"
               >
-                <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-pulse" />
-                <span>LiveKit Voice</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg>
+                <span>Voice</span>
               </button>
             </div>
 

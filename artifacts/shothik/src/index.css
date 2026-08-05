@@ -54,10 +54,10 @@
   --font-mono: var(--font-geist-mono, monospace);
 
   /* Brand color tokens */
-  --color-brand: #137fec;
-  --color-brand-dark: #000000;
-  --color-brand-surface: #080808;
-  --color-brand-canvas: #040404;
+  --color-brand: #00AB55;
+  --color-brand-dark: #007B3D;
+  --color-brand-surface: #E5F6EE;
+  --color-brand-canvas: #F4FBF7;
 
   /* Project-type semantic accent colors */
   --color-type-book: #137fec;
