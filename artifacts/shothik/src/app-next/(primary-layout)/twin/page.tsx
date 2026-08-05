@@ -1,6 +1,8 @@
 
 
-import { useState } from "react";
+import SeededWorkspace from "@/components/twin/SeededWorkspace";
+import { useSearchParams } from "@/lib/navigation";
+import { useEffect, useState } from "react";
 import { useRouter } from "@/lib/navigation";
 import { useTwin } from "@/hooks/useTwin";
 import { useTranslation } from "@/i18n";
@@ -42,75 +44,88 @@ import {
 import { cn } from "@/lib/utils";
 import { saveWritingStudioSeed } from "@/lib/writing-studio-seed";
 
-function TwinLandingPage() {
+function TwinLandingPage({ 
+  onStart, 
+  onSkip 
+}: { 
+  onStart: () => void;
+  onSkip: () => void;
+}) {
   const { t } = useTranslation();
 
   return (
-    <div className="container mx-auto max-w-4xl py-12 px-4">
+    <div className="container mx-auto max-w-4xl py-12 px-4 animate-in fade-in zoom-in-95 duration-300">
       <div className="text-center mb-12">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-          <Brain className="h-10 w-10 text-primary" />
+        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-brand/10 border border-brand/20 shadow-sm">
+          <Brain className="h-12 w-12 text-brand" />
         </div>
-        <h1 className="text-4xl font-bold text-foreground mb-3">
-          {t("twinDashboard.landingHeadline")}
+        <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
+          Start your company with an AI Cofounder
         </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {t("twinDashboard.landingSubheadline")}
+        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
+          Twin turns ideas, research, and plans into a working company workspace.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <Card className="border-border/50">
-          <CardContent className="pt-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Sparkles className="h-6 w-6 text-primary" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
+        <Card className="border-border/50 bg-background shadow-sm hover:border-brand/30 transition-colors group">
+          <CardContent className="pt-6 pb-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/5 group-hover:bg-brand/10 transition-colors">
+              <FileText className="h-6 w-6 text-brand" />
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-2">
-              {t("twinDashboard.landingFeature1Title")}
+            <h3 className="text-base font-bold text-foreground">
+              Create your business plan
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("twinDashboard.landingFeature1Desc")}
-            </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/50">
-          <CardContent className="pt-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Bot className="h-6 w-6 text-primary" />
+        <Card className="border-border/50 bg-background shadow-sm hover:border-brand/30 transition-colors group">
+          <CardContent className="pt-6 pb-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/5 group-hover:bg-brand/10 transition-colors">
+              <CheckCircle className="h-6 w-6 text-brand" />
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-2">
-              {t("twinDashboard.landingFeature2Title")}
+            <h3 className="text-base font-bold text-foreground">
+              Get your first tasks
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("twinDashboard.landingFeature2Desc")}
-            </p>
           </CardContent>
         </Card>
 
-        <Card className="border-border/50">
-          <CardContent className="pt-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <BookOpen className="h-6 w-6 text-primary" />
+        <Card className="border-border/50 bg-background shadow-sm hover:border-brand/30 transition-colors group">
+          <CardContent className="pt-6 pb-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/5 group-hover:bg-brand/10 transition-colors">
+              <BookOpen className="h-6 w-6 text-brand" />
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-2">
-              {t("twinDashboard.landingFeature3Title")}
+            <h3 className="text-base font-bold text-foreground">
+              Organize decisions and documents
             </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("twinDashboard.landingFeature3Desc")}
-            </p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="text-center">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
         <Button
           size="lg"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-base"
-          onClick={() => window.location.href = "/auth/login?intent=twin"}
+          className="w-full bg-brand hover:bg-brand/90 text-white font-medium text-base shadow-sm"
+          onClick={onStart}
         >
           <Brain className="h-5 w-5 mr-2" />
-          {t("twinDashboard.landingSignIn")}
+          Start from this idea
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          className="w-full font-medium text-base shadow-sm"
+          onClick={() => { window.location.href = "/agents/chat"; }}
+        >
+          Import from chat
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          className="w-full text-muted-foreground hover:text-foreground mt-2 sm:mt-0 font-medium"
+          onClick={onSkip}
+        >
+          Open existing workspace
         </Button>
       </div>
     </div>
@@ -680,6 +695,32 @@ function TransferSection({
 export default function TwinPage() {
   const { t } = useTranslation();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const fromChat = searchParams.get('fromChat');
+  
+  const [hasSeenLanding, setHasSeenLanding] = useState<boolean | null>(null);
+  const [isSeeded, setIsSeeded] = useState(false);
+
+  useEffect(() => {
+    const seen = localStorage.getItem('twin_landing_seen');
+    const seededActive = localStorage.getItem('twin_seeded_active');
+    
+    if (fromChat || seededActive === 'true') {
+      setIsSeeded(true);
+      setHasSeenLanding(true);
+      localStorage.setItem('twin_seeded_active', 'true');
+      localStorage.setItem('twin_landing_seen', 'true');
+      if (fromChat) {
+        // Remember the originating conversation, then strip the query so a
+        // later revisit doesn't force the seeded overlay again.
+        localStorage.setItem('twin_seed_from_chat', fromChat);
+        window.history.replaceState(null, '', window.location.pathname);
+      }
+    } else {
+      setHasSeenLanding(seen === 'true');
+    }
+  }, [fromChat]);
+
   const {
     profile,
     tasks,
@@ -720,9 +761,44 @@ export default function TwinPage() {
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
 
+  if (hasSeenLanding === false && !fromChat) {
+    return (
+      <TwinLandingPage 
+        onStart={() => {
+          localStorage.setItem('twin_landing_seen', 'true');
+          localStorage.setItem('twin_seeded_active', 'true');
+          setIsSeeded(true);
+          setHasSeenLanding(true);
+        }}
+        onSkip={() => {
+          localStorage.setItem('twin_landing_seen', 'true');
+          setHasSeenLanding(true);
+        }}
+      />
+    );
+  }
+
+  if (isSeeded) {
+    return (
+      <div className="min-h-[calc(100dvh-64px)] bg-background">
+        <SeededWorkspace 
+          chatConversationId={fromChat || localStorage.getItem('twin_seed_from_chat') || undefined}
+          onDismiss={() => {
+            setIsSeeded(false);
+            localStorage.removeItem('twin_seeded_active');
+          }}
+        />
+      </div>
+    );
+  }
+
   if (isLoading) {
     if (!userId) {
-      return <TwinLandingPage />;
+      return (
+        <div className="flex h-[60vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      );
     }
     return (
       <div className="flex h-[60vh] items-center justify-center" role="status" aria-live="polite">
@@ -732,7 +808,11 @@ export default function TwinPage() {
   }
 
   if (!userId) {
-    return <TwinLandingPage />;
+    return (
+      <div className="flex h-[60vh] items-center justify-center">
+        <p className="text-muted-foreground">Please log in to access Twin.</p>
+      </div>
+    );
   }
 
   if (!profile) {
