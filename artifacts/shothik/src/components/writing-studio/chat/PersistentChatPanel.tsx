@@ -15,6 +15,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { guestChatHeaders } from '@/lib/chat/guest-device-id';
 
 export interface ChatMessage {
   id: string;
@@ -136,7 +137,8 @@ export function PersistentChatPanel({
 
       const res = await fetch('/api/chat', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Guest access contract: `x-chat-device-id` (guest- prefixed header).
+        headers: { 'Content-Type': 'application/json', ...guestChatHeaders() },
         body: JSON.stringify({
           messages: history,
           ...(documentContext ? { context: documentContext } : {}),

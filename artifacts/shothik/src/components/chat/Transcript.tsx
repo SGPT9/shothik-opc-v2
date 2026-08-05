@@ -1,6 +1,6 @@
 
 
-import { Bot, Command, FlaskConical, Globe, Link2, Lightbulb, Paperclip, User, Search } from "lucide-react";
+import { Bot, Command, FlaskConical, Globe, Link2, Lightbulb, ListChecks, Paperclip, User, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
@@ -62,6 +62,7 @@ export function Transcript({
               ? CHAT_MODE_BADGES[message.metadata.chatMode]
               : undefined;
           const statusLabel = message.metadata?.statusLabel;
+          const plan = !isUser ? message.metadata?.plan : undefined;
 
           return (
             <div key={message._id} className={cn("flex gap-3", isUser ? "flex-row-reverse" : "flex-row")}>
@@ -111,6 +112,24 @@ export function Transcript({
                       status={message.status === 'completed' ? 'completed' : message.status === 'streaming' ? 'processing' : 'queued'}
                     />
                   )}
+                  {plan && (plan.steps.length > 0 || plan.intent) ? (
+                    <div className="mb-3 rounded-xl border border-border bg-muted/30 px-3 py-2.5">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
+                        <ListChecks className="h-3.5 w-3.5" />
+                        <span>Plan{plan.intent ? ` · ${plan.intent}` : ""}</span>
+                      </div>
+                      {plan.steps.length > 0 ? (
+                        <ol className="mt-1.5 space-y-1 text-xs text-foreground">
+                          {plan.steps.map((step, index) => (
+                            <li key={`${index}-${step}`} className="flex gap-2">
+                              <span className="text-muted-foreground">{index + 1}.</span>
+                              <span>{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      ) : null}
+                    </div>
+                  ) : null}
                   {!isUser && message.status === "streaming" && !displayContent ? (
                     <div className="flex items-center gap-2 py-0.5" aria-live="polite">
                       <span className="relative flex h-2 w-2">

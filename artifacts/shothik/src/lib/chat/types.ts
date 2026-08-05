@@ -120,6 +120,7 @@ export interface ChatMessage {
     stagingUrl?: string;
     activeSkill?: string;
     slashCommand?: ChatSlashCommand;
+    plan?: import("./streaming").ChatTurnPlan;
     progress?: ChatTurnProgressItem[];
     inlineError?: ChatInlineError;
     privacy?: ChatPrivacyProfile;

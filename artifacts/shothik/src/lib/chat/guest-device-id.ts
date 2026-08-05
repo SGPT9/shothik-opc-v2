@@ -3,6 +3,16 @@
  * Used to correlate guest chat history across page loads without auth.
  * Safe to call in SSR contexts (returns null when window is unavailable).
  */
+/**
+ * Headers for guest access to chat/Hermes routes, per the backend contract:
+ * guest requests are identified by an `x-chat-device-id` header whose value
+ * is prefixed with `guest-`. Returns an empty object when unavailable (SSR).
+ */
+export function guestChatHeaders(): Record<string, string> {
+  const deviceId = getGuestDeviceId();
+  return deviceId ? { "x-chat-device-id": deviceId } : {};
+}
+
 export function getGuestDeviceId(): string | null {
   if (typeof window === "undefined") return null;
   try {
