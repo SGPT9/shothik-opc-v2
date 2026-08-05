@@ -57,12 +57,9 @@ export default defineConfig({
         '..',
         'attached_assets',
       ),
-      // Stub convex/react when no real Convex URL is configured.
-      // All useQuery/useMutation calls return undefined — pages show loading states gracefully.
-      // Remove this alias and set VITE_CONVEX_URL once the backend is connected.
-      'convex/react': path.resolve(import.meta.dirname, 'src/lib/stubs/convex-react.ts'),
-      'convex/browser': path.resolve(import.meta.dirname, 'src/lib/stubs/convex-browser.ts'),
-      'convex/server': path.resolve(import.meta.dirname, 'src/lib/stubs/convex-server.ts'),
+      // Convex is connected: VITE_CONVEX_URL points at the live deployment,
+      // so the real convex/react client is used (stubs in src/lib/stubs remain
+      // only as a fallback if the URL is ever removed).
       // @tiptap/pm/markdown is not exported in @tiptap/pm v3 — use a stub
       '@tiptap/pm/markdown': path.resolve(import.meta.dirname, 'src/lib/stubs/tiptap-pm-markdown.ts'),
       // next/* shims so legacy Next.js imports resolve under Vite
