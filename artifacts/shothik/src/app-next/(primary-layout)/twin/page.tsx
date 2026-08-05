@@ -1,58 +1,1010 @@
-
-
+/**
+ * Twin dashboard — Polsia-adapted 4-column workspace.
+ * Frontend-only with realistic mock states (Phase 2 of the Shothik blueprint).
+ *
+ * Columns:
+ *  - Left: agent status widget, Auto Mode toggle, progress stats, Team, subscription card
+ *  - Center-left: task queue (state tabs) + Documents library with version history
+ *  - Center-right: output channels (Publish / Share / Distribute)
+ *  - Right: persistent first-person narrative feed + always-visible composer
+ */
+import { useEffect, useMemo, useRef, useState } from "react";
 import SeededWorkspace from "@/components/twin/SeededWorkspace";
 import { useSearchParams } from "@/lib/navigation";
-import { useEffect, useState } from "react";
-import { useRouter } from "@/lib/navigation";
-import { useTwin } from "@/hooks/useTwin";
-import { useTranslation } from "@/i18n";
-import type { TwinTask, TwinActivityLogEntry, TwinApproval, TwinTransferRequest } from "@/lib/twin-convex";
-import TwinAvatar from "@/components/twin/TwinAvatar";
-import KnowledgeBar from "@/components/twin/KnowledgeBar";
-import TrainingPanel from "@/components/twin/TrainingPanel";
-import TaskFeed from "@/components/twin/TaskFeed";
-import StyleProfileCard from "@/components/twin/StyleProfileCard";
-import TwinOnboarding from "@/components/twin/TwinOnboarding";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Brain, CheckCircle } from "lucide-react";
 import {
-  Brain,
-  Zap,
+  Sparkles,
   Plus,
-  Power,
+  Send,
   Search,
   PenLine,
-  BarChart2,
   FileText,
-  Loader2,
-  Shield,
-  Activity,
-  ArrowRightLeft,
-  Key,
-  LinkIcon,
-  CheckCircle,
-  XCircle,
-  Unlink,
-  AlertTriangle,
-  Sparkles,
   BookOpen,
-  Bot,
-  Moon,
+  Share2,
+  Globe,
+  Mail,
+  Clock,
+  RefreshCcw,
+  Users,
+  ChevronRight,
+  GitBranch,
+  History,
+  X,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+  Loader2,
+  ListChecks,
+  Zap,
+  CreditCard,
+  Mic,
+  RotateCcw,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
-import { saveWritingStudioSeed } from "@/lib/writing-studio-seed";
 
-function TwinLandingPage({ 
-  onStart, 
-  onSkip 
-}: { 
+/* ------------------------------------------------------------------ */
+/* Mock data                                                           */
+/* ------------------------------------------------------------------ */
+
+type TaskStatus = "todo" | "in_progress" | "completed" | "rejected" | "failed";
+type TaskCategory = "Research" | "Draft" | "Edit" | "Publish";
+
+interface TwinTaskMock {
+  id: string;
+  title: string;
+  description: string;
+  category: TaskCategory;
+  schedule?: string;
+  cost: string;
+  status: TaskStatus;
+  failureReason?: string;
+}
+
+const MOCK_TASKS: TwinTaskMock[] = [
+  {
+    id: "t1",
+    title: "Verify sources for Chapter 4",
+    description: "Cross-check the 9 citations flagged during last night's research pass.",
+    category: "Research",
+    schedule: "Tonight",
+    cost: "~12 credits",
+    status: "todo",
+  },
+  {
+    id: "t2",
+    title: "Outline Part II — 'The Turn'",
+    description: "Draft a 3-act outline from your margin notes and the approved synopsis.",
+    category: "Draft",
+    schedule: "Tonight",
+    cost: "~20 credits",
+    status: "todo",
+  },
+  {
+    id: "t3",
+    title: "Weekly progress report",
+    description: "Summarize what shipped this week in plain English plus the numbers.",
+    category: "Edit",
+    schedule: "Recurring · Sun",
+    cost: "~4 credits",
+    status: "todo",
+  },
+  {
+    id: "t4",
+    title: "Drafting Chapter 3 — second pass",
+    description: "Tightening dialogue in scenes 2 and 5, keeping your voice profile.",
+    category: "Draft",
+    cost: "~25 min left",
+    status: "in_progress",
+  },
+  {
+    id: "t5",
+    title: "Researching comparable titles",
+    description: "Scanning 2024–2026 releases in your genre for positioning notes.",
+    category: "Research",
+    cost: "~10 min left",
+    status: "in_progress",
+  },
+  {
+    id: "t6",
+    title: "Chapter 2 line edit",
+    description: "Fixed 41 style inconsistencies, preserved all flagged passages.",
+    category: "Edit",
+    cost: "18 credits",
+    status: "completed",
+  },
+  {
+    id: "t7",
+    title: "Source verification — Chapter 3",
+    description: "Verified 12 of 12 sources; replaced one dead link with an archived copy.",
+    category: "Research",
+    cost: "9 credits",
+    status: "completed",
+  },
+  {
+    id: "t8",
+    title: "Day 6 — Progress Report",
+    description: "What shipped: 4,120 words. The math: 2 chapters at 92% confidence.",
+    category: "Edit",
+    cost: "3 credits",
+    status: "completed",
+  },
+  {
+    id: "t9",
+    title: "Auto-post excerpt to socials",
+    description: "You rejected this — Distribute stays off until you turn it on.",
+    category: "Publish",
+    cost: "—",
+    status: "rejected",
+  },
+  {
+    id: "t10",
+    title: "Import notes from old drive folder",
+    description: "The folder link expired before I could finish syncing. Want me to retry?",
+    category: "Research",
+    cost: "0 credits charged",
+    status: "failed",
+    failureReason: "Source link expired",
+  },
+];
+
+interface TwinDocMock {
+  id: string;
+  title: string;
+  kind: "Research Report" | "Chapter Draft" | "Outline" | "Progress Report";
+  updated: string;
+  versions: { id: string; message: string; time: string; current?: boolean }[];
+}
+
+const MOCK_DOCS: TwinDocMock[] = [
+  {
+    id: "d1",
+    title: "Chapter 3 — Draft",
+    kind: "Chapter Draft",
+    updated: "14m ago",
+    versions: [
+      { id: "v4", message: "Second pass: tightened dialogue in scenes 2 & 5", time: "14m ago", current: true },
+      { id: "v3", message: "Applied your margin notes from Tuesday", time: "Yesterday, 11:42 PM" },
+      { id: "v2", message: "First full draft from approved outline", time: "Aug 3, 10:15 PM" },
+      { id: "v1", message: "Initial scaffold from Chapter 3 outline", time: "Aug 2, 9:03 PM" },
+    ],
+  },
+  {
+    id: "d2",
+    title: "Comparable Titles — Research Report",
+    kind: "Research Report",
+    updated: "1h ago",
+    versions: [
+      { id: "v2", message: "Added 6 titles from 2026 releases, updated positioning notes", time: "1h ago", current: true },
+      { id: "v1", message: "First scan: 14 comparable titles with verified sales data", time: "Aug 4, 2:20 AM" },
+    ],
+  },
+  {
+    id: "d3",
+    title: "Part II Outline — Now / Next / Later",
+    kind: "Outline",
+    updated: "Yesterday",
+    versions: [
+      { id: "v3", message: "Moved the reveal from Next to Now per your note", time: "Yesterday, 8:12 PM", current: true },
+      { id: "v2", message: "Split act two into two beats", time: "Aug 3, 7:44 PM" },
+      { id: "v1", message: "Initial Now/Next/Later roadmap", time: "Aug 2, 11:58 PM" },
+    ],
+  },
+  {
+    id: "d4",
+    title: "Day 6 — Progress Report",
+    kind: "Progress Report",
+    updated: "Yesterday",
+    versions: [
+      { id: "v1", message: "What Shipped + The Math for Aug 4", time: "Yesterday, 6:00 AM", current: true },
+    ],
+  },
+];
+
+interface FeedEntry {
+  id: string;
+  time: string;
+  text: string;
+  fromUser?: boolean;
+}
+
+const MOCK_FEED: FeedEntry[] = [
+  {
+    id: "f1",
+    time: "9:14 PM",
+    text: "Finished verifying 12 sources for Chapter 3. One link was dead, so I swapped in an archived copy — flagged it in the research report if you want to double-check.",
+  },
+  {
+    id: "f2",
+    time: "9:31 PM",
+    text: "Started the second pass on Chapter 3. I'm tightening dialogue in scenes 2 and 5 and leaving everything you marked \"keep\" untouched.",
+  },
+  {
+    id: "f3",
+    time: "10:02 PM",
+    text: "While that runs, I scanned this year's releases in your genre. Found 6 new comparable titles — the full breakdown is in the research report.",
+  },
+  {
+    id: "f4",
+    time: "10:05 PM",
+    fromUser: true,
+    text: "Great — hold the outline for Part II until I send you my notes tomorrow.",
+  },
+  {
+    id: "f5",
+    time: "10:06 PM",
+    text: "Got it. I've moved the Part II outline to tonight's queue but paused it until your notes arrive. Chapter 3's second pass should be done in about 25 minutes — want me to start the line edit right after, or wait for you?",
+  },
+];
+
+const MOCK_TEAM = [
+  { name: "Nadia Rahman", role: "Editor", initials: "NR" },
+  { name: "Sam Osei", role: "Reviewer", initials: "SO" },
+];
+
+/* ------------------------------------------------------------------ */
+/* Small shared pieces                                                 */
+/* ------------------------------------------------------------------ */
+
+const CATEGORY_STYLES: Record<TaskCategory, string> = {
+  Research: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
+  Draft: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
+  Edit: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+  Publish: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
+};
+
+const CATEGORY_ICONS: Record<TaskCategory, React.ElementType> = {
+  Research: Search,
+  Draft: PenLine,
+  Edit: ListChecks,
+  Publish: Globe,
+};
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+function PanelCard({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("rounded-2xl border border-border/80 bg-card p-4", className)}>
+      {children}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Left column                                                         */
+/* ------------------------------------------------------------------ */
+
+function AgentStatusWidget({ autoMode }: { autoMode: boolean }) {
+  return (
+    <PanelCard>
+      <div className="flex items-center gap-3">
+        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-500/10">
+          <Sparkles className="h-5 w-5 text-indigo-500" />
+          <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
+            <span
+              className={cn(
+                "absolute inline-flex h-full w-full rounded-full opacity-60",
+                autoMode ? "animate-ping bg-emerald-400" : "bg-muted-foreground/40"
+              )}
+            />
+            <span
+              className={cn(
+                "relative inline-flex h-3 w-3 rounded-full border-2 border-card",
+                autoMode ? "bg-emerald-500" : "bg-muted-foreground/50"
+              )}
+            />
+          </span>
+        </div>
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-foreground">Your Twin</p>
+          <p className="truncate text-xs text-muted-foreground" data-testid="text-twin-status">
+            {autoMode ? "Drafting Chapter 3, second pass…" : "Standing by — ask me anything."}
+          </p>
+        </div>
+      </div>
+    </PanelCard>
+  );
+}
+
+function AutoModeCard({
+  autoMode,
+  onToggle,
+}: {
+  autoMode: boolean;
+  onToggle: (v: boolean) => void;
+}) {
+  return (
+    <PanelCard>
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="flex items-center gap-1.5">
+            <Zap className="h-3.5 w-3.5 text-indigo-500" />
+            <p className="text-sm font-medium text-foreground">Auto Mode</p>
+          </div>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            {autoMode
+              ? "I'll keep working overnight and leave you a briefing."
+              : "I'll only act when you ask."}
+          </p>
+        </div>
+        <Switch
+          checked={autoMode}
+          onCheckedChange={onToggle}
+          aria-label="Toggle Auto Mode"
+          data-testid="switch-auto-mode"
+        />
+      </div>
+    </PanelCard>
+  );
+}
+
+const PROGRESS_STATS = [
+  { label: "Words written", value: "18,430" },
+  { label: "Sources verified", value: "47" },
+  { label: "Chapters drafted", value: "3" },
+];
+
+function ProgressStatsCard() {
+  return (
+    <PanelCard>
+      <SectionLabel>Progress</SectionLabel>
+      <div className="mt-3 grid grid-cols-3 gap-2">
+        {PROGRESS_STATS.map((s) => (
+          <div key={s.label} className="min-w-0">
+            <p className="text-base font-semibold tabular-nums text-foreground">{s.value}</p>
+            <p className="text-[11px] leading-tight text-muted-foreground">{s.label}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mt-3 flex items-center gap-1 text-[11px] text-muted-foreground">
+        <Clock className="h-3 w-3" /> Updated 4m ago
+      </p>
+    </PanelCard>
+  );
+}
+
+function TeamCard({ onInvite }: { onInvite: () => void }) {
+  return (
+    <PanelCard>
+      <div className="flex items-center justify-between">
+        <SectionLabel>Team · This project</SectionLabel>
+        <Users className="h-3.5 w-3.5 text-muted-foreground" />
+      </div>
+      <div className="mt-3 space-y-2">
+        {MOCK_TEAM.map((m) => (
+          <div key={m.name} className="flex items-center gap-2.5">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted font-mono text-[10px] font-medium text-foreground">
+              {m.initials}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-medium text-foreground">{m.name}</p>
+              <p className="text-[11px] text-muted-foreground">{m.role}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        className="mt-3 w-full rounded-xl text-xs"
+        onClick={onInvite}
+        data-testid="button-add-collaborator"
+      >
+        <Plus className="mr-1 h-3.5 w-3.5" /> Add Collaborator
+      </Button>
+    </PanelCard>
+  );
+}
+
+function InviteModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  const [email, setEmail] = useState("");
+  const [sent, setSent] = useState(false);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        onOpenChange(v);
+        if (!v) {
+          setSent(false);
+          setEmail("");
+        }
+      }}
+    >
+      <DialogContent className="sm:max-w-sm">
+        <DialogTitle>Add Collaborator</DialogTitle>
+        <DialogDescription className="sr-only">Invite a collaborator to this project</DialogDescription>
+        {sent ? (
+          <div className="flex flex-col items-center gap-2 py-4 text-center">
+            <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+            <p className="text-sm text-foreground">Invite sent to {email}</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="collaborator@email.com"
+              className="w-full rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              data-testid="input-invite-email"
+            />
+            <p className="rounded-xl bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
+              This invite only grants access to <span className="font-medium text-foreground">this project</span>.
+              It does not grant access to your other books or research spaces.
+            </p>
+            <Button
+              className="w-full rounded-xl"
+              disabled={!email.includes("@")}
+              onClick={() => setSent(true)}
+              data-testid="button-send-invite"
+            >
+              <Mail className="mr-1.5 h-4 w-4" /> Send Invite
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SubscriptionCard() {
+  return (
+    <PanelCard className="border-amber-500/30 bg-amber-500/5">
+      <div className="flex items-start gap-2.5">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+        <div className="min-w-0">
+          <p className="text-sm font-medium text-foreground">Your plan lapsed 2 days ago</p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+            Everything here stays visible and your drafts are safe — but Twin has paused new work.
+          </p>
+          <div className="mt-3 space-y-1.5">
+            <Button size="sm" className="w-full rounded-xl text-xs" data-testid="button-resubscribe">
+              <CreditCard className="mr-1.5 h-3.5 w-3.5" /> Resubscribe to keep Twin working
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full rounded-xl text-xs text-muted-foreground">
+              Keep drafts saved — $2/mo
+            </Button>
+          </div>
+        </div>
+      </div>
+    </PanelCard>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Center-left: task queue + documents                                 */
+/* ------------------------------------------------------------------ */
+
+const STATUS_TABS: { key: TaskStatus; label: string }[] = [
+  { key: "todo", label: "To Do" },
+  { key: "in_progress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+  { key: "rejected", label: "Rejected" },
+  { key: "failed", label: "Failed" },
+];
+
+function TaskCard({ task }: { task: TwinTaskMock }) {
+  const Icon = CATEGORY_ICONS[task.category];
+  return (
+    <div
+      className="rounded-xl border border-border/80 bg-background p-3 transition-colors hover:border-muted-foreground/30"
+      data-testid={`card-task-${task.id}`}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-sm font-medium leading-snug text-foreground">{task.title}</p>
+        {task.status === "in_progress" && (
+          <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-indigo-500" />
+        )}
+        {task.status === "completed" && (
+          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+        )}
+        {task.status === "rejected" && (
+          <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        )}
+        {task.status === "failed" && (
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
+        )}
+      </div>
+      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{task.description}</p>
+      {task.failureReason && (
+        <p className="mt-1.5 flex items-center gap-1 text-[11px] text-red-500">
+          <AlertTriangle className="h-3 w-3" /> {task.failureReason}
+        </p>
+      )}
+      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]",
+            CATEGORY_STYLES[task.category]
+          )}
+        >
+          <Icon className="h-2.5 w-2.5" /> {task.category}
+        </span>
+        {task.schedule && (
+          <span className="inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            {task.schedule.startsWith("Recurring") ? (
+              <RefreshCcw className="h-2.5 w-2.5" />
+            ) : (
+              <Clock className="h-2.5 w-2.5" />
+            )}
+            {task.schedule}
+          </span>
+        )}
+        <span className="inline-flex items-center rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+          {task.cost}
+        </span>
+        {task.status === "failed" && (
+          <button className="ml-auto inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-mono text-[10px] text-indigo-500 hover:bg-indigo-500/10">
+            <RotateCcw className="h-2.5 w-2.5" /> Retry
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function NewTaskModal({
+  open,
+  onOpenChange,
+  onCreate,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onCreate: (t: TwinTaskMock) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState<TaskCategory>("Research");
+  const [tonight, setTonight] = useState(true);
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogTitle>New Task</DialogTitle>
+        <DialogDescription className="sr-only">Queue a new goal for your Twin</DialogDescription>
+        <div className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">What should Twin work on?</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Research publishers for my genre"
+              className="w-full rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              data-testid="input-new-task-title"
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Category</label>
+            <div className="grid grid-cols-4 gap-2">
+              {(Object.keys(CATEGORY_ICONS) as TaskCategory[]).map((c) => {
+                const Icon = CATEGORY_ICONS[c];
+                return (
+                  <button
+                    key={c}
+                    onClick={() => setCategory(c)}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-xl border p-2.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                      category === c
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:border-muted-foreground/40"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {c}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <label className="flex items-center justify-between rounded-xl border border-border p-3">
+            <span className="text-sm text-foreground">Run tonight</span>
+            <Switch checked={tonight} onCheckedChange={setTonight} />
+          </label>
+          <Button
+            className="w-full rounded-xl"
+            disabled={!title.trim()}
+            onClick={() => {
+              onCreate({
+                id: `t-${Date.now()}`,
+                title: title.trim(),
+                description: "Queued by you — Twin will pick this up next.",
+                category,
+                schedule: tonight ? "Tonight" : undefined,
+                cost: "~10 credits",
+                status: "todo",
+              });
+              setTitle("");
+              onOpenChange(false);
+            }}
+            data-testid="button-create-task"
+          >
+            <Plus className="mr-1.5 h-4 w-4" /> Add to queue
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ManageTasksModal({
+  open,
+  onOpenChange,
+  tasks,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  tasks: TwinTaskMock[];
+}) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
+        <DialogTitle>Manage Tasks</DialogTitle>
+        <DialogDescription className="sr-only">Full lifecycle view of all Twin tasks</DialogDescription>
+        <div className="space-y-5">
+          {STATUS_TABS.map((tab) => {
+            const group = tasks.filter((t) => t.status === tab.key);
+            if (group.length === 0) return null;
+            return (
+              <div key={tab.key}>
+                <div className="mb-2 flex items-center gap-2">
+                  <SectionLabel>{tab.label}</SectionLabel>
+                  <span className="font-mono text-[10px] text-muted-foreground">{group.length}</span>
+                </div>
+                <div className="space-y-2">
+                  {group.map((t) => (
+                    <TaskCard key={t.id} task={t} />
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function TaskQueue({ tasks, onNewTask, onManage }: { tasks: TwinTaskMock[]; onNewTask: () => void; onManage: () => void }) {
+  const [tab, setTab] = useState<TaskStatus>("in_progress");
+  const visible = tasks.filter((t) => t.status === tab);
+
+  return (
+    <PanelCard className="flex min-h-0 flex-col">
+      <div className="flex items-center justify-between gap-2">
+        <SectionLabel>Task Queue</SectionLabel>
+        <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" className="h-7 rounded-lg px-2 text-xs" onClick={onManage} data-testid="button-manage-tasks">
+            <ListChecks className="mr-1 h-3.5 w-3.5" /> Manage
+          </Button>
+          <Button size="sm" className="h-7 rounded-lg px-2 text-xs" onClick={onNewTask} data-testid="button-new-task">
+            <Plus className="mr-1 h-3.5 w-3.5" /> New Task
+          </Button>
+        </div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-1">
+        {STATUS_TABS.map((t) => {
+          const count = tasks.filter((x) => x.status === t.key).length;
+          return (
+            <button
+              key={t.key}
+              onClick={() => setTab(t.key)}
+              className={cn(
+                "rounded-lg px-2 py-1 font-mono text-[10px] transition-colors",
+                tab === t.key
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted/60"
+              )}
+              data-testid={`tab-tasks-${t.key}`}
+            >
+              {t.label} · {count}
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-3 space-y-2">
+        {visible.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+            Nothing here right now.
+          </p>
+        ) : (
+          visible.map((t) => <TaskCard key={t.id} task={t} />)
+        )}
+      </div>
+    </PanelCard>
+  );
+}
+
+const DOC_ICONS: Record<TwinDocMock["kind"], React.ElementType> = {
+  "Research Report": Search,
+  "Chapter Draft": BookOpen,
+  Outline: ListChecks,
+  "Progress Report": FileText,
+};
+
+function DocumentsLibrary({ onOpenVersions }: { onOpenVersions: (doc: TwinDocMock) => void }) {
+  return (
+    <PanelCard>
+      <SectionLabel>Documents</SectionLabel>
+      <div className="mt-3 space-y-1.5">
+        {MOCK_DOCS.map((doc) => {
+          const Icon = DOC_ICONS[doc.kind];
+          return (
+            <button
+              key={doc.id}
+              onClick={() => onOpenVersions(doc)}
+              className="flex w-full items-center gap-2.5 rounded-xl border border-border/80 bg-background p-2.5 text-left transition-colors hover:border-muted-foreground/30"
+              data-testid={`card-doc-${doc.id}`}
+            >
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
+                <Icon className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-xs font-medium text-foreground">{doc.title}</p>
+                <p className="font-mono text-[10px] text-muted-foreground">
+                  {doc.kind} · {doc.versions.length} version{doc.versions.length > 1 ? "s" : ""} · {doc.updated}
+                </p>
+              </div>
+              <History className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            </button>
+          );
+        })}
+      </div>
+    </PanelCard>
+  );
+}
+
+function VersionHistoryModal({
+  doc,
+  onClose,
+}: {
+  doc: TwinDocMock | null;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open={!!doc} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogTitle className="flex items-center gap-2">
+          <GitBranch className="h-4 w-4 text-muted-foreground" /> {doc?.title}
+        </DialogTitle>
+        <DialogDescription className="sr-only">Version history</DialogDescription>
+        <div className="space-y-0">
+          {doc?.versions.map((v, i) => (
+            <div key={v.id} className="relative flex gap-3 pb-4 last:pb-0">
+              {i < doc.versions.length - 1 && (
+                <span className="absolute left-[7px] top-5 h-full w-px bg-border" />
+              )}
+              <span
+                className={cn(
+                  "mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2",
+                  v.current ? "border-indigo-500 bg-indigo-500/20" : "border-border bg-background"
+                )}
+              />
+              <div className="min-w-0 flex-1">
+                <p className="text-sm leading-snug text-foreground">{v.message}</p>
+                <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">{v.time}</p>
+              </div>
+              {v.current ? (
+                <Badge variant="secondary" className="h-5 shrink-0 rounded-md font-mono text-[10px]">
+                  Current
+                </Badge>
+              ) : (
+                <Button variant="ghost" size="sm" className="h-6 shrink-0 rounded-md px-2 font-mono text-[10px] text-muted-foreground">
+                  <RotateCcw className="mr-1 h-2.5 w-2.5" /> Revert
+                </Button>
+              )}
+            </div>
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Center-right: output channels                                       */
+/* ------------------------------------------------------------------ */
+
+const OUTPUT_CHANNELS = [
+  {
+    id: "publish",
+    title: "Publish",
+    icon: BookOpen,
+    accent: "text-emerald-500 bg-emerald-500/10",
+    description: "Push a finished chapter or article to Books & Marketplace.",
+    status: "Chapter 2 published · Aug 3",
+    action: "Publish Chapter 3",
+    ready: true,
+  },
+  {
+    id: "share",
+    title: "Share",
+    icon: Share2,
+    accent: "text-indigo-500 bg-indigo-500/10",
+    description: "Send the latest draft to collaborators by email or link.",
+    status: "Draft sent to 2 reviewers · Yesterday",
+    action: "Share latest draft",
+    ready: true,
+  },
+  {
+    id: "distribute",
+    title: "Distribute",
+    icon: Globe,
+    accent: "text-cyan-500 bg-cyan-500/10",
+    description: "Auto-post excerpts and summaries to connected socials.",
+    status: "Off — turn on when you're ready",
+    action: "Turn on",
+    ready: false,
+  },
+];
+
+function OutputChannels() {
+  const [distributeOn, setDistributeOn] = useState(false);
+  return (
+    <div className="space-y-3">
+      <SectionLabel>Output Channels</SectionLabel>
+      {OUTPUT_CHANNELS.map((ch) => {
+        const Icon = ch.icon;
+        const isDistribute = ch.id === "distribute";
+        return (
+          <PanelCard key={ch.id} className="p-3.5">
+            <div className="flex items-center gap-2.5">
+              <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", ch.accent)}>
+                <Icon className="h-4 w-4" />
+              </div>
+              <p className="text-sm font-semibold text-foreground">{ch.title}</p>
+              {isDistribute && (
+                <span className="ml-auto">
+                  <Switch
+                    checked={distributeOn}
+                    onCheckedChange={setDistributeOn}
+                    aria-label="Toggle Distribute"
+                    data-testid="switch-distribute"
+                  />
+                </span>
+              )}
+            </div>
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{ch.description}</p>
+            <p className="mt-2 flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
+              {ch.ready || (isDistribute && distributeOn) ? (
+                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+              ) : (
+                <Clock className="h-3 w-3" />
+              )}
+              {isDistribute && distributeOn ? "On — Twin will ask before every post" : ch.status}
+            </p>
+            {!isDistribute && (
+              <Button variant="outline" size="sm" className="mt-2.5 w-full rounded-xl text-xs" data-testid={`button-channel-${ch.id}`}>
+                {ch.action} <ChevronRight className="ml-1 h-3 w-3" />
+              </Button>
+            )}
+          </PanelCard>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Right column: narrative feed + composer                             */
+/* ------------------------------------------------------------------ */
+
+function NarrativeFeed() {
+  const [entries, setEntries] = useState<FeedEntry[]>(MOCK_FEED);
+  const [draft, setDraft] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const send = () => {
+    const text = draft.trim();
+    if (!text) return;
+    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    setEntries((prev) => [
+      ...prev,
+      { id: `u-${Date.now()}`, time, text, fromUser: true },
+      {
+        id: `a-${Date.now()}`,
+        time,
+        text: "Noted — I've folded that into tonight's plan. I'll flag anything that changes before I act on it.",
+      },
+    ]);
+    setDraft("");
+    requestAnimationFrame(() => {
+      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
+    });
+  };
+
+  return (
+    <div className="flex h-full min-h-0 flex-col rounded-2xl border border-border/80 bg-card">
+      <div className="flex items-center justify-between border-b border-border/80 px-4 py-3">
+        <SectionLabel>Twin · Live</SectionLabel>
+        <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-500">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> working
+        </span>
+      </div>
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+        {entries.map((e) => (
+          <div key={e.id} className={cn("flex flex-col gap-1", e.fromUser && "items-end")}>
+            <span className="font-mono text-[10px] text-muted-foreground">
+              {e.fromUser ? "You" : "Twin"} · {e.time}
+            </span>
+            <p
+              className={cn(
+                "max-w-[92%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed",
+                e.fromUser
+                  ? "rounded-br-md bg-primary text-primary-foreground"
+                  : "rounded-bl-md bg-muted/60 text-foreground"
+              )}
+            >
+              {e.text}
+            </p>
+          </div>
+        ))}
+      </div>
+      <div className="border-t border-border/80 p-3">
+        <div className="flex items-end gap-2 rounded-3xl border border-border/80 bg-muted/10 px-3 py-2 focus-within:ring-2 focus-within:ring-primary/40">
+          <textarea
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
+            }}
+            rows={1}
+            placeholder="Interrupt or redirect Twin…"
+            className="max-h-28 min-h-[24px] flex-1 resize-none bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+            data-testid="input-twin-composer"
+          />
+          <button
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/60"
+            aria-label="Voice input"
+            data-testid="button-twin-voice"
+          >
+            <Mic className="h-4 w-4" />
+          </button>
+          <button
+            onClick={send}
+            disabled={!draft.trim()}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
+            aria-label="Send"
+            data-testid="button-twin-send"
+          >
+            <Send className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Page                                                                */
+/* ------------------------------------------------------------------ */
+
+function TwinLandingPage({
+  onStart,
+  onSkip,
+}: {
   onStart: () => void;
   onSkip: () => void;
 }) {
-  const { t } = useTranslation();
-
   return (
     <div className="container mx-auto max-w-4xl py-12 px-4 animate-in fade-in zoom-in-95 duration-300">
       <div className="text-center mb-12">
@@ -132,646 +1084,44 @@ function TwinLandingPage({
   );
 }
 
-const TASK_TYPES_CONFIG: { type: "research" | "writing" | "analysis" | "summary"; labelKey: string; icon: React.ElementType }[] = [
-  { type: "research", labelKey: "twinDashboard.research", icon: Search },
-  { type: "writing", labelKey: "twinDashboard.writing", icon: PenLine },
-  { type: "analysis", labelKey: "twinDashboard.analysis", icon: BarChart2 },
-  { type: "summary", labelKey: "twinDashboard.summary", icon: FileText },
-];
-
-const SKILL_OPTIONS_CONFIG = [
-  { key: "book:write", labelKey: "twinDashboard.bookWriting" },
-  { key: "book:publish", labelKey: "twinDashboard.bookPublishing" },
-  { key: "forum:create", labelKey: "twinDashboard.forumCreation" },
-  { key: "forum:post", labelKey: "twinDashboard.forumPosting" },
-  { key: "community:preview", labelKey: "twinDashboard.communityPreviews" },
-];
-
-function NewTaskModal({
-  open,
-  onOpenChange,
-  onSubmit,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { title: string; description: string; taskType: "research" | "writing" | "analysis" | "summary" }) => Promise<void>;
-}) {
-  const { t } = useTranslation();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [taskType, setTaskType] = useState<"research" | "writing" | "analysis" | "summary">("research");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    if (!title.trim()) return;
-    setIsSubmitting(true);
-    try {
-      await onSubmit({ title, description, taskType });
-      onOpenChange(false);
-      setTitle("");
-      setDescription("");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md max-sm:!max-w-[100vw] max-sm:!h-[100dvh] max-sm:!rounded-none max-sm:!top-0 max-sm:!left-0 max-sm:!translate-x-0 max-sm:!translate-y-0">
-        <DialogTitle>{t("twinDashboard.queueTaskTitle")}</DialogTitle>
-        <DialogDescription className="sr-only">{t("twinDashboard.queueTaskTitle")}</DialogDescription>
-        <div className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">{t("twinDashboard.taskType")}</label>
-            <div className="grid grid-cols-2 gap-2">
-              {TASK_TYPES_CONFIG.map((tc) => {
-                const Icon = tc.icon;
-                return (
-                  <button
-                    key={tc.type}
-                    onClick={() => setTaskType(tc.type)}
-                    className={cn(
-                      "flex items-center gap-2 rounded-xl border p-3 text-left transition-all text-sm font-medium focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none",
-                      taskType === tc.type
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-muted-foreground/40"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {t(tc.labelKey)}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">{t("twinDashboard.taskTitle")}</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t("twinDashboard.taskTitlePlaceholder")}
-              className="w-full rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground placeholder:text-muted-foreground"
-            />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">
-              {t("twinDashboard.taskDetails")} <span className="font-normal text-muted-foreground">({t("twinDashboard.taskDetailsOptional")})</span>
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder={t("twinDashboard.taskDetailsPlaceholder")}
-              rows={3}
-              className="w-full rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary text-foreground placeholder:text-muted-foreground resize-none"
-            />
-          </div>
-        </div>
-        <div className="mt-2 flex gap-2">
-          <Button variant="ghost" className="flex-1" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
-          <Button
-            className="flex-1"
-            onClick={handleSubmit}
-            disabled={!title.trim() || isSubmitting}
-          >
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t("twinDashboard.queueTask")}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ConfirmDialog({
-  open,
-  onOpenChange,
-  title,
-  message,
-  onConfirm,
-  confirmLabel,
-  destructive = false,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  message: string;
-  onConfirm: () => void;
-  confirmLabel?: string;
-  destructive?: boolean;
-}) {
-  const { t } = useTranslation();
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogTitle>{title}</DialogTitle>
-        <DialogDescription>{message}</DialogDescription>
-        <div className="flex gap-2 mt-2">
-          <Button variant="ghost" className="flex-1" onClick={() => onOpenChange(false)}>{t("common.cancel")}</Button>
-          <Button
-            className={cn("flex-1", destructive && "bg-destructive hover:bg-destructive/90 text-destructive-foreground")}
-            onClick={onConfirm}
-          >
-            {confirmLabel ?? t("common.confirm")}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ClaimSection({ onClaim }: { onClaim: (token: string) => Promise<void> }) {
-  const { t } = useTranslation();
-  const [token, setToken] = useState("");
-  const [claiming, setClaiming] = useState(false);
-  const [error, setError] = useState("");
-
-  const handleClaim = async () => {
-    if (!token.trim()) return;
-    setClaiming(true);
-    setError("");
-    try {
-      await onClaim(token.trim());
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to claim Twin");
-    } finally {
-      setClaiming(false);
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <LinkIcon className="h-4 w-4 text-primary" />
-          {t("twinDashboard.linkTwin")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-sm text-muted-foreground">
-          {t("twinDashboard.linkTwinDesc")}
-        </p>
-        <input
-          type="text"
-          value={token}
-          onChange={(e) => setToken(e.target.value)}
-          placeholder={t("twinDashboard.enterToken")}
-          className="w-full rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
-        />
-        {error && <p className="text-xs text-destructive">{error}</p>}
-        <Button
-          onClick={handleClaim}
-          disabled={!token.trim() || claiming}
-          className="w-full"
-        >
-          {claiming ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <LinkIcon className="h-4 w-4 mr-2" />}
-          {t("twinDashboard.claimTwin")}
-        </Button>
-      </CardContent>
-    </Card>
-  );
-}
-
-function PermissionsTab({
-  allowedSkills,
-  approvalRequiredActions,
-  onUpdate,
-}: {
-  allowedSkills: string[];
-  approvalRequiredActions: string[];
-  onUpdate: (data: { allowedSkills?: string[]; approvalRequiredActions?: string[] }) => Promise<void>;
-}) {
-  const { t } = useTranslation();
-  const [saving, setSaving] = useState(false);
-
-  const toggleSkill = async (skill: string) => {
-    setSaving(true);
-    try {
-      const newSkills = allowedSkills.includes(skill)
-        ? allowedSkills.filter((s) => s !== skill)
-        : [...allowedSkills, skill];
-      await onUpdate({ allowedSkills: newSkills });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const toggleApproval = async (action: string) => {
-    setSaving(true);
-    try {
-      const newActions = approvalRequiredActions.includes(action)
-        ? approvalRequiredActions.filter((a) => a !== action)
-        : [...approvalRequiredActions, action];
-      await onUpdate({ approvalRequiredActions: newActions });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Shield className="h-4 w-4 text-primary" />
-          {t("twinDashboard.permissions")}
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        <div>
-          <p className="text-sm font-medium text-foreground mb-3">{t("twinDashboard.allowedSkills")}</p>
-          <div className="space-y-2">
-            {SKILL_OPTIONS_CONFIG.map((skill) => (
-              <label key={skill.key} className="flex items-center justify-between rounded-xl border border-border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
-                <span className="text-sm text-foreground">{t(skill.labelKey)}</span>
-                <button
-                  onClick={() => toggleSkill(skill.key)}
-                  disabled={saving}
-                  className={cn(
-                    "relative h-6 w-11 rounded-full transition-colors",
-                    allowedSkills.includes(skill.key) ? "bg-primary" : "bg-muted-foreground/30"
-                  )}
-                >
-                  <span
-                    className={cn(
-                      "absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform",
-                      allowedSkills.includes(skill.key) ? "translate-x-5" : "translate-x-0.5"
-                    )}
-                  />
-                </button>
-              </label>
-            ))}
-          </div>
-        </div>
-        <div>
-          <p className="text-sm font-medium text-foreground mb-3">{t("twinDashboard.requireApproval")}</p>
-          <p className="text-xs text-muted-foreground mb-3">{t("twinDashboard.requireApprovalDesc")}</p>
-          <div className="space-y-2">
-            {SKILL_OPTIONS_CONFIG.map((skill) => (
-              <label key={skill.key} className="flex items-center gap-3 rounded-xl border border-border p-3 cursor-pointer hover:bg-muted/50 transition-colors">
-                <input
-                  type="checkbox"
-                  checked={approvalRequiredActions.includes(skill.key)}
-                  onChange={() => toggleApproval(skill.key)}
-                  disabled={saving}
-                  className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                />
-                <span className="text-sm text-foreground">{t(skill.labelKey)}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function ActivityLogTab({
-  logs,
-  hasMore,
-  onLoadMore,
-}: {
-  logs: TwinActivityLogEntry[];
-  hasMore: boolean;
-  onLoadMore: () => void;
-}) {
-  const { t } = useTranslation();
-
-  if (logs.length === 0) {
-    return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <Activity className="h-8 w-8 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm font-medium text-foreground">{t("twinDashboard.noActivity")}</p>
-          <p className="text-xs text-muted-foreground mt-1">{t("twinDashboard.noActivityHint")}</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Activity className="h-4 w-4 text-primary" />
-          {t("twinDashboard.activityLog")}
-          <span className="ml-auto text-xs font-normal text-muted-foreground">{t("twinDashboard.entries", { count: logs.length })}</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {logs.map((log) => (
-            <div key={log._id} className="flex items-start gap-3 rounded-xl bg-muted/50 p-3">
-              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                <Activity className="h-4 w-4 text-primary" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium text-foreground">{log.action.replace(/_/g, " ")}</p>
-                {log.targetResource && (
-                  <p className="text-xs text-muted-foreground mt-0.5">Target: {log.targetResource}</p>
-                )}
-                <p className="text-[11px] text-muted-foreground mt-1">
-                  {new Date(log.timestamp).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          ))}
-          {hasMore && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-primary hover:text-primary/80"
-              onClick={onLoadMore}
-            >
-              {t("twinDashboard.loadMore")}
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function PendingApprovalsSection({
-  approvals,
-  onApprove,
-  onReject,
-}: {
-  approvals: TwinApproval[];
-  onApprove: (id: string) => Promise<void>;
-  onReject: (id: string) => Promise<void>;
-}) {
-  const { t } = useTranslation();
-  if (approvals.length === 0) return null;
-
-  return (
-    <Card className="border-warning/30 bg-warning/5">
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <AlertTriangle className="h-4 w-4 text-warning" />
-          {t("twinDashboard.pendingApprovals")}
-          <span className="ml-auto rounded-full bg-warning px-2 py-0.5 text-xs font-bold text-warning-foreground">
-            {approvals.length}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {approvals.map((approval) => (
-            <div key={approval._id} className="flex items-center justify-between rounded-xl border border-border bg-card p-3">
-              <div>
-                <p className="text-sm font-medium text-foreground">{approval.action.replace(/_/g, " ")}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Requested {new Date(approval.requestedAt).toLocaleString()}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => onReject(approval._id)}
-                  className="text-destructive hover:bg-destructive/10"
-                >
-                  <XCircle className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => onApprove(approval._id)}
-                  className="bg-success hover:bg-success/90 text-white"
-                >
-                  <CheckCircle className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-
-function TransferSection({
-  onTransfer,
-  onResolveRecipient,
-  incomingRequests,
-  onAcceptTransfer,
-  onRejectTransfer,
-}: {
-  onTransfer: (toMasterId: string) => Promise<void>;
-  onResolveRecipient: (identifier: string) => Promise<{ userId: string; name: string } | null>;
-  incomingRequests: TwinTransferRequest[];
-  onAcceptTransfer: (args: { requestId: string }) => Promise<unknown>;
-  onRejectTransfer: (args: { requestId: string }) => Promise<unknown>;
-}) {
-  const { t } = useTranslation();
-  const [recipient, setRecipient] = useState("");
-  const [resolvedRecipient, setResolvedRecipient] = useState<{ userId: string; name: string } | null>(null);
-  const [resolving, setResolving] = useState(false);
-  const [resolveError, setResolveError] = useState<string | null>(null);
-  const [transferring, setTransferring] = useState(false);
-
-  const handleResolve = async () => {
-    if (!recipient.trim()) return;
-    setResolving(true);
-    setResolveError(null);
-    setResolvedRecipient(null);
-    try {
-      const result = await onResolveRecipient(recipient.trim());
-      if (result) {
-        setResolvedRecipient(result);
-      } else {
-        setResolveError(t("twinDashboard.noUserFound"));
-      }
-    } catch {
-      setResolveError(t("twinDashboard.noUserFound"));
-    } finally {
-      setResolving(false);
-    }
-  };
-
-  const handleTransfer = async () => {
-    const targetId = resolvedRecipient?.userId ?? recipient.trim();
-    if (!targetId) return;
-    setTransferring(true);
-    try {
-      await onTransfer(targetId);
-      setRecipient("");
-      setResolvedRecipient(null);
-    } finally {
-      setTransferring(false);
-    }
-  };
-
-  return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <ArrowRightLeft className="h-4 w-4 text-primary" />
-            {t("twinDashboard.transferTwin")}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            {t("twinDashboard.transferDesc")}
-          </p>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={recipient}
-              onChange={(e) => {
-                setRecipient(e.target.value);
-                setResolvedRecipient(null);
-                setResolveError(null);
-              }}
-              placeholder={t("twinDashboard.recipientPlaceholder")}
-              className="flex-1 rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary text-foreground placeholder:text-muted-foreground"
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleResolve}
-              disabled={!recipient.trim() || resolving}
-              className="shrink-0"
-            >
-              {resolving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            </Button>
-          </div>
-          {resolvedRecipient && (
-            <div className="rounded-xl bg-success/10 border border-success/30 p-3">
-              <p className="text-sm text-foreground font-medium">
-                <CheckCircle className="h-4 w-4 inline mr-1 text-success" />
-                {t("twinDashboard.found", { name: resolvedRecipient.name })}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">ID: {resolvedRecipient.userId}</p>
-            </div>
-          )}
-          {resolveError && (
-            <p className="text-xs text-destructive">{resolveError}</p>
-          )}
-          <Button
-            onClick={handleTransfer}
-            disabled={!recipient.trim() || transferring}
-            variant="outline"
-            className="w-full"
-          >
-            {transferring ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ArrowRightLeft className="h-4 w-4 mr-2" />}
-            {t("twinDashboard.initiateTransfer")}
-          </Button>
-        </CardContent>
-      </Card>
-
-      {incomingRequests.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">{t("twinDashboard.incomingTransfers")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {incomingRequests.map((req) => (
-                <div key={req._id} className="flex items-center justify-between rounded-xl border border-border p-3">
-                  <div>
-                    <p className="text-sm font-medium text-foreground">From: {req.fromMasterId}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(req.requestedAt).toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="ghost" onClick={() => onRejectTransfer({ requestId: req._id })} className="text-destructive">
-                      {t("twinDashboard.reject")}
-                    </Button>
-                    <Button size="sm" onClick={() => onAcceptTransfer({ requestId: req._id })}>
-                      {t("twinDashboard.accept")}
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
-
 export default function TwinPage() {
-  const { t } = useTranslation();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const fromChat = searchParams.get('fromChat');
-  
+  const fromChat = searchParams.get("fromChat");
+
   const [hasSeenLanding, setHasSeenLanding] = useState<boolean | null>(null);
   const [isSeeded, setIsSeeded] = useState(false);
 
   useEffect(() => {
-    const seen = localStorage.getItem('twin_landing_seen');
-    const seededActive = localStorage.getItem('twin_seeded_active');
-    
-    if (fromChat || seededActive === 'true') {
+    const seen = localStorage.getItem("twin_landing_seen");
+    const seededActive = localStorage.getItem("twin_seeded_active");
+
+    if (fromChat || seededActive === "true") {
       setIsSeeded(true);
       setHasSeenLanding(true);
-      localStorage.setItem('twin_seeded_active', 'true');
-      localStorage.setItem('twin_landing_seen', 'true');
+      localStorage.setItem("twin_seeded_active", "true");
+      localStorage.setItem("twin_landing_seen", "true");
       if (fromChat) {
         // Remember the originating conversation, then strip the query so a
         // later revisit doesn't force the seeded overlay again.
-        localStorage.setItem('twin_seed_from_chat', fromChat);
-        window.history.replaceState(null, '', window.location.pathname);
+        localStorage.setItem("twin_seed_from_chat", fromChat);
+        window.history.replaceState(null, "", window.location.pathname);
       }
     } else {
-      setHasSeenLanding(seen === 'true');
+      setHasSeenLanding(seen === "true");
     }
   }, [fromChat]);
 
-  const {
-    profile,
-    tasks,
-    knowledgeSources,
-    styleProfile,
-    activityLog,
-    activityHasMore,
-    loadMoreActivity,
-    pendingApprovals,
-    transferRequests,
-    isLoading,
-    isOrphan,
-    isSaving,
-    isTraining,
-    trainingProgress,
-    userId,
-    userName,
-    updateProfile,
-    trainNow,
-    toggleActive,
-    queueTask,
-    claimTwin,
-    requestVerification,
-    verifyTwin,
-    unlinkTwin,
-    updatePermissions,
-    revokeAndRotateKey,
-    initiateTransfer,
-    acceptTransfer,
-    rejectTransfer,
-    approveAction,
-    rejectAction,
-    resolveRecipient,
-  } = useTwin();
-
-  const [showNewTask, setShowNewTask] = useState(false);
-  const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
-  const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
-  const [newApiKey, setNewApiKey] = useState<string | null>(null);
-
   if (hasSeenLanding === false && !fromChat) {
     return (
-      <TwinLandingPage 
+      <TwinLandingPage
         onStart={() => {
-          localStorage.setItem('twin_landing_seen', 'true');
-          localStorage.setItem('twin_seeded_active', 'true');
+          localStorage.setItem("twin_landing_seen", "true");
+          localStorage.setItem("twin_seeded_active", "true");
           setIsSeeded(true);
           setHasSeenLanding(true);
         }}
         onSkip={() => {
-          localStorage.setItem('twin_landing_seen', 'true');
+          localStorage.setItem("twin_landing_seen", "true");
           setHasSeenLanding(true);
         }}
       />
@@ -781,447 +1131,69 @@ export default function TwinPage() {
   if (isSeeded) {
     return (
       <div className="min-h-[calc(100dvh-64px)] bg-background">
-        <SeededWorkspace 
-          chatConversationId={fromChat || localStorage.getItem('twin_seed_from_chat') || undefined}
+        <SeededWorkspace
+          chatConversationId={fromChat || localStorage.getItem("twin_seed_from_chat") || undefined}
           onDismiss={() => {
             setIsSeeded(false);
-            localStorage.removeItem('twin_seeded_active');
+            localStorage.removeItem("twin_seeded_active");
           }}
         />
       </div>
     );
   }
 
-  if (isLoading) {
-    if (!userId) {
-      return (
-        <div className="flex h-[60vh] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      );
-    }
-    return (
-      <div className="flex h-[60vh] items-center justify-center" role="status" aria-live="polite">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  return <TwinDashboardPage />;
+}
 
-  if (!userId) {
-    return (
-      <div className="flex h-[60vh] items-center justify-center">
-        <p className="text-muted-foreground">Please log in to access Twin.</p>
-      </div>
-    );
-  }
+function TwinDashboardPage() {
+  const [autoMode, setAutoMode] = useState(true);
+  const [tasks, setTasks] = useState<TwinTaskMock[]>(MOCK_TASKS);
+  const [showNewTask, setShowNewTask] = useState(false);
+  const [showManage, setShowManage] = useState(false);
+  const [showInvite, setShowInvite] = useState(false);
+  const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
 
-  if (!profile) {
-    return (
-      <div className="space-y-6">
-        <TwinOnboarding
-          onComplete={async (data) => {
-            await updateProfile({
-              name: data.name,
-              communicationStyle: data.communicationStyle,
-              persona: data.persona,
-              expertiseAreas: data.expertiseAreas,
-            });
-            if (data.writingSample) {
-              try {
-                await trainNow([data.writingSample]);
-              } catch {
-              }
-            }
-          }}
-        />
-        <div className="container mx-auto max-w-lg px-4 pb-8">
-          <div className="border-t border-border pt-6">
-            <ClaimSection onClaim={claimTwin} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const activeTasks = tasks.filter((task: TwinTask) => task.status === "running" || task.status === "pending").length;
-  const completedTasks = tasks.filter((task: TwinTask) => task.status === "completed").length;
-
-  const handleUnlink = async () => {
-    await unlinkTwin();
-    setShowUnlinkConfirm(false);
-  };
-
-  const handleRevokeKey = async () => {
-    try {
-      const key = await revokeAndRotateKey();
-      if (key) {
-        setNewApiKey(key);
-      }
-    } catch {
-      /* handled by API route */
-    }
-    setShowRevokeConfirm(false);
-  };
-
-  const handleContinueInWritingStudio = (task: {
-    title: string;
-    description?: string;
-    result?: string;
-    taskType: "research" | "writing" | "analysis" | "summary";
-  }) => {
-    const intent =
-      task.taskType === "writing"
-        ? "book"
-        : task.taskType === "summary"
-        ? "assignment"
-        : "research";
-
-    saveWritingStudioSeed({
-      source: "twin",
-      title: task.title,
-      description: task.result || task.description || task.title,
-      intent,
-    });
-
-    router.push(`/writing-studio?intent=${intent}&seed=twin`);
-  };
+  const orderedTasks = useMemo(() => tasks, [tasks]);
 
   return (
-    <div className="container mx-auto max-w-6xl py-8 px-4">
+    <div className="mx-auto h-full max-w-[1600px] px-4 py-5 lg:h-[calc(100dvh-4rem)]">
       <NewTaskModal
         open={showNewTask}
         onOpenChange={setShowNewTask}
-        onSubmit={async (data) => { await queueTask(data); }}
+        onCreate={(t) => setTasks((prev) => [t, ...prev])}
       />
+      <ManageTasksModal open={showManage} onOpenChange={setShowManage} tasks={orderedTasks} />
+      <InviteModal open={showInvite} onOpenChange={setShowInvite} />
+      <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
 
-      <ConfirmDialog
-        open={showUnlinkConfirm}
-        onOpenChange={setShowUnlinkConfirm}
-        title={t("twinDashboard.unlinkConfirmTitle")}
-        message={t("twinDashboard.unlinkConfirmMessage")}
-        confirmLabel={t("twinDashboard.unlinkTwin")}
-        destructive
-        onConfirm={handleUnlink}
-      />
-
-      <ConfirmDialog
-        open={showRevokeConfirm}
-        onOpenChange={setShowRevokeConfirm}
-        title={t("twinDashboard.revokeConfirmTitle")}
-        message={t("twinDashboard.revokeConfirmMessage")}
-        confirmLabel={t("twinDashboard.revokeAndRegenerate")}
-        destructive
-        onConfirm={handleRevokeKey}
-      />
-
-      <Dialog open={!!newApiKey} onOpenChange={() => setNewApiKey(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogTitle>{t("twinDashboard.newApiKeyTitle")}</DialogTitle>
-          <DialogDescription>{t("twinDashboard.newApiKeyWarning")}</DialogDescription>
-          {newApiKey && (
-            <div className="relative">
-              <code className="block rounded-xl bg-muted p-3 text-xs break-all font-mono text-foreground">
-                {newApiKey}
-              </code>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="absolute top-1 right-1"
-                onClick={() => navigator.clipboard.writeText(newApiKey)}
-              >
-                {t("common.copyToClipboard")}
-              </Button>
-            </div>
-          )}
-          <Button className="w-full mt-2" onClick={() => setNewApiKey(null)}>{t("common.done")}</Button>
-        </DialogContent>
-      </Dialog>
-
-      <div className="mb-8 flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-2">
-            <Brain className="h-8 w-8 text-primary" />
-            {t("twinDashboard.pageTitle")}
-          </h1>
-          <p className="mt-1 text-muted-foreground max-w-lg">
-            {t("twinDashboard.pageDescription")}
-          </p>
-        </div>
-        <Button
-          onClick={() => setShowNewTask(true)}
-          className="shrink-0"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("twinDashboard.queueTask")}
-        </Button>
-      </div>
-
-      <PendingApprovalsSection
-        approvals={pendingApprovals}
-        onApprove={approveAction}
-        onReject={rejectAction}
-      />
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-        <div className="space-y-4">
-          <Card>
-            <CardContent className="pt-6 pb-6 flex flex-col items-center gap-4">
-              <TwinAvatar
-                name={profile?.name ?? "Your Twin"}
-                isActive={profile?.isActive ?? false}
-                knowledgeScore={profile?.knowledgeScore ?? 0}
-                trainingStatus={
-                  profile?.trainingStatus === "untrained" ||
-                  profile?.trainingStatus === "partial" ||
-                  profile?.trainingStatus === "trained"
-                    ? profile.trainingStatus
-                    : "untrained"
-                }
-                verificationBadge={profile?.verificationBadge}
-                lifecycleState={profile?.lifecycleState}
-                isOrphan={isOrphan}
-                masterName={isOrphan ? undefined : (userName ?? undefined)}
-              />
-
-              {profile?.lifecycleState === "unverified" && (
-                <Button
-                  size="sm"
-                  className="w-full gap-2"
-                  onClick={requestVerification}
-                >
-                  <Shield className="h-4 w-4" />
-                  {t("twinDashboard.requestVerification")}
-                </Button>
-              )}
-
-              {profile?.lifecycleState === "pending_verification" && (
-                <Button
-                  size="sm"
-                  className="w-full gap-2"
-                  onClick={verifyTwin}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  {t("twinDashboard.verifyTwin")}
-                </Button>
-              )}
-
-              <Button
-                variant={profile?.isActive ? "outline" : "default"}
-                size="sm"
-                className={cn(
-                  "w-full gap-2",
-                  profile?.isActive && "border-success/40 text-success hover:bg-success/10"
-                )}
-                onClick={() => toggleActive(!profile?.isActive)}
-                aria-label={profile?.isActive ? t("twinDashboard.deactivateTwin") : t("twinDashboard.activateTwin")}
-              >
-                <Power className="h-4 w-4" />
-                {profile?.isActive ? t("twinDashboard.deactivateTwin") : t("twinDashboard.activateTwin")}
-              </Button>
-
-              {profile?.sourcePlatform && (
-                <p className="text-xs text-muted-foreground">
-                  {t("twinDashboard.source", { platform: profile.sourcePlatform })}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Card>
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-2xl font-bold text-foreground">{activeTasks}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{t("twinDashboard.activeTasks")}</p>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="pt-4 pb-4 text-center">
-                <p className="text-2xl font-bold text-foreground">{completedTasks}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">{t("twinDashboard.completed")}</p>
-              </CardContent>
-            </Card>
-          </div>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <Zap className="h-4 w-4 text-warning" />
-                {t("twinDashboard.knowledge")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <KnowledgeBar
-                score={profile?.knowledgeScore ?? 0}
-                sources={knowledgeSources}
-              />
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="pt-4 pb-4 space-y-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => router.push("/writing-studio")}
-              >
-                <BookOpen className="h-4 w-4 mr-2" />
-                Open Writing Studio
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => router.push("/writing-studio?intent=research")}
-              >
-                <Search className="h-4 w-4 mr-2" />
-                Start research workflow
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => router.push("/writing-studio?intent=assignment")}
-              >
-                <FileText className="h-4 w-4 mr-2" />
-                Start assignment workflow
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-destructive border-destructive/30 hover:bg-destructive/10"
-                onClick={() => setShowUnlinkConfirm(true)}
-              >
-                <Unlink className="h-4 w-4 mr-2" />
-                {t("twinDashboard.unlinkTwin")}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full"
-                onClick={() => setShowRevokeConfirm(true)}
-              >
-                <Key className="h-4 w-4 mr-2" />
-                {t("twinDashboard.revokeApiKey")}
-              </Button>
-            </CardContent>
-          </Card>
+      <div className="grid h-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[260px_minmax(0,1fr)_280px_360px]">
+        {/* Left column */}
+        <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
+          <AgentStatusWidget autoMode={autoMode} />
+          <AutoModeCard autoMode={autoMode} onToggle={setAutoMode} />
+          <ProgressStatsCard />
+          <TeamCard onInvite={() => setShowInvite(true)} />
+          <SubscriptionCard />
         </div>
 
-        <div className="lg:col-span-2">
-          <Tabs defaultValue="tasks">
-            <TabsList className="flex w-full mb-4 overflow-x-auto scrollbar-none">
-              <TabsTrigger value="tasks" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.tasks")}</TabsTrigger>
-              <TabsTrigger value="tonight" className="flex-1 min-w-[4.5rem] whitespace-nowrap flex items-center gap-1 font-semibold text-purple-400">
-                <Moon className="h-3.5 w-3.5 text-purple-400 animate-pulse" /> Tonight Engine
-              </TabsTrigger>
-              <TabsTrigger value="train" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.train")}</TabsTrigger>
-              <TabsTrigger value="permissions" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.permissions")}</TabsTrigger>
-              <TabsTrigger value="activity" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.activity")}</TabsTrigger>
-              <TabsTrigger value="transfer" className="flex-1 min-w-[4.5rem] whitespace-nowrap">{t("twinDashboard.transfer")}</TabsTrigger>
-            </TabsList>
+        {/* Center-left column */}
+        <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
+          <TaskQueue
+            tasks={orderedTasks}
+            onNewTask={() => setShowNewTask(true)}
+            onManage={() => setShowManage(true)}
+          />
+          <DocumentsLibrary onOpenVersions={setVersionDoc} />
+        </div>
 
-            <TabsContent value="tasks">
-              <TaskFeed tasks={tasks as any} onContinueInWritingStudio={handleContinueInWritingStudio} />
-            </TabsContent>
+        {/* Center-right column */}
+        <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
+          <OutputChannels />
+        </div>
 
-            <TabsContent value="tonight">
-              <Card className="border-purple-500/30 bg-purple-950/10">
-                <CardHeader>
-                  <CardTitle className="text-base flex items-center gap-2 text-purple-300">
-                    <Moon className="h-5 w-5 text-purple-400 animate-pulse" />
-                    Tonight Engine — Overnight Autonomous Task Queue
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground">
-                    Delegate complex multi-step research, code audits, or manuscript generation to run autonomously overnight while you sleep.
-                  </p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex flex-col gap-3">
-                    <textarea
-                      id="tonight-prompt-input"
-                      rows={3}
-                      placeholder="Describe the overnight task (e.g., Run full security audit, dependency upgrade, and synthesize research paper)..."
-                      className="w-full rounded-xl border border-border bg-muted/50 p-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    />
-                    <Button
-                      onClick={async () => {
-                        const el = document.getElementById("tonight-prompt-input") as HTMLTextAreaElement;
-                        const promptVal = el?.value || "Overnight autonomous batch task";
-                        const res = await fetch("/api/tonight-engine/enqueue", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ prompt: promptVal, topology: "hierarchical" }),
-                        });
-                        if (res.ok) {
-                          alert("Overnight task enqueued into Tonight Engine queue!");
-                          if (el) el.value = "";
-                        }
-                      }}
-                      className="bg-purple-600 hover:bg-purple-500 text-white font-medium shadow-md transition"
-                    >
-                      <Moon className="h-4 w-4 mr-2" />
-                      Enqueue Overnight Task
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="train">
-              <div className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-base">{t("twinDashboard.whoAreYou")}</CardTitle>
-                    <p className="text-sm text-muted-foreground">
-                      {t("twinDashboard.whoAreYouDesc")}
-                    </p>
-                  </CardHeader>
-                  <CardContent>
-                    <TrainingPanel
-                      initialData={{
-                        persona: profile?.persona,
-                        expertiseAreas: profile?.expertiseAreas,
-                        communicationStyle: profile?.communicationStyle as "formal" | "casual" | "academic" | "creative" | undefined,
-                        goals: profile?.goals,
-                        languages: profile?.languages,
-                      }}
-                      onSave={async (data) => {
-                        await updateProfile(data);
-                      }}
-                      onTrain={trainNow}
-                      isSaving={isSaving}
-                      isTraining={isTraining}
-                      trainingProgress={trainingProgress}
-                    />
-                  </CardContent>
-                </Card>
-                <StyleProfileCard profile={styleProfile} />
-              </div>
-            </TabsContent>
-
-            <TabsContent value="permissions">
-              <PermissionsTab
-                allowedSkills={profile?.allowedSkills ?? []}
-                approvalRequiredActions={profile?.approvalRequiredActions ?? []}
-                onUpdate={updatePermissions}
-              />
-            </TabsContent>
-
-            <TabsContent value="activity">
-              <ActivityLogTab logs={activityLog} hasMore={activityHasMore} onLoadMore={loadMoreActivity} />
-            </TabsContent>
-
-            <TabsContent value="transfer">
-              <TransferSection
-                onTransfer={initiateTransfer}
-                onResolveRecipient={resolveRecipient}
-                incomingRequests={transferRequests.incoming}
-                onAcceptTransfer={acceptTransfer}
-                onRejectTransfer={rejectTransfer}
-              />
-            </TabsContent>
-          </Tabs>
+        {/* Right column */}
+        <div className="min-h-[420px] md:col-span-2 xl:col-span-1 xl:min-h-0">
+          <NarrativeFeed />
         </div>
       </div>
     </div>
