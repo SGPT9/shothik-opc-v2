@@ -85,6 +85,7 @@ const LoginPage = lazy(() => import('@/app-next/auth/login/page'));
 const RegisterPage = lazy(() => import('@/app-next/auth/register/page'));
 const ForgotPasswordPage = lazy(() => import('@/app-next/auth/forgot-password/page'));
 const PostLoginPage = lazy(() => import('@/app-next/auth/post-login/page'));
+const LogtoCallbackPage = lazy(() => import('@/app-next/auth/logto-callback/page'));
 
 // Dashboard pages
 const CanvasPage = lazy(() => import('@/app-next/(dashboard)/canvas/page'));
@@ -197,6 +198,7 @@ function AppRoutes() {
         <Route path="/auth/register" component={RegisterPage} />
         <Route path="/auth/forgot-password" component={ForgotPasswordPage} />
         <Route path="/auth/post-login" component={PostLoginPage} />
+        <Route path="/auth/logto-callback" component={LogtoCallbackPage} />
         <Route path="/auth/verify-email">
           <PlaceholderPage name="Verify Email" />
         </Route>

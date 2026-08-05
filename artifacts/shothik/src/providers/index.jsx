@@ -7,6 +7,7 @@ import AnalyticsLoader from "../components/analytics/AnalyticsProvider";
 import { NotificationProvider } from "./NotificationProvider";
 import TanstackQueryProvider from "./TanstackQueryProvider";
 import { AuthProvider } from "./AuthProvider";
+import LogtoAuthProvider from "./LogtoAuthProvider";
 import ConvexClientProvider from "./ConvexClientProvider";
 import { I18nProvider } from "@/i18n";
 import { LocaleSync } from "@/i18n/LocaleSync";
@@ -18,6 +19,7 @@ export default function Providers({ children }) {
         <TanstackQueryProvider>
           <AnalyticsLoader />
           <NotificationProvider>
+            <LogtoAuthProvider>
             <AuthProvider>
               <ConvexClientProvider>
                 <I18nProvider>
@@ -26,6 +28,7 @@ export default function Providers({ children }) {
                 </I18nProvider>
               </ConvexClientProvider>
             </AuthProvider>
+            </LogtoAuthProvider>
           </NotificationProvider>
         </TanstackQueryProvider>
       </Provider>

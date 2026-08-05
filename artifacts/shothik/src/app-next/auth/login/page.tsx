@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "@/lib/navigation";
 import { useAuth } from "@/providers/AuthProvider";
 import { Link } from "wouter";
 import AuthWithSocial from "@/components/auth/AuthWithSocial";
+import LogtoSignInButton from "@/components/auth/LogtoSignInButton";
 import { ArrowRight, BookOpen, FilePenLine, FlaskConical, Layers3, Sparkles } from "lucide-react";
 import {
   getLoginFlowVariant,
@@ -343,6 +344,8 @@ const LoginPage = () => {
                             <p className="mt-2 text-sm text-foreground">{selectedIntentConfig.title}</p>
                             <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedIntentConfig.description}</p>
                         </div>
+
+                        <LogtoSignInButton />
 
                         <AuthWithSocial
                             loading={googleLoading}

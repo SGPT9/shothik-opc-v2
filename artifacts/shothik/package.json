@@ -82,6 +82,7 @@
   "dependencies": {
     "@casl/ability": "^7.0.1",
     "@fortune-sheet/react": "^1.0.4",
+    "@logto/react": "^4.0.14",
     "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-visually-hidden": "^1.2.11",
     "@react-oauth/google": "^0.13.5",
