@@ -22,6 +22,7 @@ import type { ChatAttachment, ChatMessage, ChatTurnProgressItem } from "@/lib/ch
 import { useTranslation } from "@/i18n";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { useAuth } from "@/providers/AuthProvider";
+import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 
 type PendingAttachment = ChatAttachment & {
   text: string;
@@ -154,8 +155,8 @@ export default function ChatAgentPage() {
   const [input, setInput] = useState("");
   const [composerError, setComposerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [chatMode, setChatMode] = useState<"cofounder" | "web-search" | "scenario-testing">("cofounder");
   const [modelHandle, setModelHandle] = useState("gemini-2.5-flash");
-  const [activeSkill, setActiveSkill] = useState("general");
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const [statusText, setStatusText] = useState<string | null>(null);
@@ -211,11 +212,17 @@ export default function ChatAgentPage() {
     (Boolean(conversationHistoryError) || Boolean(messagesQuery.error) || Boolean(localConversationSummaries.length));
 
   const SUGGESTIONS = [
-    t("chat.suggestion1"),
-    t("chat.suggestion2"),
-    t("chat.suggestion3"),
-    t("chat.suggestion4"),
+    "I want to build a SaaS for clinics",
+    "Can this idea become a company?",
+    "Find competitors for my product",
+    "Test different pricing scenarios",
   ];
+
+  const FOLLOW_UPS = {
+    cofounder: ["Challenge this plan", "Start this in Twin"],
+    "web-search": ["Search competitors", "Find market benchmarks"],
+    "scenario-testing": ["Test worst-case outcome", "Compare pricing options"]
+  };
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -315,6 +322,14 @@ export default function ChatAgentPage() {
       ...liveMessages.filter((message) => !persistedIds.has(String(message._id))),
     ];
   }, [liveMessages, messages, recoveredMessages]);
+
+  const isCompanyIntent = useMemo(() => {
+    const lastUserMessages = visibleMessages.filter(m => m.role === 'user').slice(-3);
+    const keywords = ['build an app', 'saas', 'tool', 'marketplace', 'agency', 'service', 'business plan', 'pricing', 'launch', 'validation', 'go-to-market', 'roadmap', 'startup', 'customers', 'company'];
+    return lastUserMessages.some(m =>
+      keywords.some(k => String(m.content).toLowerCase().includes(k))
+    );
+  }, [visibleMessages]);
 
   useEffect(() => {
     if (!user?._id) return;
@@ -615,7 +630,7 @@ export default function ChatAgentPage() {
           surface: "flagship",
           messages: history,
           modelHandle,
-          activeSkill: activeSkill !== "general" ? activeSkill : undefined,
+          activeSkill: chatMode === "web-search" ? "research" : undefined,
           context: turnContext,
           attachments: attachmentMeta,
           // Pass the current Hermes sessionId so the orchestrator can resume
@@ -1058,9 +1073,9 @@ export default function ChatAgentPage() {
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
                   <Sparkles className="h-8 w-8 text-brand" />
                 </div>
-                <h2 className="mb-2 text-xl font-semibold text-foreground">{t("chat.heading")}</h2>
+                <h2 className="mb-2 text-xl font-semibold text-foreground">Build with Shothik</h2>
                 <p className="mb-8 max-w-sm text-sm text-muted-foreground">
-                  {t("chat.subheading")}
+                  Explore an idea, validate it, and turn it into a company.
                 </p>
                 <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 w-full max-w-md">
                   {SUGGESTIONS.map((s) => (
@@ -1131,6 +1146,30 @@ export default function ChatAgentPage() {
                     setIsArtifactPaneOpen(true);
                   }}
                 />
+                
+                {isCompanyIntent && conversationId && !loading && (
+                  <TwinCtaCard conversationId={conversationId} />
+                )}
+
+                {!loading && visibleMessages.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-4 pb-4">
+                    {FOLLOW_UPS[chatMode].map(f => (
+                      <button 
+                        key={f} 
+                        onClick={() => {
+                          if (f === "Start this in Twin" && conversationId) {
+                            router.push(`/twin?fromChat=${conversationId}`);
+                          } else {
+                            send(f);
+                          }
+                        }}
+                        className="rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </>
             )}
             <div ref={bottomRef} />
@@ -1144,11 +1183,11 @@ export default function ChatAgentPage() {
           onStop={() => abortRef.current?.abort()}
           disabled={loading}
           isStreaming={loading}
-          placeholder={t("chat.placeholder")}
+          placeholder="What are you building?"
+          mode={chatMode}
+          onModeChange={setChatMode}
           modelHandle={modelHandle}
           onModelChange={setModelHandle}
-          activeSkill={activeSkill}
-          onSkillChange={setActiveSkill}
           onVoiceClick={() => setIsVoiceOpen(true)}
           attachments={pendingAttachments.map((attachment) => ({
             id: attachment.id,
@@ -1170,7 +1209,7 @@ export default function ChatAgentPage() {
               : null
           }
           errorMessage={composerError}
-          footer={`${t("chat.footer")}${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
+          footer={`Describe your product, service, or business idea.${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
         />
         </ResizablePanel>
 
