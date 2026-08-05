@@ -12,23 +12,15 @@ import {
   AlertTriangle,
   RefreshCcw,
 } from 'lucide-react';
-import { getGuestDeviceId } from '@/lib/chat/guest-device-id';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-
-interface SeedTask {
-  id: number;
-  title: string;
-  completed: boolean;
-}
-
-interface SeedData {
-  companyName: string;
-  summary: string;
-  businessPlan: string;
-  tasks: SeedTask[];
-}
+import {
+  loadServerSeed,
+  saveServerSeed,
+  seedHeaders,
+  type SeedData,
+} from '@/lib/twin/seed-client';
 
 const DEFAULT_SEED: SeedData = {
   companyName: 'Acme SaaS',
@@ -127,14 +119,10 @@ async function generateSeed(conversationId: string): Promise<SeedData> {
     throw new Error('The originating conversation has no messages to build a workspace from.');
   }
 
-  const deviceId = getGuestDeviceId();
   const res = await fetch('/api/twin/seed', {
     method: 'POST',
     credentials: 'same-origin',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(deviceId ? { 'x-chat-device-id': deviceId } : {}),
-    },
+    headers: seedHeaders(),
     body: JSON.stringify({ conversationId, messages: usable }),
   });
   const json = await res.json().catch(() => null);
@@ -170,6 +158,7 @@ export default function SeededWorkspace({
   const [seed, setSeed] = useState<SeedData>(() => loadCachedSeed(chatConversationId) ?? DEFAULT_SEED);
   const [generating, setGenerating] = useState(false);
   const [generationError, setGenerationError] = useState<string | null>(null);
+  const [serverSaveFailed, setServerSaveFailed] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const hydratedRef = useRef(false);
 
@@ -191,24 +180,59 @@ export default function SeededWorkspace({
     }
   }, []);
 
-  // On entry from a chat, generate real seed content from that conversation
-  // (unless we already generated and cached it for this conversation).
+  // On entry from a chat, hydrate in order of durability: the server-saved
+  // seed first (survives device switches), then this browser's cache, and
+  // only generate fresh content when neither exists.
   useEffect(() => {
     if (!chatConversationId) return;
-    const cached = loadCachedSeed(chatConversationId);
-    if (cached) {
-      setSeed(cached);
-      hydratedRef.current = true;
-      return;
-    }
-    void runGeneration(chatConversationId);
+    let cancelled = false;
+    void (async () => {
+      const remote = await loadServerSeed(chatConversationId);
+      if (cancelled) return;
+      if (remote) {
+        setSeed(remote);
+        hydratedRef.current = true;
+        return;
+      }
+      const cached = loadCachedSeed(chatConversationId);
+      if (cached) {
+        setSeed(cached);
+        hydratedRef.current = true;
+        // Backfill the server store so this browser's cache becomes durable.
+        void saveServerSeed(chatConversationId, cached, Date.now());
+        return;
+      }
+      void runGeneration(chatConversationId);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [chatConversationId, runGeneration]);
 
   // Persist edits — but never overwrite a conversation's cache with the
   // placeholder defaults before generation has produced/loaded real content.
+  // Edits are mirrored to the server (debounced) so they follow the user.
   useEffect(() => {
     if (chatConversationId && !hydratedRef.current) return;
     localStorage.setItem(storageKeyFor(chatConversationId), JSON.stringify(seed));
+    if (!chatConversationId) return;
+    // Revision of this edit: the server (and serialized client saves) use it
+    // to ensure an older in-flight save can never overwrite a newer one.
+    const revision = Date.now();
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    const save = async () => {
+      const ok = await saveServerSeed(chatConversationId, seed, revision);
+      setServerSaveFailed(!ok);
+      if (!ok) {
+        // Keep retrying in the background until the workspace save lands.
+        retryTimer = setTimeout(() => void save(), 15_000);
+      }
+    };
+    const timer = setTimeout(() => void save(), 800);
+    return () => {
+      clearTimeout(timer);
+      if (retryTimer) clearTimeout(retryTimer);
+    };
   }, [seed, chatConversationId]);
 
   const updateSeed = (patch: Partial<SeedData>) => setSeed((s) => ({ ...s, ...patch }));
@@ -250,6 +274,24 @@ export default function SeededWorkspace({
           </Button>
         </div>
       </div>
+
+      {serverSaveFailed && !generating && (
+        <div
+          className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-4"
+          data-testid="banner-save-warning"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-500" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-foreground">
+              Changes are saved on this device only
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              Saving to your workspace failed — retrying automatically. Your edits are kept in this
+              browser in the meantime.
+            </p>
+          </div>
+        </div>
+      )}
 
       {generationError && (
         <div
