@@ -1,1 +1,2 @@
 - [Next.js → Vite port conventions](nextjs-to-vite-port.md) — durable rules: alias next/* not patch files; hoist HOC routes; JSX needs .jsx for prod builds; verify with build not dev.
+- [API gateway routing](api-gateway-routing.md) — /api goes to the api-server gateway, not the web artifact's vite proxy; backend-bound routes must be handled or forwarded there.

@@ -23,8 +23,10 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? '/';
 
-// External API origin - all /api calls proxy here
-const externalApiOrigin = 'https://shothik.work';
+// External API origin - all /api calls proxy here.
+// Override with CHAT_API_ORIGIN (e.g. a local mock) for development/testing.
+const externalApiOrigin =
+  process.env.CHAT_API_ORIGIN ?? 'https://shothik.work';
 
 export default defineConfig({
   base: basePath,
