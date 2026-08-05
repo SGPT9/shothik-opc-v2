@@ -173,6 +173,17 @@ export default function Header({ className, layout }) {
             <div className="flex items-center gap-2">
               <LanguageSwitcher className="inline-flex" />
               <ThemeToggle className="inline-flex" />
+              <Link href="/voice" className="inline-flex">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 px-2.5 gap-1.5 text-xs font-semibold border-indigo-500/40 bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 shadow-sm"
+                  title="Launch LiveKit ChatGPT Advanced Voice Orb"
+                >
+                  <Sparkles className="h-3.5 w-3.5 text-indigo-400 animate-pulse" />
+                  <span className="hidden sm:inline">LiveKit Voice</span>
+                </Button>
+              </Link>
               <div className="flex items-center gap-2 md:gap-3">
                 {showLoadingState ? (
                   <div className="flex items-center gap-1">
