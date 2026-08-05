@@ -21,3 +21,7 @@ timeoutMs = 20000
 [userenv]
 
 [userenv.development]
+
+[userenv.shared]
+CONVEX_DEPLOYMENT = "dev:dashing-mandrill-233"
+VITE_CONVEX_URL = "https://dashing-mandrill-233.convex.cloud"
