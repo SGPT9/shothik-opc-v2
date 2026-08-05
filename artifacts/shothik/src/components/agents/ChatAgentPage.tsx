@@ -69,6 +69,38 @@ function getOrCreateChatDeviceId(userId?: string | null) {
   return next;
 }
 
+type ComposerChatMode = "cofounder" | "web-search" | "scenario-testing";
+
+const CHAT_MODE_STORAGE_KEY = "shothik:chat-mode-by-conversation";
+const CHAT_MODES: ComposerChatMode[] = ["cofounder", "web-search", "scenario-testing"];
+
+function loadStoredChatMode(conversationId: string | null): ComposerChatMode | null {
+  if (typeof window === "undefined" || !conversationId) return null;
+  try {
+    const raw = window.localStorage.getItem(CHAT_MODE_STORAGE_KEY);
+    if (!raw) return null;
+    const map = JSON.parse(raw) as Record<string, string>;
+    const stored = map[conversationId];
+    return CHAT_MODES.includes(stored as ComposerChatMode)
+      ? (stored as ComposerChatMode)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveStoredChatMode(conversationId: string | null, mode: ComposerChatMode) {
+  if (typeof window === "undefined" || !conversationId) return;
+  try {
+    const raw = window.localStorage.getItem(CHAT_MODE_STORAGE_KEY);
+    const map = raw ? (JSON.parse(raw) as Record<string, string>) : {};
+    map[conversationId] = mode;
+    window.localStorage.setItem(CHAT_MODE_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // Best-effort persistence only.
+  }
+}
+
 const TURN_PROGRESS_ORDER = ["mode", "queue", "session", "run", "document", "response"] as const;
 
 function upsertProgressItem(
@@ -156,7 +188,7 @@ export default function ChatAgentPage() {
   const [input, setInput] = useState("");
   const [composerError, setComposerError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [chatMode, setChatMode] = useState<"cofounder" | "web-search" | "scenario-testing">("cofounder");
+  const [chatMode, setChatMode] = useState<ComposerChatMode>("cofounder");
   const [modelHandle, setModelHandle] = useState("gemini-2.5-flash");
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
@@ -332,6 +364,26 @@ export default function ChatAgentPage() {
     setStatusText(null);
   }, [conversationId]);
 
+  // Restore the composer mode saved for this conversation (mode is
+  // preserved per conversation when switching between recents).
+  useEffect(() => {
+    if (!conversationId) {
+      setChatMode("cofounder");
+      return;
+    }
+    const stored = loadStoredChatMode(conversationId);
+    if (stored) {
+      setChatMode(stored);
+    } else {
+      // First time seeing this conversation (e.g. the backend just created
+      // it for the in-flight turn): remember the mode currently in use.
+      setChatMode((current) => {
+        saveStoredChatMode(conversationId, current);
+        return current;
+      });
+    }
+  }, [conversationId]);
+
 
   const visibleMessages = useMemo(() => {
     const baseMessages =
@@ -388,6 +440,11 @@ export default function ChatAgentPage() {
     setPendingAttachments((current) =>
       current.filter((attachment) => attachment.id !== attachmentId),
     );
+  };
+
+  const handleModeChange = (mode: ComposerChatMode) => {
+    setChatMode(mode);
+    saveStoredChatMode(conversationId, mode);
   };
 
   const handleInputChange = (value: string) => {
@@ -658,6 +715,7 @@ export default function ChatAgentPage() {
           surface: "flagship",
           messages: history,
           modelHandle,
+          chatMode,
           activeSkill: chatMode === "web-search" ? "research" : undefined,
           context: turnContext,
           attachments: attachmentMeta,
@@ -1251,7 +1309,7 @@ export default function ChatAgentPage() {
           isStreaming={loading}
           placeholder="What are you building?"
           mode={chatMode}
-          onModeChange={setChatMode}
+          onModeChange={handleModeChange}
           modelHandle={modelHandle}
           onModelChange={setModelHandle}
           onVoiceClick={() => setIsVoiceOpen(true)}

@@ -93,6 +93,7 @@ export async function POST(request: NextRequest) {
       privacy,
       sync,
       clientEncrypted,
+      chatMode,
     } = body as {
       messages: { role: "user" | "assistant"; content: string }[];
       context?: string;
@@ -122,7 +123,20 @@ export async function POST(request: NextRequest) {
       privacy?: ChatPrivacyProfile;
       sync?: ChatSyncDescriptor;
       clientEncrypted?: ChatEncryptedEnvelope;
+      /** Composer mode: cofounder | web-search | scenario-testing */
+      chatMode?: "cofounder" | "web-search" | "scenario-testing";
     };
+
+    const validChatModes = ["cofounder", "web-search", "scenario-testing"] as const;
+    const resolvedChatMode = validChatModes.includes(
+      chatMode as (typeof validChatModes)[number],
+    )
+      ? (chatMode as (typeof validChatModes)[number])
+      : undefined;
+
+    if (resolvedChatMode) {
+      incrementCounter(`chat.mode.${resolvedChatMode}.requests`);
+    }
 
     if (surface) {
       incrementCounter(`chat.surface.${surface}.requests`);
@@ -159,6 +173,7 @@ export async function POST(request: NextRequest) {
       privacy,
       sync,
       clientEncrypted,
+      chatMode: resolvedChatMode,
       sourceRequestPath: request.nextUrl.pathname,
       sourceRequestUrl: request.url,
       signal: request.signal,
