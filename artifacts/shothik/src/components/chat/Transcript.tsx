@@ -1,11 +1,13 @@
 
 
-import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, User, Search } from "lucide-react";
+import { Bot, Command, Link2, Paperclip, User, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
+import { ChatErrorCard } from "./ChatErrorCard";
 import { getSlashCommandDisplayText } from "@/lib/chat/commands";
+import { friendlyStatusLabel } from "@/lib/chat/streaming";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/chat/types";
 
@@ -17,6 +19,7 @@ interface TranscriptProps {
   onCopy?: (message: ChatMessage) => void;
   onDelete?: (message: ChatMessage) => void;
   onRegenerate?: (message: ChatMessage) => void;
+  onRetry?: (message: ChatMessage) => void;
   onStop?: (message: ChatMessage) => void;
   onActionClick?: (action: string, message: ChatMessage) => void;
   onOpenArtifact?: (type: string, message: ChatMessage) => void;
@@ -29,6 +32,7 @@ export function Transcript({
   onCopy,
   onDelete,
   onRegenerate,
+  onRetry,
   onStop,
   onActionClick,
   onOpenArtifact,
@@ -43,7 +47,6 @@ export function Transcript({
           const canStop = message.role === "assistant" && message.status === "streaming";
           const slashCommand = isUser ? getSlashCommandDisplayText(message.content) : null;
           const displayContent = slashCommand ? slashCommand.body : message.content;
-          const progress = message.metadata?.progress ?? [];
           const inlineError = message.metadata?.inlineError;
           const statusLabel = message.metadata?.statusLabel;
 
@@ -95,74 +98,39 @@ export function Transcript({
                       status={message.status === 'completed' ? 'completed' : message.status === 'streaming' ? 'processing' : 'queued'}
                     />
                   )}
-                  {!isUser && (statusLabel || progress.length > 0) ? (
-                    <div className="mb-3 rounded-xl border border-border/70 bg-muted/30 px-3 py-2">
-                      {statusLabel ? (
-                        <p className="text-xs font-medium text-foreground">{statusLabel}</p>
-                      ) : null}
-                      {progress.length > 0 ? (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {progress.map((item) => {
-                            const icon =
-                              item.state === "completed" ? (
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                              ) : item.state === "error" ? (
-                                <AlertCircle className="h-3.5 w-3.5" />
-                              ) : item.state === "active" ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              ) : (
-                                <div className="h-2 w-2 rounded-full bg-muted-foreground/60" />
-                              );
-
-                            return (
-                              <span
-                                key={item.id}
-                                className={cn(
-                                  "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px]",
-                                  item.state === "completed" && "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-                                  item.state === "active" && "border-brand/20 bg-brand/10 text-brand",
-                                  item.state === "error" && "border-destructive/30 bg-destructive/10 text-destructive",
-                                  item.state === "pending" && "border-border bg-background text-muted-foreground",
-                                )}
-                                title={item.detail}
-                              >
-                                {icon}
-                                <span>{item.label}</span>
-                              </span>
-                            );
-                          })}
-                        </div>
+                  {!isUser && message.status === "streaming" && !displayContent ? (
+                    <div className="flex items-center gap-2 py-0.5" aria-live="polite">
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand/60" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+                      </span>
+                      <span className="text-sm text-muted-foreground">
+                        {friendlyStatusLabel(statusLabel)}
+                      </span>
+                    </div>
+                  ) : !isUser ? (
+                    <div>
+                      <MarkdownMessage
+                        content={displayContent || (slashCommand ? "Spec request" : "")}
+                      />
+                      {message.status === "streaming" && displayContent ? (
+                        <span
+                          aria-hidden="true"
+                          className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse rounded-full bg-foreground/70"
+                        />
                       ) : null}
                     </div>
-                  ) : null}
-                  {!isUser ? (
-                    <MarkdownMessage
-                      content={
-                        displayContent ||
-                        (message.status === "streaming"
-                          ? "Waiting for Hermes..."
-                          : slashCommand
-                            ? "Spec request"
-                            : "")
-                      }
-                    />
                   ) : (
                     <p className="whitespace-pre-wrap leading-relaxed">
-                      {displayContent ||
-                        (message.status === "streaming"
-                          ? "Waiting for Hermes..."
-                          : slashCommand
-                            ? "Spec request"
-                            : "")}
+                      {displayContent || (slashCommand ? "Spec request" : "")}
                     </p>
                   )}
-                  {inlineError ? (
-                    <div
-                      role="alert"
-                      className="mt-3 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive"
-                    >
-                      {inlineError.message}
-                    </div>
+                  {inlineError && message.status !== "streaming" ? (
+                    <ChatErrorCard
+                      message={inlineError.message}
+                      recoverable={inlineError.recoverable !== false}
+                      onRetry={onRetry ? () => onRetry(message) : undefined}
+                    />
                   ) : null}
                   {Array.isArray(message.metadata?.citations) && message.metadata.citations.length > 0 ? (
                     <SourcesBadge sources={message.metadata.citations.map((c: any) => ({

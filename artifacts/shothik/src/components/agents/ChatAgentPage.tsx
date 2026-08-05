@@ -23,6 +23,7 @@ import { useTranslation } from "@/i18n";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { useAuth } from "@/providers/AuthProvider";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
+import { friendlyStatusLabel, isStreamingEnabled } from "@/lib/chat/streaming";
 
 type PendingAttachment = ChatAttachment & {
   text: string;
@@ -176,6 +177,9 @@ export default function ChatAgentPage() {
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Conversation id assigned by the in-flight stream's "conversation" event.
+  // Used to avoid wiping live streaming state when the id changes mid-turn.
+  const streamAssignedConversationRef = useRef<string | null>(null);
   const activeAssistantIdRef = useRef<string | null>(null);
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -227,6 +231,14 @@ export default function ChatAgentPage() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, liveMessages, statusText]);
+
+  useEffect(() => {
+    // Abort any in-flight stream when the page unmounts so the connection
+    // doesn't linger after navigation.
+    return () => {
+      abortRef.current?.abort();
+    };
+  }, []);
 
   useEffect(() => {
     setLocalHistory(loadLocalChatHistory(user?._id ?? null, "flagship"));
@@ -299,6 +311,19 @@ export default function ChatAgentPage() {
   // Each conversation maps to its own Hermes session; switching conversations
   // means the old sessionId/runId are no longer valid.
   useEffect(() => {
+    // When the conversation id was just assigned by the in-flight stream
+    // (the backend created the conversation for this turn), keep the live
+    // streaming messages — resetting here would wipe the streaming bubble
+    // mid-turn.
+    if (
+      conversationId &&
+      streamAssignedConversationRef.current === conversationId
+    ) {
+      return;
+    }
+    // A genuine conversation switch: abort any in-flight stream so its late
+    // events can't mutate state that now belongs to the new conversation.
+    abortRef.current?.abort();
     setSessionId(null);
     setRunId(null);
     setWorkspaceId(null);
@@ -307,7 +332,6 @@ export default function ChatAgentPage() {
     setStatusText(null);
   }, [conversationId]);
 
-  const shortId = (value: string | null) => (value ? value.slice(0, 8) : null);
 
   const visibleMessages = useMemo(() => {
     const baseMessages =
@@ -519,6 +543,10 @@ export default function ChatAgentPage() {
     });
     const activeAssistantIds = new Set<string>([optimisticAssistantId]);
     let requestSucceeded = false;
+    // Feature flag: when streaming is disabled, buffer tokens and render the
+    // completed response as a single block on `done`.
+    const streamingEnabled = isStreamingEnabled();
+    let bufferedContent = "";
 
     const updateCurrentAssistant = (
       updater: (message: ChatMessage, metadata: ChatMessageMetadata) => ChatMessage,
@@ -875,6 +903,7 @@ export default function ChatAgentPage() {
           }
 
           if (data.type === "conversation" && data.conversationId) {
+            streamAssignedConversationRef.current = String(data.conversationId);
             setConversationId(data.conversationId);
             setLiveMessages((current) =>
               current.map((message) => ({
@@ -901,18 +930,26 @@ export default function ChatAgentPage() {
             );
           }
           if (data.type === "chunk" && data.content) {
-            patchCurrentAssistant({
-              appendContent: data.content,
-              status: "streaming",
-              statusLabel: "Drafting response",
-              progressItem: {
-                id: "response",
-                label: "Response",
-                state: "active",
-                detail: "Streaming tokens",
-                updatedAt: Date.now(),
-              },
-            });
+            if (streamingEnabled) {
+              patchCurrentAssistant({
+                appendContent: data.content,
+                status: "streaming",
+                statusLabel: "Drafting response",
+                progressItem: {
+                  id: "response",
+                  label: "Response",
+                  state: "active",
+                  detail: "Streaming tokens",
+                  updatedAt: Date.now(),
+                },
+              });
+            } else {
+              bufferedContent += data.content;
+              patchCurrentAssistant({
+                status: "streaming",
+                statusLabel: "Drafting response",
+              });
+            }
           }
           if (data.type === "error") {
             throw new Error(data.error);
@@ -920,6 +957,7 @@ export default function ChatAgentPage() {
           if (data.type === "done") {
             requestSucceeded = true;
             patchCurrentAssistant({
+              ...(streamingEnabled ? {} : { content: bufferedContent }),
               status: "completed",
               statusLabel: "Run completed",
               progressItem: {
@@ -986,13 +1024,33 @@ export default function ChatAgentPage() {
       await queryClient.invalidateQueries({ queryKey: chatQueryKeys.all });
       setLoading(false);
       if (requestSucceeded) {
-        setLiveMessages((current) =>
-          current.filter((message) => {
-            const messageId = String(message._id);
-            return messageId !== optimisticUserId && !activeAssistantIds.has(messageId);
-          }),
-        );
+        // Only strip the optimistic messages when the persisted copy of the
+        // turn is actually available; otherwise the transcript would go
+        // blank (e.g. when the backend doesn't persist conversations).
+        const finalConversationId =
+          streamAssignedConversationRef.current ?? conversationId;
+        const persisted = finalConversationId
+          ? queryClient.getQueryData<ChatMessage[]>(
+              chatQueryKeys.messages(finalConversationId, 200),
+            )
+          : undefined;
+        const hasPersistedTurn =
+          Array.isArray(persisted) &&
+          persisted.some(
+            (message) => message.role === "assistant" && message.content,
+          );
+        if (hasPersistedTurn) {
+          setLiveMessages((current) =>
+            current.filter((message) => {
+              const messageId = String(message._id);
+              return messageId !== optimisticUserId && !activeAssistantIds.has(messageId);
+            }),
+          );
+        }
       }
+      // Turn is settled: future conversation switches (including back to this
+      // one) should reset session/run state normally.
+      streamAssignedConversationRef.current = null;
       abortRef.current = null;
       activeAssistantIdRef.current = null;
       inputRef.current?.focus();
@@ -1099,18 +1157,15 @@ export default function ChatAgentPage() {
                 {(loading || runId || sessionId || statusText || true) ? (
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-2xl border bg-muted/30 px-4 py-3 text-xs">
                     <div className="flex items-center gap-2 flex-wrap">
-                      {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin text-brand" /> : null}
-                      <span className="font-medium text-foreground">{statusText || "Ready"}</span>
-                      {sessionId ? (
-                        <span className="rounded-full bg-background px-2 py-1 text-muted-foreground">
-                          Session {shortId(sessionId)}
-                        </span>
-                      ) : null}
-                      {runId ? (
-                        <span className="rounded-full bg-background px-2 py-1 text-muted-foreground">
-                          Run {shortId(runId)}
-                        </span>
-                      ) : null}
+                      {/* While a turn is in flight the transcript bubble is the
+                          single friendly status surface; the bar stays neutral. */}
+                      <span className="font-medium text-foreground">
+                        {loading
+                          ? "Chat"
+                          : statusText
+                            ? friendlyStatusLabel(statusText)
+                            : "Ready"}
+                      </span>
                     </div>
                     
                     <button
@@ -1136,6 +1191,17 @@ export default function ChatAgentPage() {
                     }
                   }}
                   onStop={() => abortRef.current?.abort()}
+                  onRetry={(message) => {
+                    const parentPrompt = visibleMessages.find(
+                      (candidate) => String(candidate._id) === String(message.parentMessageId)
+                    );
+                    const lastUserPrompt = [...visibleMessages]
+                      .reverse()
+                      .find((candidate) => candidate.role === "user");
+                    const prompt =
+                      parentPrompt?.role === "user" ? parentPrompt : lastUserPrompt;
+                    if (prompt) send(prompt.content);
+                  }}
                   onActionClick={(action, message) => {
                     if (action === 'deep-research') {
                       router.push('/deep-research');
