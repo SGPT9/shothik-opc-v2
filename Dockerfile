@@ -14,19 +14,29 @@ RUN pnpm install --no-frozen-lockfile
 FROM base AS builder
 WORKDIR /app
 
-ARG NEXT_PUBLIC_CONVEX_URL
-ARG STRIPE_SECRET_KEY
-ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ARG CLERK_SECRET_KEY
+ARG NEXT_PUBLIC_CONVEX_URL="https://placeholder.convex.cloud"
+ARG STRIPE_SECRET_KEY="sk_test_placeholder"
+ARG NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="pk_test_placeholder"
+ARG CLERK_SECRET_KEY="sk_test_placeholder"
+ARG DATABASE_URL="postgresql://placeholder:placeholder@localhost:5432/placeholder"
+ARG NEXT_PUBLIC_INSFORGE_URL="https://ers8j28a.ap-southeast.insforge.app"
+ARG INSFORGE_URL="https://ers8j28a.ap-southeast.insforge.app"
+ARG NEXT_PUBLIC_INSFORGE_ANON_KEY="placeholder_anon_key"
+ARG INSFORGE_ANON_KEY="placeholder_anon_key"
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXT_PUBLIC_CONVEX_URL=$NEXT_PUBLIC_CONVEX_URL
-ENV STRIPE_SECRET_KEY=$STRIPE_SECRET_KEY
-ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=$NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
-ENV CLERK_SECRET_KEY=$CLERK_SECRET_KEY
+ENV NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL:-https://placeholder.convex.cloud}
+ENV STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-sk_test_placeholder}
+ENV NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}
+ENV CLERK_SECRET_KEY=${CLERK_SECRET_KEY:-sk_test_placeholder}
+ENV DATABASE_URL=${DATABASE_URL:-postgresql://placeholder:placeholder@localhost:5432/placeholder}
+ENV NEXT_PUBLIC_INSFORGE_URL=${NEXT_PUBLIC_INSFORGE_URL:-https://ers8j28a.ap-southeast.insforge.app}
+ENV INSFORGE_URL=${INSFORGE_URL:-https://ers8j28a.ap-southeast.insforge.app}
+ENV NEXT_PUBLIC_INSFORGE_ANON_KEY=${NEXT_PUBLIC_INSFORGE_ANON_KEY:-placeholder_anon_key}
+ENV INSFORGE_ANON_KEY=${INSFORGE_ANON_KEY:-placeholder_anon_key}
 
 RUN pnpm build
 

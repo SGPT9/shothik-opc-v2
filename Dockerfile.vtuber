@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    curl \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY package.json ./
+COPY lib/infrastructure/vtuber-presenter.ts ./lib/infrastructure/
+
+EXPOSE 12393
+
+CMD ["python3", "-m", "http.server", "12393"]
