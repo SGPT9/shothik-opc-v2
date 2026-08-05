@@ -93,6 +93,14 @@ export interface ChatTurnRequest {
   runId?: string;
   /** Optional explicit workflow hint from the caller */
   workflowHint?: "default" | "spec";
+  /**
+   * Composer chat mode selected by the user. Shapes the system prompt
+   * (and, once available, Hermes tool orchestration):
+   * - "cofounder": entrepreneurial idea shaping and next steps
+   * - "web-search": outward-looking, evidence-backed research with citations
+   * - "scenario-testing": what-if comparisons of options, risks, outcomes
+   */
+  chatMode?: ChatComposerMode;
   /** Privacy controls applied to this user turn */
   privacy?: ChatPrivacyProfile;
   /** Multi-device sync metadata supplied by the client */
@@ -138,6 +146,42 @@ const SYSTEM_PROMPT = `You are Shothik, an intelligent AI assistant built for un
 - General knowledge and curiosity-driven conversations
 
 Be concise, warm, and accurate. If you don't know something, say so honestly.`;
+
+export type ChatComposerMode = "cofounder" | "web-search" | "scenario-testing";
+
+const CHAT_MODE_PROMPTS: Record<ChatComposerMode, string> = {
+  cofounder: `
+
+MODE: Cofounder.
+Act as a sharp, supportive startup cofounder. Focus every reply on shaping the user's idea and moving it forward:
+- Help clarify the problem, target customer, and value proposition
+- Pressure-test assumptions constructively and point out the riskiest ones
+- Always end with concrete, prioritized next steps the user can take now
+Keep the tone collaborative and decisive — you are building this with them.`,
+  "web-search": `
+
+MODE: Web Search (research).
+Act as an outward-looking research analyst. Focus every reply on external evidence rather than opinion:
+- Ground claims in named, verifiable sources: companies, products, reports, publications, and dates
+- Cite where each fact comes from inline (e.g. "(Source: <name>, <year>)") and list the sources at the end under a "Sources" heading
+- Cover competitors, market size, benchmarks, and real-world signals relevant to the question
+- Clearly flag when a figure is an estimate or when your knowledge may be out of date, and say what the user should verify
+Do not speculate without labeling it as speculation.`,
+  "scenario-testing": `
+
+MODE: Scenario Testing.
+Act as a rigorous scenario planner. Focus every reply on comparing options and outcomes before the user commits:
+- Identify the 2-4 most relevant scenarios or options (including a base case and a worst case where sensible)
+- Compare them side by side: assumptions, upside, risks, costs, and what would have to be true
+- Use a compact table or structured list for the comparison when it helps
+- Finish with which option looks strongest under which conditions, and what signal would change that call
+Stay neutral until the comparison is done — then give a clear recommendation.`,
+};
+
+function buildSystemPromptForMode(mode?: ChatComposerMode): string {
+  if (!mode || !CHAT_MODE_PROMPTS[mode]) return SYSTEM_PROMPT;
+  return `${SYSTEM_PROMPT}${CHAT_MODE_PROMPTS[mode]}`;
+}
 
 /**
  * Detect whether a chat attachment represents a document that should
@@ -395,6 +439,7 @@ export class ChatOrchestrator {
       sessionId: providedSessionId,
       runId: providedRunId,
       workflowHint,
+      chatMode,
       privacy,
       sync,
       clientEncrypted,
@@ -752,7 +797,7 @@ export class ChatOrchestrator {
           providerResponse = await startChatProviderStream({
             selection: providerSelection,
             messages: providerMessages,
-            systemPrompt: SYSTEM_PROMPT,
+            systemPrompt: buildSystemPromptForMode(chatMode),
             signal,
           });
         } catch (fetchErr) {
