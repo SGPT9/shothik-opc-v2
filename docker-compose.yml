@@ -1,0 +1,25 @@
+# Run the Shothik frontend + API gateway with Docker (Docker Desktop or a VPS).
+#   docker compose up --build
+# Frontend: http://localhost:3000   API gateway: internal (proxied via nginx)
+services:
+  api:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.api
+    environment:
+      - PORT=8080
+      # Where /api requests are forwarded (the live Shothik backend)
+      - CHAT_API_ORIGIN=${CHAT_API_ORIGIN:-https://www.shothikgpt.com}
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.web
+      args:
+        - VITE_CONVEX_URL=${VITE_CONVEX_URL:-https://dashing-mandrill-233.convex.cloud}
+    ports:
+      - "3000:80"
+    depends_on:
+      - api
+    restart: unless-stopped
