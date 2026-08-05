@@ -4,7 +4,7 @@ export interface TwinMemoryChunk {
   id?: string;
   twinId: string;
   documentId?: string;
-  contentType: "manuscript" | "research_paper" | "story_bible" | "sheet_data" | "slide_deck" | "writing_draft" | "research_report" | "tonight_run";
+  contentType: "manuscript" | "research_paper" | "story_bible" | "sheet_data" | "slide_deck" | "writing_draft" | "research_report" | "tonight_run" | "tool_registry";
   title: string;
   content: string;
   metadata?: Record<string, any>;

@@ -20,7 +20,7 @@ const GenerateResearchRequestSchema = z.object({
   query: z.string().min(1).optional(),
   topic: z.string().min(1).optional(),
   depth: z.enum(["quick", "standard", "deep"]).optional(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 }).refine((data) => !!(data.query || data.topic), {
   message: "Either 'query' or 'topic' must be provided",
   path: ["query"],

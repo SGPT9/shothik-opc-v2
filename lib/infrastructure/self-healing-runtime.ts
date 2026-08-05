@@ -56,6 +56,7 @@ export class SelfHealingRuntime {
             retryAttempt,
             statusMessage: `Executing self-healing patch attempt ${retryAttempt}/${maxRetries} for '${personaKey}'`,
           },
+          metadata: {},
         });
 
         const repairPrompt = `
@@ -95,6 +96,7 @@ Instructions:
               modelUsed: repairResult.modelUsed,
               tierUsed: repairResult.tierUsed,
             },
+            metadata: {},
           });
 
           logger.info("[self-healing] Closed-loop repair succeeded cleanly", {

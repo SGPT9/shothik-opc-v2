@@ -87,24 +87,13 @@ export class SwarmRouter {
     }
 
     // 4. Default / Deep Thinking -> Adaptive Coordinator or Ring Topology
-    if (depth === "deep") {
-      return {
-        topology: "ring",
-        plan: [
-          { personaKey: "general", title: "Foundational Strategy & Business Goals" },
-          { personaKey: "researcher", title: "Deep Industry Research & Benchmark Analysis" },
-          { personaKey: "github-fixer", title: "Implementation Roadmap & Tech Stack Blueprint" },
-          { personaKey: "seo-specialist", title: "AEO/SEO Visibility & Core Web Vitals Audit" },
-        ],
-      };
-    }
-
     return {
-      topology: "coordinator",
+      topology: "ring",
       plan: [
-        { personaKey: "general", title: "Executive Business Summary" },
-        { personaKey: "researcher", title: "Market Research & Evidence Gathering" },
-        { personaKey: "content-creator", title: "Final Deliverable Generation" },
+        { personaKey: "general", title: "Foundational Strategy & Business Goals" },
+        { personaKey: "researcher", title: "Deep Industry Research & Benchmark Analysis" },
+        { personaKey: "github-fixer", title: "Implementation Roadmap & Tech Stack Blueprint" },
+        { personaKey: "seo-specialist", title: "AEO/SEO Visibility & Core Web Vitals Audit" },
       ],
     };
   }

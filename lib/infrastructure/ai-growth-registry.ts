@@ -86,12 +86,11 @@ export class AiGrowthRegistryService {
       await InsForgeTwinRagMemory.saveMemoryChunk({
         twinId,
         documentId: `doc_tool_${tool.name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}`,
-        chunkId: `chk_tool_${count}`,
+        id: `chk_tool_${count}`,
         title: `${tool.name} (${tool.category})`,
-        snippet: `${tool.name}: ${tool.useCase}`,
         content: `Tool Name: ${tool.name}\nCategory: ${tool.category}\nSource Code Repository: ${tool.repo}\nUse Case: ${tool.useCase}`,
         contentType: "tool_registry",
-        tags: ["open-source", "skills", "automation", tool.category.toLowerCase().replace(/[^a-z0-9]+/g, "-")],
+        metadata: { category: tool.category, repo: tool.repo },
       });
       count++;
     }
