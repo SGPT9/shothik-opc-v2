@@ -1,0 +1,62 @@
+Your Twin dashboard spec is already strong; the missing piece is to make the voice layer and connectors feel like the same product, not bolt-ons. Based on the current Polsia dashboard, the proven patterns are: strict workspace columns, always-visible business signal, scoped team access, stateful task queues, persistent narrative chat, and output modules such as Twitter, Email, Website, and Ads rather than abstract agent controls. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+## Core additions
+
+Polsia’s current UI keeps the assistant legible by showing plain-language status, an AUTO MODE toggle, task states, lightweight business metrics, scoped team invites, documents, and a persistent chat timeline with timestamped updates and direct asks to the founder. For Shothik, that means your Twin should preserve the same “always working, always interruptible” behavior, but translate outputs from compliance/product work into research, drafting, publishing, collaboration, and outreach surfaces. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+## Voice behavior
+
+Your voice agent should act like a **co-writer** with turn-based initiative, not like a generic call bot: it listens, clarifies briefly, proposes the next best action, and confirms only at meaningful boundaries such as “start drafting,” “publish excerpt,” or “contact lead.” That pattern fits Polsia’s chat behavior, where the assistant continuously reports progress, asks targeted business questions, and frames next steps in outcome language instead of exposing internals or tool names. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+A good operating model for voice inside Twin:
+- Passive mode: always available from the right rail or global mic, summarizes current project state before acting. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Interrupt mode: user can cut in while Twin is researching/drafting and redirect without leaving the workspace, matching the persistent composer pattern already visible in Polsia’s dashboard. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Night mode handoff: before ending a session, voice says what it will do overnight, then the next morning gives a concise progress brief tied to tasks/documents, similar to Polsia’s date-stamped narrative feed and “Next up” framing. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Scoped action language: “I can verify sources, draft Chapter 2, prepare collaborator notes, or queue outreach,” not “run agent/tool/chain,” which stays consistent with Polsia’s plain-language status design. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+## Voice capabilities
+
+The full voice capability set should cover orchestration, memory, review, and outbound execution in one layer, because Polsia already demonstrates a single assistant surface spanning build execution, task generation, document updates, outbound channels, and business prompts. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+Suggested capability map for Twin voice:
+- Project awareness: knows current book, chapter, workspace, collaborator scope, deadlines, and task state from the visible dashboard context. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Research ops: “find sources,” “compare claims,” “summarize contradictions,” “turn this into an outline.” This is the Shothik version of Polsia reading code/docs, planning next steps, and queuing tasks. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Draft ops: “start a chapter draft,” “rewrite this section,” “expand with citations,” “generate alternate hooks,” mirroring Polsia’s document-producing workflow where roadmap and daily reports are first-class artifacts. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Editorial review: reads passages aloud, highlights weak claims, asks whether to tighten, shorten, or humanize tone; this is the narrative-chat equivalent of Polsia’s explicit progress commentary and next-step recommendations. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Collaboration ops: invite collaborator, summarize changes since last version, prepare review packet, explain what changed before revert; this fits the Teams model and document/version mindset you described, extending Polsia’s scoped invite boundary. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Publishing ops: queue publish to Books/Marketplace, generate synopsis, prep social excerpt, send collaborator link, mirroring Polsia’s modular output channels for Twitter, Email, Website, and Ads. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Founder cockpit mode: morning and evening verbal briefings in the same style Polsia uses in chat—what shipped, what changed, what needs your answer, what should run tonight. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+## Pipedream connectors
+
+Polsia’s dashboard shows connector-like output modules as separate surfaces—Twitter, Email, Website, and Ads—so the right adaptation for Shothik is a left-sidebar “Connectors” area that is distinct from Twin, but callable by Twin in plain language. Pipedream should behave as the connector runtime: Twin decides intent, asks for approval when needed, then triggers Pipedream workflows for external systems like email, CRM, publishing targets, calendars, storage, forms, and social distribution. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+Recommended connector behavior:
+- Discovery: Twin can say, “I found your connected tools: Gmail, Google Docs, Notion, Slack, WordPress, LinkedIn, X, HubSpot, Stripe, Drive, and Pipedream webhooks,” but only after connectors are authorized in the sidebar.
+- Intent-to-action: user says, “Send Chapter 2 to reviewers,” Twin maps that to the Share channel and triggers the matching Pipedream flow.
+- Human approval tiers: read actions are silent; write actions need one-tap approval; irreversible or public actions need explicit confirmation.
+- Result narration: after a connector runs, Twin reports in plain language inside the right rail: “Sent the draft to 3 reviewers and stored a copy in Drive,” matching Polsia’s pattern of visible, timestamped completion updates. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+For Pipedream specifically, define connector classes:
+| Connector class | Twin says | Backend behavior |
+|---|---|---|
+| Reading connectors | “I pulled the latest reviewer comments.” | Pipedream fetches docs, comments, CRM notes, inbox metadata. |
+| Writing connectors | “I prepared the email draft.” | Pipedream creates draft objects first, sends only after approval. |
+| Publishing connectors | “I can publish this excerpt now.” | Pipedream pushes to CMS/social/storefront targets. |
+| Event connectors | “I added a review reminder for tomorrow.” | Pipedream writes to calendar, Slack, task tools. |
+| Lead connectors | “I logged this interested publisher in the pipeline.” | Pipedream writes to CRM, tags stage, stores transcript. |
+
+## UX spec additions
+
+To complete your Twin spec, add these explicit product rules, all aligned with patterns visible in Polsia’s dashboard. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+- Voice is omnipresent but quiet: one mic entry point, one persistent transcript thread, no separate “voice agent app.” [polsia](https://polsia.com/dashboard/verifiq-3)
+- Voice always grounds itself in the current workspace before taking action, the same way Polsia’s dashboard is clearly scoped to VerifiQ and its tasks, docs, business, team, and channels. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Connector actions appear as narrative events in chat and as artifacts in Documents/Outputs, so the user can trace what happened later. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Team permissions remain project-scoped by default, matching the siloed company-access model already reflected in the Teams area you audited on Polsia. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Business/progress strip should remain sparse and always visible, because Polsia uses it as ambient confidence rather than deep analytics. [polsia](https://polsia.com/dashboard/verifiq-3)
+- Auto Mode should include voice briefing behavior: when on, Twin can work asynchronously and leave spoken/text summaries; when off, it becomes assistant-on-demand, which matches Polsia’s visible AUTO MODE mental model. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+A concise Shothik addition to your spec could read like this: “Voice is the conversational shell for Twin. It never exposes internal tools, always speaks in project-aware language, can interrupt or continue work across sessions, and uses Pipedream as the action layer for approved external tasks such as sharing drafts, updating CRM, scheduling outreach, publishing content, and syncing collaborator workflows.” [polsia](https://polsia.com/dashboard/verifiq-3)
+
+Would you like me to turn this into a polished product spec section you can paste directly into your PRD?
