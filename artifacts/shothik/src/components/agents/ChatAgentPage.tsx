@@ -684,6 +684,7 @@ export default function ChatAgentPage() {
           workspaceId: workspaceId ?? undefined,
           artifactId: artifactId ?? undefined,
           slashCommand: slashCommand ?? undefined,
+          chatMode,
           privacy,
           sync,
           statusLabel: initialStatus,

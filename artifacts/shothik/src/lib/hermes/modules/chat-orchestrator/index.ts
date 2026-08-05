@@ -526,6 +526,7 @@ export class ChatOrchestrator {
         workspaceId: workspace.id,
         privacy: privacyProfile,
         modelRoute: routeMetadata,
+        ...(chatMode ? { chatMode } : {}),
         ...(sync ? { sync } : {}),
       },
     });

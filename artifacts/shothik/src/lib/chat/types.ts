@@ -126,6 +126,7 @@ export interface ChatMessage {
     sync?: ChatSyncDescriptor;
     isOvernight?: boolean;
     executionMode?: string;
+    chatMode?: "cofounder" | "web-search" | "scenario-testing";
     persona?: ChatPersona;
     modelRoute?: unknown;
     clientEncrypted?: ChatEncryptedEnvelope;

@@ -1,6 +1,6 @@
 
 
-import { Bot, Command, Link2, Paperclip, User, Search } from "lucide-react";
+import { Bot, Command, FlaskConical, Globe, Link2, Lightbulb, Paperclip, User, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
@@ -12,6 +12,15 @@ import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/chat/types";
 
 import { SourcesBadge } from "./SourcesBadge";
+
+const CHAT_MODE_BADGES: Record<
+  string,
+  { label: string; Icon: typeof Globe }
+> = {
+  cofounder: { label: "Cofounder", Icon: Lightbulb },
+  "web-search": { label: "Web Search", Icon: Globe },
+  "scenario-testing": { label: "Scenario Testing", Icon: FlaskConical },
+};
 
 interface TranscriptProps {
   messages: ChatMessage[];
@@ -48,6 +57,10 @@ export function Transcript({
           const slashCommand = isUser ? getSlashCommandDisplayText(message.content) : null;
           const displayContent = slashCommand ? slashCommand.body : message.content;
           const inlineError = message.metadata?.inlineError;
+          const modeBadge =
+            !isUser && message.metadata?.chatMode
+              ? CHAT_MODE_BADGES[message.metadata.chatMode]
+              : undefined;
           const statusLabel = message.metadata?.statusLabel;
 
           return (
@@ -166,6 +179,12 @@ export function Transcript({
                   )}
                 </div>
                 <div className={cn("flex items-center gap-2", isUser ? "justify-end" : "justify-start")}>
+                  {modeBadge ? (
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      <modeBadge.Icon className="h-3 w-3" />
+                      {modeBadge.label}
+                    </span>
+                  ) : null}
                   <span className="text-muted-foreground text-xs">
                     {new Date(message.createdAt).toLocaleTimeString([], {
                       hour: "2-digit",
