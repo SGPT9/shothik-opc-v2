@@ -1,0 +1,66 @@
+version: "3.8"
+
+services:
+  # 1. Shothik Web Next.js Platform
+  shothik-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_CONVEX_URL: ${NEXT_PUBLIC_CONVEX_URL:-https://placeholder.convex.cloud}
+        STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+    image: shothik-web:latest
+    container_name: shothik-web
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DEERFLOW_BACKEND_URL=http://deerflow-gateway:8000
+      - LIVEKIT_URL=wss://livekit.shothik.app
+      - VTUBER_SESSION_URL=wss://vtuber.shothik.app
+    depends_on:
+      - deerflow-gateway
+      - redis
+
+  # 2. DeerFlow 2.0 FastAPI + LangGraph Agent Backend
+  deerflow-gateway:
+    image: docker-gateway:latest
+    container_name: deerflow-gateway
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - REDIS_URL=redis://redis:6379/0
+      - INSFORGE_DATABASE_URL=${INSFORGE_DATABASE_URL}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+    depends_on:
+      - redis
+
+  # 3. Redis 7 Cache & PubSub Broker
+  redis:
+    image: redis:7-alpine
+    container_name: shothik-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # 4. Open-LLM-VTuber Interactive Presenter Engine
+  vtuber-presenter:
+    image: vtuber-presenter:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.vtuber
+    container_name: vtuber-presenter
+    restart: always
+    ports:
+      - "12393:12393"
+    environment:
+      - PORT=12393
+      - LLM_PROVIDER=ollama
+      - OLLAMA_HOST=http://host.docker.internal:11434
+
+networks:
+  default:
+    name: shothik-network
