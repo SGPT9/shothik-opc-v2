@@ -149,8 +149,11 @@ async function callDeepSeek(request: GatewayRequest): Promise<GatewayResponse> {
 
 async function callGemini(request: GatewayRequest): Promise<GatewayResponse> {
   const apiKey = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-  const baseUrl = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com';
+  const baseUrl = process.env.AI_INTEGRATIONS_GEMINI_BASE_URL || 'https://generativelanguage.googleapis.com/v1beta';
   if (!apiKey) throw new Error('GEMINI_API_KEY not configured');
+  // gemini-2.5-flash is 404 "no longer available to new users" for newer API
+  // keys; gemini-flash-latest is the evergreen alias. Overridable via env.
+  const model = process.env.GEMINI_MODEL || 'gemini-flash-latest';
 
   const generationConfig: Record<string, unknown> = {
     temperature: request.temperature ?? 0.7,
@@ -170,7 +173,7 @@ async function callGemini(request: GatewayRequest): Promise<GatewayResponse> {
   }
 
   const res = await fetch(
-    `${baseUrl}/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    `${baseUrl}/models/${model}:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -6,7 +6,7 @@ function getGeminiModel() {
   const apiKey = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
   if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
   const client = new GoogleGenerativeAI(apiKey);
-  return client.getGenerativeModel({ model: "gemini-2.5-flash" });
+  return client.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-flash-latest" });
 }
 
 const SYSTEM_PROMPT = `You are an expert writing co-author assistant. Your role is to help writers complete, extend, and improve their work — whether academic, professional, creative, or technical.
