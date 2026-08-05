@@ -9,7 +9,10 @@
  *  - Right: persistent first-person narrative feed + always-visible composer
  */
 import { useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import SeededWorkspace from "@/components/twin/SeededWorkspace";
+import { loadServerSeed, type SavedSeed } from "@/lib/twin/seed-client";
 import { useSearchParams } from "@/lib/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, CheckCircle } from "lucide-react";
@@ -155,9 +158,11 @@ const MOCK_TASKS: TwinTaskMock[] = [
 interface TwinDocMock {
   id: string;
   title: string;
-  kind: "Research Report" | "Chapter Draft" | "Outline" | "Progress Report";
+  kind: "Research Report" | "Chapter Draft" | "Outline" | "Progress Report" | "Business Plan";
   updated: string;
   versions: { id: string; message: string; time: string; current?: boolean }[];
+  /** Markdown body for real (server-persisted) documents. */
+  content?: string;
 }
 
 const MOCK_DOCS: TwinDocMock[] = [
@@ -736,14 +741,21 @@ const DOC_ICONS: Record<TwinDocMock["kind"], React.ElementType> = {
   "Chapter Draft": BookOpen,
   Outline: ListChecks,
   "Progress Report": FileText,
+  "Business Plan": FileText,
 };
 
-function DocumentsLibrary({ onOpenVersions }: { onOpenVersions: (doc: TwinDocMock) => void }) {
+function DocumentsLibrary({
+  docs,
+  onOpenVersions,
+}: {
+  docs: TwinDocMock[];
+  onOpenVersions: (doc: TwinDocMock) => void;
+}) {
   return (
     <PanelCard>
       <SectionLabel>Documents</SectionLabel>
       <div className="mt-3 space-y-1.5">
-        {MOCK_DOCS.map((doc) => {
+        {docs.map((doc) => {
           const Icon = DOC_ICONS[doc.kind];
           return (
             <button
@@ -1145,13 +1157,60 @@ export default function TwinPage() {
   return <TwinDashboardPage />;
 }
 
+function seedToTasks(seed: SavedSeed): TwinTaskMock[] {
+  return seed.tasks.map((t) => ({
+    id: `seed-${t.id}`,
+    title: t.title,
+    description: `Starter task for ${seed.companyName}, generated from your chat.`,
+    category: "Draft" as TaskCategory,
+    cost: "—",
+    status: t.completed ? ("completed" as TaskStatus) : ("todo" as TaskStatus),
+  }));
+}
+
+function seedToDoc(seed: SavedSeed): TwinDocMock {
+  return {
+    id: "seed-business-plan",
+    title: `${seed.companyName} — Business Plan`,
+    kind: "Business Plan",
+    updated: new Date(seed.updatedAt).toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+    }),
+    versions: [
+      {
+        id: "v1",
+        message: "Generated from your chat conversation",
+        time: new Date(seed.updatedAt).toLocaleString(),
+        current: true,
+      },
+    ],
+    content: seed.businessPlan,
+  };
+}
+
 function TwinDashboardPage() {
   const [autoMode, setAutoMode] = useState(true);
   const [tasks, setTasks] = useState<TwinTaskMock[]>(MOCK_TASKS);
+  const [docs, setDocs] = useState<TwinDocMock[]>(MOCK_DOCS);
   const [showNewTask, setShowNewTask] = useState(false);
   const [showManage, setShowManage] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
+  const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
+
+  // Hydrate the queue and documents with the real, server-persisted seed.
+  useEffect(() => {
+    let cancelled = false;
+    void loadServerSeed().then((seed) => {
+      if (cancelled || !seed) return;
+      if (seed.tasks.length) setTasks(seedToTasks(seed));
+      if (seed.businessPlan) setDocs([seedToDoc(seed), ...MOCK_DOCS]);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const orderedTasks = useMemo(() => tasks, [tasks]);
 
@@ -1165,6 +1224,20 @@ function TwinDashboardPage() {
       <ManageTasksModal open={showManage} onOpenChange={setShowManage} tasks={orderedTasks} />
       <InviteModal open={showInvite} onOpenChange={setShowInvite} />
       <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
+      <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
+        <DialogContent
+          className="max-h-[85vh] overflow-y-auto sm:max-w-2xl"
+          data-testid="dialog-doc-content"
+        >
+          <DialogTitle className="flex items-center gap-2">
+            <FileText className="h-5 w-5 text-indigo-500" /> {contentDoc?.title}
+          </DialogTitle>
+          <DialogDescription className="sr-only">Document content</DialogDescription>
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{contentDoc?.content ?? ""}</ReactMarkdown>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="grid h-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[260px_minmax(0,1fr)_280px_360px]">
         {/* Left column */}
@@ -1183,7 +1256,10 @@ function TwinDashboardPage() {
             onNewTask={() => setShowNewTask(true)}
             onManage={() => setShowManage(true)}
           />
-          <DocumentsLibrary onOpenVersions={setVersionDoc} />
+          <DocumentsLibrary
+            docs={docs}
+            onOpenVersions={(doc) => (doc.content ? setContentDoc(doc) : setVersionDoc(doc))}
+          />
         </div>
 
         {/* Center-right column */}

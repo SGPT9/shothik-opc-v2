@@ -1,5 +1,12 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { logger } from "../lib/logger";
+import {
+  getLatestTwinSeed,
+  getTwinSeed,
+  migrateTwinSeeds,
+  upsertTwinSeed,
+} from "../lib/twin-seed-store";
+import type { TwinSeedTask } from "@workspace/db";
 
 /**
  * POST /api/twin/seed
@@ -153,21 +160,83 @@ async function generateSeed(transcript: string): Promise<TwinSeedResult> {
 }
 
 /**
- * Identity: the chat surface identifies guests with a stable device id sent
- * as `x-chat-device-id` (authenticated users additionally carry session
- * cookies / an Authorization header for the upstream). The seed endpoint
- * requires at least one of these so anonymous external clients cannot burn
- * the server's Gemini quota.
+ * Identity resolution, in order of trust:
+ *
+ * 1. Signed-in users: their Bearer token is VERIFIED against the upstream
+ *    auth backend (`GET /api/user/profile`) and the identity becomes the
+ *    stable upstream user id (`user:<id>`), so the same account sees its
+ *    workspace from any browser or device. Verification results are cached
+ *    briefly to avoid hammering the upstream.
+ * 2. Guests: the stable `x-chat-device-id` the chat surface already uses
+ *    (`device:<id>`), scoped to that browser until they sign in.
+ *
+ * When a request carries BOTH a verified user and a device id, seeds saved
+ * while the caller was a guest on that device are migrated to the user.
  */
-function getCallerIdentity(req: Request): string | null {
+const UPSTREAM_ORIGIN = () => process.env["CHAT_API_ORIGIN"] ?? "https://shothik.work";
+
+const TOKEN_CACHE_TTL_MS = 10 * 60_000;
+const TOKEN_CACHE_NEGATIVE_TTL_MS = 60_000;
+const tokenCache = new Map<string, { userId: string | null; expires: number }>();
+
+async function verifyBearerToken(token: string): Promise<string | null> {
+  const cached = tokenCache.get(token);
+  if (cached && cached.expires > Date.now()) return cached.userId;
+  let userId: string | null = null;
+  try {
+    const res = await fetch(`${UPSTREAM_ORIGIN()}/api/user/profile`, {
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(5_000),
+    });
+    if (res.ok) {
+      const profile = (await res.json().catch(() => null)) as
+        | { _id?: string; id?: string; email?: string }
+        | null;
+      const id = profile?._id || profile?.id || profile?.email;
+      if (typeof id === "string" && id.trim()) userId = id.trim();
+    }
+    tokenCache.set(token, {
+      userId,
+      expires: Date.now() + (userId ? TOKEN_CACHE_TTL_MS : TOKEN_CACHE_NEGATIVE_TTL_MS),
+    });
+  } catch (error) {
+    // Upstream unreachable: don't cache, fall back to guest identity below.
+    logger.warn({ err: error }, "twin seed token verification unavailable");
+  }
+  return userId;
+}
+
+function getDeviceIdentity(req: Request): string | null {
   const deviceId = req.header("x-chat-device-id")?.trim();
   if (deviceId && deviceId.length >= 8 && deviceId.length <= 128) return `device:${deviceId}`;
-  const auth = req.header("authorization")?.trim();
-  if (auth) return `auth:${auth.slice(0, 64)}`;
-  const cookies = (req as Request & { cookies?: Record<string, string> }).cookies;
-  const sessionCookie = cookies?.["session"] || cookies?.["connect.sid"] || cookies?.["token"];
-  if (sessionCookie) return `session:${sessionCookie.slice(0, 64)}`;
   return null;
+}
+
+async function resolveIdentity(req: Request): Promise<string | null> {
+  const deviceIdentity = getDeviceIdentity(req);
+  const auth = req.header("authorization")?.trim();
+  const token = auth?.startsWith("Bearer ") ? auth.slice("Bearer ".length).trim() : null;
+  if (token) {
+    const userId = await verifyBearerToken(token);
+    if (userId) {
+      const userIdentity = `user:${userId}`;
+      if (deviceIdentity) {
+        // Associate this device's guest seeds with the signed-in account.
+        try {
+          await migrateTwinSeeds(deviceIdentity, userIdentity);
+        } catch (error) {
+          logger.warn({ err: error }, "twin seed guest migration failed");
+        }
+      }
+      return userIdentity;
+    }
+  }
+  return deviceIdentity;
+}
+
+/** Test hook. */
+export function __resetTwinSeedIdentityCache(): void {
+  tokenCache.clear();
 }
 
 /**
@@ -230,6 +299,159 @@ export function __resetTwinSeedRateLimits(): void {
 
 const router: IRouter = Router();
 
+const MAX_TEXT_FIELD = 40_000;
+const MAX_TASKS = 30;
+
+function sanitizeConversationId(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.length > 128) return null;
+  return trimmed;
+}
+
+function sanitizeTasks(value: unknown): TwinSeedTask[] | null {
+  if (!Array.isArray(value) || value.length > MAX_TASKS) return null;
+  const tasks: TwinSeedTask[] = [];
+  for (const t of value) {
+    const task = t as { id?: unknown; title?: unknown; completed?: unknown };
+    if (
+      !task ||
+      typeof task.title !== "string" ||
+      !task.title.trim() ||
+      task.title.length > 500
+    ) {
+      return null;
+    }
+    tasks.push({
+      id: typeof task.id === "number" ? task.id : tasks.length + 1,
+      title: task.title.trim(),
+      completed: task.completed === true,
+    });
+  }
+  return tasks;
+}
+
+/**
+ * Origin guard for mutating requests (browsers always send Origin on
+ * fetch POST/PUT). Same-origin GETs legitimately omit Origin, so reads only
+ * reject an Origin that is present AND disallowed.
+ */
+function guardOrigin(req: Request, res: Response, requireOrigin: boolean): boolean {
+  res.removeHeader("Access-Control-Allow-Origin");
+  const origin = req.header("origin");
+  if (!origin) {
+    if (requireOrigin) {
+      res.status(403).json({ error: "This origin is not allowed to use workspace generation." });
+      return false;
+    }
+    return true;
+  }
+  if (!isOriginAllowed(req)) {
+    res.status(403).json({ error: "This origin is not allowed to use workspace generation." });
+    return false;
+  }
+  res.setHeader("Access-Control-Allow-Origin", origin);
+  res.setHeader("Vary", "Origin");
+  return true;
+}
+
+async function requireIdentity(req: Request, res: Response): Promise<string | null> {
+  const identity = await resolveIdentity(req);
+  if (!identity) {
+    res.status(401).json({
+      error: "Workspace access requires a chat identity (missing x-chat-device-id or session).",
+    });
+  }
+  return identity;
+}
+
+/**
+ * GET /api/twin/seed[?conversationId=…]
+ * Returns the persisted seed for the caller: the given conversation's seed,
+ * or the most recently updated one when no conversationId is provided.
+ */
+router.get("/twin/seed", async (req: Request, res: Response) => {
+  if (!guardOrigin(req, res, false)) return;
+  const identity = await requireIdentity(req, res);
+  if (!identity) return;
+
+  const conversationId = sanitizeConversationId(req.query["conversationId"]);
+  try {
+    const seed = conversationId
+      ? await getTwinSeed(identity, conversationId)
+      : await getLatestTwinSeed(identity);
+    if (!seed) {
+      res.status(404).json({ error: "No saved workspace seed found." });
+      return;
+    }
+    res.json({ data: seed });
+  } catch (error) {
+    logger.warn({ err: error }, "twin seed read failed");
+    res.status(500).json({ error: "Could not load the saved workspace." });
+  }
+});
+
+/**
+ * PUT /api/twin/seed
+ * Saves the caller's edits (company name, summary, plan, task list with
+ * completion state) for a conversation.
+ */
+router.put("/twin/seed", async (req: Request, res: Response) => {
+  if (!guardOrigin(req, res, true)) return;
+  const identity = await requireIdentity(req, res);
+  if (!identity) return;
+
+  if (isRateLimited(`save:${identity}`, 60_000, 30)) {
+    res.status(429).json({ error: "Too many save requests. Please slow down." });
+    return;
+  }
+
+  const body = req.body as {
+    conversationId?: unknown;
+    companyName?: unknown;
+    summary?: unknown;
+    businessPlan?: unknown;
+    tasks?: unknown;
+    revision?: unknown;
+  };
+  const conversationId = sanitizeConversationId(body?.conversationId);
+  const tasks = sanitizeTasks(body?.tasks);
+  const revision =
+    typeof body?.revision === "number" && Number.isFinite(body.revision) && body.revision >= 0
+      ? Math.floor(body.revision)
+      : Date.now();
+  if (
+    !conversationId ||
+    !tasks ||
+    typeof body.companyName !== "string" ||
+    !body.companyName.trim() ||
+    body.companyName.length > 500 ||
+    typeof body.summary !== "string" ||
+    body.summary.length > 2000 ||
+    typeof body.businessPlan !== "string" ||
+    body.businessPlan.length > MAX_TEXT_FIELD
+  ) {
+    res.status(400).json({ error: "Invalid workspace payload." });
+    return;
+  }
+
+  try {
+    const saved = await upsertTwinSeed({
+      identity,
+      conversationId,
+      companyName: body.companyName.trim(),
+      summary: body.summary,
+      businessPlan: body.businessPlan,
+      tasks,
+      revision,
+    });
+    res.json({ data: saved });
+  } catch (error) {
+    logger.warn({ err: error }, "twin seed save failed");
+    res.status(500).json({ error: "Could not save the workspace." });
+  }
+});
+
 router.post("/twin/seed", async (req: Request, res: Response) => {
   // Scope CORS on this route to the exact allowlist: any permissive header a
   // global cors() middleware may have set is removed, and the origin is only
@@ -242,7 +464,7 @@ router.post("/twin/seed", async (req: Request, res: Response) => {
   res.setHeader("Access-Control-Allow-Origin", req.header("origin")!);
   res.setHeader("Vary", "Origin");
 
-  const identity = getCallerIdentity(req);
+  const identity = await resolveIdentity(req);
   if (!identity) {
     res.status(401).json({
       error: "Workspace generation requires a chat identity (missing x-chat-device-id or session).",
@@ -284,7 +506,33 @@ router.post("/twin/seed", async (req: Request, res: Response) => {
 
   try {
     const seed = await generateSeed(buildTranscript(messages));
-    res.json({ data: seed });
+    // Persist server-side so the seed survives device switches and feeds the
+    // full Twin dashboard. Persistence failure must not lose the generation,
+    // but it is surfaced to the client (`persisted: false`) so it can warn
+    // the user and retry the save via PUT /twin/seed.
+    const conversationId = sanitizeConversationId(body?.conversationId);
+    let persisted = false;
+    if (conversationId) {
+      try {
+        await upsertTwinSeed({
+          identity,
+          conversationId,
+          companyName: seed.companyName,
+          summary: seed.summary,
+          businessPlan: seed.businessPlan,
+          tasks: seed.tasks.map((title, index) => ({
+            id: index + 1,
+            title,
+            completed: false,
+          })),
+          revision: Date.now(),
+        });
+        persisted = true;
+      } catch (persistError) {
+        logger.warn({ err: persistError }, "twin seed persistence failed");
+      }
+    }
+    res.json({ data: seed, persisted });
   } catch (error) {
     if ((error as Error).name === "LLM_NOT_CONFIGURED") {
       res.status(503).json({
