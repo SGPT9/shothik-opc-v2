@@ -26,3 +26,4 @@ timeoutMs = 20000
 CONVEX_DEPLOYMENT = "dev:dashing-mandrill-233"
 VITE_CONVEX_URL = "https://dashing-mandrill-233.convex.cloud"
 CHAT_API_ORIGIN = "https://www.shothikgpt.com"
+NEXT_PUBLIC_INSFORGE_ANON_KEY = "ik_9b4e11405dedf37af3bd726789a7749a"
