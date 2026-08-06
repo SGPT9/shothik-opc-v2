@@ -1,0 +1,30 @@
+. Project Overview
+
+
+shothik-web
+ is the standalone, production-facing web application repository for the Shothik AI platform built with Next.js 16, React 19, and TypeScript.
+
+Core Platform Features
+AI Writing & Language Tools: Paraphrasing, plagiarism detection, grammar correction, summarization, and translation.
+Hermes Slide Artifact Engine (Phases 1 & 2): Backend-orchestrated, artifact-first slide deck generation with real-time SSE progress streaming and multi-format exports (PDF, PPTX, HTML, JSON).
+LiveKit WebRTC Voice Orb: ChatGPT-style glowing interactive voice orb integrated into the header and chat composer UI.
+Digital Twin & Tonight Engine: Interactive digital twin workflows with overnight background task execution under /twin.
+Multimodal Search & VTuber Presenter: OpenSearch-VL vision-language deep research search engine connected to Shothik Chat and interactive VTuber presenter.
+Golden Dataset Evaluation Harness: Keyword and quality evaluation framework for benchmarking AI responses.
+Infrastructure & Integrations
+Backend as a Service: InsForge Postgres-based backend (@insforge/sdk, base: https://ers8j28a.ap-southeast.insforge.app).
+Real-time Data Layer: Convex Cloud (convex/ directory).
+Caching & Queues: Upstash Redis / Redis.
+Payments: Stripe, Razorpay, and bKash integration handlers.
+2. Recent Development Milestones
+Commit	Summary	Status
+8283805	Real keyword evaluation matcher in Golden Dataset evaluation harness	✅ Completed
+055bb9f	Tonight Engine overnight task queue embedded into /twin route & ShothikApiCommunications	✅ Completed
+bdf5f5d	LiveKit ChatGPT Advanced Voice Orb connected to header & chat composer UI	✅ Completed
+1bc253c	Replaced 2D avatar with ChatGPT-style glowing circular voice orb (LiveKit WebRTC)	✅ Completed
+4b6e800	Integrated OpenSearch-VL multimodal deep research into Shothik Chat & VTuber presenter	✅ Completed
+3. Where We Stand (Current Repository State)
+Git Branch: main (in sync with origin/main).
+Working Tree: Clean (untracked files isolated to build artifacts).
+Package Manager: pnpm (pnpm-lock.yaml).
+Backend Specs: Managed via .env.local and .insforge/project.json.
