@@ -9,10 +9,13 @@ import {
   Brain,
   FolderOpen,
   Home,
+  Layout,
   MessageCircle,
+  Moon,
   Plus,
   Presentation,
   Search,
+  Sliders,
   Table,
   Users,
 } from 'lucide-react';
@@ -238,6 +241,30 @@ export default function IconNavSidebar() {
           href="/twin"
           isActive={isActive('/twin')}
           tooltip={t('sidebar.twinTooltip')}
+        />
+
+        <NavIcon
+          icon={<Sliders className="h-5 w-5" />}
+          label="Cockpit"
+          href="/agent-cockpit"
+          isActive={isActive('/agent-cockpit')}
+          tooltip="Visual Agent Cockpit & Security"
+        />
+
+        <NavIcon
+          icon={<Moon className="h-5 w-5" />}
+          label="Tonight"
+          href="/tonight-engine"
+          isActive={isActive('/tonight-engine')}
+          tooltip="24/7 Overnight Agent Engine"
+        />
+
+        <NavIcon
+          icon={<Layout className="h-5 w-5" />}
+          label="Canvas"
+          href="/canvas"
+          isActive={isActive('/canvas')}
+          tooltip="Side-by-Side Artifact Canvas"
         />
 
         <div className="flex-1" />
