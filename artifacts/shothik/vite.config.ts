@@ -126,6 +126,8 @@ export default defineConfig({
   define: {
     // Expose env vars as VITE_ equivalents
     'process.env.NEXT_PUBLIC_API_URL': JSON.stringify(''),
+    'process.env.NEXT_PUBLIC_INSFORGE_URL': JSON.stringify(process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.inforge_project_url || ''),
+    'process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || ''),
     'process.env.NEXT_PUBLIC_APP_URL': JSON.stringify('https://shothik.work'),
   },
 });
