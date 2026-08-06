@@ -115,6 +115,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         const insforge = getInsforgeBrowserClient();
+        if (insforge) {
         const resolveInsforgeUser = async () => {
           const current = await withTimeout(
             insforge.auth.getCurrentUser(),
@@ -163,27 +164,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           };
         };
 
-        const { user: insforgeUser, error, refreshed } = await resolveInsforgeUser();
-
-        // #region debug-point A:insforge-current-user
-        fetch("http://127.0.0.1:7777/event", {
-          method: "POST",
-          body: JSON.stringify({
-            sessionId: "chat-auth-session",
-            runId: "pre-fix",
-            hypothesisId: "A",
-            location: "providers/AuthProvider.tsx:hydrateAuth:insforge",
-            msg: "[DEBUG] Insforge current user resolved in browser",
-            data: {
-              hasError: Boolean(error),
-              errorMessage: error?.message ?? null,
-              hasUser: Boolean(insforgeUser?._id),
-              refreshed,
-            },
-            ts: Date.now(),
-          }),
-        }).catch(() => undefined);
-        // #endregion
+        const { user: insforgeUser } = await resolveInsforgeUser();
 
         if (!cancelled && insforgeUser) {
           localStorage.removeItem("jwt_token");
@@ -192,6 +173,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           setIsLoading(false);
           resolved = true;
           return;
+        }
         }
       } catch (error) {
         // Fall back to the legacy bridge while the rest of auth is still migrating.
