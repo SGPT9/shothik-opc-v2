@@ -60,6 +60,30 @@ export default function TonightEngineDashboardPage() {
     }
   };
 
+  const handleTriggerTaskNow = (taskId: string) => {
+    setTasks((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, status: "running" as const } : t))
+    );
+
+    const targetTask = tasks.find((t) => t.id === taskId);
+
+    setTimeout(() => {
+      setTasks((prev) =>
+        prev.map((t) => (t.id === taskId ? { ...t, status: "completed" as const } : t))
+      );
+      setActivity((prev) => [
+        {
+          id: `act-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          role: targetTask?.role || "Engineering",
+          message: `Manual execution finished: ${targetTask?.title || "Agent Job"}`,
+          level: "success",
+        },
+        ...prev,
+      ]);
+    }, 2000);
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -135,8 +159,8 @@ export default function TonightEngineDashboardPage() {
                       <p className="text-xs text-slate-400">{task.targetOutput}</p>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs">
-                      <span className="text-slate-400">{task.scheduleTime}</span>
+                    <div className="flex items-center gap-3 text-xs">
+                      <span className="text-slate-400 hidden sm:inline">{task.scheduleTime}</span>
                       <span
                         className={`px-2.5 py-1 rounded-full font-semibold capitalize ${
                           task.status === "completed"
@@ -148,6 +172,14 @@ export default function TonightEngineDashboardPage() {
                       >
                         {task.status}
                       </span>
+                      {task.status !== "running" && (
+                        <button
+                          onClick={() => handleTriggerTaskNow(task.id)}
+                          className="px-2.5 py-1 rounded bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 border border-purple-500/30 font-medium transition-all"
+                        >
+                          ▶ Run Now
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}

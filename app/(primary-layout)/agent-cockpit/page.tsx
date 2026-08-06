@@ -18,6 +18,7 @@ export default function AgentCockpitPage() {
     modelUsageBreakdown: { model: string; usagePercent: number }[];
   } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     fetchData();
@@ -67,6 +68,19 @@ export default function AgentCockpitPage() {
     }
   };
 
+  const filteredServers = servers.filter(
+    (s) =>
+      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      s.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredRules = rules.filter(
+    (r) =>
+      r.capability.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
       <div className="max-w-7xl mx-auto space-y-8">
@@ -85,31 +99,52 @@ export default function AgentCockpitPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg p-1">
-            <button
-              onClick={() => setActiveTab("mcp")}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                activeTab === "mcp" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              MCP Servers ({servers.filter((s) => s.status === "active").length})
-            </button>
-            <button
-              onClick={() => setActiveTab("permissions")}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                activeTab === "permissions" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Security Gates
-            </button>
-            <button
-              onClick={() => setActiveTab("metrics")}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                activeTab === "metrics" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
-              }`}
-            >
-              Usage & Costs
-            </button>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            {/* Search Input */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search tools, servers, rules..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full sm:w-64 bg-slate-900 border border-slate-800 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs font-bold"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-lg p-1">
+              <button
+                onClick={() => setActiveTab("mcp")}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  activeTab === "mcp" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                MCP Servers ({filteredServers.filter((s) => s.status === "active").length})
+              </button>
+              <button
+                onClick={() => setActiveTab("permissions")}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  activeTab === "permissions" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                Security Gates
+              </button>
+              <button
+                onClick={() => setActiveTab("metrics")}
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
+                  activeTab === "metrics" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                Usage & Costs
+              </button>
+            </div>
           </div>
         </div>
 
@@ -120,7 +155,7 @@ export default function AgentCockpitPage() {
             {/* Tab 1: MCP Servers */}
             {activeTab === "mcp" && (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {servers.map((server) => (
+                {filteredServers.map((server) => (
                   <div
                     key={server.id}
                     className="bg-slate-900/80 border border-slate-800 rounded-xl p-6 flex flex-col justify-between hover:border-slate-700 transition-all shadow-lg"
@@ -176,7 +211,7 @@ export default function AgentCockpitPage() {
                 </div>
 
                 <div className="divide-y divide-slate-800">
-                  {rules.map((rule) => (
+                  {filteredRules.map((rule) => (
                     <div key={rule.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                       <div>
                         <div className="flex items-center gap-2">
