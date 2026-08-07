@@ -14,9 +14,27 @@ vi.mock("../../artifact-manager", () => ({
   })),
 }));
 
+vi.mock("@/lib/insforge/rag-memory", () => ({
+  InsForgeTwinRagMemory: {
+    searchWorkspaceContext: vi.fn().mockResolvedValue("RAG Memory Context"),
+    saveMemoryChunk: vi.fn().mockResolvedValue({ success: true }),
+  },
+}));
+
+vi.mock("@/lib/infrastructure/vps-fallback-engine", () => ({
+  VpsFallbackEngine: {
+    executeWithZeroFailure: vi.fn().mockResolvedValue({
+      content: "# Deep Research Report\n\nExecutive Summary of Quantum Computing.",
+      tierUsed: "tier_1_cloud",
+      modelUsed: "google/gemini-2.5-flash",
+      latencyMs: 320,
+    }),
+  },
+}));
+
 import { getHermesResearchOrchestrator } from "../index";
 
-describe("HermesResearchOrchestrator Module", () => {
+describe("HermesResearchOrchestrator Module (Phase 3)", () => {
   it("should execute a deep web research run and create a versioned research artifact", async () => {
     const research = getHermesResearchOrchestrator();
 
@@ -31,5 +49,19 @@ describe("HermesResearchOrchestrator Module", () => {
     expect(result.runId.startsWith("run_")).toBe(true);
     expect(result.artifactId).toBeDefined();
     expect(result.artifactId.startsWith("art_")).toBe(true);
+  });
+
+  it("should handle deep research queries with custom depth and RAG indexing", async () => {
+    const research = getHermesResearchOrchestrator();
+
+    const result = await research.generateResearch({
+      workspaceId: "ws_res_deep",
+      userId: "usr_res_deep",
+      query: "CRISPR-Cas9 Off-Target Mitigation Techniques",
+      depth: "deep",
+    });
+
+    expect(result.runId).toBeDefined();
+    expect(result.artifactId).toBe("art_mock_123");
   });
 });
