@@ -29,7 +29,13 @@
 - Chat-To-Slides command contracts (`lib/hermes/contracts/slides.ts`) & unit test suite (`lib/hermes/contracts/slides.test.ts`) verified.
 - Standardized API route handlers with `defineRoute` and Zod schemas across MFS payments, VTuber session, God-Mode, and Pipedream integrations with unit tests.
 - Hardened InsForge BaaS RAG Memory vault with `TwinMemoryChunkSchema` Zod validation and multi-surface vector indexing.
-- Elevated Vitest coverage thresholds to 50% lines, 50% functions, 50% statements, and 45% branches in `vitest.config.ts`.
+- Phase 1 Chat-To-Slides command contracts (`lib/hermes/contracts/slides.ts`) & `HermesSlidesOrchestrator` execution engine.
+- Phase 2 Chat-To-Sheets command contracts (`lib/hermes/contracts/sheets.ts`), `HermesSheetsOrchestrator`, and `/api/hermes/sheets/generate` API route with unit tests.
+- Phase 3 Research & Deep Research command contracts (`lib/hermes/contracts/research.ts`), `HermesResearchOrchestrator`, and `/api/hermes/research/generate` API route with unit tests.
+- Hermes Multi-Agent Swarm Topology Orchestrator (`lib/hermes/modules/swarm-orchestrator`), `/api/hermes/swarm` API route, and real-time `SwarmVisualizer` UI component (`components/hermes/swarm-visualizer.tsx`) with unit tests.
+- InsForge Realtime Pub/Sub WebSocket Adapter (`lib/insforge/realtime-adapter.ts`) and `useRealtimeWorkspace` React hook (`hooks/use-realtime-workspace.ts`) with unit tests.
+- InsForge File Storage Bucket Upload Adapter (`lib/insforge/storage-adapter.ts`) and `/api/hermes/storage/upload` API route with unit tests.
+- Elevated global Vitest coverage thresholds to 100% lines, 100% functions, 100% statements, and 98% branches in `vitest.config.ts`.
 
 ## Current Milestone 1 Acceptance Gaps
 - Authenticated chat is not yet proven end to end in the live app.
