@@ -5,7 +5,8 @@ import { isAgentKey, hashAgentKey } from "@/lib/agent-auth";
 import logger from "@/lib/logger";
 import type { Id } from "@/convex/_generated/dataModel";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 
 export async function POST(req: NextRequest) {
   let body: {

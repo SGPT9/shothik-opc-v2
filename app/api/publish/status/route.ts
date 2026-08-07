@@ -6,7 +6,8 @@ import { logger } from "@/lib/logger";
 import { decodeJwt } from "jose";
 import { getDistributionStatus } from "@/services/publishDriveService";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 
 function getUserIdFromToken(token: string): string | null {
   try {

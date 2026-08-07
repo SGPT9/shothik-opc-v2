@@ -5,8 +5,8 @@ import { api } from "@/convex/_generated/api";
 import { defineRoute, z } from "@/lib/api-validation";
 import logger from "@/lib/logger";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { stripe } from "@/lib/stripe/client";
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
 
 // We must read the raw body for Stripe signature verification
 // so we bypass Zod body validation and read it directly in the handler.

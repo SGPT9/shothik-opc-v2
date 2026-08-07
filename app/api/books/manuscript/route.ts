@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
-import { getAuthToken } from "@/lib/auth";
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
 import logger from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing bookId" }, { status: 400 });
     }
 
-    const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+    const convex = new ConvexHttpClient(getSanitizedConvexUrl());
     convex.setAuth(token);
 
     const result = await convex.query(api.books.getManuscriptUrl, {

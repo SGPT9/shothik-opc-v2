@@ -6,7 +6,7 @@ import { decodeJwt } from "jose";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
+import { stripe } from "@/lib/stripe/client";
 
 function getUserIdFromToken(token: string): string | null {
   try {

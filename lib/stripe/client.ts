@@ -1,9 +1,25 @@
 import Stripe from "stripe";
 
-// Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-02-25.clover",
-  typescript: true,
+let stripeInstance: Stripe | null = null;
+
+export function getStripeClient(): Stripe {
+  if (!stripeInstance) {
+    const key = process.env.STRIPE_SECRET_KEY || "sk_test_placeholder";
+    stripeInstance = new Stripe(key, {
+      apiVersion: "2026-02-25.clover",
+      typescript: true,
+    });
+  }
+  return stripeInstance;
+}
+
+// Proxy stripe export for lazy backward compatibility
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    const client = getStripeClient();
+    const value = (client as any)[prop];
+    return typeof value === "function" ? value.bind(client) : value;
+  },
 });
 
 export default stripe;

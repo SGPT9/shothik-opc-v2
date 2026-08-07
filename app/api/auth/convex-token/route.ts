@@ -3,6 +3,7 @@ import {
   diagnoseConvexJwtConfig,
 } from "@/lib/convex/auth-diagnostics";
 import { mintConvexUserToken } from "@/lib/convex/user-token";
+import { getAuthenticatedUser } from "@/lib/server-auth";
 import logger from "@/lib/logger";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://prod-api.shothik.ai";
@@ -64,7 +65,15 @@ export async function POST(request: NextRequest) {
 
     let verified: { userId: string; email?: string; name?: string } | null = null;
 
-    if (
+    // Check if there is an active InsForge or legacy server session via cookies
+    const serverUser = await getAuthenticatedUser();
+    if (serverUser?._id) {
+      verified = {
+        userId: serverUser._id,
+        email: serverUser.email,
+        name: serverUser.name,
+      };
+    } else if (
       !accessToken ||
       accessToken === "guest-playground-token" ||
       accessToken === "guest-playground-user" ||
