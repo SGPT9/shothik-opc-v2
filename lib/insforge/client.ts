@@ -12,3 +12,5 @@ export function getInsforgeBrowserClient() {
 
   return browserClient;
 }
+
+export const getInsforgeClient = getInsforgeBrowserClient;
