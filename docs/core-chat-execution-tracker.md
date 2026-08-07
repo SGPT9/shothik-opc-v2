@@ -36,6 +36,8 @@
 - InsForge Realtime Pub/Sub WebSocket Adapter (`lib/insforge/realtime-adapter.ts`) and `useRealtimeWorkspace` React hook (`hooks/use-realtime-workspace.ts`) with unit tests.
 - InsForge File Storage Bucket Upload Adapter (`lib/insforge/storage-adapter.ts`) and `/api/hermes/storage/upload` API route with unit tests.
 - Elevated global Vitest coverage thresholds to 100% lines, 100% functions, 100% statements, and 98% branches in `vitest.config.ts`.
+- Implemented DeerFlow AI Multi-Agent Workflow Engine (`lib/hermes/modules/deerflow-engine`), Semantic RAG + ODS Data Layer (`lib/hermes/modules/semantic-ods`), and `/api/hermes/deerflow` API route with 100% unit test coverage.
+
 
 ## Current Milestone 1 Acceptance Gaps
 - Authenticated chat is not yet proven end to end in the live app.
