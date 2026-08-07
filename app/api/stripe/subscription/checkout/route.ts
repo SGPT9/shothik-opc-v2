@@ -102,6 +102,7 @@ async function handleCheckout(
     ];
   }
 
+  const stripe = getStripeClient();
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
     line_items: lineItems,
