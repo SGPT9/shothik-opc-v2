@@ -6,8 +6,8 @@ import logger from "@/lib/logger";
 const VtuberSessionBodySchema = z.object({
   workspaceId: z.string().default("ws_vtb_default"),
   avatarModel: z.string().default("shothik_vrm_default.vrm"),
-  voiceEngine: z.string().default("edge-tts"),
-  language: z.string().default("en"),
+  voiceEngine: z.enum(["edge-tts", "gpt-sovits", "sherpa-onnx"]).default("edge-tts"),
+  language: z.enum(["en", "bn", "hi", "es"]).default("en"),
   enableVAD: z.boolean().default(true),
   enableVision: z.boolean().default(true),
   mcpToolsEnabled: z.array(z.string()).default(["web_search", "papermark_analytics", "pipedream_oauth"]),
