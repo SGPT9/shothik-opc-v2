@@ -20,7 +20,7 @@ export const TwinMemoryChunkSchema = z.object({
   contentType: TwinMemoryChunkContentTypeSchema,
   title: z.string().min(1, "title is required"),
   content: z.string(),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
   createdAt: z.string().optional(),
 });
 
@@ -67,7 +67,7 @@ export class InsForgeTwinRagMemory {
       return { success: true, id: payload.document_id };
     } catch (err: any) {
       console.warn("[InsForge RAG] Memory save fallback:", err.message);
-      return { success: true, id: chunk.documentId || `doc-${Date.now()}` };
+      return { success: true, id: rawChunk?.documentId || `doc-${Date.now()}` };
     }
   }
 

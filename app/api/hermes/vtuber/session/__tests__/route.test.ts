@@ -14,7 +14,7 @@ describe("POST /api/hermes/vtuber/session", () => {
       }),
     });
 
-    const res = await POST(req);
+    const res = await POST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(201);
 
     const data = await res.json();
