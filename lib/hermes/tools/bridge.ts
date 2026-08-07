@@ -1,4 +1,5 @@
 import { ToolDefinition, ToolExecutionContext, ToolExecutionResult } from "./definition";
+import { getHermesDatabase } from "@/lib/hermes/infra/db";
 import logger from "@/lib/logger";
 
 export class ToolBridge {
@@ -30,6 +31,7 @@ export class ToolBridge {
 
   /**
    * Invokes a registered tool by name with parameter validation and timeout handling.
+   * Persists every tool invocation into InsForge public.hermes_tool_calls table.
    */
   async invokeTool<T = unknown>(
     name: string,
@@ -37,12 +39,28 @@ export class ToolBridge {
     context: ToolExecutionContext,
   ): Promise<ToolExecutionResult<T>> {
     const startTime = Date.now();
+    const startedAtIso = new Date(startTime).toISOString();
+    const callId = `call_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const runId = context.runId || "run_default";
+
     const tool = this.registry.get(name);
 
     if (!tool) {
+      const errMessage = `ToolBridge error: Tool '${name}' is not registered`;
+      await getHermesDatabase().recordToolCall({
+        id: callId,
+        runId,
+        toolName: name,
+        input: (rawParams as Record<string, unknown>) || {},
+        error: errMessage,
+        status: "failed",
+        startedAt: startedAtIso,
+        completedAt: new Date().toISOString(),
+      }).catch(() => null);
+
       return {
         success: false,
-        error: `ToolBridge error: Tool '${name}' is not registered`,
+        error: errMessage,
         executionTimeMs: Date.now() - startTime,
       };
     }
@@ -50,9 +68,21 @@ export class ToolBridge {
     // Parameter validation with Zod
     const paramResult = tool.paramSchema.safeParse(rawParams);
     if (!paramResult.success) {
+      const errMessage = `ToolBridge error: Invalid parameters for '${name}': ${paramResult.error.message}`;
+      await getHermesDatabase().recordToolCall({
+        id: callId,
+        runId,
+        toolName: name,
+        input: (rawParams as Record<string, unknown>) || {},
+        error: errMessage,
+        status: "failed",
+        startedAt: startedAtIso,
+        completedAt: new Date().toISOString(),
+      }).catch(() => null);
+
       return {
         success: false,
-        error: `ToolBridge error: Invalid parameters for '${name}': ${paramResult.error.message}`,
+        error: errMessage,
         executionTimeMs: Date.now() - startTime,
       };
     }
@@ -72,9 +102,34 @@ export class ToolBridge {
       const result = await Promise.race([executionPromise, timeoutPromise]);
       if (timer) clearTimeout(timer);
 
+      const completedAtIso = new Date().toISOString();
+      await getHermesDatabase().recordToolCall({
+        id: callId,
+        runId,
+        toolName: name,
+        input: (paramResult.data as Record<string, unknown>) || {},
+        result: result.success ? (result.data as Record<string, unknown>) : null,
+        error: result.error || null,
+        status: result.success ? "completed" : "failed",
+        startedAt: startedAtIso,
+        completedAt: completedAtIso,
+      }).catch(() => null);
+
       return result;
     } catch (err: any) {
       logger.error(`ToolBridge invocation error for '${name}':`, err);
+      const completedAtIso = new Date().toISOString();
+      await getHermesDatabase().recordToolCall({
+        id: callId,
+        runId,
+        toolName: name,
+        input: (rawParams as Record<string, unknown>) || {},
+        error: err?.message || String(err),
+        status: "failed",
+        startedAt: startedAtIso,
+        completedAt: completedAtIso,
+      }).catch(() => null);
+
       return {
         success: false,
         error: err?.message || String(err),

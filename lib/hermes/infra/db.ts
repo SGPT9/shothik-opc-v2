@@ -888,6 +888,60 @@ export class HermesDatabase {
       throw error;
     }
   }
+
+  /**
+   * Tool Call Logging & Persistence
+   */
+  async recordToolCall(call: {
+    id: string;
+    runId: string;
+    toolName: string;
+    input: Record<string, unknown>;
+    result?: Record<string, unknown> | null;
+    error?: string | null;
+    status: "pending" | "running" | "completed" | "failed";
+    startedAt?: string;
+    completedAt?: string | null;
+  }): Promise<void> {
+    const startedAt = call.startedAt || new Date().toISOString();
+    try {
+      await hermesQuery(
+        `INSERT INTO hermes_tool_calls (
+          id, "runId", "toolName", input, result, error, status, "startedAt", "completedAt"
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          call.id,
+          call.runId,
+          call.toolName,
+          JSON.stringify(call.input || {}),
+          call.result ? JSON.stringify(call.result) : null,
+          call.error || null,
+          call.status,
+          startedAt,
+          call.completedAt || null,
+        ]
+      );
+      logger.info('[hermes-db] Tool call recorded', { callId: call.id, toolName: call.toolName, runId: call.runId });
+    } catch (error) {
+      logger.error('[hermes-db] Failed to record tool call', {
+        callId: call.id,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
+  }
+
+  async getRunToolCalls(runId: string, limit: number = 100): Promise<unknown[]> {
+    try {
+      const result = await hermesQuery(
+        `SELECT * FROM hermes_tool_calls WHERE "runId" = $1 ORDER BY "startedAt" ASC LIMIT $2`,
+        [runId, limit]
+      );
+      return result.rows;
+    } catch (error) {
+      logger.error('[hermes-db] Failed to get run tool calls', { runId, error: error instanceof Error ? error.message : String(error) });
+      return [];
+    }
+  }
 }
 
 // Singleton instance
