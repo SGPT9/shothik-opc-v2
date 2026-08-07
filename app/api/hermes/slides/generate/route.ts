@@ -8,6 +8,7 @@
 import { NextRequest } from "next/server";
 import { getChatAuthenticatedUser } from "@/lib/server-auth";
 import { getHermesOrchestrator } from "@/lib/hermes";
+import { z } from "zod";
 import { GenerateSlidesCommandSchema } from "@/lib/hermes/contracts/slides";
 import logger from "@/lib/logger";
 
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
   if (!user?._id) return unauthorized();
 
   try {
+    const body = await request.json().catch(() => ({}));
     const validated = GenerateSlidesCommandSchema.parse({
       requestId: `slides-${Date.now()}`,
       userId: String(user._id),

@@ -15,7 +15,7 @@ describe("POST /api/hermes/payments/mfs", () => {
       }),
     });
 
-    const res = await POST(req);
+    const res = await POST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(201);
     const data = await res.json();
     expect(data.data.workspaceId).toBe("ws_test_mfs");
@@ -33,7 +33,7 @@ describe("POST /api/hermes/payments/mfs", () => {
       }),
     });
 
-    const res = await POST(req);
+    const res = await POST(req, { params: Promise.resolve({}) });
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data.data.paymentId).toBe("mfs_nagad_test_123");
