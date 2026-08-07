@@ -23,9 +23,20 @@ const serverEnvSchema = z.object({
 });
 
 const clientEnvSchema = z.object({
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1).optional(),
+  NEXT_PUBLIC_STREAMING_ENABLED: z.string().optional().default("true"),
 });
+
+/**
+ * Feature flag check for token-level streaming responses
+ */
+export function isStreamingEnabled(): boolean {
+  if (typeof process !== "undefined" && process.env?.NEXT_PUBLIC_STREAMING_ENABLED === "false") {
+    return false;
+  }
+  return true;
+}
 
 /**
  * Server-side environment validation

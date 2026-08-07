@@ -41,6 +41,8 @@
 - Formally documented & marked multi-layer system architecture blueprint in [`docs/ARCHITECTURE.md`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/ARCHITECTURE.md).
 - Refactored `services/` layout, converted legacy JS bridges to TypeScript (`services/createPresentationServer.ts`), created unified services entrypoint ([`services/index.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/services/index.ts)), and documented full service offerings catalog in [`docs/SERVICE_OFFERINGS.md`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/SERVICE_OFFERINGS.md).
 - Formally created Master Ground Truth Document in [`docs/GROUND_TRUTH.md`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/GROUND_TRUTH.md) defining single-source-of-truth governance rules for InsForge identity, Convex UI state, Hostinger VPS deepthink node, and ChatGPT Omni-like Voice Agent capabilities.
+- Implemented Task #13 Polished Token-Level Streaming Chat with friendly "Thinking…" indicator, ChatGPT/Claude style blinking cursor (`▋`), `StandardizedChatErrorCard` with retry support, and `NEXT_PUBLIC_STREAMING_ENABLED` feature flag kill-switch.
+
 
 
 

@@ -293,6 +293,30 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                 </button>
               )}
 
+              {/* Open-LLM-VTuber Omni Voice Presenter */}
+              <button
+                type="button"
+                onClick={() => {
+                  fetch("/api/hermes/vtuber/session", { method: "POST" })
+                    .then(res => res.json())
+                    .then(data => {
+                      if (data.data?.websocketUrl) {
+                        window.location.href = `/voice?session=${data.data.sessionId}`;
+                      } else {
+                        window.location.href = "/voice";
+                      }
+                    })
+                    .catch(() => {
+                      window.location.href = "/voice";
+                    });
+                }}
+                className="flex items-center gap-1.5 h-8 px-3 rounded-xl text-[11px] font-medium transition border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 shadow-sm cursor-pointer"
+                title="Launch Open-LLM-VTuber Live Voice Presenter"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                <span>Omni Voice</span>
+              </button>
+
               {/* ChatGPT LiveKit Voice Orb Mode */}
               <button
                 type="button"
