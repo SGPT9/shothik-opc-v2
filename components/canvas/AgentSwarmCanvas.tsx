@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { BkashCourierActionCard } from "./BkashCourierActionCard";
+import { MorningVoiceBriefingBanner } from "../partials/MorningVoiceBriefingBanner";
 
 export interface SwarmNode {
   id: string;
@@ -36,7 +37,10 @@ export function AgentSwarmCanvas() {
 
   return (
     <div className="w-full min-h-screen bg-slate-950 text-slate-100 p-6 space-y-6">
-      {/* bKash Payment Fraud Inspector & Courier Rider Dispatch Action Suite */}
+      {/* ☕ Morning Coffee Spoken Voice Briefing Banner */}
+      <MorningVoiceBriefingBanner />
+
+      {/* 🛡️ bKash Payment Fraud Inspector & Courier Rider Dispatch Action Suite */}
       <BkashCourierActionCard />
       {/* Header Bar */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between p-6 rounded-2xl bg-slate-900 border border-slate-800 gap-4">
