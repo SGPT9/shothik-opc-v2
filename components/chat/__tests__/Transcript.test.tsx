@@ -85,9 +85,6 @@ describe("Transcript", () => {
       />,
     );
 
-    expect(screen.getByText("Request failed")).toBeInTheDocument();
-    expect(screen.getByText("Queued")).toBeInTheDocument();
-    expect(screen.getByText("Response")).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent("Rate limit exceeded. Please wait a moment.");
   });
 

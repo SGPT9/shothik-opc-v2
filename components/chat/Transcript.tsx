@@ -1,10 +1,11 @@
 "use client";
 
-import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, User } from "lucide-react";
+import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, Sparkles, User } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
+import { StandardizedChatErrorCard } from "./StandardizedChatErrorCard";
 import { DeerFlowVisualizer } from "@/components/hermes/deerflow-visualizer";
 import { SwarmVisualizer } from "@/components/hermes/swarm-visualizer";
 import { getSlashCommandDisplayText } from "@/lib/chat/commands";
@@ -91,62 +92,35 @@ export function Transcript({
                       status={message.status === 'completed' ? 'completed' : message.status === 'streaming' ? 'processing' : 'queued'}
                     />
                   )}
-                  {!isUser && (statusLabel || progress.length > 0) ? (
-                    <div className="mb-3 rounded-xl border border-border/70 bg-muted/30 px-3 py-2">
-                      {statusLabel ? (
-                        <p className="text-xs font-medium text-foreground">{statusLabel}</p>
-                      ) : null}
-                      {progress.length > 0 ? (
-                        <div className="mt-2 flex flex-wrap gap-2">
-                          {progress.map((item) => {
-                            const icon =
-                              item.state === "completed" ? (
-                                <CheckCircle2 className="h-3.5 w-3.5" />
-                              ) : item.state === "error" ? (
-                                <AlertCircle className="h-3.5 w-3.5" />
-                              ) : item.state === "active" ? (
-                                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                              ) : (
-                                <div className="h-2 w-2 rounded-full bg-muted-foreground/60" />
-                              );
-
-                            return (
-                              <span
-                                key={item.id}
-                                className={cn(
-                                  "inline-flex items-center gap-1.5 rounded-full border px-2 py-1 text-[11px]",
-                                  item.state === "completed" && "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-                                  item.state === "active" && "border-brand/20 bg-brand/10 text-brand",
-                                  item.state === "error" && "border-destructive/30 bg-destructive/10 text-destructive",
-                                  item.state === "pending" && "border-border bg-background text-muted-foreground",
-                                )}
-                                title={item.detail}
-                              >
-                                {icon}
-                                <span>{item.label}</span>
-                              </span>
-                            );
-                          })}
-                        </div>
-                      ) : null}
+                  {!isUser && message.status === "streaming" && !displayContent ? (
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-1.5 text-xs text-brand font-medium animate-pulse">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Thinking…</span>
                     </div>
                   ) : null}
                   {!isUser ? (
-                    <MarkdownMessage
-                      content={
-                        displayContent ||
-                        (message.status === "streaming"
-                          ? "Waiting for Hermes..."
-                          : slashCommand
-                            ? "Spec request"
-                            : "")
-                      }
-                    />
+                    <div className="relative">
+                      <MarkdownMessage
+                        content={
+                          displayContent ||
+                          (message.status === "streaming"
+                            ? "Thinking…"
+                            : slashCommand
+                              ? "Spec request"
+                              : "")
+                        }
+                      />
+                      {message.status === "streaming" && displayContent ? (
+                        <span className="inline-block w-2 h-4 ml-1 bg-brand animate-pulse align-middle font-mono font-bold">
+                          ▋
+                        </span>
+                      ) : null}
+                    </div>
                   ) : (
                     <p className="whitespace-pre-wrap leading-relaxed">
                       {displayContent ||
                         (message.status === "streaming"
-                          ? "Waiting for Hermes..."
+                          ? "Thinking…"
                           : slashCommand
                             ? "Spec request"
                             : "")}
@@ -158,16 +132,17 @@ export function Transcript({
                     (displayContent ?? "").toLowerCase().includes("business") ||
                     (displayContent ?? "").toLowerCase().includes("startup") ||
                     (displayContent ?? "").toLowerCase().includes("plan") ||
-                    (displayContent ?? "").toLowerCase().includes("launch")
+                    (displayContent ?? "").toLowerCase().includes("launch") ||
+                    (displayContent ?? "").toLowerCase().includes("saas")
                   ) && (
-                    <div className="mt-3 rounded-2xl border border-brand/30 bg-brand/5 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                    <div className="mt-3 rounded-2xl border border-brand/30 bg-brand/5 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                       <div className="flex items-center gap-2.5">
                         <div className="h-8 w-8 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-sm shrink-0">
                           🏢
                         </div>
                         <div>
                           <p className="text-xs font-semibold text-foreground">This looks like a company idea.</p>
-                          <p className="text-[11px] text-muted-foreground">Turn this conversation into an auto-seeded Twin workspace.</p>
+                          <p className="text-[11px] text-muted-foreground">Start your company with an AI Cofounder in Twin workspace.</p>
                         </div>
                       </div>
                       <a
@@ -195,13 +170,12 @@ export function Transcript({
                       />
                     </div>
                   ) : null}
-                  {inlineError ? (
-                    <div
-                      role="alert"
-                      className="mt-3 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive"
-                    >
-                      {inlineError.message}
-                    </div>
+                  {inlineError || message.status === "error" ? (
+                    <StandardizedChatErrorCard
+                      message={inlineError?.message || "Generation halted mid-stream. You can retry the turn."}
+                      recoverable={inlineError?.recoverable ?? true}
+                      onRetry={() => onRegenerate && onRegenerate(message)}
+                    />
                   ) : null}
                   {Array.isArray(message.metadata?.citations) && message.metadata.citations.length > 0 ? (
                     <div className="mt-3 flex flex-wrap gap-2">

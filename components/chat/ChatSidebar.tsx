@@ -164,16 +164,23 @@ export function ChatSidebar({
         )}
 
         {onOpenWritingStudio && (
-          <button
-            onClick={onOpenWritingStudio}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
-          >
-            <span className="flex items-center gap-2">
-              <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-              <span>Book Writing Studio</span>
-            </span>
-            <ChevronRight className="w-3 h-3 text-slate-600" />
-          </button>
+          <div className="space-y-1">
+            <button
+              onClick={() => onOpenWritingStudio()}
+              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
+            >
+              <span className="flex items-center gap-2">
+                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+                <span>Writing Suite (8 Tools)</span>
+              </span>
+              <ChevronRight className="w-3 h-3 text-slate-600" />
+            </button>
+            <div className="pl-6 space-y-0.5 text-[11px] text-slate-400 border-l border-slate-800 ml-3">
+              <a href="/writing-studio" className="block py-1 hover:text-cyan-300 transition">✍️ Paraphraser & Grammar</a>
+              <a href="/ai-detector" className="block py-1 hover:text-cyan-300 transition">🤖 AI Detector & Humanizer</a>
+              <a href="/plagiarism-checker" className="block py-1 hover:text-cyan-300 transition">🔍 Plagiarism & Citations</a>
+            </div>
+          </div>
         )}
       </div>
     </div>
