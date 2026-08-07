@@ -70,10 +70,11 @@ export function parseAgentDefinition(rawContent: string): AgentDefinition {
 
     // Handle JSON arrays or simple string arrays
     if (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) {
+      const rawArrayValue = value;
       try {
-        value = JSON.parse(value);
+        value = JSON.parse(rawArrayValue);
       } catch {
-        value = value.slice(1, -1).split(",").map((s) => s.trim().replace(/^["']|["']$/g, ""));
+        value = rawArrayValue.slice(1, -1).split(",").map((s) => s.trim().replace(/^["']|["']$/g, ""));
       }
     } else if (value === "true") {
       value = true;
