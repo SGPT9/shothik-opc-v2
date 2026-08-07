@@ -75,3 +75,20 @@ graph TD
 * **Tool Audit Logging**: Every tool execution via `ToolBridge` **must** insert a record into `public.hermes_tool_calls` in InsForge PostgreSQL.
 * **Vitest Coverage Threshold**: Codebase enforces **100% line, function, and statement coverage** with **98% branch coverage**.
 * **Zero Egress Storage**: Static assets stream through Cloudflare R2 (`cdn.shothik.ai`) with InsForge storage fallback.
+
+---
+
+## 5. ChatGPT Omni-Like Voice Agent Capabilities (`vtuber-presenter`)
+
+* **5-Engine Pipeline**:
+  1. **Silero VAD (Voice Activity Detection)**: Sub-50ms real-time speech detection allowing natural human voice interruption mid-sentence.
+  2. **Faster Whisper / Sherpa-ONNX ASR**: High-precision offline speech-to-text conversion.
+  3. **Hermes & TonightEngine Core Brain**: Multi-agent task graph execution and DeepSeek R1 reasoning loops.
+  4. **Edge-TTS / GPT-SoVITS TTS**: Natural multilingual voice synthesis (English, Bangla, Hindi, Spanish).
+  5. **Live2D / VRM 3D Avatar Renderer**: Real-time lip-sync, expression triggers, and desktop companion mode.
+* **4 Major Capabilities**:
+  * 🎙️ **Papermark Pitch Deck Presenter**: Automatically narrates slides and answers investor questions on trackable document links (`/api/hermes/vtuber/session`).
+  * 🛠️ **Live MCP Tool Calling**: Triggers Google Calendar invites, WhatsApp quotes, and Pipedream OAuth workflows mid-voice conversation.
+  * 👁️ **Visual Perception**: Real-time camera & screen sharing analysis for code reviews, UI critique, and diagram explanations.
+  * 🧠 **Mem0 Long-Term Memory**: Remembers founder goals, investor feedback, and interaction histories across sessions.
+
