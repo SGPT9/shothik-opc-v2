@@ -1,15 +1,30 @@
 import { createInsforgeServerClient } from "@/lib/insforge/server";
+import { z } from "zod";
 
-export interface TwinMemoryChunk {
-  id?: string;
-  twinId: string;
-  documentId?: string;
-  contentType: "manuscript" | "research_paper" | "story_bible" | "sheet_data" | "slide_deck" | "writing_draft" | "research_report" | "tonight_run" | "tool_registry";
-  title: string;
-  content: string;
-  metadata?: Record<string, any>;
-  createdAt?: string;
-}
+export const TwinMemoryChunkContentTypeSchema = z.enum([
+  "manuscript",
+  "research_paper",
+  "story_bible",
+  "sheet_data",
+  "slide_deck",
+  "writing_draft",
+  "research_report",
+  "tonight_run",
+  "tool_registry",
+]);
+
+export const TwinMemoryChunkSchema = z.object({
+  id: z.string().optional(),
+  twinId: z.string().min(1, "twinId is required"),
+  documentId: z.string().optional(),
+  contentType: TwinMemoryChunkContentTypeSchema,
+  title: z.string().min(1, "title is required"),
+  content: z.string(),
+  metadata: z.record(z.unknown()).optional(),
+  createdAt: z.string().optional(),
+});
+
+export type TwinMemoryChunk = z.infer<typeof TwinMemoryChunkSchema>;
 
 export interface MemorySearchResult {
   chunk: TwinMemoryChunk;
@@ -20,8 +35,9 @@ export class InsForgeTwinRagMemory {
   /**
    * Save a knowledge memory chunk into InsForge Postgres for AI Twin RAG.
    */
-  static async saveMemoryChunk(chunk: TwinMemoryChunk): Promise<{ success: boolean; id?: string }> {
+  static async saveMemoryChunk(rawChunk: TwinMemoryChunk): Promise<{ success: boolean; id?: string }> {
     try {
+      const chunk = TwinMemoryChunkSchema.parse(rawChunk);
       const client = await createInsforgeServerClient();
 
       const db = (client as any).database ? (client as any).database : (client as any);

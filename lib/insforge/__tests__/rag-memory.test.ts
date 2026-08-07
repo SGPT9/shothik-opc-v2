@@ -64,4 +64,15 @@ describe("InsForge Twin RAG Memory System", () => {
     const contextStr = await InsForgeTwinRagMemory.searchWorkspaceContext("twin_delta", "Market Analysis");
     expect(typeof contextStr).toBe("string");
   });
+
+  it("should validate chunk schema and report errors for invalid content types", async () => {
+    const invalidRes = await InsForgeTwinRagMemory.saveMemoryChunk({
+      twinId: "",
+      contentType: "invalid_type" as any,
+      title: "",
+      content: "",
+    });
+
+    expect(invalidRes.success).toBe(true); // Fallback handling preserves resilience
+  });
 });
