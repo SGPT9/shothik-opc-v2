@@ -103,6 +103,8 @@ export default function AgentCockpitPage() {
             {/* Search Input */}
             <div className="relative">
               <input
+                id="cockpit-search-input"
+                name="search"
                 type="text"
                 placeholder="Search tools, servers, rules..."
                 value={searchQuery}

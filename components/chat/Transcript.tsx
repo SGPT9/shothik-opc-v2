@@ -150,6 +150,32 @@ export function Transcript({
                             : "")}
                     </p>
                   )}
+                  {/* Contextual Twin Handoff Card Trigger */}
+                  {!isUser && (
+                    (displayContent ?? "").toLowerCase().includes("app") ||
+                    (displayContent ?? "").toLowerCase().includes("business") ||
+                    (displayContent ?? "").toLowerCase().includes("startup") ||
+                    (displayContent ?? "").toLowerCase().includes("plan") ||
+                    (displayContent ?? "").toLowerCase().includes("launch")
+                  ) && (
+                    <div className="mt-3 rounded-2xl border border-brand/30 bg-brand/5 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                      <div className="flex items-center gap-2.5">
+                        <div className="h-8 w-8 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold text-sm shrink-0">
+                          🏢
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold text-foreground">This looks like a company idea.</p>
+                          <p className="text-[11px] text-muted-foreground">Turn this conversation into an auto-seeded Twin workspace.</p>
+                        </div>
+                      </div>
+                      <a
+                        href="/twin"
+                        className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-brand text-brand-foreground text-xs font-medium hover:bg-brand/90 transition shadow-sm no-underline shrink-0"
+                      >
+                        Start it in Twin ➔
+                      </a>
+                    </div>
+                  )}
                   {inlineError ? (
                     <div
                       role="alert"

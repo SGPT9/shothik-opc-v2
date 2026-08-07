@@ -110,6 +110,33 @@ export default function TonightEngineDashboardPage() {
           </button>
         </div>
 
+        {/* Morning Coffee Executive Voice Briefing Banner */}
+        <div className="bg-gradient-to-r from-purple-900/40 via-indigo-900/30 to-slate-900 border border-purple-500/30 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none text-8xl">☕</div>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold">
+                  ✨ Morning ROI Victory Pulse
+                </span>
+                <span className="text-xs text-slate-400">Overnight Cycle Complete</span>
+              </div>
+              <h2 className="text-2xl font-bold text-white">Good morning! Your business grew while you slept.</h2>
+              <p className="text-slate-300 text-sm max-w-2xl">
+                Tonight Engine completed 3 tasks: generated investor pitch deck slides, reconciled 12 bKash payments (৳১২,৫০০ BDT), and answered 14 customer leads on WhatsApp.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => { window.location.href = "/voice"; }}
+                className="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs flex items-center gap-2 shadow-lg transition"
+              >
+                <span>🎙️ Play Spoken Voice Briefing</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Personas Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {[

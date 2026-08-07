@@ -141,8 +141,30 @@ export default function CanvasWorkspacePage() {
                 )}
               </div>
 
-              <form onSubmit={handleGenerateArtifact} className="space-y-2">
+              <form onSubmit={handleGenerateArtifact} className="space-y-3">
+                <div className="space-y-1.5">
+                  <span className="text-[10px] uppercase font-bold text-slate-400">Quick Prompt Presets</span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      { label: "📊 10-Slide Pitch Deck", promptText: "Create a 10-slide startup pitch deck for an autonomous AI platform" },
+                      { label: "📈 Financial Sheet", promptText: "Generate a 12-month financial projection data sheet" },
+                      { label: "📄 Strategic Whitepaper", promptText: "Draft a technical architecture whitepaper for multi-agent workflows" },
+                    ].map((preset, pIdx) => (
+                      <button
+                        key={pIdx}
+                        type="button"
+                        onClick={() => setPrompt(preset.promptText)}
+                        className="px-2.5 py-1 text-[11px] rounded-lg bg-slate-800 hover:bg-cyan-500/20 text-slate-300 hover:text-cyan-300 border border-slate-700 transition-all"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <textarea
+                  id="canvas-artifact-prompt"
+                  name="prompt"
                   rows={3}
                   required
                   placeholder="Ask the agent to generate or update slides, spreadsheets, or documents..."

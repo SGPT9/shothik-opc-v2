@@ -194,7 +194,7 @@ export function MarkdownMessage({
           },
         }}
       >
-        {content}
+        {content ?? ""}
       </ReactMarkdown>
 
       {/* Artifact Action Cards (Rendered below response if artifact present) */}
