@@ -49,9 +49,14 @@ export function extractBearerToken(req: Request): string | null {
 }
 
 /**
- * Retrieves active session JWT/InsForge access token from server cookie store.
+ * Retrieves active session JWT/InsForge access token from Request headers or server cookie store.
  */
-export async function getAuthToken(): Promise<string | null> {
+export async function getAuthToken(req?: Request): Promise<string | null> {
+  if (req) {
+    const bearer = extractBearerToken(req);
+    if (bearer) return bearer;
+  }
+
   try {
     const cookieStore = await cookies();
     const insforgeToken = cookieStore.get("insforge_access_token")?.value;

@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
-import { getAuthToken } from "@/lib/auth";
+import { getAuthToken } from "@/lib/server-auth";
 import logger from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
   try {
-    const token = getAuthToken(req);
+    const token = await getAuthToken(req);
     if (!token) {
       return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
