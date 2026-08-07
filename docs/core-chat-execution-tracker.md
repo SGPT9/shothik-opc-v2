@@ -37,6 +37,10 @@
 - InsForge File Storage Bucket Upload Adapter (`lib/insforge/storage-adapter.ts`) and `/api/hermes/storage/upload` API route with unit tests.
 - Elevated global Vitest coverage thresholds to 100% lines, 100% functions, 100% statements, and 98% branches in `vitest.config.ts`.
 - Implemented DeerFlow AI Multi-Agent Workflow Engine (`lib/hermes/modules/deerflow-engine`), Semantic RAG + ODS Data Layer (`lib/hermes/modules/semantic-ods`), and `/api/hermes/deerflow` API route with 100% unit test coverage.
+- Integrated Cloudflare R2 Object Storage Adapter (`lib/cloudflare/r2-adapter.ts`), `/api/hermes/storage/r2/upload` API route, and Cloudflare Worker Edge Gateway Proxy script (`workers/hermes-edge-proxy.ts`) with 100% unit test coverage.
+- Formally documented & marked multi-layer system architecture blueprint in [`docs/ARCHITECTURE.md`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/ARCHITECTURE.md).
+
+
 
 
 ## Current Milestone 1 Acceptance Gaps
