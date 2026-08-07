@@ -19,6 +19,14 @@ vi.mock("../MarkdownMessage", () => ({
   MarkdownMessage: ({ content }: { content: string }) => <div>{content}</div>,
 }));
 
+vi.mock("@/components/hermes/deerflow-visualizer", () => ({
+  DeerFlowVisualizer: () => <div data-testid="deerflow-visualizer-mock" />,
+}));
+
+vi.mock("@/components/hermes/swarm-visualizer", () => ({
+  SwarmVisualizer: () => <div data-testid="swarm-visualizer-mock" />,
+}));
+
 function createMessage(overrides: Partial<ChatMessage>): ChatMessage {
   return {
     _id: "message-1",
@@ -81,5 +89,34 @@ describe("Transcript", () => {
     expect(screen.getByText("Queued")).toBeInTheDocument();
     expect(screen.getByText("Response")).toBeInTheDocument();
     expect(screen.getByRole("alert")).toHaveTextContent("Rate limit exceeded. Please wait a moment.");
+  });
+
+  it("renders DeerFlowVisualizer and SwarmVisualizer when metadata is present", () => {
+    render(
+      <Transcript
+        messages={[
+          createMessage({
+            _id: "assistant-visualizer",
+            status: "completed",
+            metadata: {
+              deerflowPlan: {
+                workflowId: "df_wf_123",
+                workspaceId: "ws_123",
+                status: "completed",
+                nodes: [],
+              },
+              swarmTopology: {
+                workspaceId: "ws_123",
+                swarmId: "swarm_1",
+                runId: "run_1",
+              },
+            },
+          }),
+        ]}
+      />,
+    );
+
+    expect(screen.getByTestId("deerflow-visualizer-mock")).toBeInTheDocument();
+    expect(screen.getByTestId("swarm-visualizer-mock")).toBeInTheDocument();
   });
 });
