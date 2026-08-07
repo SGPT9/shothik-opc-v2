@@ -136,6 +136,9 @@ export function getHermesSheetsOrchestrator(): SheetsOrchestrator {
           timestamp: new Date().toISOString(),
           sequence: 1,
           payload: { error: error.message },
+          metadata: {
+            errorSource: "generation",
+          },
         });
 
         throw error;
@@ -172,13 +175,17 @@ export function getHermesSheetsOrchestrator(): SheetsOrchestrator {
         workspaceId: command.workspaceId,
         artifactId,
         domain: "sheets",
-        eventType: "sheet_cell_updated",
+        eventType: "artifact_updated",
         timestamp: new Date().toISOString(),
         sequence: 1,
         payload: {
           cell: command.cell,
           value: command.value,
           formula: command.formula,
+        },
+        metadata: {
+          action: "update_cell",
+          cell: command.cell,
         },
       });
     },

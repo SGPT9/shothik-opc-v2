@@ -36,6 +36,8 @@ describe("Hermes Sheets Orchestrator Engine (Phase 2)", () => {
       workspaceId: "ws_sheet_test",
       prompt: "Inventory Grid",
       title: "Inventory",
+      sheetCount: 1,
+      theme: "classic",
       userId: "usr_sheet_test",
     });
 
@@ -43,6 +45,7 @@ describe("Hermes Sheets Orchestrator Engine (Phase 2)", () => {
       requestId: "req_cell_upd",
       workspaceId: "ws_sheet_test",
       runId,
+      sheetIndex: 0,
       cell: "C5",
       value: 1250,
       userId: "usr_sheet_test",
@@ -56,6 +59,7 @@ describe("Hermes Sheets Orchestrator Engine (Phase 2)", () => {
       requestId: "req_calc",
       workspaceId: "ws_sheet_test",
       runId: "run_test_123",
+      sheetIndex: 0,
       formula: "=SUM(B2:B10)",
       targetCell: "B11",
       userId: "usr_sheet_test",
