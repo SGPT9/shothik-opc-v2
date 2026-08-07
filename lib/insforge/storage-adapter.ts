@@ -76,7 +76,7 @@ export class InsForgeStorageAdapter {
 
     try {
       const insforge = getInsforgeClient();
-      const { error } = await insforge.storage.from(bucket).remove([key]);
+      const { error } = await insforge.storage.from(bucket).remove(key);
 
       if (error) {
         logger.error("[insforge-storage] Delete failed", { bucket, key, error: error.message });
