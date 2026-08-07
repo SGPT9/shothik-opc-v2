@@ -33,11 +33,13 @@ describe("System Governance & Policy Management", () => {
   });
 
   it("should update and reset governance settings correctly", () => {
-    updateSystemGovernanceConfig({ twinCommunityRole: "manual_approval" });
+    updateSystemGovernanceConfig({ twinCommunityRole: "manual_approval", githubAutoSync: false });
     expect(isTwinAutoHeartbeatEnabled()).toBe(false);
+    expect(isGithubAutoSyncEnabled()).toBe(false);
 
     resetSystemGovernanceConfig();
     expect(isTwinAutoHeartbeatEnabled()).toBe(true);
+    expect(isGithubAutoSyncEnabled()).toBe(true);
   });
 });
 
