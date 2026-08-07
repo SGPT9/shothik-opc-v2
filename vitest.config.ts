@@ -22,10 +22,10 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       thresholds: {
-        lines: 90,
-        functions: 90,
-        branches: 85,
-        statements: 90,
+        lines: 95,
+        functions: 95,
+        branches: 90,
+        statements: 95,
       },
       watermarks: {
         lines: [40, 80],
