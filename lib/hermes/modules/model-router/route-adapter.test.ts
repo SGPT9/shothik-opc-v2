@@ -1,8 +1,9 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   describeRouteAdapterTarget,
   resolveRouteAdapterTarget,
+  forwardRouteAdapterRequest,
 } from "@/lib/hermes/modules/model-router/route-adapter";
 
 describe("route adapter", () => {
@@ -80,6 +81,95 @@ describe("route adapter", () => {
     expect(target.requestUrl).toContain(
       "/models/gemini-2.5-flash:streamGenerateContent",
     );
+  });
+
+  it("maps direct OpenAI-compatible routes for DeepSeek and Kimi", () => {
+    const deepseekTarget = resolveRouteAdapterTarget(
+      {
+        routeId: "route_deepseek",
+        capabilityId: "conversation.respond",
+        backend: "direct_provider",
+        provider: "deepseek",
+        model: "deepseek-chat",
+        modelHandle: "deepseek/deepseek-chat",
+        transport: "openai_sse",
+        baseUrl: "https://api.deepseek.com/v1",
+        apiKey: "ds-key",
+        reason: "test",
+        fallbackChain: [],
+        observabilityLabels: {},
+      },
+      {
+        selection: {
+          provider: "deepseek",
+          model: "deepseek-chat",
+          modelHandle: "deepseek/deepseek-chat",
+          transport: "openai_sse",
+          apiKey: "ds-key",
+          baseUrl: "https://api.deepseek.com/v1",
+          priority: 10,
+        },
+        messages: [{ role: "user", content: "explain quantum physics" }],
+        systemPrompt: "be detailed",
+        temperature: 0.7,
+        maxOutputTokens: 512,
+      },
+    );
+
+    expect(deepseekTarget.ruleId).toBe("direct_provider_openai_compatible_stream");
+    expect(deepseekTarget.targetService).toBe("deepseek_api");
+    expect(deepseekTarget.requestUrl).toBe("https://api.deepseek.com/v1/chat/completions");
+  });
+
+  it("forwards request via fetch", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ ok: true }), { status: 200 })
+    );
+
+    const res = await forwardRouteAdapterRequest({
+      route: {
+        routeId: "route_fwd",
+        capabilityId: "conversation.respond",
+        backend: "direct_provider",
+        provider: "openai",
+        model: "gpt-4o-mini",
+        modelHandle: "openai/gpt-4o-mini",
+        transport: "openai_sse",
+        baseUrl: "https://api.openai.com/v1",
+        apiKey: "sk-test",
+        reason: "test",
+        fallbackChain: [],
+        observabilityLabels: {},
+      },
+      payload: {
+        selection: {
+          provider: "openai",
+          model: "gpt-4o-mini",
+          modelHandle: "openai/gpt-4o-mini",
+          transport: "openai_sse",
+          apiKey: "sk-test",
+          baseUrl: "https://api.openai.com/v1",
+          priority: 10,
+        },
+        messages: [{ role: "user", content: "ping" }],
+        systemPrompt: "pong",
+        temperature: 0.5,
+        maxOutputTokens: 50,
+      },
+    });
+
+    expect(fetchSpy).toHaveBeenCalledWith(
+      "https://api.openai.com/v1/chat/completions",
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.objectContaining({
+          Authorization: "Bearer sk-test",
+        }),
+      })
+    );
+    expect(res.status).toBe(200);
+
+    fetchSpy.mockRestore();
   });
 
   it("throws when no rule matches the route transport", () => {
