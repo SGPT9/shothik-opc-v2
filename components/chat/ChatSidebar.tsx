@@ -57,6 +57,7 @@ export function ChatSidebar({
 }: ChatSidebarProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
+  const [isWritingSuiteOpen, setIsWritingSuiteOpen] = useState(false);
 
   // Filter conversations by search query
   const filteredConversations = useMemo(() => {
@@ -103,6 +104,17 @@ export function ChatSidebar({
           </span>
           <Sparkles className="w-3.5 h-3.5 opacity-80" />
         </button>
+
+        {/* Twin AI Cofounder Direct Link */}
+        <a
+          href="/twin"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-brand/10 hover:bg-brand/20 border border-brand/30 text-brand text-xs font-semibold transition no-underline shadow-sm"
+        >
+          <span className="flex items-center gap-2">
+            <span>🏢 Twin AI Cofounder</span>
+          </span>
+          <ChevronRight className="w-3.5 h-3.5 text-brand" />
+        </a>
 
         {/* Quick Search Bar */}
         <div className="flex items-center bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 focus-within:border-indigo-500 transition">
@@ -163,25 +175,32 @@ export function ChatSidebar({
           </button>
         )}
 
-        {onOpenWritingStudio && (
-          <div className="space-y-1">
-            <button
-              onClick={() => onOpenWritingStudio()}
-              className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
-            >
-              <span className="flex items-center gap-2">
-                <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Writing Suite (8 Tools)</span>
-              </span>
-              <ChevronRight className="w-3 h-3 text-slate-600" />
-            </button>
-            <div className="pl-6 space-y-0.5 text-[11px] text-slate-400 border-l border-slate-800 ml-3">
-              <a href="/writing-studio" className="block py-1 hover:text-cyan-300 transition">✍️ Paraphraser & Grammar</a>
-              <a href="/ai-detector" className="block py-1 hover:text-cyan-300 transition">🤖 AI Detector & Humanizer</a>
-              <a href="/plagiarism-checker" className="block py-1 hover:text-cyan-300 transition">🔍 Plagiarism & Citations</a>
+        {/* Collapsible Writing Suite (8 Tools) */}
+        <div className="space-y-1">
+          <button
+            onClick={() => setIsWritingSuiteOpen(!isWritingSuiteOpen)}
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+          >
+            <span className="flex items-center gap-2">
+              <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="font-semibold text-slate-200">Writing Suite (8 Tools)</span>
+            </span>
+            <ChevronRight className={`w-3 h-3 text-slate-400 transition-transform ${isWritingSuiteOpen ? "rotate-90" : ""}`} />
+          </button>
+          
+          {isWritingSuiteOpen && (
+            <div className="pl-6 space-y-1 text-[11px] text-slate-400 border-l border-slate-800 ml-3 py-1">
+              <a href="/writing-studio" className="block py-0.5 hover:text-cyan-300 transition">✍️ Paraphraser</a>
+              <a href="/writing-studio?tool=grammar" className="block py-0.5 hover:text-cyan-300 transition">📝 Grammar Fixer</a>
+              <a href="/ai-detector" className="block py-0.5 hover:text-cyan-300 transition">🤖 AI Detector</a>
+              <a href="/ai-detector?mode=humanize" className="block py-0.5 hover:text-cyan-300 transition">👤 Humanize GPT</a>
+              <a href="/plagiarism-checker" className="block py-0.5 hover:text-cyan-300 transition">🔍 Plagiarism Checker</a>
+              <a href="/writing-studio?tool=summarizer" className="block py-0.5 hover:text-cyan-300 transition">📑 Text Summarizer</a>
+              <a href="/writing-studio?tool=translator" className="block py-0.5 hover:text-cyan-300 transition">🌐 Translator</a>
+              <a href="/plagiarism-checker?mode=citations" className="block py-0.5 hover:text-cyan-300 transition">📚 Citation Generator</a>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -218,12 +237,26 @@ export function ChatSidebar({
                     <span className="truncate">{chat.title || "Untitled Chat"}</span>
                   </div>
 
-                  {chat.pinned && (
-                    <Pin className="w-3 h-3 text-amber-400 shrink-0 ml-1" />
-                  )}
+                  <div className="flex items-center gap-1">
+                    {chat.pinned && (
+                      <Pin className="w-3 h-3 text-amber-400 shrink-0 ml-1" />
+                    )}
+                    {isHovered && onDeleteConversation && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onDeleteConversation(String(chat._id));
+                        }}
+                        className="p-1 hover:text-rose-400 text-slate-500 transition cursor-pointer"
+                        title="Delete Session"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </span>
+                    )}
+                  </div>
                 </button>
 
-                {/* Open WebUI Hover Preview Card */}
+                {/* Hover Preview Card */}
                 {isHovered && (
                   <div className="absolute left-full top-0 ml-2 z-50 w-56 p-3 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl space-y-2 pointer-events-none animate-in fade-in zoom-in-95 duration-150">
                     <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
