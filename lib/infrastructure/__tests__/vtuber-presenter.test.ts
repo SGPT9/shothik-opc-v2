@@ -30,4 +30,29 @@ describe("VtuberPresenterService (Open-LLM-VTuber Engine)", () => {
     expect(session.avatarModel).toBe("avatar_futuristic.vrm");
     expect(session.status).toBe("active");
   });
+
+  it("generates audio subtitle chunks with lip-sync viseme phonemes", async () => {
+    const chunk = await VtuberPresenterService.generateAudioSubtitleChunk(
+      "vtb_sess_123",
+      "Welcome to the Shothik AI Product Presentation.",
+      2
+    );
+
+    expect(chunk.chunkId).toContain("chk_");
+    expect(chunk.slideIndex).toBe(2);
+    expect(chunk.phonemes.length).toBeGreaterThan(0);
+    expect(chunk.audioUrl).toContain("vtb_sess_123");
+  });
+
+  it("synchronizes VTuber avatar motion and speech to Papermark slide transitions", async () => {
+    const syncRes = await VtuberPresenterService.syncSlidePresentation(
+      "vtb_sess_123",
+      3,
+      "Market Analysis & Growth Projections"
+    );
+
+    expect(syncRes.synced).toBe(true);
+    expect(syncRes.currentSlide).toBe(3);
+    expect(syncRes.title).toBe("Market Analysis & Growth Projections");
+  });
 });
