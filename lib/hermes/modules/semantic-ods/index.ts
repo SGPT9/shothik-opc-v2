@@ -1,4 +1,4 @@
-import { InsForgeTwinRagMemory, TwinMemoryChunk } from "@/lib/insforge/rag-memory";
+import { InsForgeTwinRagMemory, type MemorySearchResult } from "@/lib/insforge/rag-memory";
 import logger from "@/lib/logger";
 
 export interface OdsQueryResult {
@@ -28,24 +28,28 @@ export class SemanticOdsEngine {
 
     try {
       // 1. Semantic Vector Search via InsForge RAG Vault
-      const ragChunks = await InsForgeTwinRagMemory.querySimilarChunks(query, limit);
+      const ragResults = await InsForgeTwinRagMemory.searchMemory(workspaceId, query, limit);
 
       // 2. Map & Enrich with Operational Data Store (ODS) metadata
-      const results: OdsQueryResult[] = ragChunks
-        .filter((chunk: TwinMemoryChunk) => (chunk.score ?? 0.8) >= minSimilarity)
-        .map((chunk: TwinMemoryChunk) => ({
-          chunkId: chunk.id,
-          content: chunk.content,
-          source: chunk.metadata?.source || "semantic_ods",
-          similarityScore: chunk.score ?? 0.85,
-          operationalMetadata: {
-            workspaceId,
-            indexedAt: chunk.metadata?.createdAt || Date.now(),
-            clusterId: "ods_node_primary",
-            accessTier: "verified",
-            ...chunk.metadata,
-          },
-        }));
+      const results: OdsQueryResult[] = ragResults
+        .filter((result: MemorySearchResult) => result.similarityScore >= minSimilarity)
+        .map((result: MemorySearchResult) => {
+          const chunk = result.chunk;
+
+          return {
+            chunkId: chunk.id || chunk.documentId || "unknown_chunk",
+            content: chunk.content,
+            source: String(chunk.metadata?.source || "semantic_ods"),
+            similarityScore: result.similarityScore,
+            operationalMetadata: {
+              workspaceId,
+              indexedAt: chunk.metadata?.createdAt || chunk.createdAt || Date.now(),
+              clusterId: "ods_node_primary",
+              accessTier: "verified",
+              ...chunk.metadata,
+            },
+          };
+        });
 
       logger.info("[semantic-ods] Hybrid ODS query executed successfully", {
         workspaceId,
@@ -85,14 +89,22 @@ export class SemanticOdsEngine {
     content: string,
     metadata: Record<string, any> = {}
   ): Promise<{ chunkId: string; status: string }> {
-    const chunk = await InsForgeTwinRagMemory.storeMemoryChunk(content, {
-      workspaceId,
-      source: "ods_ingestion",
-      ...metadata,
+    const documentId = `ods-${Date.now()}`;
+    const saveResult = await InsForgeTwinRagMemory.saveMemoryChunk({
+      twinId: workspaceId,
+      documentId,
+      contentType: "research_report",
+      title: String(metadata.title || "Operational Document"),
+      content,
+      metadata: {
+        workspaceId,
+        source: "ods_ingestion",
+        ...metadata,
+      },
     });
 
     return {
-      chunkId: chunk.id,
+      chunkId: saveResult.id || documentId,
       status: "indexed_in_ods",
     };
   }
