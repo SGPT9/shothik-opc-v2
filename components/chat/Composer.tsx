@@ -208,6 +208,25 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                 <Paperclip className="h-4 w-4" />
               </Button>
 
+              {/* 3 Core Chat Modes Dropdown Selector */}
+              <div className="relative">
+                <select
+                  value={persona ?? "cofounder"}
+                  onChange={(event) => onPersonaChange?.(event.target.value as ChatPersona)}
+                  className="bg-brand/10 text-brand border border-brand/30 rounded-xl px-2.5 py-1 text-[11px] font-semibold cursor-pointer transition outline-none h-8 appearance-none pr-6 pl-2.5 shadow-sm"
+                  disabled={disabled || activeStreaming}
+                >
+                  <option value="cofounder">🚀 Cofounder (Default)</option>
+                  <option value="coresearcher">🔍 Web Search Mode</option>
+                  <option value="coworker">🧪 Scenario Testing (ScenarioLab)</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-2 flex items-center text-brand">
+                  <svg className="fill-current h-3 w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                  </svg>
+                </div>
+              </div>
+
               {/* Stylish Model Selector Dropdown Pill */}
               <div className="relative">
                 <select

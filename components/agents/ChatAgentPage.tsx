@@ -195,9 +195,10 @@ export default function ChatAgentPage() {
     () => localHistory.conversations.map((entry) => entry.summary),
     [localHistory.conversations],
   );
+  const safeConversations = conversations ?? [];
   const fallbackConversations = useMemo(
-    () => (conversations.length > 0 ? conversations : localConversationSummaries),
-    [conversations, localConversationSummaries],
+    () => (safeConversations.length > 0 ? safeConversations : localConversationSummaries),
+    [safeConversations, localConversationSummaries],
   );
   const activeConversationBackup = localHistory.conversations.find(
     (entry) => entry.summary._id === conversationId,
@@ -205,7 +206,7 @@ export default function ChatAgentPage() {
   const recoveredMessages = activeConversationBackup?.messages ?? [];
   const usingRecoveredHistory =
     fallbackConversations.length > 0 &&
-    conversations.length === 0 &&
+    safeConversations.length === 0 &&
     recoveredMessages.length > 0 &&
     (Boolean(conversationHistoryError) || Boolean(messagesQuery.error) || Boolean(localConversationSummaries.length));
 

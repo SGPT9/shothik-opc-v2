@@ -218,24 +218,6 @@ export default function IconNavSidebar() {
         />
 
         <NavIcon
-          icon={<Users className="h-5 w-5" />}
-          label={t('nav.community')}
-          href="/community"
-          isActive={isActive('/community')}
-          tooltip={t('sidebar.communityForums')}
-        />
-
-        <NavIcon
-          icon={<BookOpen className="h-5 w-5" />}
-          label={t('nav.books')}
-          href="/marketplace"
-          isActive={isActive('/marketplace') || isActive('/books')}
-          tooltip={t('sidebar.bookMarketplaceTooltip')}
-        />
-
-        <Divider />
-
-        <NavIcon
           icon={<Brain className="h-5 w-5" />}
           label={t('sidebar.twin')}
           href="/twin"
@@ -265,6 +247,16 @@ export default function IconNavSidebar() {
           href="/canvas"
           isActive={isActive('/canvas')}
           tooltip="Side-by-Side Artifact Canvas"
+        />
+
+        <Divider />
+
+        <NavIcon
+          icon={svgIcon('diamond', 'h-5 w-5 bg-current')}
+          label="Suite"
+          href="/writing-studio"
+          isActive={isActive('/writing-studio') || isActive('/paraphrase') || isActive('/ai-detector')}
+          tooltip="Writing Suite (8 Tools)"
         />
 
         <div className="flex-1" />
