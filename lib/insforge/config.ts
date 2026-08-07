@@ -26,7 +26,7 @@ export function hasInsforgePublicConfig() {
 
 export function getInsforgePublicConfig() {
   return {
-    baseUrl: getRequiredEnv("NEXT_PUBLIC_INSFORGE_URL"),
-    anonKey: getRequiredEnv("NEXT_PUBLIC_INSFORGE_ANON_KEY"),
+    baseUrl: getRequiredEnv("NEXT_PUBLIC_INSFORGE_URL").trim().replace(/\/+$/, ""),
+    anonKey: getRequiredEnv("NEXT_PUBLIC_INSFORGE_ANON_KEY").trim(),
   };
 }
