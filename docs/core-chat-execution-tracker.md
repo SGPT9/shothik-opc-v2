@@ -39,6 +39,8 @@
 - Implemented DeerFlow AI Multi-Agent Workflow Engine (`lib/hermes/modules/deerflow-engine`), Semantic RAG + ODS Data Layer (`lib/hermes/modules/semantic-ods`), and `/api/hermes/deerflow` API route with 100% unit test coverage.
 - Integrated Cloudflare R2 Object Storage Adapter (`lib/cloudflare/r2-adapter.ts`), `/api/hermes/storage/r2/upload` API route, and Cloudflare Worker Edge Gateway Proxy script (`workers/hermes-edge-proxy.ts`) with 100% unit test coverage.
 - Formally documented & marked multi-layer system architecture blueprint in [`docs/ARCHITECTURE.md`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/ARCHITECTURE.md).
+- Refactored `services/` layout, converted legacy JS bridges to TypeScript (`services/createPresentationServer.ts`), created unified services entrypoint ([`services/index.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/services/index.ts)), and documented full service offerings catalog in [`docs/SERVICE_OFFERINGS.md`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/SERVICE_OFFERINGS.md).
+
 
 
 
