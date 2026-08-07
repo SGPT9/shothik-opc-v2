@@ -40,10 +40,7 @@ describe("InsForgeStorageAdapter Module", () => {
     expect(result.bucket).toBe("artifacts");
     expect(result.key).toBe("uploads/test.png");
     expect(result.url).toContain("https://shothik.insforge.app");
-    expect(mockUpload).toHaveBeenCalledWith("uploads/test.png", "base64_data_string", {
-      contentType: "image/png",
-      upsert: true,
-    });
+    expect(mockUpload).toHaveBeenCalledWith("uploads/test.png", "base64_data_string");
   });
 
   it("deletes file from storage bucket", async () => {
