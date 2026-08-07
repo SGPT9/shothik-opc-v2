@@ -5,6 +5,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
+import { DeerFlowVisualizer } from "@/components/hermes/deerflow-visualizer";
+import { SwarmVisualizer } from "@/components/hermes/swarm-visualizer";
 import { getSlashCommandDisplayText } from "@/lib/chat/commands";
 import { cn } from "@/lib/utils";
 import type { ChatMessage } from "@/lib/chat/types";
@@ -176,6 +178,23 @@ export function Transcript({
                       </a>
                     </div>
                   )}
+                  {message.metadata?.deerflowPlan ? (
+                    <div className="mt-3">
+                      <DeerFlowVisualizer
+                        workspaceId={message.metadata.deerflowPlan.workspaceId || "ws_df_default"}
+                        plan={message.metadata.deerflowPlan as any}
+                      />
+                    </div>
+                  ) : null}
+                  {message.metadata?.swarmTopology ? (
+                    <div className="mt-3">
+                      <SwarmVisualizer
+                        workspaceId={message.metadata.swarmTopology.workspaceId || "ws_swarm_default"}
+                        swarmId={message.metadata.swarmTopology.swarmId || "swarm_001"}
+                        runId={message.metadata.swarmTopology.runId || "run_001"}
+                      />
+                    </div>
+                  ) : null}
                   {inlineError ? (
                     <div
                       role="alert"
