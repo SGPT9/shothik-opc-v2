@@ -7,7 +7,7 @@ const ANON_KEY = "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301b
 
 async function fullRemoteAudit() {
   console.log("=================================================");
-  console.log("REMOTE INSFORGE FULL CLUSTER & STORAGE AUDIT");
+  console.log("REMOTE INSFORGE FULL CLUSTER & 5-BUCKET AUDIT");
   console.log("Base URL: https://ers8j28a.ap-southeast.insforge.app");
   console.log("=================================================\n");
 
@@ -15,8 +15,8 @@ async function fullRemoteAudit() {
   const pgClient = new pg.Client({ connectionString: DATABASE_URL });
   try {
     await pgClient.connect();
-    const bucketsRes = await pgClient.query("SELECT name, public, created_at FROM storage.buckets;");
-    console.log("📦 1. STORAGE BUCKETS STATUS (3 / 3 Active):");
+    const bucketsRes = await pgClient.query("SELECT name, public, created_at FROM storage.buckets ORDER BY name;");
+    console.log(`📦 1. STORAGE BUCKETS STATUS (${bucketsRes.rows.length} Active Buckets):`);
     console.table(bucketsRes.rows);
   } catch (err) {
     console.log("Storage Notice:", err.message);

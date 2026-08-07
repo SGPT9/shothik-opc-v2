@@ -4,7 +4,7 @@ const DATABASE_URL = "postgresql://postgres:13ff0168da9026128eaf9c8df528eeed@ers
 
 async function provisionInsForgeBuckets() {
   console.log("=================================================");
-  console.log("INSFORGE AUTOMATED STORAGE BUCKET PROVISIONING");
+  console.log("INSFORGE COMPLETE 5-BUCKET STORAGE PROVISIONING");
   console.log("=================================================\n");
 
   const client = new pg.Client({ connectionString: DATABASE_URL });
@@ -24,8 +24,10 @@ async function provisionInsForgeBuckets() {
       );
     `);
 
-    // Create 3 Core Buckets in storage.buckets
+    // Complete 5 Buckets Matrix
     const bucketsToCreate = [
+      { name: "book-covers", public: true },
+      { name: "book-manuscripts", public: false },
       { name: "avatars", public: true },
       { name: "documents", public: false },
       { name: "artifacts", public: true },
@@ -39,7 +41,7 @@ async function provisionInsForgeBuckets() {
       console.log(`   ✓ Bucket '${b.name}' (Public: ${b.public}) provisioned.`);
     }
 
-    console.log("\nPROVISIONED INSFORGE STORAGE BUCKETS:");
+    console.log("\nALL 5 INSFORGE STORAGE BUCKETS:");
     const res = await client.query(`SELECT name, public, created_at FROM storage.buckets;`);
     console.table(res.rows);
 
