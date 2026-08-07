@@ -4,6 +4,17 @@ import pg from "pg";
 const DATABASE_URL = "postgresql://postgres:13ff0168da9026128eaf9c8df528eeed@ers8j28a.ap-southeast.database.insforge.app:5432/insforge?sslmode=require";
 
 const sqlStatements = [
+  // -1. Vector Extension & RAG Memory Table
+  `CREATE EXTENSION IF NOT EXISTS vector;`,
+  `CREATE TABLE IF NOT EXISTS public.twin_knowledge_vectors (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    twin_id TEXT NOT NULL,
+    content TEXT NOT NULL,
+    metadata JSONB DEFAULT '{}'::jsonb,
+    embedding vector(1536),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );`,
+
   // 0. Ownership Transfer to postgres superuser
   `ALTER TABLE IF EXISTS public.hermes_workspaces OWNER TO postgres;`,
   `ALTER TABLE IF EXISTS public.hermes_sessions OWNER TO postgres;`,
