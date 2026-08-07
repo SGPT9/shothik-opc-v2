@@ -24,6 +24,12 @@
 - Auth hydration now has a server-backed `/api/auth/session` probe and an Insforge refresh retry before the client falls back to anonymous state.
 - `ConvexClientProvider` has been updated to integrate directly with `AuthProvider` context (InsForge Auth) with Redux fallback.
 - `/api/auth/convex-token` now validates active server session cookies via `getAuthenticatedUser()` for seamless Convex token minting.
+- Hermes Agent & ToolBridge Foundation (`lib/hermes/agents/definition.ts`, `lib/hermes/agents/builder.ts`, `lib/hermes/tools/bridge.ts`) implemented with full Zod validation and unit tests.
+- Lazy SDK getters (`getStripeClient()`, `getSanitizedConvexUrl()`) refactored across 18 API routes to eliminate build-time initialization failures.
+- Chat-To-Slides command contracts (`lib/hermes/contracts/slides.ts`) & unit test suite (`lib/hermes/contracts/slides.test.ts`) verified.
+- Standardized API route handlers with `defineRoute` and Zod schemas across MFS payments, VTuber session, God-Mode, and Pipedream integrations with unit tests.
+- Hardened InsForge BaaS RAG Memory vault with `TwinMemoryChunkSchema` Zod validation and multi-surface vector indexing.
+- Elevated Vitest coverage thresholds to 50% lines, 50% functions, 50% statements, and 45% branches in `vitest.config.ts`.
 
 ## Current Milestone 1 Acceptance Gaps
 - Authenticated chat is not yet proven end to end in the live app.
