@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { BkashCourierActionCard } from "./BkashCourierActionCard";
 import { MorningVoiceBriefingBanner } from "../partials/MorningVoiceBriefingBanner";
+import { PonytailSynthesizerCard } from "./PonytailSynthesizerCard";
 
 export interface SwarmNode {
   id: string;
@@ -39,6 +40,9 @@ export function AgentSwarmCanvas() {
     <div className="w-full min-h-screen bg-slate-950 text-slate-100 p-6 space-y-6">
       {/* ☕ Morning Coffee Spoken Voice Briefing Banner */}
       <MorningVoiceBriefingBanner />
+
+      {/* 🪄 Ponytail Zero-Prompt Intent Synthesizer Card */}
+      <PonytailSynthesizerCard />
 
       {/* 🛡️ bKash Payment Fraud Inspector & Courier Rider Dispatch Action Suite */}
       <BkashCourierActionCard />
