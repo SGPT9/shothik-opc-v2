@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "@/convex/_generated/api";
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
+import { getAuthToken } from "@/lib/auth";
 import logger from "@/lib/logger";
 
 export async function GET(req: NextRequest) {
