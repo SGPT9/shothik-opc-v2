@@ -39,6 +39,7 @@ describe("POST /api/hermes/vtuber/session", () => {
       email: "vtuber@shothik.ai",
       name: "VTuber Presenter User",
       role: "user",
+      authProvider: "insforge",
     });
 
     vi.mocked(VtuberPresenterService.startPresenterSession).mockResolvedValueOnce({
@@ -46,7 +47,7 @@ describe("POST /api/hermes/vtuber/session", () => {
       websocketUrl: "ws://localhost:8000/vtuber/stream/vtb_sess_789",
       avatarModel: "custom_avatar.vrm",
       voiceEngine: "edge-tts",
-      status: "ready",
+      status: "idle",
       slideDeckSynced: true,
       currentSlideIndex: 0,
     });
@@ -76,6 +77,7 @@ describe("POST /api/hermes/vtuber/session", () => {
       email: "vtuber@shothik.ai",
       name: "VTuber Presenter User",
       role: "user",
+      authProvider: "insforge",
     });
 
     vi.mocked(VtuberPresenterService.startPresenterSession).mockRejectedValueOnce(
