@@ -20,7 +20,7 @@ export const AgentFrontmatterSchema = z.object({
   capabilities: z.array(z.string()).default([]),
   maxTokens: z.number().positive().optional(),
   temperature: z.number().min(0).max(2).default(0.7),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type AgentFrontmatter = z.infer<typeof AgentFrontmatterSchema>;
@@ -70,10 +70,11 @@ export function parseAgentDefinition(rawContent: string): AgentDefinition {
 
     // Handle JSON arrays or simple string arrays
     if (typeof value === "string" && value.startsWith("[") && value.endsWith("]")) {
+      const rawArrayValue = value;
       try {
-        value = JSON.parse(value);
+        value = JSON.parse(rawArrayValue);
       } catch {
-        value = value.slice(1, -1).split(",").map((s) => s.trim().replace(/^["']|["']$/g, ""));
+        value = rawArrayValue.slice(1, -1).split(",").map((s) => s.trim().replace(/^["']|["']$/g, ""));
       }
     } else if (value === "true") {
       value = true;

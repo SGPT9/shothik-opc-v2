@@ -76,5 +76,3 @@ export const CREDIT_PACKAGES = [
   { id: "credits_1000", credits: 1000, price: 3499, priceId: process.env.STRIPE_PRICE_CREDITS_1000 }, // $34.99
   { id: "credits_5000", credits: 5000, price: 14999, priceId: process.env.STRIPE_PRICE_CREDITS_5000 }, // $149.99
 ];
-
-export { stripe };
