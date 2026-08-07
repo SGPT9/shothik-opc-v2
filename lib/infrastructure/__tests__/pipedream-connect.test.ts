@@ -1,28 +1,31 @@
-import { describe, it, expect } from "vitest";
-import { PipedreamConnectService } from "../pipedream-connect";
+import { describe, expect, it } from "vitest";
+import { PipedreamConnectService } from "@/lib/infrastructure/pipedream-connect";
 
-describe("PipedreamConnectService Managed Auth & OAuth Token Proxy", () => {
-  it("should generate Pipedream Connect OAuth config without exposing raw tokens", () => {
+describe("PipedreamConnectService (OAuth Proxy Engine)", () => {
+  it("generates Pipedream Connect OAuth initialization config", () => {
     const config = PipedreamConnectService.getConnectConfig({
-      externalUserId: "shothik_user_123",
+      externalUserId: "usr_pipedream_123",
       app: "facebook",
+      oauthAppId: "oauth_app_fb_99",
     });
 
-    expect(config.externalUserId).toBe("shothik_user_123");
-    expect(config.app).toBe("facebook");
     expect(config.publicKey).toBeDefined();
+    expect(config.app).toBe("facebook");
+    expect(config.externalUserId).toBe("usr_pipedream_123");
+    expect(config.oauthAppId).toBe("oauth_app_fb_99");
   });
 
-  it("should execute proxy actions on demand using user externalUserId", async () => {
+  it("executes a Pipedream action on behalf of an authenticated user", async () => {
     const result = await PipedreamConnectService.runAction({
       actionId: "linkedin-post-update",
-      externalUserId: "shothik_user_456",
-      params: { message: "Autonomous update from Shothik!" },
+      externalUserId: "usr_pipedream_123",
+      params: { text: "Launching Shothik AI Growth OS" },
     });
 
     expect(result.success).toBe(true);
-    expect(result.app).toBe("linkedin");
     expect(result.actionId).toBe("linkedin-post-update");
+    expect(result.app).toBe("linkedin");
     expect(result.data).toBeDefined();
+    expect(result.latencyMs).toBeGreaterThanOrEqual(0);
   });
 });
