@@ -30,6 +30,42 @@ export async function getChatAuthenticatedUser(): Promise<User | null> {
   } as User;
 }
 
+/**
+ * Extracts Bearer token from Request headers (Authorization: Bearer <token>)
+ * or falls back to x-access-token header.
+ */
+export function extractBearerToken(req: Request): string | null {
+  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization");
+  if (authHeader && authHeader.toLowerCase().startsWith("bearer ")) {
+    return authHeader.substring(7).trim();
+  }
+
+  const customHeader = req.headers.get("x-access-token") || req.headers.get("X-Access-Token");
+  if (customHeader) {
+    return customHeader.trim();
+  }
+
+  return null;
+}
+
+/**
+ * Retrieves active session JWT/InsForge access token from server cookie store.
+ */
+export async function getAuthToken(): Promise<string | null> {
+  try {
+    const cookieStore = await cookies();
+    const insforgeToken = cookieStore.get("insforge_access_token")?.value;
+    if (insforgeToken) return insforgeToken;
+
+    const legacyToken = cookieStore.get("jwt_token")?.value;
+    if (legacyToken) return legacyToken;
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 async function getInsforgeAuthenticatedUser(): Promise<User | null> {
   try {
     const cookieStore = await cookies();
