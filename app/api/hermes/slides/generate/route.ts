@@ -8,18 +8,8 @@
 import { NextRequest } from "next/server";
 import { getChatAuthenticatedUser } from "@/lib/server-auth";
 import { getHermesOrchestrator } from "@/lib/hermes";
-import { z } from "zod";
+import { GenerateSlidesCommandSchema } from "@/lib/hermes/contracts/slides";
 import logger from "@/lib/logger";
-
-const GenerateSlidesRequestSchema = z.object({
-  workspaceId: z.string().min(1),
-  topic: z.string().min(1),
-  slideCount: z.number().min(1).max(50).default(10),
-  template: z.string().default("professional"),
-  targetAudience: z.string().default("general"),
-  language: z.string().default("en"),
-  requestId: z.string().optional(),
-});
 
 function unauthorized() {
   return Response.json(
@@ -40,8 +30,11 @@ export async function POST(request: NextRequest) {
   if (!user?._id) return unauthorized();
 
   try {
-    const body = await request.json();
-    const validated = GenerateSlidesRequestSchema.parse(body);
+    const validated = GenerateSlidesCommandSchema.parse({
+      requestId: `slides-${Date.now()}`,
+      userId: String(user._id),
+      ...body,
+    });
 
     const hermes = getHermesOrchestrator();
     const slidesOrchestrator = hermes.slidesOrchestrator;
