@@ -30,4 +30,15 @@ describe("Server Auth Utilities", () => {
     const token = extractBearerToken(req);
     expect(token).toBeNull();
   });
+
+  it("extracts token via getAuthToken(req) from Authorization header", async () => {
+    const req = new Request("http://localhost:3000/api/test", {
+      headers: {
+        authorization: "Bearer bearer_token_abc_123",
+      },
+    });
+
+    const token = await getAuthToken(req);
+    expect(token).toBe("bearer_token_abc_123");
+  });
 });
