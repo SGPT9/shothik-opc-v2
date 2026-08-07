@@ -4,19 +4,24 @@ import { InsForgeTwinRagMemory } from "@/lib/insforge/rag-memory";
 
 vi.mock("@/lib/insforge/rag-memory", () => ({
   InsForgeTwinRagMemory: {
-    querySimilarChunks: vi.fn(),
-    storeMemoryChunk: vi.fn(),
+    searchMemory: vi.fn(),
+    saveMemoryChunk: vi.fn(),
   },
 }));
 
 describe("SemanticOdsEngine", () => {
   it("executes hybrid semantic vector search and enriches with ODS metadata", async () => {
-    vi.mocked(InsForgeTwinRagMemory.querySimilarChunks).mockResolvedValueOnce([
+    vi.mocked(InsForgeTwinRagMemory.searchMemory).mockResolvedValueOnce([
       {
-        id: "chunk_ods_101",
-        content: "DeepSeek R1 reasoning architecture guidelines",
-        score: 0.92,
-        metadata: { source: "docs", createdAt: 1700000000 },
+        chunk: {
+          id: "chunk_ods_101",
+          twinId: "ws_ods_test",
+          contentType: "research_report",
+          title: "DeepSeek R1 reasoning",
+          content: "DeepSeek R1 reasoning architecture guidelines",
+          metadata: { source: "docs", createdAt: 1700000000 },
+        },
+        similarityScore: 0.92,
       },
     ]);
 
@@ -33,7 +38,7 @@ describe("SemanticOdsEngine", () => {
   });
 
   it("handles query failures with resilient fallback results", async () => {
-    vi.mocked(InsForgeTwinRagMemory.querySimilarChunks).mockRejectedValueOnce(
+    vi.mocked(InsForgeTwinRagMemory.searchMemory).mockRejectedValueOnce(
       new Error("Vector database connection offline")
     );
 
@@ -48,10 +53,9 @@ describe("SemanticOdsEngine", () => {
   });
 
   it("indexes operational documents into Semantic RAG + ODS", async () => {
-    vi.mocked(InsForgeTwinRagMemory.storeMemoryChunk).mockResolvedValueOnce({
+    vi.mocked(InsForgeTwinRagMemory.saveMemoryChunk).mockResolvedValueOnce({
+      success: true,
       id: "chunk_ingested_999",
-      content: "Operational metric report",
-      metadata: { workspaceId: "ws_ods_test" },
     });
 
     const res = await SemanticOdsEngine.indexOperationalDocument("ws_ods_test", "Operational metric report");
