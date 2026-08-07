@@ -20,7 +20,7 @@ export const AgentFrontmatterSchema = z.object({
   capabilities: z.array(z.string()).default([]),
   maxTokens: z.number().positive().optional(),
   temperature: z.number().min(0).max(2).default(0.7),
-  metadata: z.record(z.unknown()).optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
 });
 
 export type AgentFrontmatter = z.infer<typeof AgentFrontmatterSchema>;
