@@ -154,7 +154,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(function 
                 onSubmit();
               }
             }}
-            placeholder={placeholder ?? "Ask anything..."}
+            placeholder={placeholder ?? "What are you building? Describe your idea, product, or company plan..."}
             disabled={disabled}
             className="min-h-[56px] max-h-40 w-full resize-none border-0 bg-transparent text-sm shadow-none outline-none placeholder:text-muted-foreground/80 focus:ring-0"
           />
