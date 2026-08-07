@@ -13,7 +13,8 @@ import {
 } from "@/services/publishDriveService";
 import { v4 as uuidv4 } from "uuid";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 const PD_ENABLED = process.env.PUBLISHDRIVE_ENABLED === "true" ||
   process.env.NEXT_PUBLIC_PUBLISHDRIVE_ENABLED === "true";
 

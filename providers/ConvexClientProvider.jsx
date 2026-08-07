@@ -4,31 +4,34 @@ import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
+import { useAuth } from "./AuthProvider";
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 
 const convexUrl = getSanitizedConvexUrl();
 
 const convex = new ConvexReactClient(convexUrl);
 
-function useAuthFromRedux() {
-  const accessToken = useSelector((state) => state.auth?.accessToken);
-  const user = useSelector((state) => state.auth?.user);
+function useAuthFromAuthProvider() {
+  const { user: authUser, isAuthenticated: authIsAuthenticated, isLoading: authIsLoading } = useAuth();
+  const reduxAccessToken = useSelector((state) => state.auth?.accessToken);
+  const reduxUser = useSelector((state) => state.auth?.user);
+
+  const user = authUser || reduxUser;
+  const isAuthenticated = authIsAuthenticated || (!!reduxAccessToken && !!reduxUser?._id);
+  const accessToken = reduxAccessToken || (authUser ? "insforge-authenticated-session" : null);
+
   const [convexToken, setConvexToken] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const lastTokenRef = useRef(null);
-  const lastUserIdRef = useRef(null);
-
-  const isAuthenticated = !!accessToken && !!user?._id;
 
   useEffect(() => {
-    if (!accessToken || !user?._id) {
+    if (!isAuthenticated || !user?._id) {
       setConvexToken(null);
       lastTokenRef.current = null;
-      lastUserIdRef.current = null;
       return;
     }
 
-    const tokenKey = `${accessToken}:${user._id}`;
+    const tokenKey = `${accessToken || "session"}:${user._id}`;
     if (tokenKey === lastTokenRef.current) return;
 
     let cancelled = false;
@@ -55,7 +58,6 @@ function useAuthFromRedux() {
         if (!cancelled) {
           setConvexToken(data.token);
           lastTokenRef.current = tokenKey;
-          lastUserIdRef.current = user._id;
           setIsLoading(false);
         }
       } catch (err) {
@@ -69,7 +71,7 @@ function useAuthFromRedux() {
 
     exchangeToken();
     return () => { cancelled = true; };
-  }, [accessToken, user?._id]);
+  }, [isAuthenticated, accessToken, user?._id]);
 
   const fetchAccessToken = useCallback(
     async ({ forceRefreshToken }) => {
@@ -84,11 +86,11 @@ function useAuthFromRedux() {
 
   return useMemo(
     () => ({
-      isLoading,
+      isLoading: authIsLoading || isLoading,
       isAuthenticated: isAuthenticated && !!convexToken,
       fetchAccessToken,
     }),
-    [isLoading, isAuthenticated, convexToken, fetchAccessToken]
+    [authIsLoading, isLoading, isAuthenticated, convexToken, fetchAccessToken]
   );
 }
 
@@ -98,7 +100,7 @@ export default function ConvexClientProvider({ children }) {
   }
 
   return (
-    <ConvexProviderWithAuth client={convex} useAuth={useAuthFromRedux}>
+    <ConvexProviderWithAuth client={convex} useAuth={useAuthFromAuthProvider}>
       {children}
     </ConvexProviderWithAuth>
   );

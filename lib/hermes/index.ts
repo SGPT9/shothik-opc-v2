@@ -20,6 +20,12 @@ export {
 export { resolveHermesModelRoute } from "./modules/model-router";
 export { getHermesResearchOrchestrator, type GenerateResearchCommand } from "./modules/research-orchestrator";
 
+// Agent & Tool Infrastructure Exports
+export * from "./agents/definition";
+export * from "./agents/builder";
+export * from "./tools/definition";
+export * from "./tools/bridge";
+
 // Frontend Client Exports
 export { hermesClient, HermesClient, HermesClientError, type ListSessionsParams, type SessionContext, type RunContext, type SessionAction, type RunAction } from "./client";
 export { useHermesSessionList, useHermesSession, useCreateHermesSession, useControlHermesSession, useHermesRun, useCreateHermesRun, useHermesRunStream, useOptimisticSessionAction, hermesQueryKeys } from "./hooks";

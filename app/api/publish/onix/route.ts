@@ -4,7 +4,8 @@ import { api } from "@/convex/_generated/api";
 import { getAuthToken } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 
 const CATEGORY_TO_THEMA: Record<string, string> = {
   "fiction_literary": "FBA",

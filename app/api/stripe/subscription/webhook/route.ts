@@ -5,9 +5,9 @@ import { api } from "@/convex/_generated/api";
 import logger from "@/lib/logger";
 import { getTierByStripePriceId } from "@/lib/subscription-tiers";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
+import { stripe } from "@/lib/stripe/client";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
 
 const CONVEX_WEBHOOK_SECRET = process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET || "";
 

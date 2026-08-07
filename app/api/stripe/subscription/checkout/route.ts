@@ -11,8 +11,7 @@ import {
   type SubscriptionTier,
   type CurrencyCode,
 } from "@/lib/subscription-tiers";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
+import { getStripeClient } from "@/lib/stripe/client";
 
 async function handleCheckout(
   req: NextRequest,

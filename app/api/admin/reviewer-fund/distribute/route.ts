@@ -4,7 +4,8 @@ import { api } from "@/convex/_generated/api";
 import { getAuthToken } from "@/lib/auth";
 import { decodeJwt } from "jose";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 
 function getUserIdFromToken(token: string): string | null {
   try {

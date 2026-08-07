@@ -11,7 +11,8 @@ const BKASH_APP_SECRET = process.env.BKASH_APP_SECRET!;
 const BKASH_USERNAME = process.env.BKASH_USERNAME!;
 const BKASH_PASSWORD = process.env.BKASH_PASSWORD!;
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 
 function verifyCallbackSignature(userId: string, packId: string, credits: number, sig: string): boolean {
   const secret = process.env.CREDIT_PURCHASE_SECRET || process.env.BKASH_APP_SECRET || "";

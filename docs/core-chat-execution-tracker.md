@@ -22,6 +22,8 @@
 - Chat persistence no longer depends on the underprivileged deploy-key internal bridge; `lib/chat/server.ts` now uses authenticated public Convex queries/mutations.
 - Public Convex chat mutations now cover assistant placeholder/chunk/complete/stop/fail flows and accept the richer chat metadata used by the flagship UI.
 - Auth hydration now has a server-backed `/api/auth/session` probe and an Insforge refresh retry before the client falls back to anonymous state.
+- `ConvexClientProvider` has been updated to integrate directly with `AuthProvider` context (InsForge Auth) with Redux fallback.
+- `/api/auth/convex-token` now validates active server session cookies via `getAuthenticatedUser()` for seamless Convex token minting.
 
 ## Current Milestone 1 Acceptance Gaps
 - Authenticated chat is not yet proven end to end in the live app.

@@ -5,7 +5,8 @@ import { getAuthToken } from "@/lib/auth";
 import { isAgentKey, hashAgentKey } from "@/lib/agent-auth";
 import { logger } from "@/lib/logger";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 const CALIBRE_URL = process.env.CALIBRE_SERVICE_URL || "http://localhost:3003";
 
 export async function POST(req: NextRequest) {

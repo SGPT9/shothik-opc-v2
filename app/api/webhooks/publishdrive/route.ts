@@ -5,7 +5,8 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { defineRoute, z } from "@/lib/api-validation";
 import { logger } from "@/lib/logger";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 const WEBHOOK_SECRET = process.env.PUBLISHDRIVE_WEBHOOK_SECRET || "";
 
 function verifySignature(rawBody: string, signature: string): boolean {

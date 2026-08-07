@@ -28,7 +28,8 @@ const EnqueueBodySchema = z.object({
 });
 
 const OVERNIGHT_JOB_CREDIT_COST = 20;
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+import { getSanitizedConvexUrl } from "@/lib/convex-url";
+const convex = new ConvexHttpClient(getSanitizedConvexUrl());
 
 function unauthorized() {
   return Response.json(
