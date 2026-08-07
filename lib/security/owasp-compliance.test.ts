@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-import { runOwaspChecks } from "@/lib/security/owasp-compliance";
+import { runOwaspChecks, addSecurityHeaders } from "@/lib/security/owasp-compliance";
 
 function makeRequest(pathname: string, init?: RequestInit) {
   return new NextRequest(`http://127.0.0.1:3000${pathname}`, init);
@@ -123,5 +123,32 @@ describe("runOwaspChecks", () => {
         }),
       ]),
     );
+  });
+
+  it("detects SSRF attempt with localhost parameter", async () => {
+    const request = makeRequest("/api/health?url=http://127.0.0.1:8080/admin", {
+      method: "GET",
+    });
+
+    const result = await runOwaspChecks(request);
+
+    expect(result.passed).toBe(false);
+    expect(result.violations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "API7",
+          message: "Invalid URL - internal addresses not allowed",
+        }),
+      ]),
+    );
+  });
+
+  it("injects mandatory security headers into Next.js responses", () => {
+    const res = NextResponse.next();
+    const secured = addSecurityHeaders(res);
+
+    expect(secured.headers.get("X-Frame-Options")).toBe("DENY");
+    expect(secured.headers.get("X-Content-Type-Options")).toBe("nosniff");
+    expect(secured.headers.get("Content-Security-Policy")).toContain("default-src 'self'");
   });
 });
