@@ -1,16 +1,21 @@
 
+<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
 <<<<<<< HEAD:components/chat/Transcript.tsx
 import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, Sparkles, User } from "lucide-react";
 =======
 
 import { Bot, Command, FlaskConical, Globe, Link2, Lightbulb, ListChecks, Paperclip, User, Search } from "lucide-react";
 >>>>>>> origin/main:artifacts/shothik/src/components/chat/Transcript.tsx
+=======
+import { Bot, Command, Link2, Loader2, Paperclip, User } from "lucide-react";
+>>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
 <<<<<<< HEAD:components/chat/Transcript.tsx
 import { StandardizedChatErrorCard } from "./StandardizedChatErrorCard";
+import { EmptyChatGreeting } from "./EmptyChatGreeting";
 import { DeerFlowVisualizer } from "@/components/hermes/deerflow-visualizer";
 import { SwarmVisualizer } from "@/components/hermes/swarm-visualizer";
 =======
@@ -19,7 +24,48 @@ import { ChatErrorCard } from "./ChatErrorCard";
 import { getSlashCommandDisplayText } from "@/lib/chat/commands";
 import { friendlyStatusLabel } from "@/lib/chat/streaming";
 import { cn } from "@/lib/utils";
-import type { ChatMessage } from "@/lib/chat/types";
+import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
+
+/**
+ * StreamingCursor — 1 Hz blinking block cursor matching Claude/ChatGPT convention.
+ * Uses a CSS keyframe injected inline so no global stylesheet is required.
+ */
+function StreamingCursor() {
+  return (
+    <>
+      <style>{`
+        @keyframes _chat-cursor-blink {
+          0%, 49% { opacity: 1; }
+          50%, 100% { opacity: 0; }
+        }
+        ._chat-cursor {
+          display: inline-block;
+          width: 0.5rem;
+          height: 1em;
+          margin-left: 2px;
+          vertical-align: text-bottom;
+          background: currentColor;
+          border-radius: 1px;
+          animation: _chat-cursor-blink 1s step-start infinite;
+          opacity: 1;
+        }
+      `}</style>
+      <span className="_chat-cursor" aria-hidden="true" />
+    </>
+  );
+}
+
+/**
+ * Guard: only allow known friendly labels through — never raw backend state names.
+ * Falls back to "Thinking…" for any unrecognised value.
+ */
+const ALLOWED_STATUS_LABELS = new Set([
+  'Thinking…', 'Searching…', 'Writing…', 'Running…', 'Processing…',
+]);
+function safeStatusLabel(raw: string | undefined): string {
+  if (!raw) return 'Thinking…';
+  return ALLOWED_STATUS_LABELS.has(raw) ? raw : 'Thinking…';
+}
 
 import { SourcesBadge } from "./SourcesBadge";
 
@@ -40,8 +86,12 @@ interface TranscriptProps {
   onRegenerate?: (message: ChatMessage) => void;
   onRetry?: (message: ChatMessage) => void;
   onStop?: (message: ChatMessage) => void;
+<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
   onActionClick?: (action: string, message: ChatMessage) => void;
   onOpenArtifact?: (type: string, message: ChatMessage) => void;
+=======
+  onSelectPrompt?: (prompt: string, mode?: ChatPersona, tab?: "slides" | "sheet" | "research" | "code") => void;
+>>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
   className?: string;
 }
 
@@ -53,10 +103,18 @@ export function Transcript({
   onRegenerate,
   onRetry,
   onStop,
+<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
   onActionClick,
   onOpenArtifact,
+=======
+  onSelectPrompt,
+>>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
   className,
 }: TranscriptProps) {
+  if (!messages || messages.length === 0) {
+    return <EmptyChatGreeting onSelectPrompt={onSelectPrompt} />;
+  }
+
   return (
     <ScrollArea className={cn("h-full", className)}>
       <div className="space-y-4 p-4" aria-live={isStreaming ? "polite" : "off"}>
@@ -124,9 +182,9 @@ export function Transcript({
                   )}
 <<<<<<< HEAD:components/chat/Transcript.tsx
                   {!isUser && message.status === "streaming" && !displayContent ? (
-                    <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-1.5 text-xs text-brand font-medium animate-pulse">
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-1.5 text-xs text-brand font-medium">
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Thinking…</span>
+                      <span>{safeStatusLabel(statusLabel)}</span>
                     </div>
                   ) : null}
                   {!isUser ? (
@@ -135,13 +193,14 @@ export function Transcript({
                         content={
                           displayContent ||
                           (message.status === "streaming"
-                            ? "Thinking…"
+                            ? ""
                             : slashCommand
                               ? "Spec request"
                               : "")
                         }
                       />
                       {message.status === "streaming" && displayContent ? (
+<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
                         <span className="inline-block w-2 h-4 ml-1 bg-brand animate-pulse align-middle font-mono font-bold">
                           ▋
                         </span>
@@ -185,6 +244,9 @@ export function Transcript({
                           className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse rounded-full bg-foreground/70"
                         />
 >>>>>>> origin/main:artifacts/shothik/src/components/chat/Transcript.tsx
+=======
+                        <StreamingCursor />
+>>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
                       ) : null}
                     </div>
                   ) : (
