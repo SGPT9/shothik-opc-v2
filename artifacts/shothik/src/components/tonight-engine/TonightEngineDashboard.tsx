@@ -1,6 +1,7 @@
 
 
 import React, { useState, useEffect } from "react";
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
 
 export interface TonightEngineDashboardProps {
   runId?: string;
@@ -30,9 +31,73 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
   ]);
   const [leadsCount, setLeadsCount] = useState<number>(4);
   const [postsCount, setPostsCount] = useState<number>(2);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!runId) return;
+
+    const insforge = getInsforgeBrowserClient();
+    if (!insforge) return;
+
+    let active = true;
+    setIsLoading(true);
+
+    async function fetchRunData() {
+      try {
+        const { data: runData, error: runError } = await insforge
+          .from("hermes_runs")
+          .select("*")
+          .eq("id", runId)
+          .single();
+
+        if (runError) throw runError;
+
+        if (active && runData) {
+          if (runData.active_node) setActiveNode(runData.active_node as StateNode);
+          if (runData.topology) setTopology(runData.topology);
+          if (runData.progress_percent !== undefined) setProgressPercent(runData.progress_percent);
+          if (runData.leads_count !== undefined) setLeadsCount(runData.leads_count);
+          if (runData.posts_count !== undefined) setPostsCount(runData.posts_count);
+        }
+
+        const { data: eventsData, error: eventsError } = await insforge
+          .from("hermes_events")
+          .select("message")
+          .eq("run_id", runId)
+          .order("created_at", { ascending: true });
+
+        if (eventsError) throw eventsError;
+
+        if (active && eventsData) {
+          setEventLogs(eventsData.map((e: any) => e.message));
+        }
+      } catch (err: any) {
+        console.error("Failed to fetch Tonight Engine run data:", err);
+        if (active) setError(err.message || "Failed to load active run details.");
+      } finally {
+        if (active) setIsLoading(false);
+      }
+    }
+
+    void fetchRunData();
+
+    // Poll every 5 seconds to get real-time state changes on background tasks
+    const interval = setInterval(fetchRunData, 5000);
+
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [runId]);
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6 space-y-6 text-slate-100 bg-slate-950 rounded-2xl border border-slate-800 shadow-2xl">
+      {error && (
+        <div className="p-3 text-sm rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
+          ⚠️ {error}
+        </div>
+      )}
       {/* Top Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>

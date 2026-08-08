@@ -1,5 +1,5 @@
-import { redirect } from "@/lib/navigation";
+import { Redirect } from "wouter";
 
 export default function AccountPage() {
-  redirect("/account/settings");
+  return <Redirect to="/account/settings" />;
 }

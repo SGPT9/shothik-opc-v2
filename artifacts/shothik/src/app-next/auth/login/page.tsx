@@ -356,47 +356,7 @@ const LoginPage = () => {
                             {!isLoading && <ArrowRight className="h-4 w-4" />}
                         </button>
 
-<<<<<<< HEAD:artifacts/shothik/src/app-next/auth/login/page.tsx
-                        {error && (
-                            <div className="mt-4 space-y-3">
-                                <p role="alert" className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                                    {error}
-                                </p>
-                                {needsEmailVerification ? (
-                                    <Link
-                                        href={verificationHref}
-                                        className="inline-flex text-sm font-medium text-primary hover:underline"
-                                    >
-                                        {t("auth.enterVerificationCode")}
-                                    </Link>
-                                ) : null}
-                            </div>
-                        )}
-                        {success && (
-                            <p role="status" className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">
-                                {success}
-                            </p>
-                        )}
 
-                        <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                {t("auth.afterLogin")}
-                            </p>
-                            <p className="mt-2 text-sm text-foreground">{t(selectedIntentConfig.titleKey)}</p>
-                            <p className="mt-1 text-sm leading-6 text-muted-foreground">{t(selectedIntentConfig.descriptionKey)}</p>
-                        </div>
-
-                        <LogtoSignInButton />
-
-                        <AuthWithSocial
-                            loading={googleLoading}
-                            setLoading={setGoogleLoading}
-                            title="in"
-                            onAuthSuccess={handleSocialSuccess}
-                        />
-
-=======
->>>>>>> feat/chat-artifacts-voice:app/auth/login/page.tsx
                         <div className="mt-6 flex items-center justify-between gap-4 text-sm">
                             <Link
                                 href={`/auth/register?intent=${intent}${redirectTo ? `&redirect=${encodeURIComponent(redirectTo)}` : ""}`}

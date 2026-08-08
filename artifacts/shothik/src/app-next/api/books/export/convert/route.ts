@@ -5,12 +5,8 @@ import { getAuthToken } from "@/lib/auth";
 import { isAgentKey, hashAgentKey } from "@/lib/agent-auth";
 import { logger } from "@/lib/logger";
 
-<<<<<<< HEAD:app/api/books/export/convert/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/books/export/convert/route.ts
 const CALIBRE_URL = process.env.CALIBRE_SERVICE_URL || "http://localhost:3003";
 
 const SUPPORTED_FORMATS = ["docx", "mobi", "azw3", "kepub", "pdf", "epub"] as const;

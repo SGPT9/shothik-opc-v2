@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from "@/lib/navigation";
 import WritingHomeDashboard from "@/components/tools/writing-studio/dashboard/WritingHomeDashboard";
 import { PolishedWriteView } from "@/components/writing-studio/PolishedWriteView";
 import { UnifiedStudioHub } from "@/components/writing-studio/UnifiedStudioHub";
+import { ReplitBookWorkspace } from "@/components/writing-studio/ReplitBookWorkspace";
 import { trackWritingStudioOpened } from "@/lib/posthog";
 import { getProject } from "@/lib/projects-store";
 import { clearWritingStudioSeed, getWritingStudioSeed } from "@/lib/writing-studio-seed";
@@ -13,12 +14,13 @@ function WritingStudioInner() {
   const router = useRouter();
   const showProjects = searchParams.get("projects") === "1";
   const showChat = searchParams.get("tab") === "chat";
+  const is3Fold = searchParams.get("mode") === "3fold" || searchParams.get("workspace") === "3fold";
   const projectId = searchParams.get("projectId");
   const intent = searchParams.get("intent");
   const initialProjectType =
     intent === "research" || intent === "assignment" || intent === "book" ? intent : "book";
 
-  const [view, setView] = useState(showProjects ? "projects" : "hub");
+  const [view, setView] = useState(is3Fold ? "3fold" : showProjects ? "projects" : "hub");
   const [activeProject, setActiveProject] = useState(null);
   const [seedDescription, setSeedDescription] = useState("");
 
@@ -27,12 +29,14 @@ function WritingStudioInner() {
   }, []);
 
   useEffect(() => {
-    if (showProjects && view !== "projects") {
+    if (is3Fold && view !== "3fold") {
+      setView("3fold");
+    } else if (showProjects && view !== "projects" && !is3Fold) {
       setView("projects");
-    } else if (!showProjects && view === "projects") {
+    } else if (!showProjects && !is3Fold && view === "projects") {
       setView("hub");
     }
-  }, [showProjects]);
+  }, [showProjects, is3Fold]);
 
   useEffect(() => {
     if (showChat) {
@@ -58,6 +62,17 @@ function WritingStudioInner() {
 
   if (showChat) {
     return <div className="h-screen bg-background" />;
+  }
+
+  if (view === "3fold") {
+    return (
+      <ReplitBookWorkspace
+        initialTitle={activeProject?.title || "Book Writing & Rendering Workspace"}
+        onBack={() => {
+          setView(activeProject ? "editor" : "hub");
+        }}
+      />
+    );
   }
 
   if (view === "editor" && activeProject) {

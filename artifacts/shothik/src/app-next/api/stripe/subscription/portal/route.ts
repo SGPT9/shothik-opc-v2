@@ -10,11 +10,7 @@ import { api } from "@/convex/_generated/api";
 
 import { stripe } from "@/lib/stripe/client";
 
-<<<<<<< HEAD:app/api/stripe/subscription/portal/route.ts
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/stripe/subscription/portal/route.ts
 
 async function handlePortal(
   _req: NextRequest,
@@ -42,7 +38,7 @@ async function handlePortal(
 
   const portalSession = await stripe.billingPortal.sessions.create({
     customer: stripeCustomerId,
-    return_url: `${import.meta.env.VITE_APP_URL || ""}/account/billing`,
+    return_url: `${process.env.NEXT_PUBLIC_APP_URL || ""}/account/billing`,
   });
 
   return NextResponse.json({ portalUrl: portalSession.url });

@@ -1,6 +1,3 @@
-
-
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Moon, Sparkles, Clock, CheckCircle2, Loader2, HardDrive, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';

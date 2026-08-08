@@ -1,26 +1,12 @@
-
-<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
-<<<<<<< HEAD:components/chat/Transcript.tsx
-import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, Sparkles, User } from "lucide-react";
-=======
-
-import { Bot, Command, FlaskConical, Globe, Link2, Lightbulb, ListChecks, Paperclip, User, Search } from "lucide-react";
->>>>>>> origin/main:artifacts/shothik/src/components/chat/Transcript.tsx
-=======
-import { Bot, Command, Link2, Loader2, Paperclip, User } from "lucide-react";
->>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
+import { AlertCircle, Bot, CheckCircle2, Command, Link2, Loader2, Paperclip, Sparkles, User, FlaskConical, Globe, Lightbulb, ListChecks, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageActions } from "./MessageActions";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
-<<<<<<< HEAD:components/chat/Transcript.tsx
 import { StandardizedChatErrorCard } from "./StandardizedChatErrorCard";
 import { EmptyChatGreeting } from "./EmptyChatGreeting";
 import { DeerFlowVisualizer } from "@/components/hermes/deerflow-visualizer";
 import { SwarmVisualizer } from "@/components/hermes/swarm-visualizer";
-=======
-import { ChatErrorCard } from "./ChatErrorCard";
->>>>>>> origin/main:artifacts/shothik/src/components/chat/Transcript.tsx
 import { getSlashCommandDisplayText } from "@/lib/chat/commands";
 import { friendlyStatusLabel } from "@/lib/chat/streaming";
 import { cn } from "@/lib/utils";
@@ -86,12 +72,9 @@ interface TranscriptProps {
   onRegenerate?: (message: ChatMessage) => void;
   onRetry?: (message: ChatMessage) => void;
   onStop?: (message: ChatMessage) => void;
-<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
   onActionClick?: (action: string, message: ChatMessage) => void;
   onOpenArtifact?: (type: string, message: ChatMessage) => void;
-=======
   onSelectPrompt?: (prompt: string, mode?: ChatPersona, tab?: "slides" | "sheet" | "research" | "code") => void;
->>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
   className?: string;
 }
 
@@ -103,12 +86,9 @@ export function Transcript({
   onRegenerate,
   onRetry,
   onStop,
-<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
   onActionClick,
   onOpenArtifact,
-=======
   onSelectPrompt,
->>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
   className,
 }: TranscriptProps) {
   if (!messages || messages.length === 0) {
@@ -180,31 +160,6 @@ export function Transcript({
                       status={message.status === 'completed' ? 'completed' : message.status === 'streaming' ? 'processing' : 'queued'}
                     />
                   )}
-<<<<<<< HEAD:components/chat/Transcript.tsx
-                  {!isUser && message.status === "streaming" && !displayContent ? (
-                    <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-1.5 text-xs text-brand font-medium">
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>{safeStatusLabel(statusLabel)}</span>
-                    </div>
-                  ) : null}
-                  {!isUser ? (
-                    <div className="relative">
-                      <MarkdownMessage
-                        content={
-                          displayContent ||
-                          (message.status === "streaming"
-                            ? ""
-                            : slashCommand
-                              ? "Spec request"
-                              : "")
-                        }
-                      />
-                      {message.status === "streaming" && displayContent ? (
-<<<<<<< HEAD:artifacts/shothik/src/components/chat/Transcript.tsx
-                        <span className="inline-block w-2 h-4 ml-1 bg-brand animate-pulse align-middle font-mono font-bold">
-                          ▋
-                        </span>
-=======
                   {plan && (plan.steps.length > 0 || plan.intent) ? (
                     <div className="mb-3 rounded-xl border border-border bg-muted/30 px-3 py-2.5">
                       <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground">
@@ -224,34 +179,31 @@ export function Transcript({
                     </div>
                   ) : null}
                   {!isUser && message.status === "streaming" && !displayContent ? (
-                    <div className="flex items-center gap-2 py-0.5" aria-live="polite">
-                      <span className="relative flex h-2 w-2">
-                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand/60" />
-                        <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
-                      </span>
-                      <span className="text-sm text-muted-foreground">
-                        {friendlyStatusLabel(statusLabel)}
-                      </span>
+                    <div className="mb-3 inline-flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-1.5 text-xs text-brand font-medium">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>{safeStatusLabel(statusLabel)}</span>
                     </div>
-                  ) : !isUser ? (
-                    <div>
+                  ) : null}
+                  {!isUser ? (
+                    <div className="relative">
                       <MarkdownMessage
-                        content={displayContent || (slashCommand ? "Spec request" : "")}
+                        content={
+                          displayContent ||
+                          (message.status === "streaming"
+                            ? ""
+                            : slashCommand
+                              ? "Spec request"
+                              : "")
+                        }
                       />
                       {message.status === "streaming" && displayContent ? (
-                        <span
-                          aria-hidden="true"
-                          className="ml-0.5 inline-block h-4 w-[2px] translate-y-0.5 animate-pulse rounded-full bg-foreground/70"
-                        />
->>>>>>> origin/main:artifacts/shothik/src/components/chat/Transcript.tsx
-=======
-                        <StreamingCursor />
->>>>>>> feat/chat-artifacts-voice:components/chat/Transcript.tsx
+                        <span className="inline-block w-2 h-4 ml-1 bg-brand animate-pulse align-middle font-mono font-bold">
+                          ▋
+                        </span>
                       ) : null}
                     </div>
                   ) : (
                     <p className="whitespace-pre-wrap leading-relaxed">
-<<<<<<< HEAD:components/chat/Transcript.tsx
                       {displayContent ||
                         (message.status === "streaming"
                           ? "Thinking…"
@@ -309,16 +261,6 @@ export function Transcript({
                       message={inlineError?.message || "Generation halted mid-stream. You can retry the turn."}
                       recoverable={inlineError?.recoverable ?? true}
                       onRetry={() => onRegenerate && onRegenerate(message)}
-=======
-                      {displayContent || (slashCommand ? "Spec request" : "")}
-                    </p>
-                  )}
-                  {inlineError && message.status !== "streaming" ? (
-                    <ChatErrorCard
-                      message={inlineError.message}
-                      recoverable={inlineError.recoverable !== false}
-                      onRetry={onRetry ? () => onRetry(message) : undefined}
->>>>>>> origin/main:artifacts/shothik/src/components/chat/Transcript.tsx
                     />
                   ) : null}
                   {Array.isArray(message.metadata?.citations) && message.metadata.citations.length > 0 ? (

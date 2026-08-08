@@ -3,8 +3,7 @@
 import { Loader2 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "@/lib/navigation";
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/redux/store";
+import { useAuth } from "@/providers/AuthProvider";
 
 interface AuthWrapperProps {
   readonly children: React.ReactNode;
@@ -15,15 +14,12 @@ const AuthWrapper = ({ children, redirect }: AuthWrapperProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { accessToken } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, isLoading } = useAuth();
 
   useEffect(() => {
-    // Check for accessToken in Redux state or localStorage
-    const isClient = globalThis.window !== undefined;
-    const token =
-      accessToken || (isClient ? localStorage.getItem("accessToken") : null);
+    if (isLoading) return;
 
-    if (!token) {
+    if (!isAuthenticated) {
       const redirectPath = redirect || searchParams.get("redirect") || "/";
 
       // Add current path as query parameter
@@ -33,15 +29,10 @@ const AuthWrapper = ({ children, redirect }: AuthWrapperProps) => {
 
       router.replace(redirectTo);
     }
-  }, [accessToken, redirect, router, searchParams, pathname]);
+  }, [isLoading, isAuthenticated, redirect, router, searchParams, pathname]);
 
-  // Check if user is authenticated
-  const isClient = globalThis.window !== undefined;
-  const token =
-    accessToken || (isClient ? localStorage.getItem("accessToken") : null);
-
-  // If not authenticated, don't render children (will redirect)
-  if (!token) {
+  // If loading, don't render children (will show loader)
+  if (isLoading || !isAuthenticated) {
     return (
       <div className="bg-background flex min-h-[calc(100vh-3rem)] items-center justify-center lg:min-h-[calc(100vh-4rem)]">
         <div className="text-center">

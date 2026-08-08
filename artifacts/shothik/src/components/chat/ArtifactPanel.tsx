@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Presentation, Table2, BookSearch, Code2 } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2 } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
@@ -21,7 +21,7 @@ interface TabConfig {
 const TABS: TabConfig[] = [
   { id: "slides",   label: "Slides",   Icon: Presentation, color: "text-indigo-400"  },
   { id: "sheet",    label: "Sheet",    Icon: Table2,       color: "text-cyan-400"    },
-  { id: "research", label: "Research", Icon: BookSearch,   color: "text-violet-400"  },
+  { id: "research", label: "Research", Icon: BookOpen,   color: "text-violet-400"  },
   { id: "code",     label: "Code",     Icon: Code2,        color: "text-emerald-400" },
 ];
 
@@ -97,6 +97,20 @@ export function ArtifactPanel({
             );
           })}
         </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            if (typeof window !== "undefined") {
+              const title = activeTab ? `${activeTab.toUpperCase()} Artifact` : "Shared Artifact";
+              window.location.href = `/community?action=newPost&title=${encodeURIComponent(title)}`;
+            }
+          }}
+          aria-label="Share artifact to Community"
+          className="ml-1 shrink-0 flex items-center gap-1 h-7 px-2 rounded-lg text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition"
+        >
+          Share to Community
+        </button>
 
         <button
           type="button"

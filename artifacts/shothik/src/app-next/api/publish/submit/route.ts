@@ -13,12 +13,8 @@ import {
 } from "@/services/publishDriveService";
 import { v4 as uuidv4 } from "uuid";
 
-<<<<<<< HEAD:app/api/publish/submit/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/publish/submit/route.ts
 const PD_ENABLED = process.env.PUBLISHDRIVE_ENABLED === "true" ||
   import.meta.env.VITE_PUBLISHDRIVE_ENABLED === "true";
 

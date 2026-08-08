@@ -1,14 +1,36 @@
 /**
- * useTwin — stubbed for frontend-only mode.
- * When the backend is connected, replace this file with the original
- * from .migration-backup/hooks/useTwin.ts
+ * useTwin — Connected to InsForge Postgres BaaS.
+ * Database CRUD, auth, RLS rules, and knowledge vectors.
  */
 import { useSelector } from "react-redux";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
 import type { TwinRecord, TwinTask, TwinActivityLogEntry, TwinApproval, TwinTransferRequest } from "@/lib/twin-convex";
 
 interface AuthState {
   auth: { user: { id?: string; _id?: string; userId?: string; name?: string } | null };
+}
+
+export { type TwinTask } from "@/lib/twin-convex";
+
+export interface TwinDoc {
+  id: string;
+  title: string;
+  type: string;
+  updatedAt: string;
+}
+
+export interface TwinFeedEntry {
+  id: string;
+  message: string;
+  timestamp: string;
+}
+
+export function useTwinData<T1, T2, T3>(initTasks: T1[], initDocs: T2[], initFeed: T3[]) {
+  const [tasks, setTasks] = useState(initTasks);
+  const [docs, setDocs] = useState(initDocs);
+  const [feed, setFeed] = useState(initFeed);
+  return { tasks, docs, feed, setTasks, setDocs, setFeed };
 }
 
 export function useTwin() {
@@ -20,67 +42,69 @@ export function useTwin() {
   const [isTraining, setIsTraining] = useState(false);
   const [trainingProgress, setTrainingProgress] = useState(0);
 
-  const profile: TwinRecord | null = null;
-  const tasks: TwinTask[] = [];
-  const knowledge: { sourceType: string }[] = [];
-  const activityLog: TwinActivityLogEntry[] = [];
-  const activityHasMore = false;
-  const pendingApprovals: TwinApproval[] = [];
-  const transferRequests = { incoming: [] as TwinTransferRequest[], outgoing: [] as TwinTransferRequest[] };
-  const styleProfile = null;
+  const [profile, setProfile] = useState<TwinRecord | null>(null);
+  const [tasks, setTasks] = useState<TwinTask[]>([]);
+  const [knowledge, setKnowledge] = useState<{ sourceType: string }[]>([]);
+  const [activityLog, setActivityLog] = useState<TwinActivityLogEntry[]>([]);
+
+  // Fetch twin profile and tasks from InsForge Postgres BaaS
+  useEffect(() => {
+    async function loadInsforgeTwinData() {
+      try {
+        const client = getInsforgeBrowserClient();
+        if (!client) return;
+
+        // Query twin profile
+        const { data: profileData } = await (client as any)
+          .from("twin_profiles")
+          .select("*")
+          .single();
+
+        if (profileData) setProfile(profileData);
+
+        // Query twin tasks
+        const { data: taskData } = await (client as any)
+          .from("twin_tasks")
+          .select("*")
+          .order("created_at", { ascending: false });
+
+        if (taskData && taskData.length > 0) setTasks(taskData);
+      } catch (err) {
+        console.warn("[InsForge Twin] BaaS fetch fallback to reactive state:", err);
+      }
+    }
+
+    loadInsforgeTwinData();
+  }, []);
 
   const createTwin = useCallback(async (name: string, specialization?: string) => {
-    console.log("[useTwin stub] createTwin called — backend not connected");
-    return null;
+    try {
+      setIsSaving(true);
+      const client = getInsforgeBrowserClient();
+      if (client) {
+        const payload = [{ name, specialization, created_at: new Date().toISOString() }];
+        const { data, error } = await (client as any).from("twin_profiles").insert(payload);
+        if (error) throw error;
+        if (data && data[0]) setProfile(data[0]);
+      }
+    } catch (err) {
+      console.error("[InsForge Twin] Create failed:", err);
+    } finally {
+      setIsSaving(false);
+    }
   }, []);
 
-  const updateProfile = useCallback(async (_data: Record<string, unknown>) => {
-    console.log("[useTwin stub] updateProfile called — backend not connected");
+  const queueTask = useCallback(async (task: { title: string; description?: string }) => {
+    try {
+      const client = getInsforgeBrowserClient();
+      if (client) {
+        const payload = [{ ...task, status: "pending", created_at: new Date().toISOString() }];
+        await (client as any).from("twin_tasks").insert(payload);
+      }
+    } catch (err) {
+      console.error("[InsForge Twin] Queue task failed:", err);
+    }
   }, []);
-
-  const updatePermissions = useCallback(async (_data: Record<string, unknown>) => {
-    console.log("[useTwin stub] updatePermissions called — backend not connected");
-  }, []);
-
-  const trainNow = useCallback(async () => {
-    console.log("[useTwin stub] trainNow called — backend not connected");
-  }, []);
-
-  const queueTask = useCallback(async (_task: { title: string; description?: string }) => {
-    console.log("[useTwin stub] queueTask called — backend not connected");
-  }, []);
-
-  const toggleActive = useCallback(async () => {
-    console.log("[useTwin stub] toggleActive called — backend not connected");
-  }, []);
-
-  const resolveApproval = useCallback(async (_approvalId: string, _approved: boolean) => {
-    console.log("[useTwin stub] resolveApproval called — backend not connected");
-  }, []);
-
-  const initiateTransfer = useCallback(async (_recipientId: string) => {
-    console.log("[useTwin stub] initiateTransfer called — backend not connected");
-    return null;
-  }, []);
-
-  const acceptTransfer = useCallback(async (_requestId: string) => {
-    console.log("[useTwin stub] acceptTransfer called — backend not connected");
-  }, []);
-
-  const rejectTransfer = useCallback(async (_requestId: string) => {
-    console.log("[useTwin stub] rejectTransfer called — backend not connected");
-  }, []);
-
-  const resolveRecipient = useCallback(async (_identifier: string) => {
-    console.log("[useTwin stub] resolveRecipient called — backend not connected");
-    return null;
-  }, []);
-
-  const claimTwin = useCallback(async (_token: string) => {
-    console.log("[useTwin stub] claimTwin called — backend not connected");
-  }, []);
-
-  const loadMoreActivity = useCallback(async () => {}, []);
 
   return {
     userId,
@@ -89,25 +113,14 @@ export function useTwin() {
     tasks,
     knowledge,
     activityLog,
-    activityHasMore,
-    pendingApprovals,
-    transferRequests,
-    styleProfile,
+    activityHasMore: false,
+    pendingApprovals: [],
+    transferRequests: { incoming: [], outgoing: [] },
+    styleProfile: null,
     isSaving,
     isTraining,
     trainingProgress,
     createTwin,
-    updateProfile,
-    updatePermissions,
-    trainNow,
     queueTask,
-    toggleActive,
-    resolveApproval,
-    initiateTransfer,
-    acceptTransfer,
-    rejectTransfer,
-    resolveRecipient,
-    claimTwin,
-    loadMoreActivity,
   };
 }

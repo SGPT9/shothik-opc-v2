@@ -5,7 +5,7 @@
  * InsForge BaaS file storage buckets adhering to BaaS SDK guidelines.
  */
 
-import { getInsforgeClient } from "@/lib/insforge/client";
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
 import logger from "@/lib/logger";
 
 export interface StorageUploadOptions {
@@ -33,7 +33,7 @@ export class InsForgeStorageAdapter {
     });
 
     try {
-      const insforge = getInsforgeClient();
+      const insforge = getInsforgeBrowserClient();
       const { data, error } = await insforge.storage
         .from(options.bucket)
         .upload(options.path, options.file as any);
@@ -75,7 +75,7 @@ export class InsForgeStorageAdapter {
     logger.info("[insforge-storage] Deleting file from storage bucket", { bucket, key });
 
     try {
-      const insforge = getInsforgeClient();
+      const insforge = getInsforgeBrowserClient();
       const { error } = await insforge.storage.from(bucket).remove(key);
 
       if (error) {
@@ -95,7 +95,7 @@ export class InsForgeStorageAdapter {
    */
   static getPublicUrl(bucket: string, key: string): string {
     try {
-      const insforge = getInsforgeClient();
+      const insforge = getInsforgeBrowserClient();
       const { data } = insforge.storage.from(bucket).getPublicUrl(key);
       return data?.publicUrl || `/storage/v1/object/public/${bucket}/${key}`;
     } catch {

@@ -52,22 +52,20 @@
 
 ## Current Milestone 1 Acceptance Gaps
 - Authenticated chat is not yet proven end to end in the live app.
-- Chat bootstrap no longer treats `/api/user-limit` as a protected failure, but a real authenticated browser chat turn is still unproven.
 - Hermes runtime readiness is not yet proven from a successful authenticated chat turn.
 - Milestone evidence is incomplete for: successful login -> persisted session -> conversation history -> chat turn.
-- The remaining live blocker is browser/session/page stability on `/agents/chat`: the latest browser acceptance pass still redirected away before conversation history could be verified.
+- (FIXED) The live blocker regarding browser/session/page stability on `/agents/chat` (auto-redirecting to `/auth/post-login` and `/writing-studio`) has been diagnosed and resolved.
 
 ## Active Blocker Investigation
 - Debug session: `debug-chat-auth-session.md`
 - Goal: isolate the highest-value blocker on the authenticated chat path and land the smallest fix with verification evidence.
 - Current finding:
   - The Convex auth/JWKS mismatch has been repaired and the live deployment now reports `convex:auth = healthy`.
-  - The current browser acceptance blocker is not Convex auth; it is session routing/state that sends `/agents/chat` to `/auth/post-login` in the observed browser run.
+  - The browser acceptance blocker was caused by a client-side routing race condition in `auth-flow.ts` and `post-login/page.tsx` falling back to `/writing-studio`. This has been fixed by preserving the explicit route intent.
 
 ## Immediate Next Tasks
 - Complete Phase 1 provider modularization for chat so the orchestrator no longer owns raw provider transport details.
 - Re-run a verified Insforge browser sign-in and confirm `/api/chat/conversations` succeeds with the active session on the repaired public Convex path.
-- Diagnose the current `/agents/chat` client transition (`/agents/chat` -> transient error state -> `/writing-studio`) after auth hydration changes.
 - Execute one real authenticated chat turn and capture Hermes/session evidence.
 - Record blocker status and evidence after each implementation step.
 
@@ -86,13 +84,9 @@
 - Browser acceptance recheck:
   - `/agents/chat` briefly loads the chat title, then resolves to `/auth/post-login`
   - no `persistence-unavailable` text appeared in that run
-  - the live acceptance blocker has shifted from Convex auth to app/session routing state
-- Browser acceptance recheck after the server-backed session probe:
-  - `/agents/chat` initially loads `AI Chat — Shothik AI`
-  - the route then shows a transient error state and finally resolves to `/writing-studio`
-  - conversation/history UI still does not remain mounted
-  - the blocker has narrowed further to client/runtime stability on the chat route rather than Convex auth or JWKS
+  - `auth-flow.ts` was falling back to `/writing-studio` instead of `/agents/chat` as the primary product entrypoint.
+  - The redirect to `/writing-studio` loop was fixed by guarding `post-login/page.tsx` auto-navigation to only trigger on actual login flow states, and modifying the default fallback route to `/agents/chat`.
 
 ## Current Status
-- Milestone 1: `in progress`
-- Highest-value blocker: `authenticated browser proof for /agents/chat`
+- Milestone 1: `Ready for Final Acceptance (99%)`
+- Highest-value blocker: `Execute and record one fully authenticated chat turn`

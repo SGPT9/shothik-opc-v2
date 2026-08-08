@@ -4,12 +4,8 @@ import { api } from "@/convex/_generated/api";
 import { getAuthToken } from "@/lib/auth";
 import { decodeJwt } from "jose";
 
-<<<<<<< HEAD:app/api/admin/reviewer-fund/distribute/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/admin/reviewer-fund/distribute/route.ts
 
 function getUserIdFromToken(token: string): string | null {
   try {

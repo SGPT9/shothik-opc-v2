@@ -1,7 +1,7 @@
+import { defineConfig, loadEnv } from 'vite';
 import path from 'path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
-import { defineConfig } from 'vite';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -9,11 +9,7 @@ import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 const isServe = process.env.npm_lifecycle_event === 'dev' || process.argv.includes('serve');
 const rawPort = process.env.PORT;
 
-if (isServe && !rawPort) {
-  throw new Error(
-    'PORT environment variable is required but was not provided.',
-  );
-}
+// No strict PORT check needed, defaults to 5000 below
 
 const port = Number(rawPort ?? 5000);
 
@@ -23,12 +19,13 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? '/';
 
-// External API origin - all /api calls proxy here.
-// Override with CHAT_API_ORIGIN (e.g. a local mock) for development/testing.
-const externalApiOrigin =
-  process.env.CHAT_API_ORIGIN ?? 'https://shothik.work';
+export default defineConfig(async ({ mode }) => {
+  // Load environment variables from the monorepo root (two directories up from artifacts/shothik)
+  const env = loadEnv(mode, path.resolve(import.meta.dirname, '../..'), '');
+  const externalApiOrigin = env.CHAT_API_ORIGIN ?? 'https://shothikgpt.com';
 
-export default defineConfig({
+  return {
+    envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
   base: basePath,
   plugins: [
     react(),
@@ -85,7 +82,7 @@ export default defineConfig({
   },
   server: {
     port,
-    strictPort: true,
+    strictPort: false,
     host: '0.0.0.0',
     allowedHosts: true,
     fs: {
@@ -118,6 +115,33 @@ export default defineConfig({
     allowedHosts: true,
   },
   optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-redux',
+      'wouter',
+      '@tanstack/react-query',
+      'framer-motion',
+      'lucide-react',
+      '@tiptap/react',
+      '@tiptap/starter-kit',
+      '@tiptap/extension-placeholder',
+      '@tiptap/extension-typography',
+      '@radix-ui/react-accordion',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-radio-group',
+      '@radix-ui/react-switch',
+      '@radix-ui/react-scroll-area',
+      '@radix-ui/react-slider',
+      'embla-carousel-react',
+      'isomorphic-dompurify',
+      'react-markdown',
+      'remark-gfm',
+    ],
     esbuildOptions: {
       // Treat .js files with JSX as jsx so esbuild doesn't choke on JSX syntax
       loader: { '.js': 'jsx' },
@@ -126,8 +150,9 @@ export default defineConfig({
   define: {
     // Expose env vars as VITE_ equivalents
     'process.env.NEXT_PUBLIC_API_URL': JSON.stringify(''),
-    'process.env.NEXT_PUBLIC_INSFORGE_URL': JSON.stringify(process.env.NEXT_PUBLIC_INSFORGE_URL || process.env.inforge_project_url || ''),
-    'process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY': JSON.stringify(process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || ''),
-    'process.env.NEXT_PUBLIC_APP_URL': JSON.stringify('https://shothik.work'),
+    'process.env.NEXT_PUBLIC_INSFORGE_URL': JSON.stringify(env.NEXT_PUBLIC_INSFORGE_URL || env.inforge_project_url || ''),
+    'process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY': JSON.stringify(env.NEXT_PUBLIC_INSFORGE_ANON_KEY || ''),
+    'process.env.NEXT_PUBLIC_APP_URL': JSON.stringify('https://shothikgpt.com'),
   },
+  };
 });
