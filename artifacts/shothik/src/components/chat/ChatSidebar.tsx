@@ -40,6 +40,8 @@ export interface ChatSidebarProps {
   onOpenDataSheet?: () => void;
   onOpenSlideDeck?: () => void;
   onOpenWritingStudio?: () => void;
+  /** Called before switching conversation so the caller can abort any in-flight stream. */
+  onAbortStream?: () => void;
 }
 
 export function ChatSidebar({
@@ -54,7 +56,17 @@ export function ChatSidebar({
   onOpenDataSheet,
   onOpenSlideDeck,
   onOpenWritingStudio,
+  onAbortStream,
 }: ChatSidebarProps) {
+  // Wrapped handlers that abort any in-flight stream before navigating
+  const handleSelectConversation = (id: string) => {
+    onAbortStream?.();
+    onSelectConversation(id);
+  };
+  const handleNewChat = () => {
+    onAbortStream?.();
+    onNewChat();
+  };
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const [isWritingSuiteOpen, setIsWritingSuiteOpen] = useState(false);
@@ -95,7 +107,7 @@ export function ChatSidebar({
       {/* Header & New Chat Button */}
       <div className="p-3 border-b border-slate-800 space-y-2">
         <button
-          onClick={onNewChat}
+          onClick={handleNewChat}
           className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-md shadow-emerald-950/50 transition group"
         >
           <span className="flex items-center gap-2">
@@ -175,6 +187,19 @@ export function ChatSidebar({
           </button>
         )}
 
+        {onOpenSlideDeck && (
+          <button
+            onClick={onOpenSlideDeck}
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
+          >
+            <span className="flex items-center gap-2">
+              <Presentation className="w-3.5 h-3.5 text-rose-400" />
+              <span>Slide Generator</span>
+            </span>
+            <ChevronRight className="w-3 h-3 text-slate-600" />
+          </button>
+        )}
+
         {/* Collapsible Writing Suite (8 Tools) */}
         <div className="space-y-1">
           <button
@@ -183,7 +208,7 @@ export function ChatSidebar({
           >
             <span className="flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="font-semibold text-slate-200">Writing Suite (8 Tools)</span>
+              <span className="font-semibold text-slate-200">Writing Suite</span>
             </span>
             <ChevronRight className={`w-3 h-3 text-slate-400 transition-transform ${isWritingSuiteOpen ? "rotate-90" : ""}`} />
           </button>
@@ -225,7 +250,7 @@ export function ChatSidebar({
                 className="relative group"
               >
                 <button
-                  onClick={() => onSelectConversation(String(chat._id))}
+                  onClick={() => handleSelectConversation(String(chat._id))}
                   className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-left transition ${
                     isActive
                       ? "bg-slate-800/90 text-white font-medium shadow-sm border border-slate-700/60"

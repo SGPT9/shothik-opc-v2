@@ -6,9 +6,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Sparkles, Globe } from "lucide-react";
 import { Composer } from "@/components/chat/Composer";
 import { Transcript } from "@/components/chat/Transcript";
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { ArtifactPane } from "@/components/chat/ArtifactPane";
 import { VoicePopup } from "@/components/chat/VoicePopup";
+=======
+import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
+import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { VoiceOverlay } from "@/components/voice/VoiceOverlay";
+import { TwinAutopilotBanner } from "@/components/tonight-engine/TwinAutopilotBanner";
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
 import { parseFlagshipSlashCommand } from "@/lib/chat/commands";
 import {
   getLocalDraftConversationId,
@@ -22,10 +29,14 @@ import type { ChatAttachment, ChatMessage, ChatTurnProgressItem } from "@/lib/ch
 import { useTranslation } from "@/i18n";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { useAuth } from "@/providers/AuthProvider";
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { extractPlanFromPayload, friendlyStatusLabel, isStreamingEnabled } from "@/lib/chat/streaming";
 import { controlHermesRun } from "@/lib/chat/run-control";
 import { guestChatHeaders } from "@/lib/chat/guest-device-id";
+=======
+import type { ChatPersona } from "@/lib/chat/types";
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
 
 type PendingAttachment = ChatAttachment & {
   text: string;
@@ -192,6 +203,13 @@ export default function ChatAgentPage() {
   const [loading, setLoading] = useState(false);
   const [chatMode, setChatMode] = useState<ComposerChatMode>("cofounder");
   const [modelHandle, setModelHandle] = useState("gemini-2.5-flash");
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
+=======
+  const [activeSkill, setActiveSkill] = useState("general");
+  const [persona, setPersona] = useState<ChatPersona>("cofounder");
+  const [isOvernight, setIsOvernight] = useState(false);
+  const [isVoiceOverlayOpen, setIsVoiceOverlayOpen] = useState(false);
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const [statusText, setStatusText] = useState<string | null>(null);
@@ -1152,10 +1170,27 @@ export default function ChatAgentPage() {
   };
   const isEmpty = visibleMessages.length === 0;
 
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
   const [isArtifactPaneOpen, setIsArtifactPaneOpen] = useState(false);
   const [artifactType, setArtifactType] = useState<"markdown" | "slides" | "sheet" | "pdf">("markdown");
   const [artifactContent, setArtifactContent] = useState<string>("");
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
+=======
+  if (authIsLoading) {
+    return (
+      <div className="flex h-[calc(100dvh-64px)] items-center justify-center">
+        <div className="flex items-center gap-3 rounded-2xl border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Checking your session
+        </div>
+      </div>
+    );
+  }
+
+
+
+  const [activePanel, setActivePanel] = useState<ArtifactTab | null>(null);
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
 
   const resolvedWorkspaceType = useMemo<"browser" | "sheet" | "slides" | "staging" | "editor">(() => {
     for (let i = visibleMessages.length - 1; i >= 0; i--) {
@@ -1262,11 +1297,45 @@ export default function ChatAgentPage() {
 
   return (
     <div className="flex h-[calc(100dvh-64px)] w-full overflow-hidden bg-background">
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
       <ResizablePanelGroup direction="horizontal" className="h-full w-full">
         {/* Primary Chat Column */}
         <ResizablePanel defaultSize={isArtifactPaneOpen ? 60 : 100} minSize={30} className="flex flex-col h-full min-w-0">
           <div className="flex-1 overflow-y-auto px-4 py-6">
             <div className="mx-auto max-w-3xl space-y-4">
+=======
+      {/* Open WebUI Left Session Sidebar */}
+      <div className="hidden md:block shrink-0 h-full">
+        <ChatSidebar
+          conversations={fallbackConversations.map(c => ({
+            _id: String(c._id),
+            title: c.title,
+            updatedAt: c.updatedAt,
+            _creationTime: c.updatedAt,
+            pinned: c.pinned,
+            modelHandle: c.modelHandle,
+            messageCount: c.messageCount,
+          }))}
+          activeConversationId={conversationId}
+          onSelectConversation={(id) => router.push(`/agents/chat?conversationId=${id}`)}
+          onNewChat={() => {
+            const nextId = user?._id ? `conv_${Date.now()}` : getLocalDraftConversationId("flagship");
+            router.push(`/agents/chat?conversationId=${nextId}`);
+          }}
+          onDeleteConversation={(id) => deleteConversation(id)}
+          onOpenParallelSpace={() => setActivePanel("space")}
+          onOpenDataSheet={() => setActivePanel("sheet")}
+          onOpenSlideDeck={() => setActivePanel("slides")}
+          onOpenWritingStudio={() => router.push("/writing-studio")}
+          onAbortStream={() => abortRef.current?.abort()}
+        />
+      </div>
+
+      {/* Primary Chat Column */}
+      <div className="flex flex-col flex-1 h-full min-w-0 transition-all duration-300">
+        <div className="flex-1 overflow-y-auto px-4 py-6">
+          <div className="mx-auto max-w-3xl space-y-4">
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
             {isEmpty ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand/10">
@@ -1319,14 +1388,32 @@ export default function ChatAgentPage() {
                     ) : null}
 
                     <button
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
                       onClick={() => setIsArtifactPaneOpen(!isArtifactPaneOpen)}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-sm transition"
                     >
                       <Globe className="w-3.5 h-3.5" />
                       <span>{isArtifactPaneOpen ? "Close Pane" : "Open Artifact Pane"}</span>
+=======
+                      onClick={() => setActivePanel(activePanel === "space" ? null : "space")}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-sm transition"
+                    >
+                      <Globe className="w-3.5 h-3.5" />
+                      <span>{activePanel === "space" ? "Close Space" : "Open Live Agent Space"}</span>
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
                     </button>
                   </div>
                 ) : null}
+
+                {/* Polsia-style Twin Autopilot Banner */}
+                {isOvernight && (
+                  <TwinAutopilotBanner
+                    prompt={input.trim() || "Build pitch deck, financial sheet, & deploy custom domain site"}
+                    onOpenArtifact={(tab) => setActivePanel(tab)}
+                    onClose={() => setIsOvernight(false)}
+                  />
+                )}
+
                 <Transcript
                   messages={visibleMessages as ChatMessage[]}
                   isStreaming={loading}
@@ -1340,6 +1427,7 @@ export default function ChatAgentPage() {
                       send(parentPrompt.content);
                     }
                   }}
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
                   onStop={handleStop}
                   onRetry={(message) => {
                     const parentPrompt = visibleMessages.find(
@@ -1361,6 +1449,14 @@ export default function ChatAgentPage() {
                     setArtifactType(type as any);
                     setArtifactContent(message?.content ?? "");
                     setIsArtifactPaneOpen(true);
+=======
+                  onStop={() => abortRef.current?.abort()}
+                  onSelectPrompt={(prompt, mode, tab) => {
+                    setInput(prompt);
+                    if (mode) setPersona(mode);
+                    if (tab) setActivePanel(tab);
+                    inputRef.current?.focus();
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
                   }}
                 />
                 
@@ -1405,7 +1501,17 @@ export default function ChatAgentPage() {
           onModeChange={handleModeChange}
           modelHandle={modelHandle}
           onModelChange={setModelHandle}
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
           onVoiceClick={() => setIsVoiceOpen(true)}
+=======
+          persona={persona}
+          onPersonaChange={(next) => {
+            setPersona(next);
+            if (next === "coresearcher") setActivePanel("research");
+          }}
+          activeSkill={activeSkill}
+          onSkillChange={setActiveSkill}
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
           attachments={pendingAttachments.map((attachment) => ({
             id: attachment.id,
             name: attachment.name,
@@ -1425,11 +1531,20 @@ export default function ChatAgentPage() {
                 }
               : null
           }
+          isOvernight={isOvernight}
+          onToggleOvernight={setIsOvernight}
           errorMessage={composerError}
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
           footer={`Describe your product, service, or business idea.${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
+=======
+          footer={`${t("chat.footer")} · ${modelHandle}${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
+          onOpenResearchPanel={() => setActivePanel("research")}
+          onOpenVoice={() => setIsVoiceOverlayOpen(true)}
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
         />
         </ResizablePanel>
 
+<<<<<<< HEAD:artifacts/shothik/src/components/agents/ChatAgentPage.tsx
         {isArtifactPaneOpen && (
           <>
             <ResizableHandle withHandle />
@@ -1458,6 +1573,28 @@ export default function ChatAgentPage() {
         isOpen={isVoiceOpen} 
         onClose={() => setIsVoiceOpen(false)} 
         onSendTranscript={(text) => send(text)}
+=======
+      {/* ArtifactPanel — ChatGPT Canvas-style tabbed right panel */}
+      <ArtifactPanel
+        activeTab={activePanel}
+        onTabChange={setActivePanel}
+        onClose={() => setActivePanel(null)}
+        runId={resolvedRunId}
+        sessionId={resolvedSessionId}
+        stagingUrl={resolvedStagingUrl}
+        workspaceType={resolvedWorkspaceType}
+        onCommentSelection={(text) => {
+          setInput((prev) => `${prev}\n> ${text}\n`);
+          inputRef.current?.focus();
+        }}
+      />
+
+      {/* ChatGPT-style voice overlay */}
+      <VoiceOverlay
+        isOpen={isVoiceOverlayOpen}
+        userName={user?.name ?? user?.email ?? "User"}
+        onClose={() => setIsVoiceOverlayOpen(false)}
+>>>>>>> feat/chat-artifacts-voice:components/agents/ChatAgentPage.tsx
       />
     </div>
   );
