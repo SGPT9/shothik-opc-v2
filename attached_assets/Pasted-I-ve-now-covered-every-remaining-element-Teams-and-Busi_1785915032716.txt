@@ -1,0 +1,56 @@
+I've now covered every remaining element — **Teams** and **Business** — completing the full audit.
+
+## Teams
+
+Clicking "Add Member" opens a minimal invite modal: one email field, a "Send Invite" button, and an explicit scoping note — *"This invite only grants access to VerifiQ. It does not grant access to your other companies."* This per-company access boundary is important since Polsia users can run multiple autonomous companies from one account; each one is siloed for collaborators by default. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+## Business
+
+This section is a lightweight, always-visible health strip: **Visitors**, **Revenue**, and **"Updated Xm ago"** freshness timestamp, plus a **Setup Payments** button that leads into the same subscribe/plan modal already explored. It's intentionally sparse — just enough signal to answer "is this thing actually working" without opening a full analytics dashboard. [polsia](https://polsia.com/dashboard/verifiq-3)
+
+***
+
+## Full Twin Dashboard Spec for Shothik (adapted from Polsia patterns)
+
+### Layout: 4-column workspace
+
+| Column | Purpose |
+|---|---|
+| Left | Agent status widget, Autonomy toggle, Business/Progress stats, Team |
+| Center-left | Task queue (state-tabbed) + Documents library |
+| Center-right | Output channels (Publish, Distribute, Outreach) |
+| Right | Persistent narrative + chat (always visible) |
+
+### Left column
+- **Agent widget**: small animated icon + one-line plain-language status ("Researching sources... / Drafting outline...") — never shows raw agent/tool names.
+- **Autonomy toggle**: single "Auto Mode" on/off switch, not a settings page.
+- **Progress stats** (replaces Business/Visitors/Revenue for Shothik): Words Written, Sources Verified, Chapters Drafted, Last Updated Xm ago.
+- **Team**: "Add Collaborator" — email invite, scoped explicitly to *this* project/book/research space only, never account-wide by default.
+- **Subscription/credit state**: if plan lapses, keep dashboard read-only visible (not locked), show a "Resubscribe to keep Twin working" card with a lower-cost "keep drafts saved" fallback tier — mirrors Polsia's graceful degradation.
+
+### Center-left: Tasks
+- Task cards: title, one-line auto description, category tag (Research / Draft / Edit / Publish), schedule tag (Tonight / Recurring), cost tag (credits or time estimate).
+- Tabs: To Do, In Progress, Completed, Rejected, Failed — same state machine as Polsia.
+- "+ New Task" lets user inject a research/writing goal directly into Twin's queue.
+- "Manage Tasks" modal for full lifecycle visibility.
+
+### Documents library
+- Auto-generated artifacts: Research Reports, Chapter Drafts, Outlines, "Day N — Progress Report."
+- Use the Now/Next/Later structure for roadmaps, and "What Shipped / The Math" structure (plain-English summary + quantified stats) for progress reports.
+- **Versions**: git-like rollback list per document — commit-style change descriptions, timestamp, Current/Revert states — critical for book chapters and research drafts that evolve over many passes.
+
+### Center-right: Output channels
+Adapted from Polsia's Twitter/Email/Ads modules — for Shothik this becomes:
+- **Publish**: push finished chapter/article to Books/Marketplace.
+- **Share**: send draft via email/collaborator link.
+- **Distribute**: auto-post excerpt/summary to connected socials (optional, off by default).
+
+### Right column: Persistent narrative + chat
+- First-person, timestamped log: "Finished verifying 12 sources for Chapter 3. Want me to start the draft tonight or wait for your notes?"
+- Always-visible composer to interrupt/redirect without leaving the view.
+- This single pane is what replaces "General Agent" jargon entirely — Twin talks like a co-writer, never exposes internal agent/tool names.
+
+### Pricing/positioning copy
+Borrow Polsia's outcome-framed pricing pattern: instead of "Twin Pro — $X/mo," use **"Your AI Co-Researcher — works every night while you sleep"**, itemizing inclusions (nightly research cycles, task credits, unlimited strategy chat, drafts/versions storage).
+
+This gives you a concrete, implementable structure that folds in Connectors (left sidebar, separate from Twin), Skills (composer-level, plain-language), and now Team + Business, all modeled on validated autonomous-agent UX patterns rather than invented from scratch.

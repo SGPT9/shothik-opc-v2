@@ -1,0 +1,24 @@
+# Hermes engine (shothik-web) + links to services already on the Hostinger VPS.
+# Place in the root of the shothik-web repo alongside deploy/hermes/Dockerfile
+# (adjust the dockerfile path if you copy it elsewhere).
+services:
+  hermes:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL:-https://dashing-mandrill-233.convex.cloud}
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_CONVEX_URL=${NEXT_PUBLIC_CONVEX_URL:-https://dashing-mandrill-233.convex.cloud}
+      - JWT_PRIVATE_KEY=${JWT_PRIVATE_KEY}          # required: token signing (see convex-jwt-private-key.pem)
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # DeerFlow research backend — already running on the VPS at port 8000
+      - DEERFLOW_URL=${DEERFLOW_URL:-http://host.docker.internal:8000}
+      # Ollama local models — already running on the VPS at port 11434
+      - OLLAMA_URL=${OLLAMA_URL:-http://host.docker.internal:11434}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped

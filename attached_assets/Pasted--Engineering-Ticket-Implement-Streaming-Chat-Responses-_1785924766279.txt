@@ -1,0 +1,56 @@
+# 🛠️ Engineering Ticket — Implement Streaming Chat Responses
+
+**Title:** Add token-level streaming for agent chat responses
+**Priority:** High (VC/UX-visible)
+**Component:** `agents/chat` — backend response pipeline + frontend message renderer
+
+***
+
+### Problem
+
+Chat responses currently resolve as a single static block once the full agent run completes, rather than streaming incrementally. This creates:
+- Perceived latency (users see nothing until the entire response — and any downstream tool calls — finish)
+- A UX gap versus every major LLM product (ChatGPT, Claude, Gemini, Perplexity all stream by default)
+- A diligence signal that the backend may be doing a blocking request/response cycle rather than a properly architected streaming pipeline
+
+### Why It Matters
+
+- **User experience:** Streaming reduces perceived wait time even when total generation time is unchanged — this is one of the best-documented UX wins in LLM product design.
+- **Technical credibility:** Streaming implies the backend supports async, chunked delivery (SSE/WebSocket) and proper connection lifecycle management — something technical diligence reviewers explicitly probe for.
+- **Error recovery:** Streaming also allows partial responses to be preserved/retried instead of losing an entire run on a late-stage failure.
+
+***
+
+### Proposed Solution
+
+**Backend**
+1. Wrap the agent's LLM call in a streaming-compatible endpoint using **Server-Sent Events (SSE)** (simpler, unidirectional, well-supported) or WebSocket if bidirectional control (e.g., mid-stream cancel) is needed.
+2. As the model/tool pipeline emits tokens or intermediate steps (e.g., "Queued" → "Running" → tool call → partial text), push incremental chunks to the client instead of waiting for the full run.
+3. Emit distinct event types: `token`, `tool_call`, `status`, `error`, `done` — so the frontend can render each appropriately instead of showing raw state names.
+4. Ensure the connection gracefully handles client disconnect/reconnect (resume or restart policy) and timeouts.
+
+**Frontend**
+1. Replace the current "wait then render full block" logic with an incremental renderer that appends tokens to the message bubble as they arrive.
+2. Show a lightweight animated indicator (pulsing dot or blinking cursor) at the end of the streaming text — matching the ChatGPT/Claude convention users already recognize.
+3. Map `status` events (queued/running) to a single subtle label (e.g., "Thinking…") rather than displaying raw backend state names.
+4. On `error` event, hand off to the error-boundary component from the previous ticket instead of breaking the stream silently.
+
+**Rollout**
+- Ship behind a feature flag (`streaming_enabled`) to allow A/B rollout and quick rollback if the SSE/WebSocket infra has issues under load.
+- Load-test concurrent streaming sessions before full rollout, since this is the top scalability question a technical diligence reviewer would ask about.
+
+***
+
+### Acceptance Criteria
+- Responses render incrementally as they're generated, not as a single final block
+- A visible "thinking/generating" indicator appears during generation, before first token arrives
+- Internal state values (queued/running) are never shown verbatim — mapped to a single friendly label
+- Errors mid-stream hand off cleanly to the standardized error card (see prior ticket)
+- Feature flag allows toggling streaming on/off without a full deploy
+
+### Effort Estimate
+3–5 days (backend SSE/WebSocket plumbing + frontend incremental renderer), assuming the underlying LLM provider API already supports streaming responses (most do — OpenAI, Anthropic, etc.).
+
+***
+
+Together, this ticket and the error-handling ticket address the two highest-severity, most diligence-visible gaps identified in the review. Want me to also draft the third item (color/badge system cleanup) as a lighter-weight design-system ticket, or is engineering bandwidth better spent elsewhere for now?
