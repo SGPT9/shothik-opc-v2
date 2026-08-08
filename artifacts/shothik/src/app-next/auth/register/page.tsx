@@ -5,37 +5,33 @@ import { useRouter, useSearchParams } from '@/lib/navigation';
 import { Link } from 'wouter';
 import { ArrowRight, BookOpen, FilePenLine, FlaskConical, Layers3, Sparkles } from 'lucide-react';
 import { useAuth } from '@/providers/AuthProvider';
+import { useTranslation } from '@/i18n';
 import { normalizeAuthIntent } from '@/lib/auth-flow';
 
 const INTENT_OPTIONS = {
   continue: {
-    label: 'Continue',
-    title: 'Continue where I left off',
-    description: 'Best for returning writers who want to reopen recent projects or continue a saved draft.',
+    titleKey: 'auth.intent.continueTitle',
+    descriptionKey: 'auth.intent.continueDescriptionRegister',
     icon: Layers3,
   },
   writing_studio: {
-    label: 'Writing Studio',
-    title: 'Start in Writing Studio',
-    description: 'Best for users who want the full workspace for drafting, revising, and publishing.',
+    titleKey: 'auth.intent.writingStudioTitle',
+    descriptionKey: 'auth.intent.writingStudioDescriptionRegister',
     icon: Sparkles,
   },
   research: {
-    label: 'Research Paper',
-    title: 'Start a research paper',
-    description: 'Best for journal papers, literature reviews, theses, and source-driven academic writing.',
+    titleKey: 'auth.intent.researchTitle',
+    descriptionKey: 'auth.intent.researchDescriptionRegister',
     icon: FlaskConical,
   },
   assignment: {
-    label: 'Assignment',
-    title: 'Start an assignment',
-    description: 'Best for essays, lab reports, coursework, and rubric-aware academic writing tasks.',
+    titleKey: 'auth.intent.assignmentTitle',
+    descriptionKey: 'auth.intent.assignmentDescriptionRegister',
     icon: FilePenLine,
   },
   twin: {
-    label: 'Twin',
-    title: 'Open Twin',
-    description: 'Best for users who want help from their trained writing assistant and delegated writing tasks.',
+    titleKey: 'auth.intent.twinTitle',
+    descriptionKey: 'auth.intent.twinDescriptionRegister',
     icon: BookOpen,
   },
 };
@@ -44,6 +40,7 @@ const RegisterPage = () => {
   const { register } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const initialIntent = normalizeAuthIntent(searchParams.get("intent"));
   const [formState, setFormState] = useState({
     name: '',
@@ -57,6 +54,7 @@ const RegisterPage = () => {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [showVerifyLink, setShowVerifyLink] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const verificationHref = `/auth/verify-email?email=${encodeURIComponent(formState.email.trim())}`;
 
@@ -67,6 +65,7 @@ const RegisterPage = () => {
     event.preventDefault();
     setError('');
     setSuccess('');
+    setShowVerifyLink(false);
 
     const data = {
       ...formState,
@@ -74,15 +73,15 @@ const RegisterPage = () => {
     };
     const nextErrors: Record<string, string> = {};
 
-    if (!data.name.trim()) nextErrors.name = 'Enter your name to personalize your workspace.';
-    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(data.email)) nextErrors.email = 'Enter a valid email address.';
-    if (data.password.length < 6) nextErrors.password = 'Password must be at least 6 characters long.';
-    if (data.password !== data.confirmPassword) nextErrors.confirmPassword = 'Passwords do not match yet.';
-    if (!data.terms) nextErrors.terms = 'You must agree to the terms and conditions before creating an account.';
+    if (!data.name.trim()) nextErrors.name = t('auth.messages.nameRequired');
+    if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(data.email)) nextErrors.email = t('auth.messages.invalidEmail');
+    if (data.password.length < 6) nextErrors.password = t('auth.messages.passwordTooShort');
+    if (data.password !== data.confirmPassword) nextErrors.confirmPassword = t('auth.messages.passwordsDoNotMatch');
+    if (!data.terms) nextErrors.terms = t('auth.messages.mustAgreeTerms');
 
     if (Object.keys(nextErrors).length > 0) {
       setFieldErrors(nextErrors);
-      setError('Please fix the highlighted fields before continuing.');
+      setError(t('auth.messages.fixHighlighted'));
       return;
     }
 
@@ -93,15 +92,16 @@ const RegisterPage = () => {
       const result = await register(data.name, data.email, data.password, data.country);
 
       if (result.requiresEmailVerification) {
-        setSuccess('Account created. Please verify your email before signing in.');
+        setSuccess(t('auth.messages.accountCreatedVerify'));
+        setShowVerifyLink(true);
         setIsSubmitting(false);
         return;
       }
 
-      setSuccess('Registration successful! Redirecting to login...');
+      setSuccess(t('auth.messages.registrationSuccessRedirect'));
       router.push(`/auth/login?intent=${data.intent}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed. Please try again.');
+      setError(err instanceof Error ? err.message : t('auth.messages.registrationFailed'));
       setIsSubmitting(false);
     }
   };
@@ -113,14 +113,13 @@ const RegisterPage = () => {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1 text-xs font-medium text-muted-foreground">
               <Sparkles className="h-3.5 w-3.5 text-brand" />
-              Create your Shothik workspace
+              {t('auth.createWorkspaceBadge')}
             </div>
             <h1 className="mt-6 max-w-xl text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
-              Register with a destination in mind
+              {t('auth.registerHeadline')}
             </h1>
             <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground lg:text-base">
-              Set up your account once, then move straight into the workflow that matters most: Writing Studio,
-              research papers, assignments, or Twin-assisted writing.
+              {t('auth.registerSubheadline')}
             </p>
           </div>
 
@@ -131,10 +130,10 @@ const RegisterPage = () => {
               </div>
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  First-run recommendation
+                  {t('auth.firstRunRecommendation')}
                 </p>
-                <h2 className="mt-1 text-xl font-semibold text-foreground">{selectedIntentConfig.title}</h2>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">{selectedIntentConfig.description}</p>
+                <h2 className="mt-1 text-xl font-semibold text-foreground">{t(selectedIntentConfig.titleKey)}</h2>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{t(selectedIntentConfig.descriptionKey)}</p>
               </div>
             </div>
           </div>
@@ -143,15 +142,15 @@ const RegisterPage = () => {
         <section className="flex items-center justify-center px-6 py-10 lg:px-12 lg:py-12">
           <form onSubmit={handleSubmit} className="w-full max-w-xl rounded-3xl border border-border bg-card p-8 shadow-sm">
             <div className="mb-8">
-              <p className="text-sm font-medium text-brand">Create your account</p>
-              <h2 className="mt-2 text-3xl font-bold text-foreground">Set up your workspace</h2>
+              <p className="text-sm font-medium text-brand">{t('auth.createYourAccount')}</p>
+              <h2 className="mt-2 text-3xl font-bold text-foreground">{t('auth.setUpYourWorkspace')}</h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                We&apos;ll use your chosen first step to guide you into the most relevant writing workflow after login.
+                {t('auth.registerDescription')}
               </p>
             </div>
 
             <div className="mb-5">
-              <label htmlFor="name" className="block text-sm font-medium text-foreground">Name</label>
+              <label htmlFor="name" className="block text-sm font-medium text-foreground">{t('auth.name')}</label>
               <input
                 type="text"
                 name="name"
@@ -167,7 +166,7 @@ const RegisterPage = () => {
             </div>
 
             <div className="mb-5">
-              <label htmlFor="email" className="block text-sm font-medium text-foreground">Email</label>
+              <label htmlFor="email" className="block text-sm font-medium text-foreground">{t('auth.email')}</label>
               <input
                 type="email"
                 name="email"
@@ -185,7 +184,7 @@ const RegisterPage = () => {
 
             <div className="grid gap-5 md:grid-cols-2">
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-foreground">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-foreground">{t('auth.password')}</label>
                 <input
                   type="password"
                   name="password"
@@ -202,7 +201,7 @@ const RegisterPage = () => {
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">Confirm Password</label>
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground">{t('auth.confirmPassword')}</label>
                 <input
                   type="password"
                   name="confirmPassword"
@@ -224,7 +223,7 @@ const RegisterPage = () => {
             </div>
 
             <div className="mt-5">
-              <label htmlFor="country" className="block text-sm font-medium text-foreground">Country</label>
+              <label htmlFor="country" className="block text-sm font-medium text-foreground">{t('auth.country')}</label>
               <select
                 name="country"
                 id="country"
@@ -239,7 +238,7 @@ const RegisterPage = () => {
             </div>
 
             <div className="mt-5">
-              <label htmlFor="intent" className="block text-sm font-medium text-foreground">What do you want to do first?</label>
+              <label htmlFor="intent" className="block text-sm font-medium text-foreground">{t('auth.whatDoYouWantFirst')}</label>
               <select
                 name="intent"
                 id="intent"
@@ -247,11 +246,11 @@ const RegisterPage = () => {
                 onChange={(e) => setFormState((prev) => ({ ...prev, intent: normalizeAuthIntent(e.target.value) }))}
                 className="mt-2 block w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground shadow-sm focus:border-primary focus:ring-2 focus:ring-primary/20"
               >
-                <option value="continue">Continue where I left off</option>
-                <option value="writing_studio">Start in Writing Studio</option>
-                <option value="research">Start a research paper</option>
-                <option value="assignment">Start an assignment</option>
-                <option value="twin">Open Twin</option>
+                <option value="continue">{t('auth.intent.continueTitle')}</option>
+                <option value="writing_studio">{t('auth.intent.writingStudioTitle')}</option>
+                <option value="research">{t('auth.intent.researchTitle')}</option>
+                <option value="assignment">{t('auth.intent.assignmentTitle')}</option>
+                <option value="twin">{t('auth.intent.twinTitle')}</option>
               </select>
             </div>
 
@@ -268,7 +267,7 @@ const RegisterPage = () => {
                   aria-describedby={fieldErrors.terms ? 'register-terms-error' : undefined}
                 />
                 <label htmlFor="terms" className="text-sm text-foreground">
-                  I agree to the terms & conditions and understand that my first-run workflow can be changed later.
+                  {t('auth.termsAgreement')}
                 </label>
               </div>
               {fieldErrors.terms && <p id="register-terms-error" className="mt-2 text-sm text-destructive">{fieldErrors.terms}</p>}
@@ -284,9 +283,9 @@ const RegisterPage = () => {
                 <p role="status" className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">
                   {success}
                 </p>
-                {success.toLowerCase().includes('verify your email') ? (
+                {showVerifyLink ? (
                   <Link href={verificationHref} className="inline-flex text-sm font-medium text-primary hover:underline">
-                    Enter verification code
+                    {t('auth.enterVerificationCode')}
                   </Link>
                 ) : null}
               </div>
@@ -298,11 +297,11 @@ const RegisterPage = () => {
                 disabled={isSubmitting}
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
               >
-                {isSubmitting ? 'Creating account...' : 'Create account'}
+                {isSubmitting ? t('auth.creatingAccount') : t('auth.createAccount')}
                 {!isSubmitting && <ArrowRight className="h-4 w-4" />}
               </button>
               <Link href={`/auth/login?intent=${formState.intent}`} className="text-primary hover:text-primary/80">
-                Already have an account? Login
+                {t('auth.alreadyHaveAccount')}
               </Link>
             </div>
           </form>

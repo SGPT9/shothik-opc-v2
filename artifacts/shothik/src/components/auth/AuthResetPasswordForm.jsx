@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useForgotPasswordMutation } from "@/redux/api/auth/authApi";
 import { setShowLoginModal } from "@/redux/slices/auth";
+import { useTranslation } from "@/i18n";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -18,6 +19,7 @@ export default function AuthResetPasswordForm() {
   const [isSentMail, setIsSentMail] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const ForgotSchema = z.object({
     email: z.string()
@@ -51,9 +53,7 @@ export default function AuthResetPasswordForm() {
 
       if (result?.data?.success) {
         dispatch(setShowLoginModal(false));
-        toast.success(
-          "Reset password link sent to your email. Please check.",
-        );
+        toast.success(t("auth.messages.resetLinkSent"));
       }
 
       if (result?.error) {
@@ -62,7 +62,7 @@ export default function AuthResetPasswordForm() {
       }
     } catch (error) {
       console.error(error);
-      setErrorMessage(error.message || "An unexpected error occurred.");
+      setErrorMessage(error.message || t("auth.messages.unexpectedError"));
       reset();
 
       setError("afterSubmit", {
@@ -77,7 +77,7 @@ export default function AuthResetPasswordForm() {
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <div className="space-y-4">
-        <RHFTextField name="email" label="Email address" />
+        <RHFTextField name="email" label={t("auth.emailAddress")} />
         {errorMessage && (
           <p className="text-destructive min-h-[1.5em] text-sm">
             {errorMessage}
@@ -91,8 +91,10 @@ export default function AuthResetPasswordForm() {
           disabled={isSubmitting}
         >
           {isSubmitting
-            ? "Sending..."
-            : `${isSentMail ? "Resend" : "Send"} Request`}
+            ? t("auth.sending")
+            : isSentMail
+              ? t("auth.resendRequest")
+              : t("auth.sendRequest")}
         </Button>
       </div>
     </FormProvider>

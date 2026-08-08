@@ -119,7 +119,7 @@ export default function AccountSettings() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbLink href="#">{t('account.breadcrumbSettings')}</BreadcrumbLink>
+            <BreadcrumbPage>{t('account.breadcrumbSettings')}</BreadcrumbPage>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -144,7 +144,7 @@ export default function AccountSettings() {
               className="flex cursor-pointer items-center gap-2 min-h-[44px] whitespace-nowrap px-3 sm:px-4"
             >
               <CreditCard className="text-muted-foreground h-4 w-4" />
-              Billing
+              {t('account.billing')}
             </TabsTrigger>
             <TabsTrigger
               value="wallet"

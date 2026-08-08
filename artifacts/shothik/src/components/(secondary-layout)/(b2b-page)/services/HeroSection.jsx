@@ -51,7 +51,7 @@ export const HeroSection = ({ slug }) => {
                 </p>
               )}
               {item.isLink ? (
-                <Link href="#" className="text-primary underline">
+                <Link href="/contact-us" className="text-primary underline">
                   {item.title}
                 </Link>
               ) : (

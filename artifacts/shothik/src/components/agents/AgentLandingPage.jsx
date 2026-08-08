@@ -282,7 +282,7 @@ export default function AgentLandingPage({ initialTab, hideNavigation, hideHeade
     try {
       switch (selectedNavItem) {
         case "chat":
-          showToast("AI Chat is coming soon! Try our other tools for now.", "info");
+          router.push("/agents/chat");
           return;
         case "slides":
           return await handleSlideCreation(

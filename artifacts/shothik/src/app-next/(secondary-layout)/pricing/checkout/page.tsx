@@ -15,6 +15,7 @@ import { useMutation } from "@tanstack/react-query";
 import type { AxiosError } from "axios";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "@/lib/navigation";
+import { useTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -22,6 +23,7 @@ type PaymentStatus = "idle" | "processing" | "success" | "failed" | "pending";
 
 const CheckoutPage = () => {
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const packageId = searchParams.get("package_id");
   const planIdFromQuery = searchParams.get("plan_id");
 
@@ -98,7 +100,7 @@ const CheckoutPage = () => {
           setPaymentStatus("processing");
         } else {
           setPaymentStatus("pending");
-          toast.success("Payment initiated successfully!");
+          toast.success(t("pricing.paymentInitiated"));
         }
       }
     },
@@ -106,14 +108,14 @@ const CheckoutPage = () => {
       setPaymentStatus("failed");
       toast.error(
         error.response?.data?.message ||
-          "Failed to initiate payment. Please try again.",
+          t("pricing.failedToInitiate"),
       );
     },
   });
 
   const handlePaymentInitiation = () => {
     if (!currentPackage || !selectedPaymentMethod || !selectedPlanId) {
-      toast.error("Please select a payment method and plan");
+      toast.error(t("pricing.selectMethodAndPlan"));
       return;
     }
 
@@ -122,12 +124,12 @@ const CheckoutPage = () => {
     );
 
     if (!selectedMethod) {
-      toast.error("Invalid payment method selected");
+      toast.error(t("pricing.invalidPaymentMethod"));
       return;
     }
 
     if (!selectedPlan) {
-      toast.error("Invalid plan selected");
+      toast.error(t("pricing.invalidPlan"));
       return;
     }
 
@@ -210,8 +212,8 @@ const CheckoutPage = () => {
   return (
     <div className="container mx-auto flex min-h-[calc(100vh-4rem)] max-w-4xl flex-col space-y-6 py-6 lg:py-12">
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-bold">Checkout</h1>
-        <p className="text-muted-foreground">Complete your purchase</p>
+        <h1 className="text-3xl font-bold">{t("pricing.checkout")}</h1>
+        <p className="text-muted-foreground">{t("pricing.completePurchase")}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -250,7 +252,7 @@ const CheckoutPage = () => {
             <div className="flex items-center gap-2">
               <Loader2 className="text-primary h-5 w-5 animate-spin" />
               <p className="text-sm">
-                Payment is being processed. Please wait...
+                {t("pricing.paymentProcessing")}
               </p>
             </div>
           </CardContent>

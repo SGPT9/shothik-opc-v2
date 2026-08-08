@@ -26,5 +26,11 @@ timeoutMs = 20000
 CONVEX_DEPLOYMENT = "dev:dashing-mandrill-233"
 VITE_CONVEX_URL = "https://dashing-mandrill-233.convex.cloud"
 CHAT_API_ORIGIN = "https://www.shothikgpt.com"
-NEXT_PUBLIC_INSFORGE_ANON_KEY = "ik_9b4e11405dedf37af3bd726789a7749a"
-NEXT_PUBLIC_INSFORGE_URL = "https://ers8j28a.ap-southeast.insforge.app"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 22581
+externalPort = 80

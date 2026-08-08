@@ -6,10 +6,12 @@ import { agenticToolsData, marketingToolsData, writingToolsData } from "@/_mock/
 import ToolCategorySection from "@/components/tutorial/ToolCategorySection";
 import { Button } from "@/components/ui/button";
 import useYoutubeSubscriber from "@/hooks/useYoutubeSubcriber";
+import { useRouter } from "@/lib/navigation";
 import { ArrowRight } from "lucide-react";
 
 const Tutorials = () => {
   const { subscriberCount, loading, handleSubscribe, formatSubscriberCount } = useYoutubeSubscriber();
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -34,11 +36,11 @@ const Tutorials = () => {
           </p>
           
            <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="h-12 px-8 text-base">
+            <Button size="lg" className="h-12 px-8 text-base" onClick={() => router.push("/agents/chat")}>
                 Get Started
                 <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button size="lg" variant="outline" className="h-12 px-8 text-base">
+            <Button size="lg" variant="outline" className="h-12 px-8 text-base" onClick={() => router.push("/faqs")}>
                View Documentation
             </Button>
            </div>
