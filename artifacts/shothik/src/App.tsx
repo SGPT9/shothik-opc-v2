@@ -86,6 +86,9 @@ const RegisterPage = lazy(() => import('@/app-next/auth/register/page'));
 const ForgotPasswordPage = lazy(() => import('@/app-next/auth/forgot-password/page'));
 const PostLoginPage = lazy(() => import('@/app-next/auth/post-login/page'));
 const LogtoCallbackPage = lazy(() => import('@/app-next/auth/logto-callback/page'));
+const VerifyEmailCodePage = lazy(() => import('@/app-next/auth/verify-email/page'));
+const VerifyEmailTokenPage = lazy(() => import('@/app-next/auth/verify-email/[token]/page'));
+const ResetPasswordPage = lazy(() => import('@/app-next/auth/reset-password/[token]/page'));
 
 // Dashboard pages
 const CanvasPage = lazy(() => import('@/app-next/(dashboard)/canvas/page'));
@@ -199,15 +202,9 @@ function AppRoutes() {
         <Route path="/auth/forgot-password" component={ForgotPasswordPage} />
         <Route path="/auth/post-login" component={PostLoginPage} />
         <Route path="/auth/logto-callback" component={LogtoCallbackPage} />
-        <Route path="/auth/verify-email">
-          <PlaceholderPage name="Verify Email" />
-        </Route>
-        <Route path="/auth/verify-email/:token">
-          <PlaceholderPage name="Verify Email" />
-        </Route>
-        <Route path="/auth/reset-password/:token">
-          <PlaceholderPage name="Reset Password" />
-        </Route>
+        <Route path="/auth/verify-email" component={VerifyEmailCodePage} />
+        <Route path="/auth/verify-email/:token" component={VerifyEmailTokenPage} />
+        <Route path="/auth/reset-password/:token" component={ResetPasswordPage} />
 
         {/* Dashboard routes */}
         <Route path="/canvas" component={CanvasPage} />

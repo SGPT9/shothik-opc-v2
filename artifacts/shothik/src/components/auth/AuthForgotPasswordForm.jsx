@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "react-toastify";
 import { useResetPasswordMutation } from "@/redux/api/auth/authApi";
 import { setShowLoginModal } from "@/redux/slices/auth";
+import { useTranslation } from "@/i18n";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Check, Circle, Eye, EyeOff } from "lucide-react";
 import { useParams, useRouter } from "@/lib/navigation";
@@ -40,6 +41,7 @@ export default function AuthForgotPasswordForm() {
     useResetPasswordMutation();
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const ResetSchema = z.object({
     password: z.string()
@@ -81,7 +83,7 @@ export default function AuthForgotPasswordForm() {
     try {
       const result = await resetPassword(payload);
       if (result.data) {
-        toast.success("Update success! Please login");
+        toast.success(t("auth.messages.updateSuccessLogin"));
         push("/");
         dispatch(setShowLoginModal(true));
       }
@@ -114,7 +116,7 @@ export default function AuthForgotPasswordForm() {
 
         <RHFTextField
           name="password"
-          label="Password"
+          label={t("auth.password")}
           type={showPassword ? "text" : "password"}
           endAdornment={
             <Button
@@ -141,7 +143,7 @@ export default function AuthForgotPasswordForm() {
               <Circle className="text-muted-foreground h-5 w-5" />
             )}
             <span className="text-muted-foreground text-sm">
-              Must be at least 8 characters
+              {t("auth.mustBeAtLeast8")}
             </span>
           </div>
         </div>
@@ -151,7 +153,7 @@ export default function AuthForgotPasswordForm() {
           className="from-primary to-primary/80 h-11 w-full bg-gradient-to-r"
           disabled={isLoading}
         >
-          {isLoading ? "Updating..." : "Update Password"}
+          {isLoading ? t("auth.updating") : t("auth.updatePassword")}
         </Button>
       </div>
     </FormProvider>

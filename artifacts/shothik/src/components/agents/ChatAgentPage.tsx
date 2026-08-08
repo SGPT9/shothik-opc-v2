@@ -1153,6 +1153,7 @@ export default function ChatAgentPage() {
 
   const [isArtifactPaneOpen, setIsArtifactPaneOpen] = useState(false);
   const [artifactType, setArtifactType] = useState<"markdown" | "slides" | "sheet" | "pdf">("markdown");
+  const [artifactContent, setArtifactContent] = useState<string>("");
   const [isVoiceOpen, setIsVoiceOpen] = useState(false);
 
   const resolvedWorkspaceType = useMemo<"browser" | "sheet" | "slides" | "staging" | "editor">(() => {
@@ -1355,8 +1356,9 @@ export default function ChatAgentPage() {
                       router.push('/deep-research');
                     }
                   }}
-                  onOpenArtifact={(type) => {
+                  onOpenArtifact={(type, message) => {
                     setArtifactType(type as any);
+                    setArtifactContent(message?.content ?? "");
                     setIsArtifactPaneOpen(true);
                   }}
                 />
@@ -1435,6 +1437,15 @@ export default function ChatAgentPage() {
                 isOpen={isArtifactPaneOpen}
                 onClose={() => setIsArtifactPaneOpen(false)}
                 artifactType={artifactType}
+                content={artifactContent || undefined}
+                pdfPages={
+                  artifactType === "pdf" && artifactContent
+                    ? artifactContent
+                        .split(/\n---+\n/)
+                        .map((page) => ({ content: page.trim() }))
+                        .filter((page) => page.content.length > 0)
+                    : undefined
+                }
                 title="Generated Output"
               />
             </ResizablePanel>

@@ -65,11 +65,10 @@ const AgentListView = ({
       items.push(
         <PaginationItem key={1}>
           <PaginationLink
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setPage(1);
-            }}
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer"
+            onClick={() => setPage(1)}
           >
             1
           </PaginationLink>
@@ -88,11 +87,10 @@ const AgentListView = ({
       items.push(
         <PaginationItem key={i}>
           <PaginationLink
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setPage(i);
-            }}
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer"
+            onClick={() => setPage(i)}
             isActive={i === page}
           >
             {i}
@@ -112,11 +110,10 @@ const AgentListView = ({
       items.push(
         <PaginationItem key={pageCount}>
           <PaginationLink
-            href="#"
-            onClick={(e) => {
-              e.preventDefault();
-              setPage(pageCount);
-            }}
+            role="button"
+            tabIndex={0}
+            className="cursor-pointer"
+            onClick={() => setPage(pageCount)}
           >
             {pageCount}
           </PaginationLink>
@@ -198,23 +195,23 @@ const AgentListView = ({
             <PaginationContent>
               <PaginationItem>
                 <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(Math.max(1, page - 1));
-                  }}
-                  className={cn(page === 1 && "pointer-events-none opacity-50")}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  className={cn(
+                    "cursor-pointer",
+                    page === 1 && "pointer-events-none opacity-50",
+                  )}
                 />
               </PaginationItem>
               {renderPaginationItems()}
               <PaginationItem>
                 <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setPage(Math.min(pageCount, page + 1));
-                  }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => setPage(Math.min(pageCount, page + 1))}
                   className={cn(
+                    "cursor-pointer",
                     page === pageCount && "pointer-events-none opacity-50",
                   )}
                 />

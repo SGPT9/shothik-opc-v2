@@ -15,11 +15,13 @@ import { useQuery } from "@tanstack/react-query";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Link } from "wouter";
 import { useRouter, useSearchParams } from "@/lib/navigation";
+import { useTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 
 const PricingPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>("all");
 
   // Use location hook
@@ -90,7 +92,7 @@ const PricingPage = () => {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-6 lg:py-12">
         <Spinner className="text-primary h-8 w-8" />
-        <p className="text-muted-foreground mt-4">Loading pricing plans...</p>
+        <p className="text-muted-foreground mt-4">{t("pricing.loadingPlans")}</p>
       </div>
     );
   }
@@ -99,17 +101,17 @@ const PricingPage = () => {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] flex-col items-center justify-center py-6 lg:py-12">
         <AlertCircle className="text-destructive mb-4 h-12 w-12" />
-        <h2 className="mb-2 text-xl font-semibold">Unable to load pricing</h2>
+        <h2 className="mb-2 text-xl font-semibold">{t("pricing.unableToLoad")}</h2>
         <p className="text-muted-foreground mb-6 max-w-md text-center">
-          We're having trouble connecting to our servers. Please try again or contact us for assistance.
+          {t("pricing.connectionTrouble")}
         </p>
         <div className="flex gap-4">
           <Button onClick={handleRetry} variant="default">
             <RefreshCw className="mr-2 h-4 w-4" />
-            Try Again
+            {t("pricing.tryAgain")}
           </Button>
           <Link href="/contact-us">
-            <Button variant="outline">Contact Us</Button>
+            <Button variant="outline">{t("pricing.contactUs")}</Button>
           </Link>
         </div>
       </div>
@@ -126,13 +128,10 @@ const PricingPage = () => {
           <div>
             <div className="container mx-auto mb-6 max-w-4xl space-y-6 text-center">
               <h1 className="text-4xl font-bold capitalize">
-                Our pricing plan made simple
+                {t("pricing.headline")}
               </h1>
               <p className="text-lg">
-                Discover the right plan for your needs and take advantage of
-                Shothik.ai's powerful tools. Whether you're just getting started
-                or need advanced features for your business, we've got you
-                covered.
+                {t("pricing.subheadline")}
               </p>
             </div>
 
@@ -150,7 +149,7 @@ const PricingPage = () => {
                         value="all"
                         className="text-primary-foreground! data-[state=active]:text-foreground! data-[state=active]:bg-foreground/15! flex cursor-pointer items-center gap-2 rounded-full backdrop-blur-xl data-[state=active]:border-current/50!"
                       >
-                        All
+                        {t("pricing.all")}
                       </TabsTrigger>
                       {plans.map((plan: TPlan) => (
                         <TabsTrigger
@@ -180,7 +179,7 @@ const PricingPage = () => {
         {packages.length === 0 ? (
           <div className="py-12 text-center">
             <p className="text-muted-foreground">
-              No packages available at the moment.
+              {t("pricing.noPackages")}
             </p>
           </div>
         ) : (

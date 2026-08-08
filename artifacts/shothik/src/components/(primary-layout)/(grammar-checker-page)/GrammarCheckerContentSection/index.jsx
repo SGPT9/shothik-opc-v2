@@ -90,6 +90,7 @@ const GrammarCheckerContentSection = () => {
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [statsDialogOpen, setStatsDialogOpen] = useState(false);
 
   const skipSectionRef = useRef(false);
   const skipCheckRef = useRef(false);
@@ -1226,8 +1227,32 @@ const GrammarCheckerContentSection = () => {
   }, []);
 
   const handleStatistics = useCallback(() => {
-    alert("Statistics feature coming soon");
+    setStatsDialogOpen(true);
   }, []);
+
+  const textStats = useMemo(() => {
+    const source = (text || "").trim();
+    const words = source ? source.split(/\s+/).filter(Boolean).length : 0;
+    const characters = (text || "").length;
+    const charactersNoSpaces = (text || "").replace(/\s/g, "").length;
+    const sentences = source
+      ? (source.match(/[^.!?]+[.!?]+(\s|$)|[^.!?]+$/g) || []).filter((s) =>
+          s.trim()
+        ).length
+      : 0;
+    const paragraphs = source
+      ? source.split(/\n{2,}|\n/).filter((p) => p.trim()).length
+      : 0;
+    const readingTime = Math.max(1, Math.ceil(words / 200));
+    return {
+      words,
+      characters,
+      charactersNoSpaces,
+      sentences,
+      paragraphs,
+      readingTime,
+    };
+  }, [text]);
 
   const handleDownload = useCallback(async () => {
     if (!text) return;
@@ -1691,6 +1716,41 @@ const GrammarCheckerContentSection = () => {
         loginDialogOpen={loginDialogOpen}
         setLoginDialogOpen={setLoginDialogOpen}
       />
+      <Dialog open={statsDialogOpen} onOpenChange={setStatsDialogOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Document Statistics</DialogTitle>
+          </DialogHeader>
+          <div className="divide-y divide-border">
+            {[
+              { label: "Words", value: textStats.words },
+              { label: "Characters", value: textStats.characters },
+              {
+                label: "Characters (no spaces)",
+                value: textStats.charactersNoSpaces,
+              },
+              { label: "Sentences", value: textStats.sentences },
+              { label: "Paragraphs", value: textStats.paragraphs },
+              {
+                label: "Reading time",
+                value: `${textStats.readingTime} min`,
+              },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="flex items-center justify-between py-2 text-sm"
+              >
+                <span className="text-muted-foreground">{stat.label}</span>
+                <span className="font-medium">
+                  {typeof stat.value === "number"
+                    ? stat.value.toLocaleString()
+                    : stat.value}
+                </span>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

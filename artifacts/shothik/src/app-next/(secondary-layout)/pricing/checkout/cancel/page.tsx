@@ -14,9 +14,11 @@ import { useQuery } from "@tanstack/react-query";
 import { User, XCircle } from "lucide-react";
 import { Link } from "wouter";
 import { useSearchParams } from "@/lib/navigation";
+import { useTranslation } from "@/i18n";
 
 const CheckoutCancelPage = () => {
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const packageId = searchParams.get("package_id");
   const planId = searchParams.get("plan_id");
 
@@ -37,9 +39,9 @@ const CheckoutCancelPage = () => {
       <Card className="border-destructive/50 bg-destructive/5">
         <CardContent className="space-y-4 py-12 text-center">
           <XCircle className="text-destructive mx-auto h-16 w-16" />
-          <h2 className="text-3xl font-bold">Payment Cancelled</h2>
+          <h2 className="text-3xl font-bold">{t("pricing.paymentCancelled")}</h2>
           <p className="text-muted-foreground">
-            Your payment was cancelled. No charges were made to your account.
+            {t("pricing.paymentCancelledDescription")}
           </p>
         </CardContent>
       </Card>
@@ -47,7 +49,7 @@ const CheckoutCancelPage = () => {
       {packageData && (
         <Card>
           <CardHeader className="border-b">
-            <h3 className="text-xl font-semibold">Package Details</h3>
+            <h3 className="text-xl font-semibold">{t("pricing.packageDetails")}</h3>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
@@ -68,18 +70,18 @@ const CheckoutCancelPage = () => {
             <Link
               href={`/pricing/checkout?package_id=${packageData._id}${planId ? `&plan_id=${planId}` : ""}`}
             >
-              Try Again
+              {t("pricing.tryAgain")}
             </Link>
           </Button>
         )}
         <Button asChild variant="outline" size="lg">
-          <Link href="/pricing">Back to Pricing</Link>
+          <Link href="/pricing">{t("pricing.backToPricing")}</Link>
         </Button>
 
         <Button asChild variant="outline" size="lg">
           <Link href="/account/settings">
             <User className="h-4 w-4" />
-            View Profile
+            {t("pricing.viewProfile")}
           </Link>
         </Button>
       </div>

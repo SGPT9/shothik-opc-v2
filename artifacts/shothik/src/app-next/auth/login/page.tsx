@@ -3,6 +3,7 @@
 import React, { useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "@/lib/navigation";
 import { useAuth } from "@/providers/AuthProvider";
+import { useTranslation } from "@/i18n";
 import { Link } from "wouter";
 import AuthWithSocial from "@/components/auth/AuthWithSocial";
 import LogtoSignInButton from "@/components/auth/LogtoSignInButton";
@@ -18,45 +19,45 @@ import { trackLoginIntentCaptured } from "@/lib/posthog";
 const INTENT_CONFIG: Record<
   AuthIntent,
   {
-    label: string;
-    title: string;
-    description: string;
+    labelKey: string;
+    titleKey: string;
+    descriptionKey: string;
     href: string;
     icon: React.ElementType;
   }
 > = {
   continue: {
-    label: "Continue",
-    title: "Continue where I left off",
-    description: "Resume your latest writing workflow, project, or workspace after login.",
+    labelKey: "auth.intent.continueLabel",
+    titleKey: "auth.intent.continueTitle",
+    descriptionKey: "auth.intent.continueDescription",
     href: "/writing-studio?projects=1",
     icon: Layers3,
   },
   writing_studio: {
-    label: "Writing Studio",
-    title: "Start in Writing Studio",
-    description: "Open the main writing workspace for drafting, revising, and publishing.",
+    labelKey: "auth.intent.writingStudioLabel",
+    titleKey: "auth.intent.writingStudioTitle",
+    descriptionKey: "auth.intent.writingStudioDescription",
     href: "/writing-studio",
     icon: Sparkles,
   },
   research: {
-    label: "Research Paper",
-    title: "Start a research paper",
-    description: "Open Writing Studio in research mode with structure, sources, and academic guidance.",
+    labelKey: "auth.intent.researchLabel",
+    titleKey: "auth.intent.researchTitle",
+    descriptionKey: "auth.intent.researchDescription",
     href: "/writing-studio?intent=research",
     icon: FlaskConical,
   },
   assignment: {
-    label: "Assignment",
-    title: "Start an assignment",
-    description: "Open Writing Studio in assignment mode with guided planning and rubric-aware writing.",
+    labelKey: "auth.intent.assignmentLabel",
+    titleKey: "auth.intent.assignmentTitle",
+    descriptionKey: "auth.intent.assignmentDescription",
     href: "/writing-studio?intent=assignment",
     icon: FilePenLine,
   },
   twin: {
-    label: "Twin",
-    title: "Open Twin",
-    description: "Continue with your Twin writing assistant, training data, and delegated writing tasks.",
+    labelKey: "auth.intent.twinLabel",
+    titleKey: "auth.intent.twinTitle",
+    descriptionKey: "auth.intent.twinDescription",
     href: "/twin",
     icon: BookOpen,
   },
@@ -66,18 +67,19 @@ const LoginPage = () => {
     const { login } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { t } = useTranslation();
     const [email, setEmail] = useState(() => searchParams.get("email") ?? "");
     const [password, setPassword] = useState("");
     const [rememberMe, setRememberMe] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(() =>
         searchParams.get("error") === "oauth"
-            ? "Google sign-in could not be completed. Please try again."
+            ? t("auth.messages.oauthFailed")
             : "",
     );
     const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
     const [success, setSuccess] = useState(() =>
-        searchParams.get("verified") === "1" ? "Email verified. You can sign in now." : "",
+        searchParams.get("verified") === "1" ? t("auth.messages.emailVerified") : "",
     );
     const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -101,16 +103,16 @@ const LoginPage = () => {
 
         const nextFieldErrors: { email?: string; password?: string } = {};
         if (!validateEmail(email)) {
-            nextFieldErrors.email = "Enter a valid email address.";
+            nextFieldErrors.email = t("auth.messages.invalidEmail");
         }
 
         if (!validatePassword(password)) {
-            nextFieldErrors.password = "Password must be at least 6 characters long.";
+            nextFieldErrors.password = t("auth.messages.passwordTooShort");
         }
 
         if (Object.keys(nextFieldErrors).length > 0) {
             setFieldErrors(nextFieldErrors);
-            setError("Please fix the highlighted fields before continuing.");
+            setError(t("auth.messages.fixHighlighted"));
             return;
         }
 
@@ -126,10 +128,10 @@ const LoginPage = () => {
             trackLoginIntentCaptured(intent, loginVariant, "password");
             await login(email, password);
             setIsLoading(false);
-            setSuccess("Login successful! Preparing your workspace...");
+            setSuccess(t("auth.messages.loginPreparingWorkspace"));
             router.replace("/auth/post-login");
         } catch (err) {
-            setError(err instanceof Error ? err.message : "Login failed. Please check your credentials and try again.");
+            setError(err instanceof Error ? err.message : t("auth.messages.loginFailed"));
             setIsLoading(false);
         }
     };
@@ -156,14 +158,13 @@ const LoginPage = () => {
                     <div>
                         <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1 text-xs font-medium text-muted-foreground">
                             <Sparkles className="h-3.5 w-3.5 text-brand" />
-                            Shothik AI Writing Workspace
+                            {t("auth.workspaceBadge")}
                         </div>
                         <h1 className="mt-6 max-w-xl text-4xl font-bold tracking-tight text-foreground lg:text-5xl">
-                            Login into a workflow, not just an account
+                            {t("auth.loginHeadline")}
                         </h1>
                         <p className="mt-4 max-w-2xl text-sm leading-7 text-muted-foreground lg:text-base">
-                            Continue your writing projects, launch a research paper, start an assignment, or train your Twin.
-                            We&apos;ll use your selected intent and recent activity to recommend the fastest next step after login.
+                            {t("auth.loginSubheadline")}
                         </p>
                     </div>
 
@@ -174,14 +175,14 @@ const LoginPage = () => {
                             </div>
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                    Selected first step
+                                    {t("auth.selectedFirstStep")}
                                 </p>
-                                <h2 className="mt-1 text-xl font-semibold text-foreground">{selectedIntentConfig.title}</h2>
+                                <h2 className="mt-1 text-xl font-semibold text-foreground">{t(selectedIntentConfig.titleKey)}</h2>
                                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                                    {selectedIntentConfig.description}
+                                    {t(selectedIntentConfig.descriptionKey)}
                                 </p>
                                 <p className="mt-3 text-xs text-muted-foreground">
-                                    Recommended destination after login:{" "}
+                                    {t("auth.recommendedDestination")}{" "}
                                     <span className="font-medium text-foreground">{selectedIntentConfig.href}</span>
                                 </p>
                             </div>
@@ -208,8 +209,8 @@ const LoginPage = () => {
                                             <Icon className={`h-4.5 w-4.5 ${intent === key ? "text-brand" : "text-muted-foreground"}`} />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-semibold text-foreground">{config.label}</p>
-                                            <p className="mt-1 text-xs leading-5 text-muted-foreground">{config.description}</p>
+                                            <p className="text-sm font-semibold text-foreground">{t(config.labelKey)}</p>
+                                            <p className="mt-1 text-xs leading-5 text-muted-foreground">{t(config.descriptionKey)}</p>
                                         </div>
                                     </div>
                                 </button>
@@ -219,12 +220,12 @@ const LoginPage = () => {
 
                     <div className="mt-8 rounded-3xl border border-border bg-card/50 p-5">
                         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                            Login flow variant
+                            {t("auth.loginFlowVariant")}
                         </p>
                         <p className="mt-2 text-sm leading-6 text-muted-foreground">
                             {loginVariant === "contextual"
-                                ? "Contextual flow shows intent-first guidance so new users understand where to go after authentication."
-                                : "Streamlined flow minimizes copy while still preserving intent capture and smart routing."}
+                                ? t("auth.loginVariantContextual")
+                                : t("auth.loginVariantStreamlined")}
                         </p>
                     </div>
                 </section>
@@ -236,17 +237,16 @@ const LoginPage = () => {
                         data-login-variant={loginVariant}
                     >
                         <div className="mb-8">
-                            <p className="text-sm font-medium text-brand">Welcome back</p>
-                            <h2 className="mt-2 text-3xl font-bold text-foreground">Sign in to continue</h2>
+                            <p className="text-sm font-medium text-brand">{t("auth.welcomeBack")}</p>
+                            <h2 className="mt-2 text-3xl font-bold text-foreground">{t("auth.signInToContinue")}</h2>
                             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                                Sign in and we&apos;ll guide you to the best next step based on your selected intent, recent work,
-                                and available account context.
+                                {t("auth.signInDescription")}
                             </p>
                         </div>
 
                         <div className="mb-5">
                             <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                                Email
+                                {t("auth.email")}
                             </label>
                             <input
                                 id="email"
@@ -269,7 +269,7 @@ const LoginPage = () => {
 
                         <div className="mb-5">
                             <label htmlFor="password" className="block text-sm font-medium text-foreground">
-                                Password
+                                {t("auth.password")}
                             </label>
                             <input
                                 id="password"
@@ -299,11 +299,11 @@ const LoginPage = () => {
                                     className="h-4 w-4 rounded border-input"
                                     disabled={isLoading}
                                 />
-                                Remember me on this device
+                                {t("auth.rememberMe")}
                             </label>
 
                             <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
-                                Forgot password?
+                                {t("auth.forgotPassword")}
                             </Link>
                         </div>
 
@@ -312,7 +312,7 @@ const LoginPage = () => {
                             className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-semibold text-primary-foreground transition-colors hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
                             disabled={isLoading}
                         >
-                            {isLoading ? "Signing in..." : "Sign in and continue"}
+                            {isLoading ? t("auth.signingIn") : t("auth.signInAndContinue")}
                             {!isLoading && <ArrowRight className="h-4 w-4" />}
                         </button>
 
@@ -326,7 +326,7 @@ const LoginPage = () => {
                                         href={verificationHref}
                                         className="inline-flex text-sm font-medium text-primary hover:underline"
                                     >
-                                        Enter verification code
+                                        {t("auth.enterVerificationCode")}
                                     </Link>
                                 ) : null}
                             </div>
@@ -339,10 +339,10 @@ const LoginPage = () => {
 
                         <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
                             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                After login
+                                {t("auth.afterLogin")}
                             </p>
-                            <p className="mt-2 text-sm text-foreground">{selectedIntentConfig.title}</p>
-                            <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedIntentConfig.description}</p>
+                            <p className="mt-2 text-sm text-foreground">{t(selectedIntentConfig.titleKey)}</p>
+                            <p className="mt-1 text-sm leading-6 text-muted-foreground">{t(selectedIntentConfig.descriptionKey)}</p>
                         </div>
 
                         <LogtoSignInButton />
@@ -359,10 +359,10 @@ const LoginPage = () => {
                                 href={`/auth/register?intent=${intent}${redirectTo ? `&redirect=${encodeURIComponent(redirectTo)}` : ""}`}
                                 className="text-primary hover:underline"
                             >
-                                Create a new account
+                                {t("auth.createNewAccount")}
                             </Link>
                             <span className="text-muted-foreground">
-                                Intent saved: <span className="font-medium text-foreground">{selectedIntentConfig.label}</span>
+                                {t("auth.intentSaved")} <span className="font-medium text-foreground">{t(selectedIntentConfig.labelKey)}</span>
                             </span>
                         </div>
                     </form>

@@ -11,6 +11,7 @@ import { useQuery } from "@tanstack/react-query";
 import { CheckCircle, Copy, CreditCard, User } from "lucide-react";
 import { Link } from "wouter";
 import { useRouter, useSearchParams } from "@/lib/navigation";
+import { useTranslation } from "@/i18n";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -36,6 +37,7 @@ declare global {
 const CheckoutSuccessPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useTranslation();
   const packageId = searchParams.get("package_id");
   const planId = searchParams.get("plan_id"); // Get plan_id from search params
   const [isVerifying, setIsVerifying] = useState<boolean>(true);
@@ -82,10 +84,10 @@ const CheckoutSuccessPage = () => {
     try {
       await navigator.clipboard.writeText(transactionId);
       setCopied(true);
-      toast.success("Transaction ID copied to clipboard!");
+      toast.success(t("pricing.transactionIdCopied"));
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      toast.error("Failed to copy Transaction ID");
+      toast.error(t("pricing.failedToCopy"));
     }
   };
 
@@ -225,7 +227,7 @@ const CheckoutSuccessPage = () => {
           }
 
           // Fallback: show error and redirect to pricing page
-          toast.error("Payment failed. Please try again.");
+          toast.error(t("pricing.paymentFailedRetry"));
           router.push("/pricing");
           return;
         }
@@ -246,9 +248,7 @@ const CheckoutSuccessPage = () => {
     // Timeout - webhook might be delayed
     setIsVerifying(false);
     setShowRetryButton(true);
-    toast.warning(
-      "Payment is being processed. Please check back in a few moments or click retry to check again.",
-    );
+    toast.warning(t("pricing.paymentDelayedRetry"));
   };
 
   useEffect(() => {
@@ -261,9 +261,9 @@ const CheckoutSuccessPage = () => {
         <Card>
           <CardContent className="space-y-4 py-12 text-center">
             <Spinner className="text-primary mx-auto h-16 w-16" />
-            <h2 className="text-2xl font-bold">Verifying Payment...</h2>
+            <h2 className="text-2xl font-bold">{t("pricing.verifyingPayment")}</h2>
             <p className="text-muted-foreground">
-              Please wait while we verify your payment.
+              {t("pricing.verifyingPaymentDescription")}
             </p>
           </CardContent>
         </Card>
@@ -277,12 +277,12 @@ const CheckoutSuccessPage = () => {
         <Card>
           <CardContent className="space-y-4 py-12 text-center">
             <Spinner className="text-primary mx-auto h-16 w-16" />
-            <h2 className="text-2xl font-bold">Processing Payment...</h2>
+            <h2 className="text-2xl font-bold">{t("pricing.processingPayment")}</h2>
             <p className="text-muted-foreground">
-              Your payment is being processed. This may take a few moments.
+              {t("pricing.processingPaymentDescription")}
             </p>
             <Button onClick={pollPaymentStatus} className="mt-4">
-              Check Payment Status Again
+              {t("pricing.checkStatusAgain")}
             </Button>
           </CardContent>
         </Card>
@@ -296,17 +296,17 @@ const CheckoutSuccessPage = () => {
         <CardContent className="space-y-4 py-12 text-center">
           <CheckCircle className="mx-auto h-16 w-16 text-green-500" />
           <h2 className="text-3xl font-bold text-green-500">
-            Payment Successful!
+            {t("pricing.paymentSuccessful")}
           </h2>
           <p className="text-muted-foreground">
-            Your payment has been processed successfully.
+            {t("pricing.paymentSuccessfulDescription")}
           </p>
 
           {/* Payment Details */}
           {paymentDetails && (
             <div className="bg-background/50 mx-auto mt-4 max-w-md space-y-2 rounded-lg p-4 text-left">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Amount Paid:</span>
+                <span className="text-muted-foreground">{t("pricing.amountPaid")}</span>
                 <span className="font-semibold">
                   {paymentDetails.amount.toLocaleString(undefined, {
                     minimumFractionDigits:
@@ -320,7 +320,7 @@ const CheckoutSuccessPage = () => {
                 <div className="flex items-center justify-between">
                   <span className="text-muted-foreground flex items-center gap-1">
                     <CreditCard className="h-4 w-4" />
-                    Payment Method:
+                    {t("pricing.paymentMethod")}
                   </span>
                   <span className="font-semibold">
                     {paymentDetails.paymentMethodName}
@@ -329,7 +329,7 @@ const CheckoutSuccessPage = () => {
               )}
               {transactionId && (
                 <div className="flex items-center justify-between gap-2">
-                  <span className="text-muted-foreground">Transaction ID:</span>
+                  <span className="text-muted-foreground">{t("pricing.transactionId")}</span>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs break-all">
                       {transactionId}
@@ -339,7 +339,7 @@ const CheckoutSuccessPage = () => {
                       size="sm"
                       onClick={handleCopyTransactionId}
                       className="h-7 w-7 p-0"
-                      title="Copy Transaction ID"
+                      title={t("pricing.copyTransactionId")}
                     >
                       {copied ? (
                         <CheckCircle className="h-4 w-4 text-green-500" />
@@ -356,7 +356,7 @@ const CheckoutSuccessPage = () => {
           {!paymentDetails && transactionId && (
             <div className="flex items-center justify-center gap-2">
               <p className="text-muted-foreground text-sm">
-                Transaction ID:{" "}
+                {t("pricing.transactionId")}{" "}
                 <span className="font-mono text-xs">{transactionId}</span>
               </p>
               <Button
@@ -364,7 +364,7 @@ const CheckoutSuccessPage = () => {
                 size="sm"
                 onClick={handleCopyTransactionId}
                 className="h-7 w-7 p-0"
-                title="Copy Transaction ID"
+                title={t("pricing.copyTransactionId")}
               >
                 {copied ? (
                   <CheckCircle className="h-4 w-4 text-green-500" />
@@ -380,7 +380,7 @@ const CheckoutSuccessPage = () => {
       {packageData && (
         <Card>
           <CardHeader className="border-b">
-            <h3 className="text-xl font-semibold">Package Details</h3>
+            <h3 className="text-xl font-semibold">{t("pricing.packageDetails")}</h3>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
@@ -393,16 +393,18 @@ const CheckoutSuccessPage = () => {
             </div>
             {purchasedPlan && (
               <div className="space-y-2">
-                <h4 className="font-semibold">Purchased Plan:</h4>
+                <h4 className="font-semibold">{t("pricing.purchasedPlan")}</h4>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Plan:</span>
+                  <span className="text-muted-foreground">{t("pricing.plan")}</span>
                   <span className="font-semibold">
-                    {purchasedPlan.plan?.name} ({purchasedPlan.plan?.duration}{" "}
-                    days)
+                    {t("pricing.planDuration", {
+                      name: purchasedPlan.plan?.name ?? "",
+                      duration: purchasedPlan.plan?.duration ?? 0,
+                    })}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Credits:</span>
+                  <span className="text-muted-foreground">{t("pricing.credits")}</span>
                   <span className="font-semibold">
                     {purchasedPlan.token.toLocaleString()}
                   </span>
@@ -417,11 +419,11 @@ const CheckoutSuccessPage = () => {
         <Button asChild size="lg">
           <Link href="/account/settings">
             <User className="mr-2 h-4 w-4" />
-            View Profile
+            {t("pricing.viewProfile")}
           </Link>
         </Button>
         <Button asChild variant="outline" size="lg">
-          <Link href="/pricing">Browse More Packages</Link>
+          <Link href="/pricing">{t("pricing.browseMorePackages")}</Link>
         </Button>
       </div>
     </div>
