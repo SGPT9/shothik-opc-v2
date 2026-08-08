@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 description: Instructions building apps with MCP
 globs: *
@@ -135,13 +136,16 @@ Payments currently has TypeScript SDK docs only. Use the Payments API reference 
 - Storage: Upload files to buckets, store URLs in database
 - AI integrations should call OpenRouter directly with `baseURL: "https://openrouter.ai/api/v1"` and a server-side `OPENROUTER_API_KEY`
 - **EXTRA IMPORTANT**: Use Tailwind CSS 3.4 (do not upgrade to v4). Lock these dependencies in `package.json`
+=======
+# AGENTS.md
+>>>>>>> origin/main
 
 <!-- INSFORGE:START -->
 ## InsForge backend
 
 This project uses [InsForge](https://insforge.dev): an all-in-one, open-source Postgres-based backend (BaaS) that gives this app a database, authentication, file storage, edge functions, realtime, an AI model gateway, and payments through one platform.
 
-- **Project:** **shothik-web** (API base `https://ers8j28a.ap-southeast.insforge.app`)
+- **Project:** **oss-project** (API base `https://ers8j28a.ap-southeast.insforge.app`)
 - **Skills:** these InsForge skills are installed for supported coding agents. Reach for them before implementing any InsForge feature instead of guessing the API:
   - `insforge`: app code with the `@insforge/sdk` client (database CRUD, auth, storage, edge functions, realtime, AI, email, and Stripe payments).
   - `insforge-cli`: backend and infrastructure via the `insforge` CLI (projects, SQL, migrations, RLS policies, storage buckets, functions, secrets, payment setup, schedules, deploys).

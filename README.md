@@ -1,123 +1,77 @@
-# Shothik Web
+# Shothik AI — Frontend Monorepo
 
-Standalone web application repository for the active Shothik AI product experience.
+A **pnpm workspace monorepo** containing the Vite + React frontend, Express API gateway, and supporting tooling for [Shothik AI](https://app.shothikgpt.com) — an AI-powered writing and productivity platform.
 
-This project contains the production-facing Next.js application, frontend API routes, active Convex integration, and the supporting UI, state, and integration layers required to run the Shothik AI web platform independently from the original monorepo.
+---
 
-## Table Of Contents
+## Monorepo layout
 
-- [Overview](#overview)
-- [Architecture](#architecture)
-- [Repository Structure](#repository-structure)
-- [Technology Stack](#technology-stack)
-- [Local Development Setup](#local-development-setup)
-- [Production Deployment](#production-deployment)
-- [Cloud Infrastructure Requirements](#cloud-infrastructure-requirements)
-- [API Documentation](#api-documentation)
-- [Environment Variables](#environment-variables)
-- [Dependencies And Compatibility Notes](#dependencies-and-compatibility-notes)
-- [Testing And Quality Gates](#testing-and-quality-gates)
-- [Continuous Integration](#continuous-integration)
-- [Troubleshooting](#troubleshooting)
-- [Security And Compliance](#security-and-compliance)
-- [Performance And Monitoring](#performance-and-monitoring)
-- [Additional Documentation](#additional-documentation)
-
-## Overview
-
-`shothik-web` is a full web application repo, not just a UI library. It includes:
-
-- marketing and account-facing pages
-- authenticated application pages
-- tool interfaces such as paraphrasing, plagiarism, grammar, summarization, and translation
-- agent and Twin workflows
-- payment and publishing flows
-- frontend API routes under `app/api`
-- active Convex data functions under `convex`
-
-This repo intentionally excludes:
-
-- standalone backend microservices
-- legacy root `convex/`
-- vendor bundles and process-only directories from the old monorepo
-
-## Architecture
-
-### System Diagram
-
-```mermaid
-flowchart LR
-  U[Browser Clients] --> W[Next.js App Router]
-  W --> API[app/api Route Handlers]
-  W --> CVX[Convex Cloud]
-  API --> CVX
-  API --> NLP[NLP Inference Service]
-  API --> AID[AI Detector Service]
-  API --> CAL[Calibre Service]
-  API --> PLG[Plagiarism Services]
-  API --> PAY[Stripe / Razorpay / bKash]
-  API --> REDIS[Upstash Redis / Redis]
-  W --> OBS[PostHog / Health Metrics / Logs]
+```
+/
+├── artifacts/
+│   ├── shothik/          # Main web frontend (React + Vite)
+│   ├── api-server/       # Express API gateway (proxies /api → shothik.work)
+│   └── mockup-sandbox/   # Design canvas / component preview server
+├── packages/
+│   └── db/               # Shared Convex schema & generated types
+├── deploy/               # Docker Compose files for VPS / local deployment
+├── scripts/              # Post-merge and utility scripts
+└── pnpm-workspace.yaml
 ```
 
-### Request Flow
+### `artifacts/shothik` — Web frontend
 
-```mermaid
-sequenceDiagram
-  participant Client
-  participant Next as Next.js Route/Page
-  participant API as app/api Route
-  participant Convex as Convex
-  participant Service as External Service
+React 18 + Vite SPA, ported from Next.js. Key libraries:
 
-  Client->>Next: Page load or action
-  Next->>API: Fetch or form/action request
-  API->>Convex: Query or mutation
-  API->>Service: Optional tool/payment/service request
-  Service-->>API: Structured response
-  Convex-->>API: Data contract response
-  API-->>Next: Validated JSON / status code
-  Next-->>Client: UI update
+| Area | Library |
+|---|---|
+| Routing | [wouter](https://github.com/molefrog/wouter) + shims at `src/lib/navigation` |
+| State | Redux Toolkit + TanStack Query |
+| Real-time | [Convex](https://convex.dev) (`VITE_CONVEX_URL`) |
+| Auth | [InsForge](https://insforge.app) browser SDK (`VITE_INSFORGE_URL`, `VITE_INSFORGE_ANON_KEY`) |
+| Styling | Tailwind CSS v4 + shadcn/ui |
+| i18n | Custom hook at `src/i18n` — English + Bengali |
+
+### `artifacts/api-server` — API gateway
+
+Express server mounted at `/api`. Proxies chat, twin, and tool endpoints to the main Hermes backend at `CHAT_API_ORIGIN` (default `https://www.shothikgpt.com`). Owns Convex JWT signing and the Tonight Engine (agent swarm) routes.
+
+---
+
+## Running locally (Replit)
+
+Workflows are managed by the Replit platform:
+
+```
+artifacts/shothik: web       →  pnpm --filter @workspace/shothik run dev
+artifacts/api-server: ...    →  pnpm --filter @workspace/api-server run dev
 ```
 
-### Design Principles
+### Required environment variables
 
-- **App Router first**: routes, layouts, server rendering, and API handlers live under `app/`
-- **Frontend-coupled data layer**: `convex/` remains in this repo because the active product depends on it directly
-- **Thin route handlers where possible**: route handlers should orchestrate validation, auth, and external calls, not duplicate domain logic
-- **Strong env-driven integrations**: payments, Convex, Redis, and external services must be configured via environment variables
-- **Test and build in repo scope**: run validation from this repo directly, not via the old monorepo root
+| Variable | Description |
+|---|---|
+| `VITE_CONVEX_URL` | Convex deployment URL (`https://<name>.convex.cloud`) |
+| `VITE_INSFORGE_URL` | InsForge project base URL |
+| `VITE_INSFORGE_ANON_KEY` | InsForge browser-safe anonymous key |
+| `CHAT_API_ORIGIN` | Hermes backend origin (default `https://www.shothikgpt.com`) |
+| `GEMINI_API_KEY` | Google Gemini API key (used by api-server) |
+| `SESSION_SECRET` | Express session secret |
+| `CONVEX_DEPLOY_KEY` | Convex deploy key for schema pushes |
 
-## Repository Structure
+> **Never commit actual values.** Set them as Replit Secrets or in a local `.env` (already gitignored).
 
-```text
-shothik-web/
-  app/                   Next.js routes, layouts, pages, API endpoints
-  components/            UI primitives and feature/domain components
-  convex/                Active Convex functions and generated bindings
-  hooks/                 React hooks and app orchestration hooks
-  lib/                   Shared frontend logic, integrations, validation, security
-  providers/             App-level providers and wrappers
-  redux/                 State slices and store setup
-  services/              Browser/server integration adapters
-  test/                  Test setup and shared test helpers
-  public/                Static assets
-  docs/                  Engineering and rollout documentation
-  Dockerfile             Container build for the web app
-  .env.example           Environment variable reference
-  package.json           Repo-local scripts and dependencies
-```
+---
 
-## Technology Stack
+## Docker deployment
 
-### Core Framework
+See [`deploy/README.md`](./deploy/README.md) for Docker Compose instructions for the VPS at `app.shothikgpt.com` and the Hermes engine.
 
-- Next.js `16.2.3`
-- React `19.2.0`
-- TypeScript `5.x`
+---
 
-### State And Data
+## Key design decisions
 
+<<<<<<< HEAD
 - Convex
 - Redux Toolkit
 - TanStack Query
@@ -692,3 +646,9 @@ Track at minimum:
 # shothikhermes
 
 <!-- Vercel Git Integration Deployment Test - Updated 2026-08-07 -->
+=======
+- **Vite `define` block** inlines `NEXT_PUBLIC_*` env vars at build time for compatibility with components originally written for Next.js (`artifacts/shothik/vite.config.ts`).
+- **`/api` routing** is owned entirely by `artifacts/api-server`; the Vite dev proxy forwards `/api/*` to that gateway, not to an external host directly.
+- **Convex auth** uses a custom JWT-exchange flow: the api-server signs a short-lived Convex token using `CONVEX_DEPLOY_KEY`, which the frontend then uses for `ConvexProviderWithAuth`.
+- **InsForge auth** uses the browser SDK directly; the anonymous key is intentionally public (browser-safe) and is not a secret.
+>>>>>>> origin/main

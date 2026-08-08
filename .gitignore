@@ -1,94 +1,59 @@
+# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+
+# compiled output
+dist
+tmp
+out-tsc
+*.tsbuildinfo
+.next
+.pnpm-cache
+.pnpm-store
+.expo
+.expo-shared
+
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
-deer-flow-backend/
+node_modules
 
-# testing
-/coverage
-/playwright-report
-/test-results
+# IDEs and editors
+/.idea
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+*.sublime-workspace
 
-# next.js
-/.next/
-/out/
-
-# production
-/build
+# IDE - VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 
 # misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+
+# System Files
 .DS_Store
-<<<<<<< HEAD
 Thumbs.db
-Desktop.ini
-*.pem
-*.tmp
-*.temp
 
-# debug
-*.log
-=======
-*.pem
+.cursor/rules/nx-rules.mdc
+.github/instructions/nx.instructions.md
 
-# debug
->>>>>>> origin/main
-npm-debug.log*
-yarn-debug.log*
-ts-debug.log*
-.npm
-.eslintcache
-.turbo
-pnpm-debug.log*
-
-# env files
-.env
-<<<<<<< HEAD
-.env.*
-.envrc
-.direnv/
-=======
->>>>>>> origin/main
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-<<<<<<< HEAD
-!.env.example
-=======
->>>>>>> origin/main
-
-# vercel
-.vercel
-
-<<<<<<< HEAD
-# editors
-.idea/
-.vscode/
-
-# local temp and caches
+# Replit
 .cache/
-.tmp/
-tmp/
-temp/
-dist/
-.pnpm-store/
-.pnpm-cache/
+.local/
+convex-jwt-private-key.pem
 
-=======
->>>>>>> origin/main
-# Large media files (hosted externally or too large for GitHub)
-*.mp4
-*.zip
-*.gif
-*.pdf
-public/home/hero/
-src/assets/(home-v3-page)/Showcase/
-src/assets/(home-v3-page)/generated_images/
-src/assets/(home-v3-page)/*.zip
-src/assets/(home-v3-page)/*.pdf
-src/assets/(home-v3-page)/*.png
-src/assets/(home-v3-page)/*.jpg
-*.tsbuildinfo
+# Migration artefacts (old Next.js codebase backup — local only)
+.migration-backup/
 
 # InsForge & AI agent skills
 .insforge
@@ -104,7 +69,3 @@ src/assets/(home-v3-page)/*.jpg
 .roo
 .trae
 .windsurf
-<<<<<<< HEAD
-.env*
-=======
->>>>>>> origin/main
