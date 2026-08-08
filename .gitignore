@@ -49,6 +49,9 @@ Thumbs.db
 .local/
 convex-jwt-private-key.pem
 
+# Migration artefacts (old Next.js codebase backup — local only)
+.migration-backup/
+
 # InsForge & AI agent skills
 .insforge
 .agent

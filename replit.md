@@ -37,7 +37,8 @@ This app was ported from Next.js to Vite+React:
 - `next/link` → `<Link>` from wouter
 - `next/image` → `<img>` tags
 - API routes → proxied to external API via Vite config
-- Convex and InsForge are stubbed; real credentials needed in `.env`
+- Convex is live on `dashing-mandrill-233` via `VITE_CONVEX_URL`
+- InsForge is live via `VITE_INSFORGE_URL` + `VITE_INSFORGE_ANON_KEY` (browser-safe anon key)
 
 ## User Preferences
 
