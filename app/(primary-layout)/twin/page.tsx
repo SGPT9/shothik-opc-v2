@@ -43,79 +43,103 @@ import { cn } from "@/lib/utils";
 import { saveWritingStudioSeed } from "@/lib/writing-studio-seed";
 
 function TwinLandingPage() {
-  const { t } = useTranslation();
+  const router = useRouter();
 
   return (
-    <div className="container mx-auto max-w-4xl py-12 px-4">
-      <div className="text-center mb-12">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-          <Brain className="h-10 w-10 text-primary" />
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-2xl">
+
+        {/* Hero */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1 text-xs font-medium text-brand mb-6">
+            <Sparkles className="h-3.5 w-3.5" />
+            AI Cofounder Workspace
+          </div>
+
+          {/* Animated orb */}
+          <div className="mx-auto mb-7 relative flex h-24 w-24 items-center justify-center">
+            <div className="absolute inset-0 rounded-full bg-brand/20 animate-ping opacity-30" />
+            <div className="absolute inset-2 rounded-full bg-brand/10 animate-pulse" />
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-brand/40 to-brand shadow-lg shadow-brand/20">
+              <Brain className="h-9 w-9 text-white" />
+            </div>
+          </div>
+
+          <h1 className="text-4xl font-bold tracking-tight text-foreground mb-3 leading-tight">
+            Start your company with<br />an AI Cofounder.
+          </h1>
+          <p className="text-base text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            Turn ideas, research, and plans into tasks, documents, and execution.
+            Twin is your always-on founder partner — it plans, writes, researches, and ships alongside you.
+          </p>
         </div>
-        <h1 className="text-4xl font-bold text-foreground mb-3">
-          {t("twinDashboard.landingHeadline")}
-        </h1>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          {t("twinDashboard.landingSubheadline")}
-        </p>
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <Card className="border-border/50">
-          <CardContent className="pt-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Sparkles className="h-6 w-6 text-primary" />
+        {/* 3 Value Props */}
+        <div className="grid grid-cols-3 gap-3 mb-8">
+          {[
+            { icon: Zap, title: "Execute fast", desc: "Tasks, docs, and research auto-generated from your idea" },
+            { icon: Brain, title: "Think together", desc: "Your AI partner reasons about strategy, not just tasks" },
+            { icon: BookOpen, title: "Stay in context", desc: "Linked to your chat threads, research, and writing" },
+          ].map(({ icon: Icon, title, desc }) => (
+            <div key={title} className="rounded-2xl border border-border/60 bg-card/60 p-4 text-center">
+              <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10">
+                <Icon className="h-5 w-5 text-brand" />
+              </div>
+              <p className="text-sm font-semibold text-foreground mb-1">{title}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{desc}</p>
             </div>
-            <h3 className="text-base font-semibold text-foreground mb-2">
-              {t("twinDashboard.landingFeature1Title")}
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("twinDashboard.landingFeature1Desc")}
-            </p>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
 
-        <Card className="border-border/50">
-          <CardContent className="pt-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Bot className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-base font-semibold text-foreground mb-2">
-              {t("twinDashboard.landingFeature2Title")}
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("twinDashboard.landingFeature2Desc")}
-            </p>
-          </CardContent>
-        </Card>
+        {/* 3 CTAs */}
+        <div className="space-y-3 mb-8">
+          {/* Primary */}
+          <Button
+            size="lg"
+            className="w-full h-12 rounded-2xl text-sm font-semibold bg-brand text-brand-foreground hover:bg-brand/90 shadow-lg shadow-brand/20 transition"
+            onClick={() => router.push("/auth/login?intent=twin")}
+          >
+            <Sparkles className="h-4 w-4 mr-2" />
+            Start from this idea
+          </Button>
 
-        <Card className="border-border/50">
-          <CardContent className="pt-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <BookOpen className="h-6 w-6 text-primary" />
-            </div>
-            <h3 className="text-base font-semibold text-foreground mb-2">
-              {t("twinDashboard.landingFeature3Title")}
-            </h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t("twinDashboard.landingFeature3Desc")}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+          {/* Secondary */}
+          <Button
+            variant="outline"
+            size="lg"
+            className="w-full h-12 rounded-2xl text-sm font-medium border-border/80 hover:border-brand/40 hover:bg-brand/5 transition"
+            onClick={() => router.push("/agents/chat?twin_import=1")}
+          >
+            <ArrowRightLeft className="h-4 w-4 mr-2" />
+            Import from chat
+          </Button>
 
-      <div className="text-center">
-        <Button
-          size="lg"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-3 text-base"
-          onClick={() => window.location.href = "/auth/login?intent=twin"}
-        >
-          <Brain className="h-5 w-5 mr-2" />
-          {t("twinDashboard.landingSignIn")}
-        </Button>
+          {/* Tertiary */}
+          <button
+            type="button"
+            className="w-full text-center text-sm text-muted-foreground hover:text-foreground transition py-1"
+            onClick={() => router.push("/auth/login?intent=twin&mode=existing")}
+          >
+            Open an existing workspace →
+          </button>
+        </div>
+
+        {/* Social proof strip */}
+        <div className="flex items-center justify-center gap-6 text-xs text-muted-foreground">
+          {[
+            "📋 Auto-creates your company brief",
+            "✅ Generates starter task list",
+            "🔗 Links your chat context",
+          ].map((item) => (
+            <span key={item} className="flex items-center gap-1">{item}</span>
+          ))}
+        </div>
+
       </div>
     </div>
   );
 }
+
 
 const TASK_TYPES_CONFIG: { type: "research" | "writing" | "analysis" | "summary"; labelKey: string; icon: React.ElementType }[] = [
   { type: "research", labelKey: "twinDashboard.research", icon: Search },

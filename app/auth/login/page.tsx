@@ -243,7 +243,47 @@ const LoginPage = () => {
                             </p>
                         </div>
 
-                        <div className="mb-5">
+                        {/* Google sign-in — shown first so it's the primary path */}
+                        <AuthWithSocial
+                            loading={googleLoading}
+                            setLoading={setGoogleLoading}
+                            title="in"
+                            onAuthSuccess={handleSocialSuccess}
+                        />
+
+                        {/* Top-level form error */}
+                        {error && (
+                            <div className="mt-4 space-y-2">
+                                <p role="alert" className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive">
+                                    {error}
+                                </p>
+                                {needsEmailVerification ? (
+                                    <Link
+                                        href={verificationHref}
+                                        className="inline-flex text-sm font-medium text-primary hover:underline"
+                                    >
+                                        Enter verification code →
+                                    </Link>
+                                ) : null}
+                            </div>
+                        )}
+                        {success && (
+                            <p role="status" className="mt-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">
+                                {success}
+                            </p>
+                        )}
+
+                        {/* Separator before email/password */}
+                        <div className="relative mt-5">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t border-border/60" />
+                            </div>
+                            <div className="relative flex justify-center text-xs">
+                                <span className="bg-card px-3 text-muted-foreground font-medium">or sign in with email</span>
+                            </div>
+                        </div>
+
+                        <div className="mt-5 mb-5">
                             <label htmlFor="email" className="block text-sm font-medium text-foreground">
                                 Email
                             </label>
@@ -252,7 +292,7 @@ const LoginPage = () => {
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground shadow-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                className={`mt-2 w-full rounded-xl border bg-background px-4 py-3 text-foreground shadow-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 ${fieldErrors.email ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'}`}
                                 autoComplete="email"
                                 disabled={isLoading}
                                 required
@@ -275,7 +315,7 @@ const LoginPage = () => {
                                 type="password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-3 text-foreground shadow-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20"
+                                className={`mt-2 w-full rounded-xl border bg-background px-4 py-3 text-foreground shadow-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 ${fieldErrors.password ? 'border-destructive ring-1 ring-destructive/30' : 'border-input'}`}
                                 autoComplete="current-password"
                                 disabled={isLoading}
                                 required
@@ -314,42 +354,6 @@ const LoginPage = () => {
                             {isLoading ? "Signing in..." : "Sign in and continue"}
                             {!isLoading && <ArrowRight className="h-4 w-4" />}
                         </button>
-
-                        {error && (
-                            <div className="mt-4 space-y-3">
-                                <p role="alert" className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-                                    {error}
-                                </p>
-                                {needsEmailVerification ? (
-                                    <Link
-                                        href={verificationHref}
-                                        className="inline-flex text-sm font-medium text-primary hover:underline"
-                                    >
-                                        Enter verification code
-                                    </Link>
-                                ) : null}
-                            </div>
-                        )}
-                        {success && (
-                            <p role="status" className="mt-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-600">
-                                {success}
-                            </p>
-                        )}
-
-                        <div className="mt-6 rounded-2xl border border-border bg-muted/30 p-4">
-                            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                                After login
-                            </p>
-                            <p className="mt-2 text-sm text-foreground">{selectedIntentConfig.title}</p>
-                            <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedIntentConfig.description}</p>
-                        </div>
-
-                        <AuthWithSocial
-                            loading={googleLoading}
-                            setLoading={setGoogleLoading}
-                            title="in"
-                            onAuthSuccess={handleSocialSuccess}
-                        />
 
                         <div className="mt-6 flex items-center justify-between gap-4 text-sm">
                             <Link
