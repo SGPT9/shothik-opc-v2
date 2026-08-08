@@ -6,8 +6,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, Sparkles, Globe } from "lucide-react";
 import { Composer } from "@/components/chat/Composer";
 import { Transcript } from "@/components/chat/Transcript";
-import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
+import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
+import { VoiceOverlay } from "@/components/voice/VoiceOverlay";
+import { TwinAutopilotBanner } from "@/components/tonight-engine/TwinAutopilotBanner";
 import { parseFlagshipSlashCommand } from "@/lib/chat/commands";
 import {
   getLocalDraftConversationId,
@@ -21,6 +23,7 @@ import type { ChatAttachment, ChatMessage, ChatTurnProgressItem } from "@/lib/ch
 import { useTranslation } from "@/i18n";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { useAuth } from "@/providers/AuthProvider";
+import type { ChatPersona } from "@/lib/chat/types";
 
 type PendingAttachment = ChatAttachment & {
   text: string;
@@ -155,6 +158,9 @@ export default function ChatAgentPage() {
   const [loading, setLoading] = useState(false);
   const [modelHandle, setModelHandle] = useState("gemini-2.5-flash");
   const [activeSkill, setActiveSkill] = useState("general");
+  const [persona, setPersona] = useState<ChatPersona>("cofounder");
+  const [isOvernight, setIsOvernight] = useState(false);
+  const [isVoiceOverlayOpen, setIsVoiceOverlayOpen] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState<PendingAttachment[]>([]);
   const [liveMessages, setLiveMessages] = useState<ChatMessage[]>([]);
   const [statusText, setStatusText] = useState<string | null>(null);
@@ -977,7 +983,7 @@ export default function ChatAgentPage() {
 
 
 
-  const [isParallelSpaceOpen, setIsParallelSpaceOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<ArtifactTab | null>(null);
 
   const resolvedWorkspaceType = useMemo<"browser" | "sheet" | "slides" | "staging" | "editor">(() => {
     for (let i = visibleMessages.length - 1; i >= 0; i--) {
@@ -1046,9 +1052,11 @@ export default function ChatAgentPage() {
             router.push(`/agents/chat?conversationId=${nextId}`);
           }}
           onDeleteConversation={(id) => deleteConversation(id)}
-          onOpenParallelSpace={() => setIsParallelSpaceOpen(true)}
-          onOpenDataSheet={() => router.push("/agents/chat")}
+          onOpenParallelSpace={() => setActivePanel("space")}
+          onOpenDataSheet={() => setActivePanel("sheet")}
+          onOpenSlideDeck={() => setActivePanel("slides")}
           onOpenWritingStudio={() => router.push("/writing-studio")}
+          onAbortStream={() => abortRef.current?.abort()}
         />
       </div>
 
@@ -1102,14 +1110,24 @@ export default function ChatAgentPage() {
                     </div>
                     
                     <button
-                      onClick={() => setIsParallelSpaceOpen(!isParallelSpaceOpen)}
+                      onClick={() => setActivePanel(activePanel === "space" ? null : "space")}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-sm transition"
                     >
                       <Globe className="w-3.5 h-3.5" />
-                      <span>{isParallelSpaceOpen ? "Close Space" : "Open Live Agent Space"}</span>
+                      <span>{activePanel === "space" ? "Close Space" : "Open Live Agent Space"}</span>
                     </button>
                   </div>
                 ) : null}
+
+                {/* Polsia-style Twin Autopilot Banner */}
+                {isOvernight && (
+                  <TwinAutopilotBanner
+                    prompt={input.trim() || "Build pitch deck, financial sheet, & deploy custom domain site"}
+                    onOpenArtifact={(tab) => setActivePanel(tab)}
+                    onClose={() => setIsOvernight(false)}
+                  />
+                )}
+
                 <Transcript
                   messages={visibleMessages as ChatMessage[]}
                   isStreaming={loading}
@@ -1124,6 +1142,12 @@ export default function ChatAgentPage() {
                     }
                   }}
                   onStop={() => abortRef.current?.abort()}
+                  onSelectPrompt={(prompt, mode, tab) => {
+                    setInput(prompt);
+                    if (mode) setPersona(mode);
+                    if (tab) setActivePanel(tab);
+                    inputRef.current?.focus();
+                  }}
                 />
               </>
             )}
@@ -1141,6 +1165,11 @@ export default function ChatAgentPage() {
           placeholder={t("chat.placeholder")}
           modelHandle={modelHandle}
           onModelChange={setModelHandle}
+          persona={persona}
+          onPersonaChange={(next) => {
+            setPersona(next);
+            if (next === "coresearcher") setActivePanel("research");
+          }}
           activeSkill={activeSkill}
           onSkillChange={setActiveSkill}
           attachments={pendingAttachments.map((attachment) => ({
@@ -1162,29 +1191,36 @@ export default function ChatAgentPage() {
                 }
               : null
           }
+          isOvernight={isOvernight}
+          onToggleOvernight={setIsOvernight}
           errorMessage={composerError}
           footer={`${t("chat.footer")} · ${modelHandle}${pendingAttachments.length ? ` · ${pendingAttachments.length} attachment${pendingAttachments.length > 1 ? "s" : ""}` : ""}`}
+          onOpenResearchPanel={() => setActivePanel("research")}
+          onOpenVoice={() => setIsVoiceOverlayOpen(true)}
         />
       </div>
 
-      {/* Parallel Agent Browser Space Side Panel */}
-      {isParallelSpaceOpen && (
-        <div className="w-full md:w-[480px] lg:w-[560px] xl:w-[640px] shrink-0 h-full border-l border-border transition-all duration-300">
-          <ParallelAgentSpace
-            isOpen={isParallelSpaceOpen}
-            onClose={() => setIsParallelSpaceOpen(false)}
-            spaceTitle="Workspace Canvas"
-            runId={resolvedRunId}
-            sessionId={resolvedSessionId}
-            stagingUrl={resolvedStagingUrl}
-            workspaceType={resolvedWorkspaceType}
-            onCommentSelection={(text) => {
-              setInput((prev) => `${prev}\n> ${text}\n`);
-              inputRef.current?.focus();
-            }}
-          />
-        </div>
-      )}
+      {/* ArtifactPanel — ChatGPT Canvas-style tabbed right panel */}
+      <ArtifactPanel
+        activeTab={activePanel}
+        onTabChange={setActivePanel}
+        onClose={() => setActivePanel(null)}
+        runId={resolvedRunId}
+        sessionId={resolvedSessionId}
+        stagingUrl={resolvedStagingUrl}
+        workspaceType={resolvedWorkspaceType}
+        onCommentSelection={(text) => {
+          setInput((prev) => `${prev}\n> ${text}\n`);
+          inputRef.current?.focus();
+        }}
+      />
+
+      {/* ChatGPT-style voice overlay */}
+      <VoiceOverlay
+        isOpen={isVoiceOverlayOpen}
+        userName={user?.name ?? user?.email ?? "User"}
+        onClose={() => setIsVoiceOverlayOpen(false)}
+      />
     </div>
   );
 }
