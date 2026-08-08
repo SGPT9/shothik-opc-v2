@@ -158,3 +158,17 @@ overrides:
   # drizzle-kit uses esbuild internally on an older version that's vulnerable, this overrides it
   "@esbuild-kit/esm-loader": "npm:tsx@^4.21.0"
   esbuild: "0.27.3"
+
+allowBuilds:
+  '@prisma/engines': false
+  '@scarf/scarf': false
+  '@tree-sitter-grammars/tree-sitter-yaml': false
+  core-js: false
+  core-js-pure: false
+  esbuild: false
+  prisma: false
+  sharp: false
+  tree-sitter: false
+  tree-sitter-json: false
+  unrs-resolver: false
+  workerd: false

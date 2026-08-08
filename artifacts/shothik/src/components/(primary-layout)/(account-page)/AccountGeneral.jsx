@@ -138,14 +138,17 @@ export default function AccountGeneral({ user }) {
   const onSubmit = async (data) => {
     try {
       const res = await updateProfile(data);
-      if (res?.data?.message === "Profile updated") {
+      if (res?.data) {
         toast.success("Your profile has been updated successfully!");
-        dispatch(setUser(res.data.data));
+        const updatedUser = res.data.data || res.data.user || res.data;
+        if (updatedUser && typeof updatedUser === 'object') {
+          dispatch(setUser(updatedUser));
+        }
         setIsEditing(false);
         setPreviewImage(null);
       }
     } catch (error) {
-      toast.error(error.message || "Failed to update your profile.");
+      toast.error(error?.message || "Failed to update your profile.");
     }
   };
 

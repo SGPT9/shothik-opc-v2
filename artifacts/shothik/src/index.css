@@ -48,9 +48,9 @@
   --color-info: var(--info);
 
   --font-manrope: var(--font-manrope);
-  --font-geist-sans: var(--font-geist-sans, 'Inter', sans-serif);
+  --font-geist-sans: var(--font-geist-sans, 'Outfit', 'Inter', 'Noto Sans Bengali', sans-serif);
   --font-geist-mono: var(--font-geist-mono, monospace);
-  --font-sans: var(--font-geist-sans, 'Inter', sans-serif);
+  --font-sans: var(--font-geist-sans, 'Outfit', 'Inter', 'Noto Sans Bengali', sans-serif);
   --font-mono: var(--font-geist-mono, monospace);
 
   /* Brand color tokens */

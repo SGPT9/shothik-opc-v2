@@ -2,11 +2,7 @@
 import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
-<<<<<<< HEAD:providers/ConvexClientProvider.jsx
-
 import { useAuth } from "./AuthProvider";
-=======
->>>>>>> origin/main:artifacts/shothik/src/providers/ConvexClientProvider.jsx
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 
 // Only initialise a real client when a valid Convex URL is configured.
@@ -18,12 +14,10 @@ const isValidConvexUrl =
   !convexUrl.includes("placeholder");
 
 let convex = null;
-if (isValidConvexUrl) {
-  try {
-    convex = new ConvexReactClient(convexUrl);
-  } catch (e) {
-    console.warn("[ConvexClientProvider] Failed to init Convex client:", e);
-  }
+try {
+  convex = new ConvexReactClient(convexUrl);
+} catch (e) {
+  console.warn("[ConvexClientProvider] Failed to init Convex client:", e);
 }
 
 function useAuthFromAuthProvider() {
@@ -38,11 +32,7 @@ function useAuthFromAuthProvider() {
   const [convexToken, setConvexToken] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const lastTokenRef = useRef(null);
-<<<<<<< HEAD:providers/ConvexClientProvider.jsx
-=======
 
-  const isAuthenticated = !!accessToken && !!user?._id;
->>>>>>> origin/main:artifacts/shothik/src/providers/ConvexClientProvider.jsx
 
   useEffect(() => {
     if (!isAuthenticated || !user?._id) {
@@ -50,12 +40,7 @@ function useAuthFromAuthProvider() {
       lastTokenRef.current = null;
       return;
     }
-<<<<<<< HEAD:providers/ConvexClientProvider.jsx
-
     const tokenKey = `${accessToken || "session"}:${user._id}`;
-=======
-    const tokenKey = `${accessToken}:${user._id}`;
->>>>>>> origin/main:artifacts/shothik/src/providers/ConvexClientProvider.jsx
     if (tokenKey === lastTokenRef.current) return;
 
     let cancelled = false;
@@ -98,23 +83,16 @@ function useAuthFromAuthProvider() {
   );
 
   return useMemo(
-<<<<<<< HEAD:providers/ConvexClientProvider.jsx
     () => ({
       isLoading: authIsLoading || isLoading,
       isAuthenticated: isAuthenticated && !!convexToken,
       fetchAccessToken,
     }),
     [authIsLoading, isLoading, isAuthenticated, convexToken, fetchAccessToken]
-=======
-    () => ({ isLoading, isAuthenticated: isAuthenticated && !!convexToken, fetchAccessToken }),
-    [isLoading, isAuthenticated, convexToken, fetchAccessToken]
->>>>>>> origin/main:artifacts/shothik/src/providers/ConvexClientProvider.jsx
   );
 }
 
 export default function ConvexClientProvider({ children }) {
-  // When no valid Convex URL is configured, skip the provider entirely.
-  // useQuery calls will return undefined (loading state) which pages handle gracefully.
   if (!convex) {
     return <>{children}</>;
   }
@@ -125,3 +103,4 @@ export default function ConvexClientProvider({ children }) {
     </ConvexProviderWithAuth>
   );
 }
+

@@ -5,13 +5,8 @@ import { api } from "@/convex/_generated/api";
 import { defineRoute, z } from "@/lib/api-validation";
 import logger from "@/lib/logger";
 
-<<<<<<< HEAD:app/api/stripe/credits/webhook/route.ts
 import { stripe } from "@/lib/stripe/client";
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
-=======
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_placeholder");
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/stripe/credits/webhook/route.ts
 
 // We must read the raw body for Stripe signature verification
 // so we bypass Zod body validation and read it directly in the handler.

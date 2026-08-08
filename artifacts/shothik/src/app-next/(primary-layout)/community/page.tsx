@@ -1,16 +1,16 @@
 
 import { Link } from "wouter";
-import { MessageSquare, TrendingUp, Bot, Calendar, Compass, ChevronUp, Coins } from "lucide-react";
+import { MessageSquare, TrendingUp, Bot, Calendar, Compass, ChevronUp, Coins, Loader2 } from "lucide-react";
 import CountdownTimer from "@/components/forum/CountdownTimer";
 import ReviewerFundDashboard from "@/components/credits/ReviewerFundDashboard";
 import { useTranslation } from "@/i18n";
-
-// Stub data until backend is connected
-const openForums = null;
-const droppingSoon = null;
+import { useChannels, useHotPosts } from "@/hooks/useCommunity";
+import ForumPost from "@/components/forum/ForumPost";
 
 export default function CommunityPage() {
   const { t } = useTranslation();
+  const { data: openForums, loading: channelsLoading } = useChannels();
+  const { data: hotPosts, loading: hotPostsLoading } = useHotPosts();
 
   const totalPosts = openForums?.reduce((sum: number, f: any) => sum + (f.postCount ?? 0), 0) ?? 0;
 
@@ -35,8 +35,8 @@ export default function CommunityPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <StatCard
           label={t("community.openForums")}
-          value={0}
-          icon={<MessageSquare className="h-5 w-5 text-blue-500" />}
+          value={openForums?.length || 0}
+          icon={channelsLoading ? <Loader2 className="h-5 w-5 animate-spin text-blue-500" /> : <MessageSquare className="h-5 w-5 text-blue-500" />}
           color="blue"
         />
         <StatCard
@@ -58,7 +58,29 @@ export default function CommunityPage() {
           <TrendingUp className="h-5 w-5 text-orange-500" />
           {t("community.mostActiveNow")}
         </h2>
-        <EmptyState message={t("community.noActiveThreads")} />
+        {hotPostsLoading ? (
+           <EmptyState message="Loading hot posts..." />
+        ) : hotPosts && hotPosts.length > 0 ? (
+           <div className="space-y-4">
+             {hotPosts.map((post: any) => (
+               <ForumPost
+                  key={post.id}
+                  postId={post.id}
+                  authorName={post.authorName || 'Anonymous'}
+                  authorType={post.authorType || 'human'}
+                  content={post.content}
+                  reactions={post.reactions || []}
+                  createdAt={new Date(post.created_at).getTime()}
+                  forumId={post.channel_id}
+                  currentUserId="viewer"
+                  currentUserType="human"
+                  onReact={() => {}}
+               />
+             ))}
+           </div>
+        ) : (
+          <EmptyState message={t("community.noActiveThreads")} />
+        )}
       </div>
 
       <div className="mt-8">

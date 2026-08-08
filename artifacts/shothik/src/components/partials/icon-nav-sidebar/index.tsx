@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Link } from 'wouter';
 import { usePathname, useRouter } from '@/lib/navigation';
 import { useSelector } from 'react-redux';
@@ -21,6 +20,16 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuGroup,
+} from '@/components/ui/dropdown-menu';
 
 function NavItem({
   icon,
@@ -71,7 +80,7 @@ export default function IconNavSidebar() {
       {/* Brand Header */}
       <div className="flex items-center h-16 px-4 border-b border-sidebar-border flex-shrink-0">
         <Link href="/" className="flex items-center gap-2">
-          <Image
+          <img
             src="/moscot.png"
             alt="Shothik AI"
             width={28}
@@ -86,16 +95,35 @@ export default function IconNavSidebar() {
         
         {/* Workspace Actions */}
         <div className="space-y-4 px-3">
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 shadow-sm cursor-pointer hover:bg-muted transition-colors">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-              <Briefcase className="h-4 w-4" />
-            </div>
-            <div className="flex-1 overflow-hidden">
-              <p className="truncate text-sm font-semibold leading-none text-foreground">My Workspace</p>
-              <p className="truncate text-[11px] text-muted-foreground mt-1.5 uppercase font-medium tracking-wide">Personal Plan</p>
-            </div>
-            <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 shadow-sm cursor-pointer hover:bg-muted transition-colors">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+                  <Briefcase className="h-4 w-4" />
+                </div>
+                <div className="flex-1 overflow-hidden">
+                  <p className="truncate text-sm font-semibold leading-none text-foreground">My Workspace</p>
+                  <p className="truncate text-[11px] text-muted-foreground mt-1.5 uppercase font-medium tracking-wide">Personal Plan</p>
+                </div>
+                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+              </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start" side="bottom" sideOffset={8}>
+              <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                <DropdownMenuItem className="font-medium">
+                  <Briefcase className="mr-2 h-4 w-4 shrink-0" />
+                  <span>My Workspace</span>
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => router.push('/settings')}>
+                <Settings className="mr-2 h-4 w-4 shrink-0" />
+                <span>Workspace Settings</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Link 
             href={`/agents/chat?conversationId=new_${Date.now()}`}

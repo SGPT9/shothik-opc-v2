@@ -12,23 +12,22 @@ import {
 import { useRouter } from "@/lib/navigation";
 import { useTranslation } from "@/i18n";
 import { useEffect } from "react";
-import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
-import type { RootState } from "@/redux/store";
+import { useAuth } from "@/providers/AuthProvider";
 
 export const dynamic = "force-dynamic";
 
 export default function BillingRoute() {
   const { push } = useRouter();
   const { t } = useTranslation();
-  const { user, accessToken } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, isLoading: authIsLoading } = useAuth();
 
   useEffect(() => {
-    if (!accessToken || !user) {
+    if (!authIsLoading && !isAuthenticated) {
       toast.info(t("billing.signInRequired"));
       push("/auth/login?message=Please%20sign%20in%20to%20view%20billing");
     }
-  }, [accessToken, user, push, t]);
+  }, [authIsLoading, isAuthenticated, push, t]);
 
   useEffect(() => {
     document.title = `${t("billing.title")} | Shothik AI`;

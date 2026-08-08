@@ -5,7 +5,7 @@ const mockUnsubscribe = vi.fn();
 const mockOn = vi.fn();
 
 vi.mock("@/lib/insforge/client", () => ({
-  getInsforgeClient: vi.fn(() => ({
+  getInsforgeBrowserClient: vi.fn(() => ({
     realtime: {
       channel: vi.fn(() => ({
         subscribe: mockSubscribe,

@@ -5,12 +5,8 @@ import { createHmac, timingSafeEqual } from "crypto";
 import { defineRoute, z } from "@/lib/api-validation";
 import { logger } from "@/lib/logger";
 
-<<<<<<< HEAD:app/api/webhooks/publishdrive/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/webhooks/publishdrive/route.ts
 const WEBHOOK_SECRET = process.env.PUBLISHDRIVE_WEBHOOK_SECRET || "";
 
 function verifySignature(rawBody: string, signature: string): boolean {

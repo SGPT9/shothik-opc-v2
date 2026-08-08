@@ -36,14 +36,25 @@ export default function PostLoginPage() {
   useEffect(() => {
     if (isLoading) return;
     if (!isAuthenticated) {
-      router.replace("/agents/chat");
+      // Redirect unauthenticated users to login so they can sign in first.
+      // Avoid a redirect loop by never sending back to /agents/chat directly here.
+      router.replace("/auth/login");
       return;
     }
+
+    // Only auto-navigate if the user actually came through the login flow.
+    // If there's no flowState and no explicit ?redirect param, the user is
+    // already authenticated and navigated here intentionally — don't hijack them.
+    const flowState = getAuthFlowState();
+    const hasLoginFlowState = Boolean(
+      flowState?.source || searchParams.get("redirect")
+    );
+    if (!hasLoginFlowState) return;
 
     trackPostLoginRecommendation(
       decision.route,
       decision.reason,
-      getAuthFlowState()?.intent ?? null
+      flowState?.intent ?? null
     );
 
     const timer = window.setTimeout(() => {
@@ -54,7 +65,7 @@ export default function PostLoginPage() {
     }, 1600);
 
     return () => window.clearTimeout(timer);
-  }, [decision.reason, decision.route, isAuthenticated, isLoading, router]);
+  }, [decision.reason, decision.route, isAuthenticated, isLoading, router, searchParams]);
 
   const handleOverride = (href: string) => {
     hasAutoNavigatedRef.current = true;

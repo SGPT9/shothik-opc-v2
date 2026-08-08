@@ -163,55 +163,45 @@ export default function AccountWalletSection() {
     );
   }
 
-  if (!wallet) {
-    return (
-      <Card>
-        <CardContent className="py-12 text-center">
-          <p className="text-muted-foreground">
-            No wallet found. Please contact support.
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  const activeWallet = wallet || { token: 0, package: "Free Tier", plan: "Basic", expires_at: null };
 
   const packageName =
-    typeof wallet.package === "object" && wallet.package !== null
-      ? wallet.package.name
-      : typeof wallet.package === "string"
-        ? wallet.package
-        : "No Package";
+    typeof activeWallet.package === "object" && activeWallet.package !== null
+      ? (activeWallet.package as any).name
+      : typeof activeWallet.package === "string"
+        ? activeWallet.package
+        : "Free Tier";
 
   const planName =
-    typeof wallet.plan === "object" && wallet.plan !== null
-      ? wallet.plan.name
-      : typeof wallet.plan === "string"
-        ? wallet.plan
-        : "N/A";
+    typeof activeWallet.plan === "object" && activeWallet.plan !== null
+      ? (activeWallet.plan as any).name
+      : typeof activeWallet.plan === "string"
+        ? activeWallet.plan
+        : "Basic";
 
   const planDuration =
-    typeof wallet.plan === "object" && wallet.plan
-      ? wallet.plan.duration
+    typeof activeWallet.plan === "object" && activeWallet.plan
+      ? (activeWallet.plan as any).duration
       : null;
 
   // Extract accessible features from package
   const getAccessibleFeatures = () => {
     if (
-      typeof wallet.package !== "object" ||
-      wallet.package === null ||
-      Array.isArray(wallet.package) ||
-      !wallet.package.features
+      typeof activeWallet.package !== "object" ||
+      activeWallet.package === null ||
+      Array.isArray(activeWallet.package) ||
+      !(activeWallet.package as any).features
     ) {
       return [];
     }
 
-    if (!Array.isArray(wallet.package.features)) {
+    if (!Array.isArray((activeWallet.package as any).features)) {
       return [];
     }
 
-    return wallet.package.features.filter(
+    return (activeWallet.package as any).features.filter(
       (
-        feature,
+        feature: any,
       ): feature is {
         _id: string;
         name: string;
@@ -227,8 +217,8 @@ export default function AccountWalletSection() {
 
   const accessibleFeatures = getAccessibleFeatures();
 
-  const isExpired = wallet.expires_at
-    ? new Date(wallet.expires_at) < new Date()
+  const isExpired = activeWallet.expires_at
+    ? new Date(activeWallet.expires_at) < new Date()
     : false;
 
   return (
@@ -243,7 +233,7 @@ export default function AccountWalletSection() {
                   <div className="text-muted-foreground mb-1 text-sm">
                     Credits
                   </div>
-                  <div className="text-2xl font-bold">{wallet.token || 0}</div>
+                  <div className="text-2xl font-bold">{activeWallet.token || 0}</div>
                 </div>
 
                 {/* Package Card */}
@@ -268,7 +258,7 @@ export default function AccountWalletSection() {
                 )}
 
                 {/* Expires At Card */}
-                {wallet.expires_at && (
+                {activeWallet.expires_at && (
                   <div className="bg-muted rounded-lg p-4">
                     <div className="text-muted-foreground mb-1 text-sm">
                       Expires At
@@ -278,7 +268,7 @@ export default function AccountWalletSection() {
                         isExpired ? "text-destructive" : "text-green-600"
                       }`}
                     >
-                      {new Date(wallet.expires_at).toLocaleString()}
+                      {new Date(activeWallet.expires_at).toLocaleString()}
                       {isExpired && (
                         <Badge variant="destructive" className="ml-2">
                           Expired

@@ -7,11 +7,7 @@ import { getTierByStripePriceId } from "@/lib/subscription-tiers";
 
 import { stripe } from "@/lib/stripe/client";
 
-<<<<<<< HEAD:app/api/stripe/subscription/webhook/route.ts
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL || "https://placeholder.convex.cloud");
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/stripe/subscription/webhook/route.ts
 
 const CONVEX_WEBHOOK_SECRET = process.env.STRIPE_SUBSCRIPTION_WEBHOOK_SECRET || "";
 

@@ -23,13 +23,20 @@ import { User, Wallet, Bot, BookOpen, Brain, CheckCircle2, XCircle, Globe, Arrow
 import { Link } from "wouter";
 import { useRouter } from "@/lib/navigation";
 import { useEffect, useState } from "react";
+import { useAuth } from "@/providers/AuthProvider";
 import { useSelector } from "react-redux";
 
 export const dynamic = "force-dynamic";
 
 export default function AccountSettings() {
   const { push } = useRouter();
-  const { user, accessToken } = useSelector((state) => state.auth);
+  const { user: authUser, isAuthenticated: authIsAuthenticated, isLoading: authIsLoading } = useAuth();
+  const reduxAccessToken = useSelector((state) => state.auth?.accessToken);
+  const reduxUser = useSelector((state) => state.auth?.user);
+
+  const user = authUser || reduxUser || (reduxAccessToken ? { name: "User", email: "user@shothik.ai" } : null);
+  const isAuthenticated = authIsAuthenticated || Boolean(reduxAccessToken || authUser);
+
   const [currentTab, setCurrentTab] = useState("general");
   const [purchaseBanner, setPurchaseBanner] = useState(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -42,12 +49,6 @@ export default function AccountSettings() {
       syncLocale(user._id, code);
     }
   };
-
-  useEffect(() => {
-    if (!accessToken || !user) {
-      push("/");
-    }
-  }, [accessToken, user, push]);
 
   useEffect(() => {
     document.title = `${t('account.breadcrumbAccount')} ${t('account.breadcrumbSettings')} - ${currentTab} | Shothik AI`;

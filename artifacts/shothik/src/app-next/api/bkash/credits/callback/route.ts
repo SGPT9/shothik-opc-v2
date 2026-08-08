@@ -11,12 +11,8 @@ const BKASH_APP_SECRET = process.env.BKASH_APP_SECRET!;
 const BKASH_USERNAME = process.env.BKASH_USERNAME!;
 const BKASH_PASSWORD = process.env.BKASH_PASSWORD!;
 
-<<<<<<< HEAD:app/api/bkash/credits/callback/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/bkash/credits/callback/route.ts
 
 function verifyCallbackSignature(userId: string, packId: string, credits: number, sig: string): boolean {
   const secret = process.env.CREDIT_PURCHASE_SECRET || process.env.BKASH_APP_SECRET || "";
@@ -51,7 +47,7 @@ async function getBkashToken(): Promise<string> {
 }
 
 export async function GET(req: NextRequest) {
-  const appUrl = import.meta.env.VITE_APP_URL || "";
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "";
   const cancelUrl = `${appUrl}/account/settings?section=wallet&credit_purchase=cancelled`;
   const searchParams = req.nextUrl.searchParams;
 

@@ -130,7 +130,7 @@ describe("auth-flow", () => {
       recentProjects: [],
     });
 
-    expect(decision.route).toBe("/writing-studio?intent=research");
+    expect(decision.route).toBe("/agents/chat");
     expect(decision.reason).toBe("account_type");
   });
 });

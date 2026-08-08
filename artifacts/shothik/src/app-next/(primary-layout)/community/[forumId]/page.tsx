@@ -2,9 +2,8 @@
 
 import { useParams, useSearchParams } from "@/lib/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useQuery, useMutation } from "convex/react";
 import { useSelector } from "react-redux";
-import { api } from "@/convex/_generated/api";
+import { useChannel, usePosts, useChatMessages, useCommunityMutations } from "@/hooks/useCommunity";
 import ForumPost from "@/components/forum/ForumPost";
 import CountdownTimer from "@/components/forum/CountdownTimer";
 import { Send, Users, Bot, Eye, BookOpen, Calendar, MessageSquare, Hash, CornerDownRight } from "lucide-react";
@@ -104,16 +103,12 @@ export default function ForumPage() {
   const highlightRef = useRef<HTMLDivElement>(null);
   const chatInputRef = useRef<HTMLTextAreaElement>(null);
 
-  const forum = useQuery(api.forums.getForumById, { forumId: forumId as any });
-  const posts = useQuery(api.forums.getForumPosts, { forumId: forumId as any });
-  const chatMessages = useQuery(api.forums.getChatMessages, { forumId: forumId as any });
-  const createPost = useMutation(api.forums.createPost);
-  const addChatMessage = useMutation(api.forums.addChatMessage);
-  const reactToPost = useMutation(api.forums.reactToPost);
-  const reserveForum = useMutation(api.forums.reserveForum);
-  const hasReserved = useQuery(api.forums.hasReserved, {
-    forumId: forumId as any,
-  });
+  const { data: forum, loading: forumLoading } = useChannel(forumId);
+  const { data: posts, loading: postsLoading, refetch: refetchPosts } = usePosts(forumId);
+  const { data: chatMessages, loading: chatLoading, refetch: refetchChats } = useChatMessages(forumId);
+  const { createPost, addChatMessage, reactToPost } = useCommunityMutations();
+  const hasReserved = false; // Add to useCommunityMutations if needed
+  const reserveForum = async () => {}; // Add to useCommunityMutations if needed
 
   useEffect(() => {
     if (highlightPost && highlightRef.current) {
@@ -127,7 +122,7 @@ export default function ForumPage() {
     }
   }, [chatMessages, tab]);
 
-  if (!forum) {
+  if (forumLoading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="text-center">
@@ -138,7 +133,17 @@ export default function ForumPage() {
     );
   }
 
-  const pt = forum.participantType as ParticipantType;
+  if (!forum) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground">Forum not found</p>
+        </div>
+      </div>
+    );
+  }
+
+  const pt = forum.participant_type as ParticipantType;
   const ptConfig = PARTICIPANT_LABELS[pt];
   const isObserver = pt === "agent_only";
   const canChat = pt === "both" || pt === "human_only";
@@ -148,8 +153,9 @@ export default function ForumPage() {
     setPosting(true);
     setError(null);
     try {
-      await createPost({ forumId: forumId as any, authorName: userName, content: newPost.trim() });
+      await createPost({ channelId: forumId, authorId: userId, authorName: userName, title: "Post", content: newPost.trim() });
       setNewPost("");
+      refetchPosts();
       setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err: any) {
       const msg = err?.message ?? "";
@@ -166,13 +172,15 @@ export default function ForumPage() {
     setChatPosting(true);
     try {
       await addChatMessage({
-        forumId: forumId as any,
+        channelId: forumId,
+        authorId: userId,
         authorName: userName,
         message: chatMsg.trim(),
         replyToId: replyTo?._id,
       });
       setChatMsg("");
       setReplyTo(null);
+      refetchChats();
       setTimeout(() => chatBottomRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch (err: any) {
       const msg = err?.message ?? "";
@@ -195,7 +203,7 @@ export default function ForumPage() {
 
   const handleReact = async (postId: string, reactionType: ReactionType) => {
     try {
-      await reactToPost({ postId: postId as any, forumId: forumId as any, reactionType });
+      await reactToPost({ postId, channelId: forumId, reactionType, authorId: userId });
     } catch {}
   };
 
@@ -223,12 +231,12 @@ export default function ForumPage() {
               </span>
             )}
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-foreground">{forum.title}</h1>
+          <h1 className="mb-2 text-2xl font-bold text-foreground">{forum.name}</h1>
           {forum.description && <p className="mb-4 text-sm text-muted-foreground">{forum.description}</p>}
           <div className="flex flex-wrap items-center gap-4">
-            {forum.publicationDate && <CountdownTimer publicationDate={forum.publicationDate} />}
+            {/* forum.publicationDate && <CountdownTimer publicationDate={forum.publicationDate} /> */}
             <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Calendar className="h-3.5 w-3.5" />{forum.reservationCount} {forum.reservationCount === 1 ? "reservation" : "reservations"}
+              <Calendar className="h-3.5 w-3.5" />{/* forum.reservationCount */} reservations
             </span>
           </div>
           {forum.status === "open" && (

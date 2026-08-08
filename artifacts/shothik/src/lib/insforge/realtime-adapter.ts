@@ -5,7 +5,7 @@
  * Hermes run progress, artifact state mutations, and multi-agent swarm updates.
  */
 
-import { getInsforgeClient } from "@/lib/insforge/client";
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
 import logger from "@/lib/logger";
 
 export interface RealtimeSubscriptionOptions {
@@ -33,7 +33,7 @@ export class InsForgeRealtimeAdapter {
     });
 
     try {
-      const client = getInsforgeClient();
+      const client = getInsforgeBrowserClient();
 
       // Check if real-time feature is available on client
       if ((client as any).realtime?.channel) {

@@ -28,12 +28,8 @@ const EnqueueBodySchema = z.object({
 });
 
 const OVERNIGHT_JOB_CREDIT_COST = 20;
-<<<<<<< HEAD:app/api/tonight-engine/enqueue/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/tonight-engine/enqueue/route.ts
 
 function unauthorized() {
   return Response.json(

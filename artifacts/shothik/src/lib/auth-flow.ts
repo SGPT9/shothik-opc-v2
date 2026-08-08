@@ -268,7 +268,7 @@ export function inferAuthRoutingDecision({
   }
 
   return {
-    route: "/writing-studio",
+    route: "/agents/chat",
     reason: "default",
     suggestions,
   };

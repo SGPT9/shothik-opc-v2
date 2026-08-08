@@ -6,12 +6,8 @@ import { logger } from "@/lib/logger";
 import { decodeJwt } from "jose";
 import { getDistributionStatus } from "@/services/publishDriveService";
 
-<<<<<<< HEAD:app/api/publish/status/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/publish/status/route.ts
 
 function getUserIdFromToken(token: string): string | null {
   try {

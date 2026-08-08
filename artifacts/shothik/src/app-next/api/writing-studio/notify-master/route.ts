@@ -5,12 +5,8 @@ import { isAgentKey, hashAgentKey } from "@/lib/agent-auth";
 import logger from "@/lib/logger";
 import type { Id } from "@/convex/_generated/dataModel";
 
-<<<<<<< HEAD:app/api/writing-studio/notify-master/route.ts
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
 const convex = new ConvexHttpClient(getSanitizedConvexUrl());
-=======
-const convex = new ConvexHttpClient(import.meta.env.VITE_CONVEX_URL!);
->>>>>>> origin/main:artifacts/shothik/src/app-next/api/writing-studio/notify-master/route.ts
 
 export async function POST(req: NextRequest) {
   let body: {

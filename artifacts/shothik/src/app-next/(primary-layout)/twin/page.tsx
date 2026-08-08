@@ -14,6 +14,7 @@ import remarkGfm from "remark-gfm";
 import SeededWorkspace from "@/components/twin/SeededWorkspace";
 import { loadServerSeed, type SavedSeed } from "@/lib/twin/seed-client";
 import { useSearchParams } from "@/lib/navigation";
+import { useTwinData, type TwinTask, type TwinDoc, type TwinFeedEntry } from "@/hooks/useTwin";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, CheckCircle } from "lucide-react";
 import {
@@ -299,7 +300,7 @@ function AgentStatusWidget({ autoMode }: { autoMode: boolean }) {
   return (
     <PanelCard>
       <div className="flex items-center gap-3">
-        <div className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-indigo-500/10">
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/10">
           <Sparkles className="h-5 w-5 text-indigo-500" />
           <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
             <span
@@ -323,6 +324,12 @@ function AgentStatusWidget({ autoMode }: { autoMode: boolean }) {
           </p>
         </div>
       </div>
+      <a
+        href="/writing-studio"
+        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-indigo-500/20 bg-indigo-500/10 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 transition-colors hover:bg-indigo-500/20"
+      >
+        <BookOpen className="h-3.5 w-3.5" /> Launch Writing Studio
+      </a>
     </PanelCard>
   );
 }
@@ -839,9 +846,10 @@ const OUTPUT_CHANNELS = [
     title: "Publish",
     icon: BookOpen,
     accent: "text-emerald-500 bg-emerald-500/10",
-    description: "Push a finished chapter or article to Books & Marketplace.",
+    description: "Push a finished chapter or manuscript to Books, Marketplace & PublishDrive.",
     status: "Chapter 2 published · Aug 3",
-    action: "Publish Chapter 3",
+    action: "Open Publishing Suite",
+    href: "/writing-studio?intent=book",
     ready: true,
   },
   {
@@ -849,9 +857,10 @@ const OUTPUT_CHANNELS = [
     title: "Share",
     icon: Share2,
     accent: "text-indigo-500 bg-indigo-500/10",
-    description: "Send the latest draft to collaborators by email or link.",
+    description: "Send the latest manuscript draft to collaborators or reviewers.",
     status: "Draft sent to 2 reviewers · Yesterday",
-    action: "Share latest draft",
+    action: "Share Draft",
+    href: "/writing-studio?projects=1",
     ready: true,
   },
   {
@@ -859,7 +868,7 @@ const OUTPUT_CHANNELS = [
     title: "Distribute",
     icon: Globe,
     accent: "text-cyan-500 bg-cyan-500/10",
-    description: "Auto-post excerpts and summaries to connected socials.",
+    description: "Auto-post book excerpts and summaries to connected socials and community.",
     status: "Off — turn on when you're ready",
     action: "Turn on",
     ready: false,
@@ -902,9 +911,13 @@ function OutputChannels() {
               {isDistribute && distributeOn ? "On — Twin will ask before every post" : ch.status}
             </p>
             {!isDistribute && (
-              <Button variant="outline" size="sm" className="mt-2.5 w-full rounded-xl text-xs" data-testid={`button-channel-${ch.id}`}>
+              <a
+                href={ch.href}
+                className="mt-2.5 inline-flex w-full items-center justify-center rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
+                data-testid={`button-channel-${ch.id}`}
+              >
                 {ch.action} <ChevronRight className="ml-1 h-3 w-3" />
-              </Button>
+              </a>
             )}
           </PanelCard>
         );
@@ -917,10 +930,14 @@ function OutputChannels() {
 /* Right column: narrative feed + composer                             */
 /* ------------------------------------------------------------------ */
 
-function NarrativeFeed() {
-  const [entries, setEntries] = useState<FeedEntry[]>(MOCK_FEED);
+function NarrativeFeed({ feed = MOCK_FEED }: { feed?: FeedEntry[] }) {
+  const [entries, setEntries] = useState<FeedEntry[]>(feed);
   const [draft, setDraft] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setEntries(feed);
+  }, [feed]);
 
   const send = () => {
     const text = draft.trim();
@@ -1191,8 +1208,11 @@ function seedToDoc(seed: SavedSeed): TwinDocMock {
 
 function TwinDashboardPage() {
   const [autoMode, setAutoMode] = useState(true);
-  const [tasks, setTasks] = useState<TwinTaskMock[]>(MOCK_TASKS);
-  const [docs, setDocs] = useState<TwinDocMock[]>(MOCK_DOCS);
+  const { tasks, docs, feed, setTasks, setDocs } = useTwinData(
+    MOCK_TASKS as TwinTask[],
+    MOCK_DOCS as TwinDoc[],
+    MOCK_FEED as TwinFeedEntry[]
+  );
   const [showNewTask, setShowNewTask] = useState(false);
   const [showManage, setShowManage] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
@@ -1269,7 +1289,7 @@ function TwinDashboardPage() {
 
         {/* Right column */}
         <div className="min-h-[420px] md:col-span-2 xl:col-span-1 xl:min-h-0">
-          <NarrativeFeed />
+          <NarrativeFeed feed={feed} />
         </div>
       </div>
     </div>

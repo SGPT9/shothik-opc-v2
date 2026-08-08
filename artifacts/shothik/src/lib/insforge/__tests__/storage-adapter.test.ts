@@ -15,7 +15,7 @@ const mockGetPublicUrl = vi.fn().mockReturnValue({
 });
 
 vi.mock("@/lib/insforge/client", () => ({
-  getInsforgeClient: vi.fn(() => ({
+  getInsforgeBrowserClient: vi.fn(() => ({
     storage: {
       from: vi.fn(() => ({
         upload: mockUpload,
