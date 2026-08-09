@@ -73,9 +73,10 @@ export function ChatSidebar({
 
   // Filter conversations by search query
   const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) return conversations;
+    const list = Array.isArray(conversations) ? conversations : [];
+    if (!searchQuery.trim()) return list;
     const query = searchQuery.toLowerCase().trim();
-    return conversations.filter(c => c.title.toLowerCase().includes(query));
+    return list.filter(c => (c.title || "").toLowerCase().includes(query));
   }, [conversations, searchQuery]);
 
   // Group conversations by date (Today, Yesterday, Previous 7 Days, Older)
@@ -88,7 +89,8 @@ export function ChatSidebar({
     const past7Days: ChatSidebarItem[] = [];
     const older: ChatSidebarItem[] = [];
 
-    filteredConversations.forEach(chat => {
+    (filteredConversations || []).forEach(chat => {
+      if (!chat) return;
       const updatedAt = chat.updatedAt || chat._creationTime || now;
       const diffDays = (now - updatedAt) / oneDayMs;
 
