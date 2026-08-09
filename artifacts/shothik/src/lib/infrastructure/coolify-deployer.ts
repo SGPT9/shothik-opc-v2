@@ -39,12 +39,13 @@ export class CoolifyDokployDeployer {
     const providerUsed = params.provider || "coolify";
     const enableMonetization = params.enableMonetization !== false;
 
-    logger.info("[coolify-deployer] Initiating web site deployment", {
+    logger.info("[coolify-deployer] Initiating web site deployment with Next.js standalone Docker optimization", {
       deploymentId,
       siteTitle: params.siteTitle,
       slug,
       provider: providerUsed,
       monetization: enableMonetization,
+      dockerMode: "standalone_multistage", // December adaptation: <90MB container builds
     });
 
     let liveUrl = `https://${slug}.shothik.app`;

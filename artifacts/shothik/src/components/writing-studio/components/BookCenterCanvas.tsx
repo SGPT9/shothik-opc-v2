@@ -1,5 +1,5 @@
 import React from "react";
-import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck } from "lucide-react";
+import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,21 @@ export function BookCenterCanvas({
   onEditorTextChange,
   livePreviewUrl = "https://yourbusiness.com",
 }: BookCenterCanvasProps) {
+  const [isInspectorActive, setIsInspectorActive] = React.useState(false);
+  const [selectedElementInfo, setSelectedElementInfo] = React.useState<{ tagName: string; textContent: string } | null>(null);
+
+  // December Adaptation: Keyboard shortcut Cmd + \ to toggle split preview
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
+        e.preventDefault();
+        onTabChange(activeTab === "web_preview" ? "editor" : "web_preview");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeTab, onTabChange]);
+
   const tabs: { key: CanvasTab; label: string; icon: React.ElementType }[] = [
     { key: "editor", label: "Writing Studio", icon: FileText },
     { key: "sheet", label: "Fortune Sheet", icon: Table },
@@ -114,19 +129,41 @@ export function BookCenterCanvas({
         )}
 
         {activeTab === "web_preview" && (
-          <div className="flex h-full flex-col rounded-xl border border-border bg-card overflow-hidden">
+          <div className="flex h-full flex-col rounded-xl border border-border bg-card overflow-hidden relative">
             <div className="flex h-8 items-center justify-between border-b border-border bg-muted/40 px-3 text-xs font-mono">
-              <span className="flex items-center gap-1.5 text-emerald-400">
-                <ShieldCheck className="h-3.5 w-3.5" /> SSL Verified (Live Container)
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 text-emerald-400">
+                  <ShieldCheck className="h-3.5 w-3.5" /> SSL Verified (Dokploy Container)
+                </span>
+                <button
+                  onClick={() => setIsInspectorActive(!isInspectorActive)}
+                  className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-1",
+                    isInspectorActive
+                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 animate-pulse"
+                      : "bg-muted/80 text-muted-foreground hover:bg-muted"
+                  )}
+                >
+                  <Sparkles className="h-3 w-3" /> {isInspectorActive ? "Inspector Active (Click UI Element)" : "Enable Element Inspector"}
+                </button>
+              </div>
               <a href={livePreviewUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-indigo-400 flex items-center gap-1">
                 {livePreviewUrl} <ExternalLink className="h-3 w-3" />
               </a>
             </div>
+
+            {selectedElementInfo && (
+              <div className="absolute top-10 left-3 z-20 flex items-center gap-2 rounded-lg bg-zinc-900/95 border border-purple-500/40 p-2 text-xs font-mono text-purple-300 shadow-xl backdrop-blur-md">
+                <Sparkles className="h-4 w-4 text-purple-400" />
+                <span>Source Sync: <strong className="text-white">&lt;{selectedElementInfo.tagName.toLowerCase()}&gt;</strong> {selectedElementInfo.textContent ? `"${selectedElementInfo.textContent.slice(0, 20)}..."` : ""}</span>
+                <button onClick={() => setSelectedElementInfo(null)} className="ml-2 text-zinc-400 hover:text-white">×</button>
+              </div>
+            )}
+
             <iframe
               src={livePreviewUrl}
               className="flex-1 w-full border-none bg-background"
-              title="Live User Site Preview"
+              title="Live Container Preview"
             />
           </div>
         )}
