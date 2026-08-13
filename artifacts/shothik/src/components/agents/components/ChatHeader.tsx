@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Bot, Menu, X, Sun, Moon, Sparkles, Zap, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,7 +10,6 @@ export interface ChatHeaderProps {
   onTabChange?: (tab: string) => void;
   onToggleSidebar?: () => void;
   sidebarOpen?: boolean;
-  onVoiceOrbClick?: () => void;
   onSwarmDebateClick?: () => void;
   onPaywallClick?: () => void;
 }
@@ -22,7 +21,6 @@ export function ChatHeader({
   onTabChange,
   onToggleSidebar,
   sidebarOpen = false,
-  onVoiceOrbClick,
   onSwarmDebateClick,
   onPaywallClick,
 }: ChatHeaderProps) {
@@ -68,44 +66,31 @@ export function ChatHeader({
         </div>
       </div>
 
-      {/* Right: Theme Toggle + Status indicator */}
-      <div className="flex items-center gap-2">
-        {/* 🎙️ Voice Orb Button */}
-        {onVoiceOrbClick && (
-          <button
-            type="button"
-            onClick={onVoiceOrbClick}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 via-purple-500/20 to-indigo-500/20 border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 text-xs font-bold transition shadow-sm"
-            title="Open ChatGPT Advanced Voice Mode Orb"
-          >
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span>Voice Orb</span>
-          </button>
-        )}
-
+      {/* Right: Actions + Theme Toggle */}
+      <div className="flex items-center gap-1.5">
         {/* 🐝 Swarm Debate Button */}
         {onSwarmDebateClick && (
           <button
             type="button"
             onClick={onSwarmDebateClick}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-500/15 border border-purple-500/40 text-purple-300 hover:bg-purple-500/25 text-xs font-bold transition shadow-sm"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 hover:bg-slate-800 text-[11px] font-semibold transition"
             title="Run 3-Agent Swarm Adversarial Debate"
           >
             <span>🐝</span>
-            <span>Swarm Debate</span>
+            <span>Swarm</span>
           </button>
         )}
 
-        {/* ⚡ Credit Paywall Badge */}
+        {/* ⚡ Credit Badge */}
         {onPaywallClick && (
           <button
             type="button"
             onClick={onPaywallClick}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 hover:border-emerald-400 font-mono text-xs font-bold transition shadow-sm"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-emerald-400 hover:border-emerald-500/50 font-mono text-[11px] font-semibold transition"
             title="Open Credit Top-Up Paywall Portal"
           >
             <span>⚡</span>
-            <span>550 Credits</span>
+            <span>550</span>
           </button>
         )}
 
