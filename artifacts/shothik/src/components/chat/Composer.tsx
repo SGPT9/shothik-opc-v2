@@ -119,26 +119,6 @@ const MODES: {
     border: "border-violet-500/30",
     description: "Stress-test & adversarial scenario lab",
   },
-  {
-    value: "finance_tax",
-    label: "Finance & Tax",
-    shortLabel: "Finance",
-    Icon: Briefcase,
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
-    border: "border-amber-500/30",
-    description: "bKash ledger, NBR Form 11GA & tax SROs",
-  },
-  {
-    value: "merchant",
-    label: "Merchant & Store",
-    shortLabel: "Merchant",
-    Icon: ShoppingBag,
-    color: "text-pink-400",
-    bg: "bg-pink-500/10",
-    border: "border-pink-500/30",
-    description: "Polsia OPC store & Steadfast courier",
-  },
 ];
 
 // ─── Models ───────────────────────────────────────────────────────────────────
