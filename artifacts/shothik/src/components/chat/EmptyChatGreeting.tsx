@@ -11,6 +11,7 @@ import {
   Zap,
   TrendingUp,
   FlaskConical,
+  Code2,
 } from "lucide-react";
 import { ChatPersona } from "@/lib/chat/types";
 
@@ -50,6 +51,17 @@ const STARTER_CHIPS: Array<{
     gradient: "from-cyan-500/20 via-sky-500/10 to-transparent",
     glow: "shadow-cyan-500/20",
     tag: "Finance",
+  },
+  {
+    icon: Code2,
+    title: "Build Full-Stack App Code",
+    subtitle: "React components, Node API & InsForge DB",
+    prompt: "Generate a responsive React UI component with InsForge BaaS PostgreSQL schema and API bindings",
+    mode: "cofounder",
+    tab: "code",
+    gradient: "from-purple-500/20 via-indigo-500/10 to-transparent",
+    glow: "shadow-purple-500/20",
+    tag: "Software Engineering",
   },
   {
     icon: Presentation,
