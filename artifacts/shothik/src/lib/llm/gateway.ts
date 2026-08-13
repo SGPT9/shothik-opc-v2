@@ -204,8 +204,48 @@ async function callGemini(request: GatewayRequest): Promise<GatewayResponse> {
   };
 }
 
+export interface LocalEndpointDiscovery {
+  ollamaAvailable: boolean;
+  odsAvailable: boolean;
+  activeEndpoint: string;
+}
+
+let cachedDiscovery: LocalEndpointDiscovery | null = null;
+let lastDiscoveryCheck = 0;
+
+export async function detectLocalEndpoints(forceRefresh = false): Promise<LocalEndpointDiscovery> {
+  const now = Date.now();
+  if (!forceRefresh && cachedDiscovery && now - lastDiscoveryCheck < 30_000) {
+    return cachedDiscovery;
+  }
+
+  let ollamaAvailable = false;
+  let odsAvailable = false;
+
+  try {
+    const res = await fetch('http://localhost:11434/api/tags', { signal: AbortSignal.timeout(600) }).catch(() => null);
+    if (res && res.ok) ollamaAvailable = true;
+  } catch {}
+
+  try {
+    const res = await fetch('http://localhost:8080/health', { signal: AbortSignal.timeout(600) }).catch(() => null);
+    if (res && res.ok) odsAvailable = true;
+  } catch {}
+
+  const activeEndpoint = ollamaAvailable
+    ? 'http://localhost:11434'
+    : odsAvailable
+    ? 'http://localhost:8080'
+    : process.env.TONIGHT_ENGINE_COLIBRI_URL || 'http://187.127.125.115:8080';
+
+  cachedDiscovery = { ollamaAvailable, odsAvailable, activeEndpoint };
+  lastDiscoveryCheck = now;
+  return cachedDiscovery;
+}
+
 async function callColibri(request: GatewayRequest): Promise<GatewayResponse> {
-  const baseUrl = process.env.TONIGHT_ENGINE_COLIBRI_URL || 'http://187.127.125.115:8080';
+  const discovery = await detectLocalEndpoints();
+  const baseUrl = discovery.activeEndpoint;
   
   const messages = request.systemInstruction
     ? [
@@ -218,7 +258,7 @@ async function callColibri(request: GatewayRequest): Promise<GatewayResponse> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'qwen-moe', // Matches default Colibri qwen_moe.gguf loaded on VPS
+      model: discovery.ollamaAvailable ? 'llama3.2:1b' : 'qwen-moe', // Local Ollama or Colibri VPS
       messages,
       temperature: request.temperature ?? 0.3,
       max_tokens: request.maxTokens ?? 2000,
@@ -226,7 +266,7 @@ async function callColibri(request: GatewayRequest): Promise<GatewayResponse> {
     signal: AbortSignal.timeout(10_000), // Realtime low latency constraint
   });
 
-  if (!res.ok) throw new Error(`Colibri ${res.status}: ${await res.text()}`);
+  if (!res.ok) throw new Error(`Colibri/Local LLM ${res.status}: ${await res.text()}`);
 
   const data = await res.json();
   const text = data.choices[0].message.content.trim();
@@ -239,7 +279,7 @@ async function callColibri(request: GatewayRequest): Promise<GatewayResponse> {
     inputTokens,
     outputTokens,
     provider: 'colibri',
-    costUsd: 0.0, // Self-hosted
+    costUsd: 0.0, // Self-hosted & Local Ollama
   };
 }
 
