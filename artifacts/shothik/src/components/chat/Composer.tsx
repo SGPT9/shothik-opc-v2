@@ -442,16 +442,17 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </button>
 
-                {/* 🔮 ChatGPT Voice Orb Pop-up Button */}
+                {/* 🔮 Voice Orb — exclusive placement */}
                 {onVoiceOrbClick && (
                   <button type="button"
                     onClick={onVoiceOrbClick}
                     disabled={disabled || activeStreaming}
-                    className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-purple-500/20 to-indigo-500/20 border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 hover:border-emerald-400 text-xs font-bold transition shadow-sm"
+                    className="relative flex items-center justify-center h-8 w-8 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-400/60 hover:bg-emerald-500/25 transition-all"
                     title="Open ChatGPT Advanced Voice Mode Orb"
+                    aria-label="Open Voice Orb"
                   >
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Voice Orb</span>
+                    <span className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping opacity-30" />
+                    <span className="relative w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                   </button>
                 )}
               </div>

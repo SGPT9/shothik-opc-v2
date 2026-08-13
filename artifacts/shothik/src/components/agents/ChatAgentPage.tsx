@@ -159,7 +159,6 @@ export function ChatAgentPage() {
           onTabChange={(tab) => handleOpenArtifact(tab)}
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
           sidebarOpen={sidebarOpen}
-          onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
           onSwarmDebateClick={() => setIsSwarmDebateOpen(true)}
           onPaywallClick={() => setIsPaywallOpen(true)}
         />
