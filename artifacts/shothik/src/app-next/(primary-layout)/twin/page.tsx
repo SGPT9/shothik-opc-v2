@@ -925,9 +925,71 @@ const OUTPUT_CHANNELS = [
 
 function OutputChannels() {
   const [distributeOn, setDistributeOn] = useState(false);
+  const [adDailyBudget, setAdDailyBudget] = useState(50);
+  const [adRunning, setAdRunning] = useState(false);
+
+  const adInventory = Math.round(adDailyBudget * 0.85);
+  const polsiaFee = Math.round(adDailyBudget * 0.15);
+  const estImpressions = (adDailyBudget * 280).toLocaleString();
+  const estClicks = (adDailyBudget * 8.4).toFixed(0);
+
   return (
     <div className="space-y-3">
-      <SectionLabel>Output Channels</SectionLabel>
+      <SectionLabel>Distribution & Growth Channels</SectionLabel>
+
+      {/* Meta Ads Autonomous Growth Loop Card */}
+      <PanelCard className="p-3.5 border-indigo-500/30 bg-gradient-to-br from-background to-indigo-950/20">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
+              <Zap className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-foreground">Meta Ads Growth Loop</p>
+              <p className="text-[10px] font-mono text-indigo-400">85/15 Fee Split · Auto-Optimized</p>
+            </div>
+          </div>
+          <Badge variant={adRunning ? "default" : "outline"} className={adRunning ? "bg-emerald-600 text-white text-[10px]" : "text-[10px]"}>
+            {adRunning ? "Campaign Active" : "Standby"}
+          </Badge>
+        </div>
+
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-muted-foreground">Daily Ad Spend:</span>
+            <span className="font-mono font-bold text-foreground">${adDailyBudget}/day</span>
+          </div>
+
+          <input
+            type="range"
+            min={10}
+            max={500}
+            step={10}
+            value={adDailyBudget}
+            onChange={(e) => setAdDailyBudget(Number(e.target.value))}
+            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-indigo-500"
+          />
+
+          <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono bg-muted/40 p-2 rounded-lg border border-border/60">
+            <div>Ad Spend: <strong className="text-foreground">${adInventory}</strong></div>
+            <div>Polsia Fee: <strong className="text-foreground">${polsiaFee}</strong></div>
+            <div>Est. Impressions: <strong className="text-indigo-400">{estImpressions}</strong></div>
+            <div>Est. Clicks: <strong className="text-indigo-400">{estClicks}</strong></div>
+          </div>
+
+          <Button
+            size="sm"
+            onClick={() => setAdRunning(!adRunning)}
+            className={cn(
+              "w-full text-xs font-semibold mt-1",
+              adRunning ? "bg-rose-600 hover:bg-rose-500 text-white" : "bg-indigo-600 hover:bg-indigo-500 text-white"
+            )}
+          >
+            {adRunning ? "Pause Campaign" : `Deploy $${adDailyBudget}/day Autonomous Growth`}
+          </Button>
+        </div>
+      </PanelCard>
+
       {OUTPUT_CHANNELS.map((ch) => {
         const Icon = ch.icon;
         const isDistribute = ch.id === "distribute";
