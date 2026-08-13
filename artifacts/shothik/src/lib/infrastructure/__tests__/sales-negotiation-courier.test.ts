@@ -42,6 +42,19 @@ describe("SalesNegotiationCourierService", () => {
     expect(result.aiResponseMessage).toContain("1400");
   });
 
+  it("should generate dynamic in-chat WhatsApp bKash payment link card", () => {
+    const pay = SalesNegotiationCourierService.generateWhatsAppPaymentLink({
+      merchantPhone: "01700000000",
+      amount: 1350,
+      orderId: "ORD_92813",
+      gateway: "bkash",
+    });
+
+    expect(pay.payUrl).toContain("pay.bkash.com.bd");
+    expect(pay.whatsappMessageCard).toContain("BKASH Direct Payment Link");
+    expect(pay.whatsappMessageCard).toContain("1350 BDT");
+  });
+
   it("should auto-book parcel delivery with Steadfast/Pathao Courier API", () => {
     const parcel = SalesNegotiationCourierService.bookParcelDelivery({
       customerName: "Tanvir Hossain",
