@@ -171,6 +171,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       attachments = [],
       onAttachFiles,
       onRemoveAttachment,
+      commandHint,
       errorMessage,
       onOpenResearchPanel,
       onVoiceOrbClick,
