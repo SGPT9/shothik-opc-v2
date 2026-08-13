@@ -37,6 +37,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PerplexityFocusSelector, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
 
 
 
@@ -187,7 +188,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [modelMenuOpen,  setModelMenuOpen]  = useState(false);
     const [isListening,    setIsListening]    = useState(false);
     const [voiceLang,      setVoiceLang]      = useState("bn-BD");
-    const [voiceLangOpen,  setVoiceLangOpen]  = useState(false);
+    const [voiceLangOpen, setVoiceLangOpen] = useState(false);
+    const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
     // Tier 2: Speed / Quality toggle
     const [quality, setQuality] = useState<"speed" | "balanced" | "quality">("balanced");
 
@@ -379,6 +381,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 ))}
               </div>
             )}
+
+            {/* ── Perplexity Focus Mode Selector ── */}
+            <div className="px-2 pb-1">
+              <PerplexityFocusSelector
+                currentFocus={perplexityFocus}
+                onSelectFocus={(mode) => setPerplexityFocus(mode)}
+              />
+            </div>
 
             {/* ── Bottom toolbar — Perplexity-clean: Attach · Mic · Mode · Model · Send + overflow ── */}
             <div className="flex items-center gap-1.5 px-2 pt-2 pb-2.5 border-t border-border/40 mt-1">

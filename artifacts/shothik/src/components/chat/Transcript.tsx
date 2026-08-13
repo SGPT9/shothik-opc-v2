@@ -13,6 +13,8 @@ import { AssistantSteps } from "./AssistantSteps";
 import { InlineArtifactCard } from "./InlineArtifactCard";
 import { ReplitAgentActivityBar } from "./ReplitAgentActivityBar";
 import { ProactiveNextActions } from "./ProactiveNextActions";
+import { PerplexitySourcesGrid } from "@/components/perplexity/PerplexitySourcesGrid";
+import { PerplexityRelatedQueries } from "@/components/perplexity/PerplexityRelatedQueries";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect } from "react";
@@ -247,17 +249,8 @@ export function Transcript({
                     />
                   )}
 
-                  {/* ── Sources ABOVE answer (Perplexity pattern — Tier 1) ── */}
-                  {Array.isArray(message.metadata?.citations) && message.metadata.citations.length > 0 && (
-                    <SourcesBadge
-                      variant="row"
-                      sources={message.metadata.citations.map((c: any) => ({
-                        id: typeof c === "string" ? c : c.id || String(Math.random()),
-                        title: typeof c === "string" ? c : c.title || "Source",
-                        url: typeof c === "object" ? c.url : undefined,
-                      }))}
-                    />
-                  )}
+                  {/* ── Sources Grid ABOVE answer (Perplexity Pattern) ── */}
+                  <PerplexitySourcesGrid />
 
                   {/* Main content */}
                   <div className="relative text-sm leading-relaxed">
@@ -309,6 +302,11 @@ export function Transcript({
                           );
                           onSelectPrompt?.(query, "general", targetTab as any);
                         }}
+                      />
+
+                      {/* ── Perplexity-Style Related Questions Pills ── */}
+                      <PerplexityRelatedQueries
+                        onSelectQuery={(q) => onSelectPrompt?.(q, "general")}
                       />
                     </>
                   )}
