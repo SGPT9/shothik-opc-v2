@@ -122,11 +122,25 @@ function TaskCard({
               <span className={cn("text-xs font-medium", statusColors.color)}>{t(STATUS_KEYS[task.status])}</span>
             </div>
           </div>
-          <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground flex-wrap">
-            <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
-              {t(TYPE_KEYS[task.taskType])}
-            </span>
-            <span>{timeAgo(task.createdAt)}</span>
+          <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-muted px-2 py-0.5 font-medium">
+                {t(TYPE_KEYS[task.taskType])}
+              </span>
+              <span>{timeAgo(task.createdAt)}</span>
+            </div>
+
+            {task.status !== "completed" && (
+              <button
+                type="button"
+                onClick={() => {
+                  alert(`Executing agent task "${task.title}" via InsForge BaaS task runner…`);
+                }}
+                className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2.5 py-1 text-[10px] font-bold hover:bg-indigo-500/20 transition"
+              >
+                ⚡ Execute Agent Task
+              </button>
+            )}
           </div>
         </div>
       </div>
