@@ -1,0 +1,117 @@
+import React, { useState } from "react";
+import {
+  ChatGptVoiceAgentService,
+  type VoiceExecutionActionType,
+  type VoiceActionResponse,
+} from "@/lib/voice/chatgpt-voice-agent-service";
+
+export interface ChatGPTVoiceOrbModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const ChatGPTVoiceOrbModal: React.FC<ChatGPTVoiceOrbModalProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const [orbState, setOrbState] = useState<"listening" | "thinking" | "speaking" | "idle">("idle");
+  const [activeResponse, setActiveResponse] = useState<VoiceActionResponse | null>(null);
+
+  if (!isOpen) return null;
+
+  const triggerVoiceAction = (actionType: VoiceExecutionActionType) => {
+    setOrbState("thinking");
+    setTimeout(() => {
+      const res = ChatGptVoiceAgentService.executeVoiceAction("Voice Command", actionType, "bn-BD");
+      setActiveResponse(res);
+      setOrbState("speaking");
+    }, 600);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-between p-8 text-slate-100">
+      {/* Top Bar */}
+      <div className="w-full max-w-2xl flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span className="text-xs font-bold text-slate-300 uppercase tracking-widest">ChatGPT Voice Mode — Shothik Execution</span>
+        </div>
+        <button onClick={onClose} className="w-9 h-9 rounded-full bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 flex items-center justify-center text-sm">✕</button>
+      </div>
+
+      {/* Center Animated Pulsing ChatGPT Fluid Voice Orb */}
+      <div className="flex flex-col items-center justify-center my-auto space-y-8">
+        <div className="relative flex items-center justify-center">
+          {/* Fluid Wave Rings */}
+          <div className={`absolute w-64 h-64 rounded-full bg-emerald-500/10 border border-emerald-500/30 transition-all duration-700 ${orbState === "speaking" || orbState === "listening" ? "scale-125 animate-ping opacity-60" : "scale-100 opacity-20"}`}></div>
+          <div className={`absolute w-48 h-48 rounded-full bg-purple-500/20 border border-purple-500/40 transition-all duration-500 ${orbState === "thinking" ? "animate-spin opacity-80" : "opacity-40"}`}></div>
+
+          {/* Core Orb Sphere */}
+          <button
+            onClick={() => setOrbState(orbState === "idle" ? "listening" : "idle")}
+            className="relative w-36 h-36 rounded-full bg-gradient-to-tr from-emerald-500 via-indigo-600 to-purple-600 shadow-2xl shadow-emerald-500/30 flex items-center justify-center p-1 group hover:scale-105 transition-transform"
+          >
+            <div className="w-full h-full rounded-full bg-slate-950/90 flex flex-col items-center justify-center text-center p-4">
+              <span className="text-3xl select-none">🎙️</span>
+              <span className="text-[10px] font-mono uppercase font-bold text-emerald-400 mt-1">{orbState}</span>
+            </div>
+          </button>
+        </div>
+
+        {/* Spoken Action Transcript Subtitle */}
+        <div className="max-w-md text-center space-y-2">
+          {activeResponse ? (
+            <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-2xl shadow-xl space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-400 font-mono">
+                {activeResponse.actionTitle}
+              </span>
+              <p className="text-sm font-medium text-slate-100 leading-relaxed">
+                "{activeResponse.spokenTranscript}"
+              </p>
+            </div>
+          ) : (
+            <p className="text-xs text-slate-400">
+              "কথা বলুন অথবা নিচের রিয়েল-ওয়ার্ল্ড অ্যাকশন সিলেক্ট করুন..."
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom 1-Tap Execution Action Buttons */}
+      <div className="w-full max-w-xl space-y-3">
+        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block text-center font-mono">1-Tap Real-World Voice Execution Actions</span>
+        <div className="grid grid-cols-3 gap-3">
+          <button
+            onClick={() => triggerVoiceAction("bkash_verify_payment")}
+            className="bg-slate-900 border border-slate-800 hover:border-emerald-500 p-3 rounded-2xl text-left space-y-1 transition-all group"
+          >
+            <div className="flex items-center gap-1.5 text-xs font-bold text-pink-400">
+              <span>📲</span> bKash Verify
+            </div>
+            <p className="text-[10px] text-slate-400">Auto 10-char TrxID check</p>
+          </button>
+
+          <button
+            onClick={() => triggerVoiceAction("steadfast_book_courier")}
+            className="bg-slate-900 border border-slate-800 hover:border-emerald-500 p-3 rounded-2xl text-left space-y-1 transition-all group"
+          >
+            <div className="flex items-center gap-1.5 text-xs font-bold text-orange-400">
+              <span>📦</span> Courier Book
+            </div>
+            <p className="text-[10px] text-slate-400">Steadfast WhatsApp parcel</p>
+          </button>
+
+          <button
+            onClick={() => triggerVoiceAction("nbr_tax_clearance_form11ga")}
+            className="bg-slate-900 border border-slate-800 hover:border-emerald-500 p-3 rounded-2xl text-left space-y-1 transition-all group"
+          >
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-400">
+              <span>📜</span> NBR Form 11GA
+            </div>
+            <p className="text-[10px] text-slate-400">e-TIN Tax rebate clearance</p>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
