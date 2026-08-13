@@ -42,7 +42,7 @@ describe("SalesNegotiationCourierService", () => {
     expect(result.aiResponseMessage).toContain("1400");
   });
 
-  it("should generate dynamic in-chat WhatsApp bKash payment link card", () => {
+  it("should generate dynamic in-chat WhatsApp bKash payment link card with 1-tap mobile app deep link", () => {
     const pay = SalesNegotiationCourierService.generateWhatsAppPaymentLink({
       merchantPhone: "01700000000",
       amount: 1350,
@@ -51,7 +51,8 @@ describe("SalesNegotiationCourierService", () => {
     });
 
     expect(pay.payUrl).toContain("pay.bkash.com.bd");
-    expect(pay.whatsappMessageCard).toContain("BKASH Direct Payment Link");
+    expect(pay.appDeepLink).toContain("bkash://payment");
+    expect(pay.whatsappMessageCard).toContain("BKASH 1-Tap Mobile Payment Link");
     expect(pay.whatsappMessageCard).toContain("1350 BDT");
   });
 
