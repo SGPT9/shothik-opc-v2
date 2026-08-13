@@ -34,6 +34,29 @@ function isSameOriginApi(rawUrl: string): boolean {
   }
 }
 
+function safeString(val: any): string {
+  if (val === null || val === undefined) return String(val);
+  if (typeof val === 'string') return val;
+  if (val instanceof Error) return val.message || val.name || 'Error';
+  if (typeof val === 'object') {
+    try {
+      if (typeof val.message === 'string') return val.message;
+      return JSON.stringify(val);
+    } catch {
+      try {
+        return Object.prototype.toString.call(val);
+      } catch {
+        return '[Object]';
+      }
+    }
+  }
+  try {
+    return String(val);
+  } catch {
+    return '[Unknown]';
+  }
+}
+
 class DebugLogStore {
   private entries: DebugLogEntry[] = [];
   private nextId = 1;
@@ -148,9 +171,10 @@ class DebugLogStore {
         return response;
       } catch (err: any) {
         const duration = Math.round(performance.now() - start);
-        self.error('fetch', `${method} ${safePath} FAILED: ${err.message}`, {
+        const errMsg = safeString(err?.message || err);
+        self.error('fetch', `${method} ${safePath} FAILED: ${errMsg}`, {
           duration: `${duration}ms`,
-          error: err.message,
+          error: errMsg,
         });
         throw err;
       }
@@ -162,16 +186,21 @@ class DebugLogStore {
     this.handlersInstalled = true;
 
     this.errorHandler = (event: ErrorEvent) => {
-      this.error('window', `Uncaught: ${event.message}`, {
-        filename: event.filename,
-        line: event.lineno,
-        col: event.colno,
-      });
+      try {
+        const msg = safeString(event.message || event.error);
+        this.error('window', `Uncaught: ${msg}`, {
+          filename: event.filename,
+          line: event.lineno,
+          col: event.colno,
+        });
+      } catch {}
     };
 
     this.rejectionHandler = (event: PromiseRejectionEvent) => {
-      const reason = event.reason?.message || event.reason?.toString() || 'Unknown rejection';
-      this.error('promise', `Unhandled rejection: ${reason}`);
+      try {
+        const reason = safeString(event.reason);
+        this.error('promise', `Unhandled rejection: ${reason}`);
+      } catch {}
     };
 
     window.addEventListener('error', this.errorHandler);
