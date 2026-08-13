@@ -12,8 +12,12 @@ export default defineConfig({
       '**/*.{test,spec}.{ts,tsx,js,jsx}',
     ],
     exclude: [
+      '**/node_modules/**',
       'node_modules/**',
+      '**/.next/**',
       '.next/**',
+      '**/dist/**',
+      'dist/**',
       'e2e/**',
       'deer-flow-backend/**',
       'tmp/**',
