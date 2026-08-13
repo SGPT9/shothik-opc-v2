@@ -21,25 +21,42 @@ export const VTuberVoiceAvatarOverlay: React.FC<VTuberVoiceAvatarOverlayProps> =
 }) => {
   const [speechState, setSpeechState] = useState<"idle" | "listening" | "speaking">("idle");
   const [currentViseme, setCurrentViseme] = useState<string>("viseme_silence");
+  const [selectedLang, setSelectedLang] = useState<string>("bn-BD");
 
   if (!isActive) return null;
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 pointer-events-auto">
       {/* Avatar Speech Subtitle Bubble */}
-      <div className="bg-slate-900/95 border border-purple-500/40 text-slate-100 px-4 py-3 rounded-2xl shadow-2xl max-w-xs backdrop-blur-md text-xs leading-relaxed animate-fade-in">
-        <div className="flex items-center justify-between gap-2 mb-1">
+      <div className="bg-slate-900/95 border border-purple-500/40 text-slate-100 px-4 py-3 rounded-2xl shadow-2xl max-w-xs backdrop-blur-md text-xs leading-relaxed animate-fade-in space-y-1.5">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
           <span className="font-semibold text-purple-400 text-xs flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             {avatarName}
           </span>
-          <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono">
-            {speechState}
-          </span>
+          <select
+            value={selectedLang}
+            onChange={(e) => setSelectedLang(e.target.value)}
+            className="bg-slate-950 border border-slate-700 rounded-lg px-2 py-0.5 text-[10px] text-purple-300 font-bold"
+          >
+            <option value="bn-BD">🇧🇩 Bangladeshi Bangla (ঢাকা)</option>
+            <option value="bn-IN">🇮🇳 Indian Bangla (কলকাতা)</option>
+            <option value="bn-BD-banglish">🇧🇩 Banglish Code-Mixed</option>
+            <option value="hi-IN">🇮🇳 Hindi (हिंदी)</option>
+            <option value="ur-PK">🇵🇰 Urdu (اردو)</option>
+            <option value="ta-IN">🇮🇳 Tamil (தமிழ்)</option>
+            <option value="as-IN">🇮🇳 Assamese (অসমীয়া)</option>
+          </select>
         </div>
         <p className="text-slate-200">
           {speechState === "speaking"
-            ? "আপনার Second-Me Twin ওভারনাইট অ্যানালাইসিস কমপ্লিট করেছে! (Silero VAD Voice Active)"
+            ? selectedLang === "bn-BD"
+              ? "আপনার Second-Me Twin ওভারনাইট অ্যানালাইসিস কমপ্লিট করেছে! (Silero VAD Voice Active)"
+              : selectedLang === "bn-IN"
+              ? "আপনার সেকেন্ড-মি টুইন ওভারনাইট বিশ্লেষণ সম্পন্ন করেছে।"
+              : selectedLang === "bn-BD-banglish"
+              ? "Apnar Second-Me Twin overnight analysis complete koreche! (bKash verified)"
+              : "आपका AI ट्विन विश्लेषण पूरा हो चुका है।"
             : "কথা বলুন, আমি শুনছি..."}
         </p>
       </div>
