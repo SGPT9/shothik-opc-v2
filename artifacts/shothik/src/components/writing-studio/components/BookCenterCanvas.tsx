@@ -70,6 +70,8 @@ export function BookCenterCanvas({
               </button>
             );
           })}
+        </div>
+
         <div className="flex items-center gap-1.5 shrink-0">
           <Button
             size="sm"
