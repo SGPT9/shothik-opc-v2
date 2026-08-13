@@ -20,6 +20,13 @@ import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
+import { StartupValidationFunnelModal } from "@/components/chat/StartupValidationFunnelModal";
+import { MerchantOnboardingWizard } from "@/components/onboarding/MerchantOnboardingWizard";
+import { BcsExamPrepPortal } from "@/components/education/BcsExamPrepPortal";
+import { FreelancerTaxRemittanceModal } from "@/components/finance/FreelancerTaxRemittanceModal";
+import { LandRecordPorchaModal } from "@/components/government/LandRecordPorchaModal";
+import { NbrTaxReturnModal } from "@/components/finance/NbrTaxReturnModal";
+import { StudentAssignmentSlideModal } from "@/components/education/StudentAssignmentSlideModal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +61,15 @@ export function ChatAgentPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [voiceActive, setVoiceActive] = useState(false);
+
+  // ── Ecosystem Modals State ──
+  const [showFunnelModal, setShowFunnelModal] = useState(false);
+  const [showMerchantModal, setShowMerchantModal] = useState(false);
+  const [showBcsModal, setShowBcsModal] = useState(false);
+  const [showFreelancerModal, setShowFreelancerModal] = useState(false);
+  const [showLandModal, setShowLandModal] = useState(false);
+  const [showNbrModal, setShowNbrModal] = useState(false);
+  const [showSlideModal, setShowSlideModal] = useState(false);
 
   // Open artifact panel on-demand
   const handleOpenArtifact = useCallback((type: string, messageOrContent?: any) => {
@@ -224,6 +240,34 @@ export function ChatAgentPage() {
           <div className="flex flex-1 min-h-0 w-full overflow-hidden">
             {/* Full-width Chat Column */}
             <div className="relative flex flex-col min-w-0 h-full flex-1 overflow-hidden">
+              {/* Replit Agent Quick Ecosystem Action Bar */}
+              <div className="bg-slate-950/80 border-b border-slate-800 px-4 py-1.5 flex items-center justify-between overflow-x-auto text-[11px] font-medium text-slate-300 gap-2 shrink-0 select-none">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px] shrink-0">🚀 Replit AI Tools:</span>
+                <div className="flex items-center gap-1.5 overflow-x-auto">
+                  <button onClick={() => setShowFunnelModal(true)} className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/60 transition flex items-center gap-1 shrink-0">
+                    <span>⚡</span> 3-Step Funnel
+                  </button>
+                  <button onClick={() => setShowMerchantModal(true)} className="px-2.5 py-1 rounded-lg bg-blue-950/60 border border-blue-500/30 text-blue-300 hover:bg-blue-900/60 transition flex items-center gap-1 shrink-0">
+                    <span>🛍️</span> Merchant Store
+                  </button>
+                  <button onClick={() => setShowBcsModal(true)} className="px-2.5 py-1 rounded-lg bg-purple-950/60 border border-purple-500/30 text-purple-300 hover:bg-purple-900/60 transition flex items-center gap-1 shrink-0">
+                    <span>🎓</span> BCS Exam Prep
+                  </button>
+                  <button onClick={() => setShowFreelancerModal(true)} className="px-2.5 py-1 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/60 transition flex items-center gap-1 shrink-0">
+                    <span>💳</span> Freelancer Tax
+                  </button>
+                  <button onClick={() => setShowLandModal(true)} className="px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-500/30 text-amber-300 hover:bg-amber-900/60 transition flex items-center gap-1 shrink-0">
+                    <span>🏛️</span> Land Porcha
+                  </button>
+                  <button onClick={() => setShowNbrModal(true)} className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/60 transition flex items-center gap-1 shrink-0">
+                    <span>📜</span> Nbr e-Return
+                  </button>
+                  <button onClick={() => setShowSlideModal(true)} className="px-2.5 py-1 rounded-lg bg-pink-950/60 border border-pink-500/30 text-pink-300 hover:bg-pink-900/60 transition flex items-center gap-1 shrink-0">
+                    <span>📊</span> Student Slides
+                  </button>
+                </div>
+              </div>
+
               <ComponentErrorBoundary title="Transcript Panel Interrupted">
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <Transcript
@@ -270,6 +314,15 @@ export function ChatAgentPage() {
                 isActive={voiceActive}
                 onClose={() => setVoiceActive(false)}
               />
+
+              {/* Mounted Ecosystem Modals */}
+              <StartupValidationFunnelModal isOpen={showFunnelModal} onClose={() => setShowFunnelModal(false)} />
+              <MerchantOnboardingWizard isOpen={showMerchantModal} onClose={() => setShowMerchantModal(false)} />
+              <BcsExamPrepPortal isOpen={showBcsModal} onClose={() => setShowBcsModal(false)} />
+              <FreelancerTaxRemittanceModal isOpen={showFreelancerModal} onClose={() => setShowFreelancerModal(false)} />
+              <LandRecordPorchaModal isOpen={showLandModal} onClose={() => setShowLandModal(false)} />
+              <NbrTaxReturnModal isOpen={showNbrModal} onClose={() => setShowNbrModal(false)} />
+              <StudentAssignmentSlideModal isOpen={showSlideModal} onClose={() => setShowSlideModal(false)} />
             </div>
           </div>
         )}
