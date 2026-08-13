@@ -1,6 +1,4 @@
-import { lazy } from 'react';
-
-
+import React, { lazy, Suspense, useState } from 'react';
 import { cn } from "../../lib/utils";
 import { useTranslation } from "../../i18n";
 import {
@@ -16,8 +14,6 @@ import {
   ChevronUp,
   AlertTriangle,
 } from "lucide-react";
-
-import { useState } from "react";
 
 const Marked = lazy(() => import('marked-react'));
 
@@ -158,7 +154,9 @@ function TaskCard({
           {expanded && (
             <div className="px-4 pb-4 space-y-2">
               <div className="text-xs text-muted-foreground leading-relaxed bg-muted rounded-lg p-3 prose prose-xs prose-neutral dark:prose-invert max-w-none [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0 [&_h1]:text-sm [&_h2]:text-sm [&_h3]:text-xs [&_h4]:text-xs">
-                <Marked>{task.result}</Marked>
+                <Suspense fallback={<p>{task.result}</p>}>
+                  <Marked>{task.result}</Marked>
+                </Suspense>
               </div>
               {onContinueInWritingStudio && (
                 <button
