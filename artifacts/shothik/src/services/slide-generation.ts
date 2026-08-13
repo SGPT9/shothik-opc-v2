@@ -133,3 +133,35 @@ export const getUserSlideJobs = async (userId: string): Promise<SlideJob[]> => {
     return [];
   }
 };
+
+// Cancel job
+export const cancelSlideJob = async (jobId: string): Promise<boolean> => {
+  try {
+    const response = await fetch(`${SLIDE_API_URL}/slides/${jobId}/cancel`, {
+      method: "POST",
+    });
+    const data = await response.json();
+    return data.success;
+  } catch (error) {
+    console.error("Failed to cancel job:", error);
+    return false;
+  }
+};
+
+// InsForge PostgreSQL DB Sync
+export const syncJobToInsForgePostgres = async (job: SlideJob): Promise<boolean> => {
+  try {
+    const { data, error } = await insforge.database
+      .from("slide_jobs")
+      .insert([{ id: job.id, status: job.status, progress: job.progress, created_at: new Date().toISOString() }]);
+
+    if (error) {
+      console.warn("InsForge DB insert warning (fallback active):", error.message);
+    }
+    return !error;
+  } catch (e) {
+    console.warn("InsForge DB sync offline fallback:", e);
+    return false;
+  }
+};
+
