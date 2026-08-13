@@ -18,6 +18,7 @@ export interface DeviceHardwareProfile {
   vramGb: number;
   isOnline: boolean;
   hasGpu: boolean;
+  connectionType?: '3g' | '4g' | '5g' | 'wifi' | 'offline';
 }
 
 export interface ModelRouteSelection {
