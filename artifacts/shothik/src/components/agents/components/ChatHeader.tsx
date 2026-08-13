@@ -120,30 +120,10 @@ export function ChatHeader({
           {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-500" />}
         </button>
 
-        <span className="hidden xl:inline-flex items-center gap-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-mono font-bold text-cyan-400">
-          <Zap className="h-2.5 w-2.5 text-cyan-400" />
-          Instant Speed
-        </span>
-
-        <button
-          type="button"
-          onClick={async () => {
-            alert("👑 Starting 7-Day Autonomy Mode for your business…");
-          }}
-          className="hidden lg:inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2.5 py-0.5 text-[10px] font-bold text-amber-300 hover:bg-amber-500/25 transition shadow-sm"
-        >
-          <Crown className="h-2.5 w-2.5 text-amber-400" />
-          7-Day Autonomy
-        </button>
-
-        <span className="hidden lg:inline-flex items-center gap-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.5 text-[10px] font-semibold text-indigo-400">
-          <Sparkles className="h-2.5 w-2.5 text-indigo-400" />
-          Polsia AI Cofounder
-        </span>
-
-        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+        {/* Clean status indicator */}
+        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold text-emerald-400">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Online
+          <span>Online</span>
         </span>
       </div>
     </div>
