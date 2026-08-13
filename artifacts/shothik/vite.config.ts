@@ -110,6 +110,85 @@ function localDevApiPlugin() {
           return;
         }
 
+        // 4. POST /api/ai/needle-dispatch
+        if (req.method === 'POST' && url === '/api/ai/needle-dispatch') {
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', () => {
+            try {
+              const body = JSON.parse(bodyStr || '{}');
+              const mode = body.mode || 'chat';
+              const query = body.query || '';
+              const threshold = body.confidenceThreshold || 0.85;
+
+              const isHighConfidence = query.startsWith('@') || /bkash|sum|revenue|rewrite|fix|arxiv|slide/i.test(query);
+              const confidence = isHighConfidence ? 0.92 : 0.65;
+              const escalated = confidence < threshold;
+
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({
+                mode,
+                query,
+                confidence,
+                escalatedToFrontier: escalated,
+                selectedTier: escalated ? 'tier3_cloud_frontier' : 'tier0_micro_edge',
+                engine: escalated ? 'switchyard_stage_router' : 'needle_2',
+                reason: escalated ? 'Escalated to cloud reasoner via Switchyard' : 'Fast-path edge execution via Needle 2 (28MB RAM)',
+              }));
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+          return;
+        }
+
+        // 5. POST /api/ai/switchyard-proxy
+        if (req.method === 'POST' && url === '/api/ai/switchyard-proxy') {
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', () => {
+            try {
+              const body = JSON.parse(bodyStr || '{}');
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({
+                status: 'success',
+                translatedProtocol: 'universal_anthropic_openai',
+                primaryProvider: 'gemini-2.5-flash',
+                failoverStandby: ['deepseek-v3', 'claude-3-5-sonnet'],
+                response: `[Switchyard Proxy] Processed request: ${body.prompt || 'ok'}`,
+              }));
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+          return;
+        }
+
+        // 6. POST /api/ai/refine-lesson
+        if (req.method === 'POST' && url === '/api/ai/refine-lesson') {
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', () => {
+            try {
+              const body = JSON.parse(bodyStr || '{}');
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({
+                status: 'refined',
+                lessonId: `lesson_${Date.now()}`,
+                snapshotId: `snap_${Date.now()}`,
+                rule: body.rule || 'Generic memory refinement',
+                timestamp: Date.now(),
+              }));
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+          return;
+        }
+
         next();
       });
     }
