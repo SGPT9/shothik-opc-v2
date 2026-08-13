@@ -10,7 +10,6 @@ export interface ChatHeaderProps {
   onTabChange?: (tab: string) => void;
   onToggleSidebar?: () => void;
   sidebarOpen?: boolean;
-  onSwarmDebateClick?: () => void;
   onPaywallClick?: () => void;
 }
 
@@ -21,7 +20,6 @@ export function ChatHeader({
   onTabChange,
   onToggleSidebar,
   sidebarOpen = false,
-  onSwarmDebateClick,
   onPaywallClick,
 }: ChatHeaderProps) {
   const [isDark, setIsDark] = useState(true);
@@ -68,19 +66,6 @@ export function ChatHeader({
 
       {/* Right: Actions + Theme Toggle */}
       <div className="flex items-center gap-1.5">
-        {/* 🐝 Swarm Debate Button */}
-        {onSwarmDebateClick && (
-          <button
-            type="button"
-            onClick={onSwarmDebateClick}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 hover:bg-slate-800 text-[11px] font-semibold transition"
-            title="Run 3-Agent Swarm Adversarial Debate"
-          >
-            <span>🐝</span>
-            <span>Swarm</span>
-          </button>
-        )}
-
         {/* ⚡ Credit Badge */}
         {onPaywallClick && (
           <button
