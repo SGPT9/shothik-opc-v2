@@ -170,6 +170,7 @@ export default defineConfig(async ({ mode }) => {
       // "motion" package is not installed; framer-motion provides the same API
       'motion/react-client': path.resolve(import.meta.dirname, 'src/lib/stubs/motion-react-client.ts'),
       'motion/react': 'framer-motion',
+      '@letta-ai/letta-client': path.resolve(import.meta.dirname, 'src/lib/stubs/letta-client.ts'),
     },
     dedupe: ['react', 'react-dom'],
   },
