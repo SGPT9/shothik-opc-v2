@@ -57,9 +57,18 @@ export class BkashNagadPaymentService {
   }
 
   /**
-   * Verifies bKash/Nagad payment status using PaymentID or Transaction ID (trxID).
+   * Verifies bKash/Nagad payment status using PaymentID or Transaction ID (trxID) and auto-dispatches courier.
    */
-  static async verifyTransaction(paymentId: string, provider: "bkash" | "nagad"): Promise<MfsVerificationResult> {
+  static async verifyTransaction(
+    paymentId: string,
+    provider: "bkash" | "nagad",
+    autoBookCourierParams?: {
+      customerName: string;
+      customerPhone: string;
+      deliveryAddress: string;
+      productName: string;
+    }
+  ): Promise<MfsVerificationResult & { courierBooking?: unknown }> {
     const trxID = `TRX_${provider.toUpperCase()}_${Date.now()}`;
 
     logger.info("[mfs-payment] Verifying bKash/Nagad transaction status", {
@@ -67,6 +76,22 @@ export class BkashNagadPaymentService {
       provider,
       trxID,
     });
+
+    let courierBooking: unknown = undefined;
+
+    if (autoBookCourierParams) {
+      const { SalesNegotiationCourierService } = await import("./sales-negotiation-courier");
+      courierBooking = SalesNegotiationCourierService.bookParcelDelivery({
+        customerName: autoBookCourierParams.customerName,
+        customerPhone: autoBookCourierParams.customerPhone,
+        deliveryAddress: autoBookCourierParams.deliveryAddress,
+        district: "Dhaka",
+        productName: autoBookCourierParams.productName,
+        itemQuantity: 1,
+        cashOnDeliveryAmount: 0, // Fully paid via bKash
+        courierProvider: "steadfast",
+      });
+    }
 
     return {
       verified: true,
@@ -77,6 +102,7 @@ export class BkashNagadPaymentService {
       provider,
       status: "completed",
       paidAt: new Date().toISOString(),
+      courierBooking,
     };
   }
 }
