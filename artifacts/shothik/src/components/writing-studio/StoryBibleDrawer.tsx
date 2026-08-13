@@ -162,7 +162,15 @@ export function StoryBibleDrawer({ isOpen, onClose, projectId = 'proj-default', 
                       {item.category.replace('_', ' ')}
                     </span>
                   </div>
-                  <p className="text-slate-400 leading-relaxed">{item.details}</p>
+                  <p className="text-slate-400 leading-relaxed mb-2">{item.details}</p>
+                  
+                  {/* MateClaw-Style Bidirectional Wiki Tag */}
+                  <div className="flex items-center justify-between pt-1.5 border-t border-slate-800/50 text-[10px] text-slate-500 font-mono">
+                    <span className="flex items-center gap-1 text-indigo-400/80">
+                      <span>[[{item.name}]]</span>
+                    </span>
+                    <span className="text-slate-500">Auto-Linked</span>
+                  </div>
                 </div>
               ))
             )}
