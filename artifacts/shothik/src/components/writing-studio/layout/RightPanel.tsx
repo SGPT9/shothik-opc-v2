@@ -33,7 +33,7 @@ import type { Id } from '@/convex/_generated/dataModel';
 
 const NobelPanel = lazy(() => import('@/components/writing-studio/nobel/NobelPanel').then(m => ({ default: m.NobelPanel })));
 const CharacterPanel = lazy(() => import('@/components/writing-studio/nobel/CharacterPanel').then(m => ({ default: m.CharacterPanel })));
-const AccessibilityReportPanel = lazy(() => import('@/components/writing-studio/validation/AccessibilityReportPanel').then(m => ({ default: m.AccessibilityReportPanel })));
+import { MultiAgentReviewBoard } from '../components/MultiAgentReviewBoard';
 import { useAiCoWriter } from '@/hooks/useAiCoWriter';
 import type { InterfaceMode } from '@/lib/user-preferences';
 import type { UXAnalysisResult } from '@/lib/ux-agent-engine';
@@ -567,57 +567,13 @@ function PlanTab({ content }: { content: string }) {
   );
 }
 
-function CritiqueTab({ content }: { content: string }) {
-  const [focus, setFocus] = useState('');
-  const { result, isLoading, error, run } = useTabAI(
-    'You are a professional writing critic and editor. Provide a detailed critique of the writing: identify structural weaknesses, argument gaps, clarity issues, tone inconsistencies, and pacing problems. Also highlight what is working well. Be specific and constructive.',
-    content
-  );
-
-  const handleCritique = () => {
-    const instruction = focus.trim()
-      ? `Critique this writing with a specific focus on: "${focus}". Identify both strengths and areas for improvement.`
-      : 'Provide a thorough, balanced critique of this writing covering structure, clarity, argument strength, and style.';
-    run(instruction);
-  };
-
+function CritiqueTab({ content, onApplyFix }: { content: string; onApplyFix?: (fix: string) => void }) {
   return (
-    <div className="flex-1 flex flex-col overflow-hidden p-4 gap-3">
-      <div className="flex items-center gap-2">
-        <MessageSquare className="w-4 h-4 text-brand" />
-        <span className="text-xs font-bold text-zinc-600 dark:text-zinc-300 uppercase tracking-wide">Critique Mode</span>
-      </div>
-      <div className="flex gap-2">
-        <input
-          value={focus}
-          onChange={e => setFocus(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') handleCritique(); }}
-          placeholder="Focus area (e.g. pacing, argument) — optional"
-          className="flex-1 px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 outline-none focus:ring-1 focus:ring-brand"
-          disabled={isLoading}
-        />
-        <button
-          onClick={handleCritique}
-          disabled={isLoading || !content.trim()}
-          className="px-3 py-2 bg-brand text-white text-xs rounded-lg hover:bg-brand/90 disabled:opacity-50 transition-colors flex items-center gap-1"
-        >
-          {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <MessageSquare className="w-3.5 h-3.5" />}
-        </button>
-      </div>
-      {!result && !isLoading && (
-        <div className="text-center py-6 text-zinc-400">
-          <div className="text-2xl mb-2">✍️</div>
-          <p className="text-xs">{content.trim() ? 'Click the button to receive a detailed critique of your writing.' : 'Write something first, then come back for a critique.'}</p>
-        </div>
-      )}
-      {error && <p className="text-xs text-destructive">{error}</p>}
-      {result && (
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
-          <div className="bg-white dark:bg-zinc-800/60 rounded-lg border border-zinc-200 dark:border-zinc-700 p-3">
-            <p className="text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">{result}</p>
-          </div>
-        </div>
-      )}
+    <div className="flex-1 flex flex-col overflow-hidden">
+      <MultiAgentReviewBoard
+        chapterContent={content}
+        onApplyFix={onApplyFix}
+      />
     </div>
   );
 }

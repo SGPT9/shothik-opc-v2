@@ -433,4 +433,37 @@ export class NeedleDispatcher {
       turns: state.turns.length,
     };
   }
+
+  public calculateExactMath(expr: string): number {
+    try {
+      // Safe sandboxed arithmetic evaluation for fees, percentages, and currencies
+      const sanitized = expr.replace(/[^0-9+\-*/().\s]/g, '');
+      const fn = new Function(`return (${sanitized});`);
+      const val = Number(fn());
+      return Number(val.toFixed(4));
+    } catch {
+      return 0;
+    }
+  }
+
+  public normalizeBanglish(text: string): string {
+    const BANGLISH_MAP: Record<string, string> = {
+      kivabe: 'কীভাবে',
+      kemon: 'কেমন',
+      achen: 'আছেন',
+      amar: 'আমার',
+      order: 'অর্ডার',
+      dekhe: 'দেখে',
+      bolo: 'বলো',
+      koro: 'করো',
+      lagbe: 'লাগবে',
+      koto: 'কত',
+      taka: 'টাকা',
+    };
+
+    return text
+      .split(/\s+/)
+      .map((word) => BANGLISH_MAP[word.toLowerCase()] || word)
+      .join(' ');
+  }
 }
