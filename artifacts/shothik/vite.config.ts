@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, type Plugin, type PluginOption } from 'vite';
 import path from 'path';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
@@ -19,7 +19,7 @@ if (Number.isNaN(port) || port <= 0) {
 
 const basePath = process.env.BASE_PATH ?? '/';
 
-function localDevApiPlugin() {
+function localDevApiPlugin(): Plugin {
   return {
     name: 'local-dev-api-middleware',
     configureServer(server: any) {
@@ -253,26 +253,26 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
-  base: basePath,
-  plugins: [
-    localDevApiPlugin(),
-    react(),
-    tailwindcss(),
-    runtimeErrorOverlay(),
-    ...(process.env.NODE_ENV !== 'production' &&
-    process.env.REPL_ID !== undefined
-      ? [
-          await import('@replit/vite-plugin-cartographer').then((m) =>
-            m.cartographer({
-              root: path.resolve(import.meta.dirname, '..'),
-            }),
-          ),
-          await import('@replit/vite-plugin-dev-banner').then((m) =>
-            m.devBanner(),
-          ),
-        ]
-      : []),
-  ],
+    base: basePath,
+    plugins: [
+      localDevApiPlugin(),
+      react(),
+      tailwindcss(),
+      runtimeErrorOverlay(),
+      ...(process.env.NODE_ENV !== 'production' &&
+      process.env.REPL_ID !== undefined
+        ? [
+            await import('@replit/vite-plugin-cartographer').then((m) =>
+              m.cartographer({
+                root: path.resolve(import.meta.dirname, '..'),
+              }),
+            ),
+            await import('@replit/vite-plugin-dev-banner').then((m) =>
+              m.devBanner(),
+            ),
+          ]
+        : []),
+    ] as PluginOption[],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, 'src'),
