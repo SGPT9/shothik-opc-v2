@@ -165,3 +165,13 @@ export const syncJobToInsForgePostgres = async (job: SlideJob): Promise<boolean>
   }
 };
 
+// InsForge Realtime WebSocket Subscription
+export const subscribeToInsForgeRealtimeSlideUpdates = (
+  jobId: string,
+  onUpdate: (payload: any) => void
+) => {
+  return insforge.realtime.subscribe(`slide_jobs:${jobId}`, (payload) => {
+    onUpdate(payload);
+  });
+};
+
