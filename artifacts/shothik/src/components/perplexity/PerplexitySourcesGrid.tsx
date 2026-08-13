@@ -56,7 +56,7 @@ export const PerplexitySourcesGrid: React.FC<PerplexitySourcesGridProps> = ({
             href={src.url}
             target="_blank"
             rel="noreferrer"
-            className="flex flex-col justify-between w-52 shrink-0 bg-slate-900/90 border border-slate-800 hover:border-emerald-500/50 p-3 rounded-xl transition-all duration-200 group shadow-sm hover:shadow-emerald-500/10"
+            className="flex flex-col justify-between w-56 shrink-0 bg-slate-900/95 border border-slate-800/90 hover:border-emerald-500/50 p-3.5 rounded-2xl transition-all duration-200 group shadow-md hover:shadow-emerald-500/10 backdrop-blur-md"
           >
             <div className="flex items-center gap-2 mb-1.5">
               <span className="w-5 h-5 rounded-md bg-slate-800 text-[10px] font-mono font-bold text-emerald-400 flex items-center justify-center border border-slate-700">

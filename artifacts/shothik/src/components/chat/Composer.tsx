@@ -330,8 +330,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       <div className="border-t border-border/50 bg-background/90 backdrop-blur-sm px-4 pt-3 pb-4">
         <div className="mx-auto flex max-w-3xl flex-col gap-2">
 
-          {/* ── Main input container ── */}
-          <div className="flex flex-col rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-200 focus-within:border-brand/50 focus-within:shadow-[0_0_0_3px_rgb(0_171_85_/_0.08)] focus-within:bg-background">
+          {/* ── Main input container (Perplexity rounded-3xl glassmorphic) ── */}
+          <div className="flex flex-col rounded-3xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-emerald-500/50 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)] focus-within:bg-slate-900">
 
             {/* Hidden file inputs */}
             <input ref={pdfInputRef} type="file" multiple className="hidden"
