@@ -5,7 +5,7 @@ export type ChatSurface =
   | "research"
   | "book-agent";
 
-export type ChatPersona = "cofounder" | "researcher" | "coworker";
+export type ChatPersona = "cofounder" | "researcher" | "coworker" | "coresearcher" | "finance_tax" | "merchant";
 export type ConversationStatus = "active" | "archived" | "deleted";
 export type MessageRole = "system" | "user" | "assistant" | "tool";
 export type MessageStatus = "streaming" | "completed" | "stopped" | "error";

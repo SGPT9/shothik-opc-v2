@@ -3,9 +3,7 @@ import React from "react";
 export type PerplexityFocusMode =
   | "all"
   | "pro_search"
-  | "academic"
-  | "finance_tax"
-  | "merchant";
+  | "academic";
 
 export interface PerplexityFocusOption {
   value: PerplexityFocusMode;
@@ -29,21 +27,9 @@ export const PERPLEXITY_FOCUS_OPTIONS: PerplexityFocusOption[] = [
   },
   {
     value: "academic",
-    label: "Academic & Papers",
+    label: "Academic",
     icon: "🎓",
     description: "PubMed, OpenAlex & Research Papers",
-  },
-  {
-    value: "finance_tax",
-    label: "Finance & NBR Tax",
-    icon: "💼",
-    description: "bKash ledger & Form 11GA Tax SROs",
-  },
-  {
-    value: "merchant",
-    label: "Merchant & Store",
-    icon: "🛍️",
-    description: "Polsia OPC store & Steadfast booking",
   },
 ];
 
@@ -56,8 +42,6 @@ export const PerplexityFocusSelector: React.FC<PerplexityFocusSelectorProps> = (
   currentFocus,
   onSelectFocus,
 }) => {
-  const activeOpt = PERPLEXITY_FOCUS_OPTIONS.find((o) => o.value === currentFocus) || PERPLEXITY_FOCUS_OPTIONS[0];
-
   return (
     <div className="flex items-center gap-1.5 overflow-x-auto py-1 text-xs">
       {PERPLEXITY_FOCUS_OPTIONS.map((opt) => {
