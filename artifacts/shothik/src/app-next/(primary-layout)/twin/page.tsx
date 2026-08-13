@@ -45,6 +45,19 @@ import {
   Mic,
   RotateCcw,
   Compass,
+  TrendingUp,
+  Play,
+  Menu,
+  Layers,
+  Settings,
+  HelpCircle,
+  Gift,
+  User,
+  Download,
+  LogOut,
+  Building2,
+  ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -496,6 +509,50 @@ function SubscriptionCard() {
               Keep drafts saved — $2/mo
             </Button>
           </div>
+        </div>
+      </div>
+    </PanelCard>
+  );
+}
+
+function CashFlowPnlCard() {
+  return (
+    <PanelCard className="border-emerald-500/30 bg-gradient-to-br from-background to-emerald-950/20">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
+            <TrendingUp className="h-4 w-4" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-foreground">Cash Flow & P&L</p>
+            <p className="text-[10px] font-mono text-emerald-400">65.2% Net Margin · Live</p>
+          </div>
+        </div>
+        <Badge variant="outline" className="border-emerald-500/40 text-[10px] text-emerald-400">
+          Profitable
+        </Badge>
+      </div>
+
+      <div className="mt-3 space-y-1.5 font-mono text-[11px]">
+        <div className="flex justify-between text-muted-foreground">
+          <span>Gross Revenue:</span>
+          <span className="font-bold text-foreground">৳45,000</span>
+        </div>
+        <div className="flex justify-between text-muted-foreground">
+          <span>bKash Fee (1.85%):</span>
+          <span className="text-rose-400">-৳832.50</span>
+        </div>
+        <div className="flex justify-between text-muted-foreground">
+          <span>Meta Ads ($50/day):</span>
+          <span className="text-rose-400">-৳6,000</span>
+        </div>
+        <div className="flex justify-between text-muted-foreground">
+          <span>Dokploy Hosting:</span>
+          <span className="text-rose-400">-৳120</span>
+        </div>
+        <div className="pt-1.5 border-t border-border flex justify-between font-bold text-xs">
+          <span className="text-foreground">Net Monthly Profit:</span>
+          <span className="text-emerald-400">৳38,047.50</span>
         </div>
       </div>
     </PanelCard>
@@ -1316,6 +1373,103 @@ function seedToDoc(seed: SavedSeed): TwinDocMock {
   };
 }
 
+const ACCOUNT_DRAWER_ITEMS = [
+  { label: 'My Portfolio', icon: Layers, href: '/portfolio', badge: '3 Companies' },
+  { label: 'New Company', icon: Building2, href: '/twin/new', badge: '$15/mo' },
+  { label: 'Credits & Usage', icon: Zap, href: '/billing/credits', badge: '500 Left' },
+  { label: 'Upgrade Plan', icon: TrendingUp, href: '/pricing', badge: 'Pro' },
+  { label: 'Manage Billing', icon: CreditCard, href: '/billing' },
+  { label: 'Company Settings', icon: Settings, href: '/settings/company' },
+  { label: 'Profile Settings', icon: User, href: '/settings/profile' },
+  { label: 'Email Preferences', icon: Mail, href: '/settings/email' },
+  { label: 'About Shothik', icon: Brain, href: '/about' },
+  { label: 'Giftshop', icon: Gift, href: '/giftshop' },
+  { label: 'Doctrine', icon: BookOpen, href: '/doctrine' },
+  { label: 'FAQ & Docs', icon: HelpCircle, href: '/docs' },
+  { label: 'Download Code', icon: Download, href: '/export/code', badge: 'ZIP' },
+  { label: 'Refer & Earn', icon: Share2, href: '/refer', badge: '30% RevShare' },
+  { label: 'Logout', icon: LogOut, href: '/auth/logout' },
+];
+
+function AccountDrawerModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md bg-[#0b101b] border-slate-800 text-slate-200">
+        <DialogTitle className="flex items-center justify-between text-base text-slate-100">
+          <div className="flex items-center gap-2">
+            <User className="w-4 h-4 text-indigo-400" />
+            <span>Account & Doctrine (15 Items)</span>
+          </div>
+          <Badge variant="outline" className="text-[10px] border-indigo-500/40 text-indigo-400">
+            500 Credits Active
+          </Badge>
+        </DialogTitle>
+        <DialogDescription className="text-xs text-slate-400">
+          Platform-wide account settings, billing, company slots, and developer doctrine.
+        </DialogDescription>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2 max-h-[60vh] overflow-y-auto pr-1">
+          {ACCOUNT_DRAWER_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <a
+                key={item.label}
+                href={item.href}
+                className="flex items-center justify-between p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800/80 hover:border-slate-700 transition text-xs"
+              >
+                <div className="flex items-center gap-2">
+                  <Icon className="w-3.5 h-3.5 text-slate-400" />
+                  <span className="text-slate-200 font-medium">{item.label}</span>
+                </div>
+                {item.badge && (
+                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
+                    {item.badge}
+                  </span>
+                )}
+              </a>
+            );
+          })}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function PlatformTopBar({ onOpenAccountDrawer }: { onOpenAccountDrawer: () => void }) {
+  const [activeCompany, setActiveCompany] = useState('VerifiQ AI (Active)');
+  return (
+    <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/80 px-1">
+      <div className="flex items-center gap-3">
+        <select
+          value={activeCompany}
+          onChange={(e) => setActiveCompany(e.target.value)}
+          className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm outline-none"
+        >
+          <option value="VerifiQ AI (Active)">🏢 VerifiQ AI (Active)</option>
+          <option value="Acme SaaS">🏢 Acme SaaS</option>
+          <option value="BookStudio">🏢 BookStudio</option>
+          <option value="+ New Company">+ New Company Slot ($15/mo)</option>
+        </select>
+        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          Autonomous Co-Founder Online
+        </span>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <Button size="sm" variant="outline" className="h-8 rounded-xl text-xs gap-1.5 font-mono border-indigo-500/30 text-indigo-400 bg-indigo-500/5">
+          <Zap className="h-3.5 w-3.5" />
+          <span>500 Credits</span>
+        </Button>
+        <Button size="sm" variant="outline" onClick={onOpenAccountDrawer} className="h-8 rounded-xl text-xs gap-1.5">
+          <Menu className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Account (15)</span>
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function TwinDashboardPage() {
   const [autoMode, setAutoMode] = useState(true);
   const { tasks, docs, feed, setTasks, setDocs } = useTwinData(
@@ -1326,6 +1480,7 @@ function TwinDashboardPage() {
   const [showNewTask, setShowNewTask] = useState(false);
   const [showManage, setShowManage] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
+  const [showAccountDrawer, setShowAccountDrawer] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
   const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
 
@@ -1346,6 +1501,9 @@ function TwinDashboardPage() {
 
   return (
     <div className="mx-auto h-full max-w-[1600px] px-4 py-5 lg:h-[calc(100dvh-4rem)]">
+      <PlatformTopBar onOpenAccountDrawer={() => setShowAccountDrawer(true)} />
+      <AccountDrawerModal open={showAccountDrawer} onOpenChange={setShowAccountDrawer} />
+
       <NewTaskModal
         open={showNewTask}
         onOpenChange={setShowNewTask}
@@ -1374,6 +1532,7 @@ function TwinDashboardPage() {
         <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
           <AgentStatusWidget autoMode={autoMode} />
           <AutoModeCard autoMode={autoMode} onToggle={setAutoMode} />
+          <CashFlowPnlCard />
           <ProgressStatsCard />
           <TeamCard onInvite={() => setShowInvite(true)} />
           <SubscriptionCard />
