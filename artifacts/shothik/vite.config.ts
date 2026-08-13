@@ -110,6 +110,57 @@ function localDevApiPlugin() {
           return;
         }
 
+        // 3.5 POST /api/ai-cowriter
+        if (req.method === 'POST' && url === '/api/ai-cowriter') {
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', async () => {
+            try {
+              const body = JSON.parse(bodyStr || '{}');
+              const { currentText = '', mode = 'autocomplete', instruction = '' } = body;
+
+              res.setHeader('Content-Type', 'text/event-stream');
+              res.setHeader('Cache-Control', 'no-cache, no-store');
+              res.setHeader('Connection', 'keep-alive');
+
+              let generatedChunks: string[] = [];
+
+              if (mode === 'instruction' && instruction) {
+                generatedChunks = [
+                  `Based on your direction ("${instruction}"), `,
+                  `here is an enhanced perspective: `,
+                  `The scene deepens with subtle sensory cues and atmospheric tension. `,
+                  `Shadows lengthen across the damp pavement, carrying the distant hum of the city.`
+                ];
+              } else if (mode === 'expand') {
+                generatedChunks = [
+                  `Furthermore, examining the underlying structural dynamics reveals `,
+                  `a compelling contrast between internal motivation and external necessity. `,
+                  `This builds a layered progression that carries the reader forward with natural momentum.`
+                ];
+              } else {
+                generatedChunks = [
+                  `The silence settled into the room, `,
+                  `heavy with unspoken revelations `,
+                  `and the lingering question of what lay ahead.`
+                ];
+              }
+
+              for (const chunk of generatedChunks) {
+                res.write(`data: ${JSON.stringify({ content: chunk })}\n\n`);
+                await new Promise(r => setTimeout(r, 60));
+              }
+
+              res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+              res.end();
+            } catch (err: any) {
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+          return;
+        }
+
         // 4. POST /api/ai/needle-dispatch
         if (req.method === 'POST' && url === '/api/ai/needle-dispatch') {
           let bodyStr = '';
