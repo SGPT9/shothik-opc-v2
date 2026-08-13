@@ -44,12 +44,14 @@ import {
   CreditCard,
   Mic,
   RotateCcw,
+  Compass,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
+import { WayfinderBoard } from "@/components/chat/WayfinderBoard";
 
 /* ------------------------------------------------------------------ */
 /* Mock data                                                           */
@@ -695,12 +697,39 @@ function ManageTasksModal({
 
 function TaskQueue({ tasks, onNewTask, onManage }: { tasks: TwinTaskMock[]; onNewTask: () => void; onManage: () => void }) {
   const [tab, setTab] = useState<TaskStatus>("in_progress");
+  const [viewMode, setViewMode] = useState<"queue" | "wayfinder">("queue");
   const visible = tasks.filter((t) => t.status === tab);
 
   return (
     <PanelCard className="flex min-h-0 flex-col">
       <div className="flex items-center justify-between gap-2">
-        <SectionLabel>Task Queue</SectionLabel>
+        <div className="flex items-center gap-1.5">
+          <SectionLabel>Work Queue</SectionLabel>
+          <div className="flex items-center rounded-lg border border-border/80 p-0.5 bg-muted/30">
+            <button
+              type="button"
+              onClick={() => setViewMode("queue")}
+              className={cn(
+                "px-2 py-0.5 text-[10px] font-semibold rounded transition-colors",
+                viewMode === "queue" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              List
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("wayfinder")}
+              className={cn(
+                "px-2 py-0.5 text-[10px] font-semibold rounded transition-colors flex items-center gap-1",
+                viewMode === "wayfinder" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Compass className="w-3 h-3" />
+              <span>Wayfinder</span>
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" className="h-7 rounded-lg px-2 text-xs" onClick={onManage} data-testid="button-manage-tasks">
             <ListChecks className="mr-1 h-3.5 w-3.5" /> Manage
@@ -710,35 +739,54 @@ function TaskQueue({ tasks, onNewTask, onManage }: { tasks: TwinTaskMock[]; onNe
           </Button>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap gap-1">
-        {STATUS_TABS.map((t) => {
-          const count = tasks.filter((x) => x.status === t.key).length;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={cn(
-                "rounded-lg px-2 py-1 font-mono text-[10px] transition-colors",
-                tab === t.key
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted/60"
-              )}
-              data-testid={`tab-tasks-${t.key}`}
-            >
-              {t.label} · {count}
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-3 space-y-2">
-        {visible.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-            Nothing here right now.
-          </p>
-        ) : (
-          visible.map((t) => <TaskCard key={t.id} task={t} />)
-        )}
-      </div>
+
+      {viewMode === "wayfinder" ? (
+        <div className="mt-3">
+          <WayfinderBoard
+            destination="Autonomous Polsia OPC Revenue & Launch Frontier"
+            initialTickets={tasks.map((t, idx) => ({
+              id: t.id,
+              title: t.title,
+              type: t.category === "Research" ? "research" : t.category === "Publish" ? "prototype" : "task",
+              status: t.status === "completed" ? "closed" : "open",
+              resolution: t.status === "completed" ? "Executed by Nightshift" : undefined,
+              blockedBy: idx > 0 && t.status !== "completed" ? [tasks[idx - 1].title] : [],
+            }))}
+          />
+        </div>
+      ) : (
+        <>
+          <div className="mt-3 flex flex-wrap gap-1">
+            {STATUS_TABS.map((t) => {
+              const count = tasks.filter((x) => x.status === t.key).length;
+              return (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={cn(
+                    "rounded-lg px-2 py-1 font-mono text-[10px] transition-colors",
+                    tab === t.key
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted/60"
+                  )}
+                  data-testid={`tab-tasks-${t.key}`}
+                >
+                  {t.label} · {count}
+                </button>
+              );
+            })}
+          </div>
+          <div className="mt-3 space-y-2">
+            {visible.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
+                Nothing here right now.
+              </p>
+            ) : (
+              visible.map((t) => <TaskCard key={t.id} task={t} />)
+            )}
+          </div>
+        </>
+      )}
     </PanelCard>
   );
 }
