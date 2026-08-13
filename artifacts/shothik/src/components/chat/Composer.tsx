@@ -119,6 +119,16 @@ const MODES: {
     border: "border-violet-500/30",
     description: "Stress-test & adversarial scenario lab",
   },
+  {
+    value: "researcher",
+    label: "Swarm Debate",
+    shortLabel: "Swarm",
+    Icon: Zap,
+    color: "text-purple-400",
+    bg: "bg-purple-500/10",
+    border: "border-purple-500/30",
+    description: "3-agent adversarial reasoning & critique",
+  },
 ];
 
 // ─── Models ───────────────────────────────────────────────────────────────────
