@@ -18,10 +18,12 @@ import { cn } from '@/lib/utils';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import Typography from '@tiptap/extension-typography';
 import { useCitationSuggestions, type CitationResult } from '@/hooks/useCitationSuggestions';
 import type { CitationStyle } from '@/lib/reference-list';
 import { useGhostText } from '@/hooks/useGhostText';
+import { useInlineRewrite } from '../hooks/useInlineRewrite';
+import { InlineDiffModal } from '../InlineDiffModal';
+import { Sparkles as SparklesIcon } from 'lucide-react';
 
 interface CenterEditorProps {
   content?: string;
@@ -60,6 +62,16 @@ export function CenterEditor({
   const { suggestion, isLoading: ghostLoading, accept: acceptGhost, dismiss: dismissGhost } = useGhostText(content);
 
   const { suggestions, isSearching, searchPapers, clearSuggestions } = useCitationSuggestions();
+
+  const inlineRewrite = useInlineRewrite((replacementText) => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    if (from !== to) {
+      editor.chain().focus().deleteRange({ from, to }).insertContent(replacementText).run();
+    } else {
+      editor.chain().focus().insertContent(replacementText).run();
+    }
+  });
 
   const editor = useEditor({
     extensions: [
@@ -145,10 +157,29 @@ export function CenterEditor({
     setTimeout(() => citationInputRef.current?.focus(), 100);
   };
 
+  const handleTriggerRewrite = () => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    const selected = editor.state.doc.textBetween(from, to, ' ');
+    if (selected.trim()) {
+      inlineRewrite.openRewrite(selected.trim());
+    } else {
+      const $pos = editor.state.selection.$from;
+      const nodeText = $pos.parent.textContent;
+      if (nodeText.trim()) {
+        inlineRewrite.openRewrite(nodeText.trim());
+      }
+    }
+  };
+
   return (
     <section
       className="flex-1 flex flex-col bg-white dark:bg-zinc-900/40 relative overflow-hidden"
       onKeyDown={e => {
+        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+          e.preventDefault();
+          handleTriggerRewrite();
+        }
         if (e.key === 'Tab' && suggestion) { e.preventDefault(); acceptGhost(editor); }
         if (e.key === 'Escape' && suggestion) { e.preventDefault(); dismissGhost(); }
       }}
@@ -172,6 +203,19 @@ export function CenterEditor({
               <Italic className="w-4 h-4" />
             </ToolbarButton>
           </div>
+
+          <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
+
+          {/* Qoderian-Style Inline AI Rewrite Button */}
+          <button
+            onClick={handleTriggerRewrite}
+            title="Inline AI Rewrite (Ctrl+K)"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-brand/10 text-brand hover:bg-brand/20 transition-all border border-brand/20 shadow-xs"
+          >
+            <SparklesIcon className="w-3.5 h-3.5" />
+            <span>AI Rewrite</span>
+            <kbd className="text-[10px] opacity-60 font-mono px-1 py-0.5 bg-brand/15 rounded">Ctrl+K</kbd>
+          </button>
 
           <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
 
@@ -364,6 +408,18 @@ export function CenterEditor({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Qoderian-Inspired Inline AI Diff Modal */}
+      <InlineDiffModal
+        isOpen={inlineRewrite.isOpen}
+        selectedText={inlineRewrite.selectedText}
+        rewrittenText={inlineRewrite.rewrittenText}
+        isStreaming={inlineRewrite.isStreaming}
+        error={inlineRewrite.error}
+        onClose={inlineRewrite.closeRewrite}
+        onAccept={inlineRewrite.acceptRewrite}
+        onExecute={inlineRewrite.executeRewrite}
+      />
     </section>
   );
 }
