@@ -219,15 +219,20 @@ export function BookAgentStart({
   }, [initialDescription]);
 
   const revealChapters = useCallback((chapters: GeneratedChapter[]) => {
+    if (!Array.isArray(chapters) || chapters.length === 0) return;
+    const validChapters = chapters.filter((c): c is GeneratedChapter => Boolean(c && typeof c === 'object'));
     if (reducedMotion) {
       // Skip animation — show all chapters immediately
-      setVisibleChapters(chapters);
+      setVisibleChapters(validChapters);
       return;
     }
     let i = 0;
     const reveal = () => {
-      if (i < chapters.length) {
-        setVisibleChapters(prev => [...prev, chapters[i]]);
+      if (i < validChapters.length) {
+        const nextChapter = validChapters[i];
+        if (nextChapter) {
+          setVisibleChapters(prev => [...prev.filter(Boolean), nextChapter]);
+        }
         i++;
         chapterRevealRef.current = setTimeout(reveal, 180);
       }
@@ -302,7 +307,30 @@ export function BookAgentStart({
             }
 
             if (event.type === 'done') {
-              const plan: BookPlan = event.plan;
+              const rawPlan = event.plan || {};
+              const rawChapters = Array.isArray(rawPlan.chapters) ? rawPlan.chapters : [];
+              const safeChapters: GeneratedChapter[] = rawChapters
+                .filter((c: any) => Boolean(c && typeof c === 'object'))
+                .map((ch: any, idx: number) => ({
+                  id: ch.id || `ch-${idx + 1}`,
+                  title: ch.title || `Chapter ${idx + 1}`,
+                  synopsis: ch.synopsis || '',
+                }));
+
+              const plan: BookPlan = {
+                title: rawPlan.title || 'Untitled Project',
+                genre: rawPlan.genre || 'General',
+                logline: rawPlan.logline || '',
+                chapters: safeChapters,
+                researchNotes: rawPlan.researchNotes || {
+                  comparables: [],
+                  themes: [],
+                  settingNotes: '',
+                  characterArchetypes: [],
+                  keyConflicts: [],
+                },
+              };
+
               debugLog.info('BookAgent', 'AI streaming completed', { title: plan.title, genre: plan.genre, chapterCount: plan.chapters.length });
               setSteps(prev => prev.map(s => ({ ...s, status: 'done' })));
               setGeneratedPlan(plan);
@@ -677,9 +705,9 @@ export function BookAgentStart({
 
                     <div className="space-y-2">
                       <AnimatePresence>
-                        {visibleChapters.map((ch, i) => (
+                        {visibleChapters.filter((ch): ch is GeneratedChapter => Boolean(ch && typeof ch === 'object')).map((ch, i) => (
                           <motion.div
-                            key={ch.id}
+                            key={ch.id || `ch-${i}`}
                             initial={{ opacity: 0, x: 16 }}
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ duration: 0.25 }}
@@ -689,8 +717,8 @@ export function BookAgentStart({
                               {String(i + 1).padStart(2, '0')}
                             </div>
                             <div>
-                              <p className="text-foreground text-sm font-medium mb-1">{ch.title}</p>
-                              <p className="text-muted-foreground text-xs leading-relaxed">{ch.synopsis}</p>
+                              <p className="text-foreground text-sm font-medium mb-1">{ch.title || `Chapter ${i + 1}`}</p>
+                              <p className="text-muted-foreground text-xs leading-relaxed">{ch.synopsis || ''}</p>
                             </div>
                           </motion.div>
                         ))}
