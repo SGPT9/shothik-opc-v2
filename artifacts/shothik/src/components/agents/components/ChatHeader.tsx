@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Bot, Menu, X, Sun, Moon, Sparkles } from "lucide-react";
+import { Bot, Menu, X, Sun, Moon, Sparkles, Zap, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ChatHeaderProps {
@@ -73,6 +73,22 @@ export function ChatHeader({
           title={isDark ? "Switch to ChatGPT Crisp Light Mode" : "Switch to Perplexity Warm Dark Mode"}
         >
           {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-500" />}
+        </button>
+
+        <span className="hidden md:inline-flex items-center gap-1 rounded-full bg-cyan-500/10 border border-cyan-500/30 px-2 py-0.5 text-[10px] font-mono font-bold text-cyan-400">
+          <Zap className="h-2.5 w-2.5 text-cyan-400" />
+          2,000 tok/s DiffusionGemma
+        </span>
+
+        <button
+          type="button"
+          onClick={async () => {
+            alert("👑 Initializing 7-Day Autonomous God Mode session via InsForge & Gortex AST engine…");
+          }}
+          className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 border border-amber-500/40 px-2.5 py-0.5 text-[10px] font-bold text-amber-300 hover:bg-amber-500/25 transition shadow-sm"
+        >
+          <Crown className="h-2.5 w-2.5 text-amber-400" />
+          7-Day God Mode
         </button>
 
         <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.5 text-[10px] font-semibold text-indigo-400">
