@@ -1,12 +1,14 @@
 export type ReadinessCriteria = {
-  wordCount: number;
-  genreTarget: number;
-  grammarPassing: boolean;
-  hasCitations: boolean;
-  hasCoverArt: boolean;
-  hasMetadata: boolean;
-  hasPricing: boolean;
-  projectType: 'book' | 'research' | 'assignment';
+  wordCount?: number;
+  genreTarget?: number;
+  grammarPassing?: boolean;
+  hasCitations?: boolean;
+  hasCoverArt?: boolean;
+  hasMetadata?: boolean;
+  hasPricing?: boolean;
+  projectType?: 'book' | 'research' | 'assignment';
+  citationCount?: number;
+  plainText?: string;
 };
 
 export type ReadinessCriterionResult = {
@@ -23,11 +25,21 @@ export type ReadinessResult = {
   criteria: ReadinessCriterionResult[];
 };
 
-export function computeReadinessScore(criteria: ReadinessCriteria): ReadinessResult {
-  const wordRatio = Math.min(1, criteria.wordCount / Math.max(1, criteria.genreTarget));
+export function computeReadinessScore(criteria: Partial<ReadinessCriteria> = {}): ReadinessResult {
+  const wordCount = Number(criteria.wordCount ?? 0);
+  const projectType = criteria.projectType || 'book';
+  const defaultTarget = GENRE_TARGETS[projectType] || 50000;
+  const genreTarget = Number(criteria.genreTarget ?? defaultTarget);
+  const grammarPassing = Boolean(criteria.grammarPassing ?? true);
+  const hasCitations = Boolean(criteria.hasCitations ?? ((criteria.citationCount ?? 0) > 0));
+  const hasCoverArt = Boolean(criteria.hasCoverArt ?? false);
+  const hasMetadata = Boolean(criteria.hasMetadata ?? false);
+  const hasPricing = Boolean(criteria.hasPricing ?? false);
+
+  const wordRatio = Math.min(1, wordCount / Math.max(1, genreTarget));
   const wordMet = wordRatio >= 0.9;
   const needsCitations =
-    criteria.projectType === 'research' || criteria.projectType === 'assignment';
+    projectType === 'research' || projectType === 'assignment';
 
   const items: ReadinessCriterionResult[] = [
     {
@@ -37,8 +49,8 @@ export function computeReadinessScore(criteria: ReadinessCriteria): ReadinessRes
       met: wordMet,
       score: Math.round(wordRatio * 25),
       hint: wordMet
-        ? `${criteria.wordCount.toLocaleString()} words — target met`
-        : `${criteria.wordCount.toLocaleString()} / ${criteria.genreTarget.toLocaleString()} words needed`,
+        ? `${wordCount.toLocaleString()} words — target met`
+        : `${wordCount.toLocaleString()} / ${genreTarget.toLocaleString()} words needed`,
     },
     {
       id: 'grammar',
