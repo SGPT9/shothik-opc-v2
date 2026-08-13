@@ -154,9 +154,6 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
-declare module "@/lib/*";
-declare module "@/services/*";
-declare module "@/types/*";
-declare module "@/config/*";
+
 
 
