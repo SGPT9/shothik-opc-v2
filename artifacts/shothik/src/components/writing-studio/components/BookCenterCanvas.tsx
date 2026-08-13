@@ -41,6 +41,20 @@ export function BookCenterCanvas({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeTab, onTabChange]);
 
+  // Two-way postMessage listener for live iframe element inspection
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === "INSPECTOR_ELEMENT_CLICK") {
+        setSelectedElementInfo({
+          tagName: event.data.tagName || "DIV",
+          textContent: event.data.textContent || "",
+        });
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
   const tabs: { key: CanvasTab; label: string; icon: React.ElementType }[] = [
     { key: "editor", label: "Writing Studio", icon: FileText },
     { key: "sheet", label: "Fortune Sheet", icon: Table },
@@ -213,8 +227,21 @@ export function BookCenterCanvas({
             {selectedElementInfo && (
               <div className="absolute top-10 left-3 z-20 flex items-center gap-2 rounded-lg bg-zinc-900/95 border border-purple-500/40 p-2 text-xs font-mono text-purple-300 shadow-xl backdrop-blur-md">
                 <Sparkles className="h-4 w-4 text-purple-400" />
-                <span>Source Sync: <strong className="text-white">&lt;{selectedElementInfo.tagName.toLowerCase()}&gt;</strong> {selectedElementInfo.textContent ? `"${selectedElementInfo.textContent.slice(0, 20)}..."` : ""}</span>
-                <button onClick={() => setSelectedElementInfo(null)} className="ml-2 text-zinc-400 hover:text-white">×</button>
+                <span>Source Sync: <strong className="text-white">&lt;{selectedElementInfo.tagName.toLowerCase()}&gt;</strong> {selectedElementInfo.textContent ? `"${selectedElementInfo.textContent.slice(0, 24)}..."` : ""}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onTabChange("editor");
+                    onEditorTextChange(
+                      `${editorText}\n\n<!-- Focus element: <${selectedElementInfo.tagName.toLowerCase()}> "${selectedElementInfo.textContent}" -->\n`
+                    );
+                    setSelectedElementInfo(null);
+                  }}
+                  className="px-2 py-0.5 rounded bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-sans font-semibold transition"
+                >
+                  Edit in Studio
+                </button>
+                <button onClick={() => setSelectedElementInfo(null)} className="ml-1 text-zinc-400 hover:text-white">×</button>
               </div>
             )}
 
