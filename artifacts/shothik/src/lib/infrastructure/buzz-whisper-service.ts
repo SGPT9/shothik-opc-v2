@@ -66,4 +66,27 @@ export class BuzzWhisperSpeechService {
       extractedKeywords,
     };
   }
+
+  /**
+   * Dynamically tunes Voice Activity Detection (VAD) threshold based on Dhaka noise floor conditions.
+   * Dhaka traffic/horns average -40dB, office environment is -60dB.
+   */
+  static tuneSpeechActivityThreshold(ambientNoiseFloorDb: number): { energyThreshold: number; adaptiveGain: number } {
+    // High noise floor (Dhaka street conditions) requires higher energy threshold to prevent false triggers
+    const isNoisyEnvironment = ambientNoiseFloorDb > -50;
+    const energyThreshold = isNoisyEnvironment ? 0.25 : 0.08; // High threshold for noisy areas, low threshold for quiet areas
+    const adaptiveGain = isNoisyEnvironment ? 1.5 : 1.0; // Boost audio gain if user is competing with street noise
+
+    logger.info("[buzz-whisper] Tuned speech activity threshold for environment", {
+      ambientNoiseFloorDb,
+      energyThreshold,
+      adaptiveGain,
+      isNoisyEnvironment,
+    });
+
+    return {
+      energyThreshold,
+      adaptiveGain,
+    };
+  }
 }

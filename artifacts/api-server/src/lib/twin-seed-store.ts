@@ -105,7 +105,7 @@ export async function getLatestTwinSeed(identity: string): Promise<TwinSeedRecor
  */
 export async function migrateTwinSeeds(fromIdentity: string, toIdentity: string): Promise<void> {
   if (fromIdentity === toIdentity) return;
-  await db.transaction(async (tx) => {
+  await db.transaction(async (tx: any) => {
     await tx.execute(sql`
       UPDATE twin_seeds AS src
       SET identity = ${toIdentity}

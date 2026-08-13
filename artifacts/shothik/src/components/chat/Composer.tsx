@@ -60,6 +60,7 @@ export interface ComposerProps {
   onSend?: (text: string) => void | Promise<void>;
   onVoiceClick?: () => void;
   persona?: any;
+  onPersonaChange?: (persona: ChatPersona) => void;
   activeSkill?: any;
   onSkillChange?: (skill: any) => void;
   onStop?: () => void;
@@ -334,7 +335,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         <div className="mx-auto flex max-w-3xl flex-col gap-2">
 
           {/* ── Main input container (Perplexity rounded-3xl glassmorphic) ── */}
-          <div className="flex flex-col rounded-3xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-emerald-500/50 focus-within:shadow-[0_0_20px_rgba(16,185,129,0.15)] focus-within:bg-slate-900">
+          <div className="flex flex-col rounded-3xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-brand/50 focus-within:shadow-[0_0_20px_rgba(0,171,85,0.15)] focus-within:bg-slate-900">
 
             {/* Hidden file inputs */}
             <input ref={pdfInputRef} type="file" multiple className="hidden"
@@ -449,12 +450,12 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   <button type="button"
                     onClick={onVoiceOrbClick}
                     disabled={disabled || activeStreaming}
-                    className="relative flex items-center justify-center h-8 w-8 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:border-emerald-400/60 hover:bg-emerald-500/25 transition-all"
+                    className="relative flex items-center justify-center h-8 w-8 rounded-full bg-brand/15 border border-brand/30 text-brand hover:text-brand hover:border-brand/60 hover:bg-brand/25 transition-all"
                     title="Open ChatGPT Advanced Voice Mode Orb"
                     aria-label="Open Voice Orb"
                   >
-                    <span className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping opacity-30" />
-                    <span className="relative w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                    <span className="absolute inset-0 rounded-full bg-brand/20 animate-ping opacity-30" />
+                    <span className="relative w-2.5 h-2.5 rounded-full bg-brand shadow-[0_0_8px_rgba(0,171,85,0.5)]" />
                   </button>
                 )}
               </div>

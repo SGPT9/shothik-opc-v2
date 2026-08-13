@@ -53,7 +53,7 @@ export const PerplexityFocusSelector: React.FC<PerplexityFocusSelectorProps> = (
             onClick={() => onSelectFocus(opt.value)}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all ${
               isSelected
-                ? "bg-emerald-500/20 border border-emerald-500/50 text-emerald-300 font-bold shadow-sm"
+                ? "bg-brand/20 border border-brand/50 text-brand font-bold shadow-sm"
                 : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
             }`}
           >

@@ -60,6 +60,19 @@ export function ChatAgentPage() {
   const [isVoiceOrbOpen, setIsVoiceOrbOpen] = useState(false);
   const [isSwarmDebateOpen, setIsSwarmDebateOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [persona, setPersona] = useState<ChatPersona>("cofounder");
+
+  const createNewConversation = useCallback(() => {
+    const newId = `conv_${Date.now()}`;
+    switchConversation(newId);
+  }, [switchConversation]);
+
+  const handlePersonaChange = useCallback((newPersona: ChatPersona) => {
+    setPersona(newPersona);
+    if (newPersona === "researcher") {
+      setIsSwarmDebateOpen(true);
+    }
+  }, []);
 
   // Open artifact panel on-demand
   const handleOpenArtifact = useCallback((type: string, messageOrContent?: any) => {
@@ -121,9 +134,11 @@ export function ChatAgentPage() {
         isStreaming: true,
       });
 
+      const chatMode = persona === "cofounder" ? "cofounder" : persona === "coworker" ? "scenario-testing" : "web-search";
+
       await startStream(
-        "/api/chat/stream",
-        { conversationId, message: text.trim() },
+        "/api/chat",
+        { conversationId, message: text.trim(), chatMode },
         (chunk) => updateLastAssistantMessage(chunk),
         () => finalizeLastAssistantMessage(),
         (err) => {
@@ -132,7 +147,7 @@ export function ChatAgentPage() {
         }
       );
     },
-    [addMessage, attachments, clearAttachments, conversationId, finalizeLastAssistantMessage, startStream, updateLastAssistantMessage]
+    [addMessage, attachments, clearAttachments, conversationId, finalizeLastAssistantMessage, startStream, updateLastAssistantMessage, persona]
   );
 
   return (
@@ -153,7 +168,7 @@ export function ChatAgentPage() {
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
         {/* Top Header — includes hamburger for sidebar */}
         <ChatHeader
-          currentPersona="general"
+          currentPersona={persona}
           executionMode="realtime"
           activeTab={artifactOpen ? activeTab : null}
           onTabChange={(tab) => handleOpenArtifact(tab)}
@@ -204,6 +219,9 @@ export function ChatAgentPage() {
                   isStreaming={streamState.isStreaming}
                   onStop={stopStream}
                   onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                  onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
+                  persona={persona}
+                  onPersonaChange={handlePersonaChange}
                 />
               </ComponentErrorBoundary>
             </ResizablePanel>
@@ -269,36 +287,38 @@ export function ChatAgentPage() {
                   onStop={stopStream}
                   onVoiceClick={() => setVoiceActive((prev) => !prev)}
                   onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
+                  persona={persona}
+                  onPersonaChange={handlePersonaChange}
                 />
               </ComponentErrorBoundary>
-
-              {/* VTuber 3D Interactive Voice Avatar Overlay */}
-              <VTuberVoiceAvatarOverlay
-                avatarName="Shothik 3D Avatar Presenter"
-                isActive={voiceActive}
-                onClose={() => setVoiceActive(false)}
-              />
-
-              {/* 🔮 ChatGPT Advanced Voice Mode Fluid Orb Modal */}
-              <ChatGPTVoiceOrbModal
-                isOpen={isVoiceOrbOpen}
-                onClose={() => setIsVoiceOrbOpen(false)}
-              />
-
-              {/* 🐝 Agent Swarm Adversarial Debate Modal */}
-              <SwarmAdversarialDebateModal
-                isOpen={isSwarmDebateOpen}
-                onClose={() => setIsSwarmDebateOpen(false)}
-              />
-
-              {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}
-              <MonetizationPaywallModal
-                isOpen={isPaywallOpen}
-                onClose={() => setIsPaywallOpen(false)}
-              />
             </div>
           </div>
         )}
+
+        {/* VTuber 3D Interactive Voice Avatar Overlay */}
+        <VTuberVoiceAvatarOverlay
+          avatarName="Shothik 3D Avatar Presenter"
+          isActive={voiceActive}
+          onClose={() => setVoiceActive(false)}
+        />
+
+        {/* 🔮 ChatGPT Advanced Voice Mode Fluid Orb Modal */}
+        <ChatGPTVoiceOrbModal
+          isOpen={isVoiceOrbOpen}
+          onClose={() => setIsVoiceOrbOpen(false)}
+        />
+
+        {/* 🐝 Agent Swarm Adversarial Debate Modal */}
+        <SwarmAdversarialDebateModal
+          isOpen={isSwarmDebateOpen}
+          onClose={() => setIsSwarmDebateOpen(false)}
+        />
+
+        {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}
+        <MonetizationPaywallModal
+          isOpen={isPaywallOpen}
+          onClose={() => setIsPaywallOpen(false)}
+        />
       </div>
     </div>
   );

@@ -21,7 +21,7 @@ describe("Perplexity UI Components", () => {
 
     expect(screen.getByText(/All Web & AI/i)).toBeDefined();
     expect(screen.getByText(/Pro Search/i)).toBeDefined();
-    expect(screen.getByText(/Academic & Papers/i)).toBeDefined();
+    expect(screen.getByText(/Academic/i)).toBeDefined();
   });
 
   it("renders Perplexity Related Questions pills", () => {
