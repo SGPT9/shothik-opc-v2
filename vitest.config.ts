@@ -58,6 +58,7 @@ export default defineConfig({
       'next': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-root.ts'),
       'motion/react-client': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/motion-react-client.ts'),
       'motion/react': 'framer-motion',
+      '@letta-ai/letta-client': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/letta-client.ts'),
     },
   },
 });
