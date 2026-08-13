@@ -18,7 +18,6 @@ import { Composer } from "@/components/chat/Composer";
 import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
-import { VoiceOverlay } from "@/components/voice/VoiceOverlay";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
@@ -267,11 +266,6 @@ export function ChatAgentPage() {
           </div>
         )}
       </div>
-
-      {/* Voice Overlay */}
-      {voiceActive && (
-        <VoiceOverlay isOpen={voiceActive} onClose={() => setVoiceActive(false)} />
-      )}
     </div>
   );
 }
