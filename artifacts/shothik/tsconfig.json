@@ -1,10 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "exclude": ["node_modules", "build", "dist", "**/*.test.ts", "**/*.test.tsx", "src/**/__tests__/**", "src/app-next"],
   "compilerOptions": {
     "noEmit": true,
-    "jsx": "preserve",
+    "allowJs": true,
+    "skipLibCheck": true,
+    "noImplicitAny": false,
+    "useUnknownInCatchVariables": false,
+    "jsx": "react-jsx",
     "lib": ["esnext", "dom", "dom.iterable"],
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,

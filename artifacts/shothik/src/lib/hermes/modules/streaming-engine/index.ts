@@ -64,14 +64,14 @@ export class HermesStreamingEngine {
       const eventStrings = await this.redis.lrange(replayKey, sinceSequence, sinceSequence + limit - 1);
       
       return eventStrings
-        .map(str => {
+        .map((str: string) => {
           try {
             return JSON.parse(str) as HermesEventEnvelope;
           } catch {
             return null;
           }
         })
-        .filter((event): event is HermesEventEnvelope => 
+        .filter((event: HermesEventEnvelope | null): event is HermesEventEnvelope => 
           event !== null && event.sequence > sinceSequence
         );
     } catch (error) {

@@ -1,10 +1,10 @@
 
 
 import { useState } from "react";
-import { cn } from "@/lib/utils";
-import { useTranslation } from "@/i18n";
+import { cn } from "../../lib/utils";
+import { useTranslation } from "../../i18n";
 import { Plus, X, Loader2, Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "../ui/button";
 
 interface TrainingPanelProps {
   initialData?: {

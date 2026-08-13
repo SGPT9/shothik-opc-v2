@@ -1,7 +1,7 @@
 
 
-import { cn } from "@/lib/utils";
-import { useTranslation } from "@/i18n";
+import { cn } from "../../lib/utils";
+import { useTranslation } from "../../i18n";
 import { BookOpen, MessageSquare, FolderOpen, PenLine } from "lucide-react";
 
 interface KnowledgeSource {

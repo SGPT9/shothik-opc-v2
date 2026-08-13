@@ -1,15 +1,12 @@
 /**
- * FAANG-Grade Refactored Chat Agent Page Orchestrator.
+ * Chat Agent Page — Replit-style layout.
  *
- * Responsibilities deconstructed into clean modular hooks & discrete error boundaries:
- *  - `useChatSession`: Conversation history & message state management.
- *  - `useChatStreamEngine`: SSE token-level streaming & background buffer resilience.
- *  - `useAttachmentUploader`: File & document attachment handling.
- *  - `useTwinHandoffDetector`: Auto-detects startup intent -> renders TwinCtaCard.
- *  - `ComponentErrorBoundary`: Discrete React Error Boundaries for Transcript, Composer, and Canvas.
+ * Artifact panel is HIDDEN by default. Full-width chat.
+ * Panel slides in on-demand when user triggers slides/sheet/research/code.
+ * Sidebar collapsed by default (hamburger toggle).
  */
-import { useEffect, useState, useCallback, useRef } from "react";
-import { useRouter, useSearchParams } from "@/lib/navigation";
+import { useState, useCallback } from "react";
+import { useSearchParams } from "@/lib/navigation";
 import { useChatSession } from "./hooks/useChatSession";
 import { useChatStreamEngine } from "./hooks/useChatStreamEngine";
 import { useAttachmentUploader } from "./hooks/useAttachmentUploader";
@@ -22,12 +19,12 @@ import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { VoiceOverlay } from "@/components/voice/VoiceOverlay";
-import { TwinAutopilotBanner } from "@/components/tonight-engine/TwinAutopilotBanner";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { cn } from "@/lib/utils";
 
 export function ChatAgentPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const initialConvId = searchParams.get("conversationId") || undefined;
 
   const {
@@ -43,13 +40,59 @@ export function ChatAgentPage() {
   const { attachments, addAttachment, removeAttachment, clearAttachments } = useAttachmentUploader();
   const { hasStartupIntent } = useTwinHandoffDetector(messages);
 
-  const [activeTab, setActiveTab] = useState<ArtifactTab>("preview");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  // ── Artifact panel: Replit Agent On-Demand (hidden by default) ──
+  const [artifactOpen, setArtifactOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<ArtifactTab>("slides");
+
+  // ── Artifact Context Handoff Data ──
+  const [slidesTopic, setSlidesTopic] = useState<string | undefined>("AI-Powered E-Commerce & Retail in Bangladesh");
+  const [researchQuery, setResearchQuery] = useState<string | undefined>("Dhaka Logistics & Courier Competitor Analysis");
+  const [sheetData, setSheetData] = useState<string[][] | undefined>();
+  const [codeSnippet, setCodeSnippet] = useState<string | undefined>();
+
+  // ── Sidebar: collapsed by default (hamburger) ──
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
   const [voiceActive, setVoiceActive] = useState(false);
+
+  // Open artifact panel on-demand
+  const handleOpenArtifact = useCallback((type: string, messageOrContent?: any) => {
+    const tab = type as ArtifactTab;
+    setActiveTab(tab);
+    setArtifactOpen(true);
+
+    if (messageOrContent) {
+      const text = typeof messageOrContent === "string" ? messageOrContent : messageOrContent.content || "";
+      if (tab === "slides" && text) setSlidesTopic(text);
+      if (tab === "research" && text) setResearchQuery(text);
+      if (tab === "code" && text) setCodeSnippet(text);
+      if (typeof messageOrContent === "object" && messageOrContent.metadata?.sheetData) {
+        setSheetData(messageOrContent.metadata.sheetData);
+      }
+    }
+  }, []);
 
   const handleSendMessage = useCallback(
     async (text: string) => {
       if (!text.trim() && attachments.length === 0) return;
+
+      const lower = text.toLowerCase();
+      if (lower.includes("slide") || lower.includes("deck") || lower.includes("presentation")) {
+        setActiveTab("slides");
+        setSlidesTopic(text);
+        setArtifactOpen(true);
+      } else if (lower.includes("sheet") || lower.includes("model") || lower.includes("mrr") || lower.includes("excel")) {
+        setActiveTab("sheet");
+        setArtifactOpen(true);
+      } else if (lower.includes("research") || lower.includes("competitor") || lower.includes("market")) {
+        setActiveTab("research");
+        setResearchQuery(text);
+        setArtifactOpen(true);
+      } else if (lower.includes("code") || lower.includes("script") || lower.includes("python") || lower.includes("react")) {
+        setActiveTab("code");
+        setCodeSnippet(text);
+        setArtifactOpen(true);
+      }
 
       const userMsgId = `usr_${Date.now()}`;
       const assistantMsgId = `ast_${Date.now()}`;
@@ -88,74 +131,146 @@ export function ChatAgentPage() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Sidebar Navigation */}
+      {/* Sidebar — collapsed by default, overlay on mobile */}
       <ChatSidebar
         isOpen={sidebarOpen}
         onToggle={() => setSidebarOpen((prev) => !prev)}
-        onSelectConversation={(id) => switchConversation(id)}
+        onNewChat={() => createNewConversation()}
+        onAbortStream={stopStream}
+        onSelectConversation={(id) => {
+          switchConversation(id);
+          setSidebarOpen(false); // auto-close on mobile
+        }}
       />
 
       {/* Main Workspace Column */}
-      <div className="flex flex-1 flex-col min-w-0 h-full">
-        {/* Top Header */}
-        <ChatHeader currentPersona="general" executionMode="realtime" />
+      <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
+        {/* Top Header — includes hamburger for sidebar */}
+        <ChatHeader
+          currentPersona="general"
+          executionMode="realtime"
+          activeTab={artifactOpen ? activeTab : null}
+          onTabChange={(tab) => handleOpenArtifact(tab)}
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          sidebarOpen={sidebarOpen}
+        />
 
-        {/* Overnight Banner */}
-        <ComponentErrorBoundary title="Autopilot Banner Error">
-          <TwinAutopilotBanner />
-        </ComponentErrorBoundary>
-
-        {/* Content Grid: Transcript + Artifact Canvas */}
-        <div className="flex flex-1 min-h-0 w-full">
-          {/* Transcript Panel */}
-          <div className="flex flex-1 flex-col min-w-0 h-full border-r border-border/60">
-            <ComponentErrorBoundary title="Transcript Panel Interrupted">
-              <Transcript
-                messages={messages as any}
-                isStreaming={streamState.isStreaming}
-                statusText={streamState.statusText}
-              />
-
-              {/* Automatic Twin Startup Handoff Card */}
-              {hasStartupIntent && (
-                <div className="p-3">
-                  <TwinCtaCard
-                    onSeedTwin={() => {
-                      if (typeof window !== "undefined") {
-                        window.location.href = `/twin?fromChat=${conversationId}`;
+        {/* Content: Chat + Artifact (Draggable Splitter Handle when artifact is open) */}
+        {artifactOpen ? (
+          <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 w-full overflow-hidden">
+            {/* ── Left Chat Panel ── */}
+            <ResizablePanel defaultSize={50} minSize={30} className="flex flex-col min-w-0 h-full overflow-hidden">
+              <ComponentErrorBoundary title="Transcript Panel Interrupted">
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <Transcript
+                    messages={messages as any}
+                    isStreaming={streamState.isStreaming}
+                    statusText={streamState.statusText}
+                    onOpenArtifact={(type) => handleOpenArtifact(type)}
+                    onSelectPrompt={(prompt, mode, tab) => {
+                      handleSendMessage(prompt);
+                      if (tab) {
+                        handleOpenArtifact(tab);
                       }
                     }}
                   />
+
+                  {/* Twin Startup Handoff Card */}
+                  {hasStartupIntent && (
+                    <div className="px-4 pb-3 max-w-3xl mx-auto">
+                      <TwinCtaCard
+                        onSeedTwin={() => {
+                          if (typeof window !== "undefined") {
+                            window.location.href = `/twin?fromChat=${conversationId}`;
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
-            </ComponentErrorBoundary>
+              </ComponentErrorBoundary>
 
-            {/* Composer Input */}
-            <ComponentErrorBoundary title="Composer Input Interrupted">
-              <Composer
-                onSend={handleSendMessage}
-                isStreaming={streamState.isStreaming}
-                onStop={stopStream}
-                onVoiceClick={() => setVoiceActive((prev) => !prev)}
-              />
-            </ComponentErrorBoundary>
-          </div>
+              {/* Composer — pinned bottom */}
+              <ComponentErrorBoundary title="Composer Input Interrupted">
+                <Composer
+                  onSend={handleSendMessage}
+                  isStreaming={streamState.isStreaming}
+                  onStop={stopStream}
+                  onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                />
+              </ComponentErrorBoundary>
+            </ResizablePanel>
 
-          {/* Artifact & Live Canvas Panel */}
-          <div className="hidden lg:flex w-[480px] xl:w-[560px] flex-col h-full bg-muted/20">
-            <ComponentErrorBoundary title="Artifact Canvas Error">
-              <ArtifactPanel
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-              />
-            </ComponentErrorBoundary>
+            {/* ── Draggable Splitter Handle (Replit Pattern) ── */}
+            <ResizableHandle className="w-1.5 bg-border/40 hover:bg-brand/50 transition cursor-col-resize z-30" />
+
+            {/* ── Right Canvas Panel ── */}
+            <ResizablePanel defaultSize={50} minSize={30} className="h-full overflow-hidden">
+              <ComponentErrorBoundary title="Artifact Canvas Error">
+                <ArtifactPanel
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  onClose={() => setArtifactOpen(false)}
+                  isStreaming={streamState.isStreaming}
+                  slidesTopic={slidesTopic}
+                  researchQuery={researchQuery}
+                  sheetData={sheetData}
+                  codeSnippet={codeSnippet}
+                />
+              </ComponentErrorBoundary>
+            </ResizablePanel>
+          </ResizablePanelGroup>
+        ) : (
+          <div className="flex flex-1 min-h-0 w-full overflow-hidden">
+            {/* Full-width Chat Column */}
+            <div className="relative flex flex-col min-w-0 h-full flex-1 overflow-hidden">
+              <ComponentErrorBoundary title="Transcript Panel Interrupted">
+                <div className="flex-1 min-h-0 overflow-hidden">
+                  <Transcript
+                    messages={messages as any}
+                    isStreaming={streamState.isStreaming}
+                    statusText={streamState.statusText}
+                    onOpenArtifact={(type) => handleOpenArtifact(type)}
+                    onSelectPrompt={(prompt, mode, tab) => {
+                      handleSendMessage(prompt);
+                      if (tab) {
+                        handleOpenArtifact(tab);
+                      }
+                    }}
+                  />
+
+                  {/* Twin Startup Handoff Card */}
+                  {hasStartupIntent && (
+                    <div className="px-4 pb-3 max-w-3xl mx-auto">
+                      <TwinCtaCard
+                        onSeedTwin={() => {
+                          if (typeof window !== "undefined") {
+                            window.location.href = `/twin?fromChat=${conversationId}`;
+                          }
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+              </ComponentErrorBoundary>
+
+              {/* Composer — pinned bottom */}
+              <ComponentErrorBoundary title="Composer Input Interrupted">
+                <Composer
+                  onSend={handleSendMessage}
+                  isStreaming={streamState.isStreaming}
+                  onStop={stopStream}
+                  onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                />
+              </ComponentErrorBoundary>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Voice Overlay */}
       {voiceActive && (
-        <VoiceOverlay onClose={() => setVoiceActive(false)} />
+        <VoiceOverlay isOpen={voiceActive} onClose={() => setVoiceActive(false)} />
       )}
     </div>
   );

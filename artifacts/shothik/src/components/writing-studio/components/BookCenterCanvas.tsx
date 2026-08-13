@@ -2,6 +2,7 @@ import React from "react";
 import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
 
 export type CanvasTab = "editor" | "sheet" | "mindmap" | "slides" | "web_preview";
 
@@ -22,6 +23,8 @@ export function BookCenterCanvas({
 }: BookCenterCanvasProps) {
   const [isInspectorActive, setIsInspectorActive] = React.useState(false);
   const [selectedElementInfo, setSelectedElementInfo] = React.useState<{ tagName: string; textContent: string } | null>(null);
+  const [isScenarioLabOpen, setIsScenarioLabOpen] = React.useState(false);
+
 
   // December Adaptation: Keyboard shortcut Cmd + \ to toggle split preview
   React.useEffect(() => {
@@ -81,33 +84,53 @@ export function BookCenterCanvas({
         )}
 
         {activeTab === "sheet" && (
-          <div className="rounded-xl border border-border/80 bg-card p-4 space-y-4">
+          <div className="rounded-xl border border-border/80 bg-card p-5 space-y-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                <Table className="h-4 w-4 text-indigo-400" /> Fortune Sheet — 100-Run ScenarioLab Monte Carlo Model
-              </h3>
-              <span className="font-mono text-[10px] text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold">
-                100 Runs Computed
-              </span>
+              <div>
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
+                  <Table className="h-4 w-4 text-indigo-400" /> Fortune Sheet — ScenarioLab™ Monte Carlo System & Financial Model
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  900-run Monte Carlo stochastic stress-testing and TAM/SAM/SOM CAC payback modeling.
+                </p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => setIsScenarioLabOpen(true)}
+                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl px-4 shadow-md shadow-indigo-600/20 flex items-center gap-2 transition"
+              >
+                <Sparkles className="h-4 w-4" />
+                Launch ScenarioLab™ Console
+              </Button>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 text-xs font-mono">
+            <div className="grid grid-cols-4 gap-3 text-xs font-mono">
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-1">
+                <p className="text-muted-foreground text-[10px]">Availability Target</p>
+                <p className="text-lg font-bold text-emerald-400">99.999%</p>
+                <p className="text-[9px] text-muted-foreground">Five-Nines reliability</p>
+              </div>
               <div className="rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-3 space-y-1">
                 <p className="text-muted-foreground text-[10px]">P10 Pessimistic ARR</p>
-                <p className="text-base font-bold text-indigo-400">$105.0M</p>
+                <p className="text-lg font-bold text-indigo-400">$105.0M</p>
                 <p className="text-[9px] text-muted-foreground">Low market adoption</p>
               </div>
               <div className="rounded-xl border border-cyan-500/30 bg-cyan-500/5 p-3 space-y-1">
                 <p className="text-muted-foreground text-[10px]">P50 Median ARR (Target)</p>
-                <p className="text-base font-bold text-cyan-400">$150.0M</p>
+                <p className="text-lg font-bold text-cyan-400">$150.0M</p>
                 <p className="text-[9px] text-muted-foreground">4.1 mo CAC payback</p>
               </div>
-              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 space-y-1">
-                <p className="text-muted-foreground text-[10px]">P90 Optimistic ARR</p>
-                <p className="text-base font-bold text-emerald-400 font-mono">$195.0M</p>
-                <p className="text-[9px] text-muted-foreground">High virality coefficient</p>
+              <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-3 space-y-1">
+                <p className="text-muted-foreground text-[10px]">Risk Prevented ($)</p>
+                <p className="text-lg font-bold text-purple-400 font-mono">$288,900/yr</p>
+                <p className="text-[9px] text-muted-foreground">Per 10,000 users</p>
               </div>
             </div>
+
+            <ScenarioLabModal
+              isOpen={isScenarioLabOpen}
+              onClose={() => setIsScenarioLabOpen(false)}
+            />
           </div>
         )}
 

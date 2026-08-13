@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSourceIntake, type ProjectSource } from "./hooks/useSourceIntake";
+export { type ProjectSource };
 import { ComponentErrorBoundary } from "@/components/agents/components/ChatErrorBoundaries";
 
 interface SourceIntakeProps {

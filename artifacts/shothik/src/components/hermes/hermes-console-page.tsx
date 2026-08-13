@@ -224,7 +224,7 @@ export function HermesConsolePage() {
                         <div className="text-xs text-muted-foreground">
                           Created {formatDate(run.createdAt)}
                         </div>
-                        {routeMetadata.routeId && (
+                        {Boolean(routeMetadata.routeId) && (
                           <div className="flex flex-wrap gap-2 text-[11px] text-muted-foreground">
                             <Badge variant="outline">{String(routeMetadata.routeId)}</Badge>
                             {routeMetadata.sourceRequestPath ? (

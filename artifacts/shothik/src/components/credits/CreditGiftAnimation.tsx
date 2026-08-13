@@ -55,7 +55,7 @@ export default function CreditGiftAnimation({ active, onComplete }: CreditGiftAn
         </span>
       ))}
 
-      <style jsx>{`
+      <style>{`
         @keyframes starFloat {
           0% {
             transform: translate(-50%, 0) scale(0.5);

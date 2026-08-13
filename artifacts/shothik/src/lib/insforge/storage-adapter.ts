@@ -34,6 +34,9 @@ export class InsForgeStorageAdapter {
 
     try {
       const insforge = getInsforgeBrowserClient();
+      if (!insforge) {
+        throw new Error("InsForge client not initialized");
+      }
       const { data, error } = await insforge.storage
         .from(options.bucket)
         .upload(options.path, options.file as any);
@@ -76,6 +79,7 @@ export class InsForgeStorageAdapter {
 
     try {
       const insforge = getInsforgeBrowserClient();
+      if (!insforge) return false;
       const { error } = await insforge.storage.from(bucket).remove(key);
 
       if (error) {
@@ -96,6 +100,7 @@ export class InsForgeStorageAdapter {
   static getPublicUrl(bucket: string, key: string): string {
     try {
       const insforge = getInsforgeBrowserClient();
+      if (!insforge) return `/storage/v1/object/public/${bucket}/${key}`;
       const { data } = insforge.storage.from(bucket).getPublicUrl(key);
       return data?.publicUrl || `/storage/v1/object/public/${bucket}/${key}`;
     } catch {

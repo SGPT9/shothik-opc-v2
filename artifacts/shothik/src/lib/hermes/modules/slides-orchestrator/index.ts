@@ -229,8 +229,8 @@ export function getHermesSlidesOrchestrator(): SlidesOrchestrator {
           },
         });
         
-      } catch (error) {
-        logger.error("Failed to pause slide generation", { runId: command.runId, error: error.message });
+      } catch (error: any) {
+        logger.error("Failed to pause slide generation", { runId: command.runId, error: error?.message });
         throw error;
       }
     },
@@ -282,8 +282,8 @@ export function getHermesSlidesOrchestrator(): SlidesOrchestrator {
           },
         });
         
-      } catch (error) {
-        logger.error("Failed to update slide content", { runId: command.runId, error: error.message });
+      } catch (error: any) {
+        logger.error("Failed to update slide content", { runId: command.runId, error: error?.message });
         throw error;
       }
     },
@@ -323,8 +323,8 @@ export function getHermesSlidesOrchestrator(): SlidesOrchestrator {
           format: command.format,
         };
         
-      } catch (error) {
-        logger.error("Failed to export slide deck", { runId: command.runId, error: error.message });
+      } catch (error: any) {
+        logger.error("Failed to export slide deck", { runId: command.runId, error: error?.message });
         throw error;
       }
     },
@@ -350,8 +350,8 @@ export function getHermesSlidesOrchestrator(): SlidesOrchestrator {
           progress,
         };
         
-      } catch (error) {
-        logger.error("Failed to get run status", { runId, error: error.message });
+      } catch (error: any) {
+        logger.error("Failed to get run status", { runId, error: error?.message });
         throw error;
       }
     },
@@ -426,8 +426,8 @@ async function monitorSlideProgress(
       }
     });
     
-  } catch (error) {
-    logger.error("Slide progress monitoring error", { runId, legacyJobId, error: error.message });
+  } catch (error: any) {
+    logger.error("Slide progress monitoring error", { runId, legacyJobId, error: error?.message });
     
     await streaming.emitRunEvent({
       eventId: randomUUID(),
@@ -438,7 +438,7 @@ async function monitorSlideProgress(
       eventType: "run_failed",
       timestamp: new Date().toISOString(),
       sequence: 1,
-      payload: { error: error.message },
+      payload: { error: error?.message },
       metadata: {
         legacyJobId,
         errorSource: "monitoring",

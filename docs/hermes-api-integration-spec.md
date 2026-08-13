@@ -66,7 +66,9 @@ Legacy chat events (what our UI's `normalizeStreamEvent` also handles):
 - History fetched from `/api/chat/conversations/[id]/messages`.
 - "Resume mode" (`resume_session` / `resume_run`) grounds new turns on prior session context.
 
-## Notes for our client (artifacts/shothik)
+## Implementation Status (Phase 1 Complete)
 
-- Our chat page already consumes the legacy events and normalizes Hermes envelopes (`src/lib/chat/streaming.ts`).
-- Not yet used by our client: run control (pause/resume/cancel via POST to run), `plan_generated`, sessions API, resume mode, and the guest `x-chat-device-id` header contract (we send guest headers — verify they match).
+- **Backend Gateway APIs**: `/api/hermes/sessions` (POST, GET) and `/api/hermes/runs` (POST, GET SSE stream, POST control actions) implemented in `app/api/hermes/`.
+- **Contracts**: Canonical `__hermes: true` envelope schema, session schemas, run schemas, and run control schemas implemented in `lib/hermes/contracts/core.ts`.
+- **Thin Frontend Adapter**: `HermesClientAdapter` (`lib/hermes/client/adapter.ts`), React hooks (`lib/hermes/client/useHermes.ts`), and `HermesExecutionPanel` component (`components/hermes/HermesExecutionPanel.tsx`) implemented and verified.
+

@@ -1,7 +1,7 @@
 
 
-import { useTranslation } from "@/i18n";
-import { cn } from "@/lib/utils";
+import { useTranslation } from "../../i18n";
+import { cn } from "../../lib/utils";
 import { Sparkles } from "lucide-react";
 
 interface StyleProfileData {

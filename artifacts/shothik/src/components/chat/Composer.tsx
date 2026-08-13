@@ -15,6 +15,8 @@ import {
   Moon,
   Globe,
   FlaskConical,
+  Zap,
+  Gauge,
   Rocket,
   Check,
   Sparkles,
@@ -49,9 +51,14 @@ export interface ComposerAttachment {
 }
 
 export interface ComposerProps {
-  value: string;
-  onChange: (value: string) => void;
-  onSubmit: () => void;
+  value?: string;
+  onChange?: (value: string) => void;
+  onSubmit?: () => void;
+  onSend?: (text: string) => void | Promise<void>;
+  onVoiceClick?: () => void;
+  persona?: any;
+  activeSkill?: any;
+  onSkillChange?: (skill: any) => void;
   onStop?: () => void;
   disabled?: boolean;
   isStreaming?: boolean;
@@ -143,6 +150,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       value,
       onChange,
       onSubmit,
+      onSend,
       onStop,
       disabled,
       isStreaming,
@@ -178,19 +186,68 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [isListening,    setIsListening]    = useState(false);
     const [voiceLang,      setVoiceLang]      = useState("bn-BD");
     const [voiceLangOpen,  setVoiceLangOpen]  = useState(false);
+    // Tier 2: Speed / Quality toggle
+    const [quality, setQuality] = useState<"speed" | "balanced" | "quality">("balanced");
+
+    // Controlled or uncontrolled internal value fallback
+    const [internalValue, setInternalValue] = useState("");
+    const textValue = value !== undefined ? value : internalValue;
+
+    const handleTextChange = (val: string) => {
+      if (onChange) {
+        onChange(val);
+      } else {
+        setInternalValue(val);
+      }
+    };
+
+    const handleTextSubmit = () => {
+      const messageToSend = textValue.trim();
+      if (!messageToSend && attachments.length === 0) return;
+
+      if (onSend) {
+        onSend(messageToSend);
+      } else if (onSubmit) {
+        onSubmit();
+      }
+
+      if (onChange) {
+        onChange("");
+      }
+      setInternalValue("");
+    };
 
     const recognitionRef = useRef<any>(null);
     const activeStreaming = isStreaming ?? generating ?? false;
 
     useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement, []);
 
-    // Auto-resize textarea
+    // Tier 1: Auto-resize — CSS field-sizing (no scroll jank)
     useEffect(() => {
       const ta = textareaRef.current;
       if (!ta) return;
+      // Modern: field-sizing: content — handled by CSS
+      // Fallback for older browsers
       ta.style.height = "auto";
-      ta.style.height = `${Math.min(ta.scrollHeight, 160)}px`;
-    }, [value]);
+      ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
+    }, [textValue]);
+
+    // Tier 1: `/` shortcut — focus textarea
+    useEffect(() => {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        const active = document.activeElement;
+        const isFocused =
+          active?.tagName === "INPUT" ||
+          active?.tagName === "TEXTAREA" ||
+          active?.getAttribute("contenteditable") === "true";
+        if (e.key === "/" && !isFocused) {
+          e.preventDefault();
+          textareaRef.current?.focus();
+        }
+      };
+      document.addEventListener("keydown", handleKeyDown);
+      return () => document.removeEventListener("keydown", handleKeyDown);
+    }, []);
 
     // Close menus on outside click
     useEffect(() => {
@@ -266,11 +323,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const activeModel = MODELS.find((m) => m.value === modelHandle) ?? MODELS[0];
 
     return (
-      <div className="border-t bg-background px-4 pt-3 pb-4">
+      <div className="border-t border-border/50 bg-background/90 backdrop-blur-sm px-4 pt-3 pb-4">
         <div className="mx-auto flex max-w-3xl flex-col gap-2">
 
           {/* ── Main input container ── */}
-          <div className="flex flex-col rounded-3xl border border-border/80 bg-muted/10 px-4 pt-3 pb-2 transition-all focus-within:border-brand/40 focus-within:ring-1 focus-within:ring-brand/20">
+          <div className="flex flex-col rounded-2xl border border-border/60 bg-card shadow-sm transition-all duration-200 focus-within:border-brand/50 focus-within:shadow-[0_0_0_3px_rgb(0_171_85_/_0.08)] focus-within:bg-background">
 
             {/* Hidden file inputs */}
             <input ref={pdfInputRef} type="file" multiple className="hidden"
@@ -286,14 +343,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             {/* Textarea */}
             <textarea
               ref={textareaRef}
-              value={value}
-              onChange={(e) => onChange(e.target.value)}
+              value={textValue}
+              onChange={(e) => handleTextChange(e.target.value)}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(); }
+                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleTextSubmit(); }
               }}
               placeholder={placeholder ?? "Ask anything — strategy, research, code, slides…"}
               disabled={disabled}
-              className="min-h-[52px] max-h-40 w-full resize-none border-0 bg-transparent text-sm shadow-none outline-none placeholder:text-muted-foreground/60 focus:ring-0"
+              className="min-h-[60px] max-h-40 w-full resize-none border-0 bg-transparent px-4 pt-3.5 pb-0 text-sm shadow-none outline-none placeholder:text-muted-foreground/50 focus:ring-0 leading-relaxed"
             />
 
             {/* Attachment pills */}
@@ -321,22 +378,19 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               </div>
             )}
 
-            {/* ── Bottom toolbar ── */}
-            <div className="flex items-center gap-2 pt-2 border-t border-border/30">
+            {/* ── Bottom toolbar — Perplexity-clean: Attach · Mic · Mode · Model · Send + overflow ── */}
+            <div className="flex items-center gap-1.5 px-2 pt-2 pb-2.5 border-t border-border/40 mt-1">
 
-              {/* LEFT group */}
-              <div className="flex items-center gap-1 flex-1 flex-wrap">
-
-                {/* 📎 Attach dropdown */}
+              {/* LEFT: Attach + Mic */}
+              <div className="flex items-center gap-1">
+                {/* 📎 Attach */}
                 <div className="relative" onClick={(e) => e.stopPropagation()}>
                   <button type="button"
                     onClick={() => { setAttachMenuOpen((o) => !o); setModeMenuOpen(false); setModelMenuOpen(false); }}
                     disabled={disabled || activeStreaming}
                     aria-label="Attach files"
-                    className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition border border-transparent hover:border-border/60">
-                    <Paperclip className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Attach</span>
-                    <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+                    className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition">
+                    <Paperclip className="h-4 w-4" />
                   </button>
 
                   {attachMenuOpen && (
@@ -361,95 +415,23 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   )}
                 </div>
 
-                {/* 🎤 Voice dictation */}
-                <div className="relative flex items-center" onClick={(e) => e.stopPropagation()}>
-                  <button type="button"
-                    onClick={isListening ? stopListening : startListening}
-                    disabled={disabled || activeStreaming}
-                    aria-label={isListening ? "Stop voice input" : "Start voice input"}
-                    className={cn(
-                      "flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium transition border",
-                      isListening
-                        ? "bg-rose-500/15 text-rose-400 border-rose-500/40 animate-pulse"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/60 border-transparent hover:border-border/60",
-                    )}>
-                    {isListening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
-                    <span className="hidden sm:inline">{isListening ? "Stop" : "Voice"}</span>
-                  </button>
-
-                  {/* Language selector — tiny pill next to mic */}
-                  <button type="button"
-                    onClick={() => { setVoiceLangOpen((o) => !o); setAttachMenuOpen(false); }}
-                    className="flex items-center h-5 px-1.5 rounded-md text-[9px] font-mono text-muted-foreground hover:text-foreground hover:bg-muted/60 transition ml-0.5">
-                    {VOICE_LANGS.find(l => l.code === voiceLang)?.code.split("-")[0].toUpperCase() ?? "EN"}
-                    <ChevronDown className="h-2 w-2 ml-0.5 opacity-60" />
-                  </button>
-
-                  {voiceLangOpen && (
-                    <div className="absolute bottom-full left-0 mb-1 z-50 w-36 rounded-2xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
-                      {VOICE_LANGS.map((l) => (
-                        <button key={l.code} type="button"
-                          onClick={() => { setVoiceLang(l.code); setVoiceLangOpen(false); }}
-                          className="flex w-full items-center justify-between px-3 py-1.5 text-xs text-foreground hover:bg-muted/60 transition">
-                          <span>{l.label}</span>
-                          {voiceLang === l.code && <Check className="h-3 w-3 text-brand" />}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* 📞 Advanced Voice (ChatGPT-style full overlay) */}
-                {onOpenVoice && (
-                  <button type="button"
-                    onClick={onOpenVoice}
-                    disabled={disabled || activeStreaming}
-                    aria-label="Open voice mode"
-                    className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 transition border border-transparent hover:border-emerald-500/30">
-                    <Phone className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Voice</span>
-                  </button>
-                )}
-
-                {/* 🌙 Tonight Engine */}
-                {onToggleOvernight && (
-                  <button type="button"
-                    onClick={() => onToggleOvernight(!isOvernight)}
-                    className={cn(
-                      "flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium transition border",
-                      isOvernight
-                        ? "bg-purple-500/20 text-purple-300 border-purple-500/40 shadow-sm"
-                        : "text-muted-foreground hover:text-foreground border-transparent hover:bg-muted/60 hover:border-border/60",
-                    )}>
-                    <Moon className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">Tonight</span>
-                  </button>
-                )}
-
-                {/* Open-LLM-VTuber Omni Voice Presenter */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    fetch("/api/hermes/vtuber/session", { method: "POST" })
-                      .then(res => res.json())
-                      .then(data => {
-                        if (data.data?.websocketUrl) {
-                          window.location.href = `/voice?session=${data.data.sessionId}`;
-                        } else {
-                          window.location.href = "/voice";
-                        }
-                      })
-                      .catch(() => {
-                        window.location.href = "/voice";
-                      });
-                  }}
-                  className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium transition border border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 shadow-sm cursor-pointer"
-                  title="Launch Open-LLM-VTuber Live Voice Presenter"
-                >
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-400 animate-pulse" />
-                  <span className="hidden sm:inline">Omni Voice</span>
+                {/* 🎤 Mic */}
+                <button type="button"
+                  onClick={isListening ? stopListening : startListening}
+                  disabled={disabled || activeStreaming}
+                  aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                  className={cn(
+                    "flex items-center justify-center h-8 w-8 rounded-lg transition",
+                    isListening
+                      ? "bg-rose-500/15 text-rose-400 animate-pulse"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
+                  )}>
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </button>
               </div>
+
+              {/* SPACER */}
+              <div className="flex-1" />
 
               {/* CENTER: Mode badge */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -491,14 +473,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               </div>
 
               {/* RIGHT: Model + Send */}
-              <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1">
 
                 {/* Model selector */}
                 <div className="relative" onClick={(e) => e.stopPropagation()}>
                   <button type="button"
                     onClick={() => { setModelMenuOpen((o) => !o); setAttachMenuOpen(false); setModeMenuOpen(false); }}
                     disabled={disabled || activeStreaming}
-                    className="flex items-center gap-1 h-7 px-2.5 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition border border-transparent hover:border-border/60">
+                    className="flex items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition">
                     <span className="hidden md:inline">{activeModel.label}</span>
                     <span className="md:hidden">Model</span>
                     <ChevronDown className="h-2.5 w-2.5 opacity-60" />
@@ -521,20 +503,20 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 {/* Send / Stop */}
                 {activeStreaming ? (
                   <Button type="button" variant="outline" size="icon"
-                    className="h-8 w-8 rounded-xl border-border/80 hover:bg-muted transition"
+                    className="h-8 w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition"
                     onClick={onStop} aria-label="Stop generating">
-                    <Square className="h-3.5 w-3.5 fill-foreground text-foreground" />
+                    <Square className="h-3.5 w-3.5 fill-current" />
                   </Button>
                 ) : (
                   <Button type="button" size="icon"
                     className={cn(
-                      "h-8 w-8 rounded-xl transition shadow-sm",
-                      value.trim()
-                        ? "bg-brand text-white hover:bg-brand/90"
-                        : "bg-muted/50 text-muted-foreground cursor-not-allowed",
+                      "h-8 w-8 rounded-xl transition-all duration-150",
+                      textValue.trim()
+                        ? "bg-brand text-white hover:bg-brand/90 shadow-md shadow-brand/25 scale-100 hover:scale-105"
+                        : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed",
                     )}
-                    onClick={onSubmit}
-                    disabled={disabled || !value.trim()}
+                    onClick={handleTextSubmit}
+                    disabled={disabled || !textValue.trim()}
                     aria-label="Send message">
                     <Send className="h-3.5 w-3.5" />
                   </Button>

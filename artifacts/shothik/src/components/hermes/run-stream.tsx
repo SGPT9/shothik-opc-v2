@@ -192,7 +192,7 @@ export function RunStream({ runId, autoScroll = true }: RunStreamProps) {
             <span className="ml-4">Session: {run.sessionId}</span>
           )}
         </div>
-        {(routeMetadata.routeId || routeMetadata.sourceRequestPath || routeMetadata.targetBackendService) && (
+        {Boolean(routeMetadata.routeId || routeMetadata.sourceRequestPath || routeMetadata.targetBackendService) && (
           <div className="flex flex-wrap gap-2 text-xs">
             {routeMetadata.routeId ? (
               <Badge variant="outline">Route {String(routeMetadata.routeId)}</Badge>

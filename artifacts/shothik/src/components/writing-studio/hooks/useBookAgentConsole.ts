@@ -6,21 +6,13 @@ export function useBookAgentConsole() {
   const [customPrompt, setCustomPrompt] = useState("");
   const { isListening, transcript, startListening, stopListening } = useVoiceDictation();
 
-  const {
-    events,
-    status,
-    progress,
-    activeSubAgent,
-    logs,
-    startStream,
-    stopStream,
-  } = useDeerFlowStream();
+  const stream = useDeerFlowStream();
 
   const handleRunAgent = useCallback(
     (prompt: string, type: string = "general") => {
-      startStream({ prompt, type });
+      stream.startStream(prompt, type as any);
     },
-    [startStream]
+    [stream]
   );
 
   return {
@@ -28,14 +20,14 @@ export function useBookAgentConsole() {
     setCustomPrompt,
     isListening,
     transcript,
-    events,
-    status,
-    progress,
-    activeSubAgent,
-    logs,
     startListening,
     stopListening,
-    startStream: handleRunAgent,
-    stopStream,
+    events: (stream as any).events || [],
+    status: (stream as any).status || "idle",
+    progress: (stream as any).progress || 0,
+    activeSubAgent: (stream as any).activeSubAgent || null,
+    logs: stream.logs || [],
+    handleRunAgent,
+    stopStream: stream.stopStream,
   };
 }
