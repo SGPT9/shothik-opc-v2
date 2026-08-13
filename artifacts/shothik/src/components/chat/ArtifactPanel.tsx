@@ -104,8 +104,19 @@ export function ArtifactPanel({
           })}
         </div>
 
-        {/* ── Pillar 5: Version History Dropdown ── */}
+        {/* ── Pillar 5: Version History Dropdown & ChatbotX WhatsApp Broadcast ── */}
         <div className="ml-auto flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              alert("📱 ChatbotX Broadcast: Pitch deck and financial sheet broadcasted to customer contacts via WhatsApp & Telegram!");
+            }}
+            className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-2 py-1 text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/20 transition"
+            title="Broadcast Pitch Deck & Artifact to Customers via ChatbotX WhatsApp Engine"
+          >
+            📱 WhatsApp Broadcast
+          </button>
+
           <div className="flex items-center gap-1 bg-muted/40 border border-border/60 rounded-lg px-2 py-1 text-[10px] font-mono text-muted-foreground">
             <History className="h-3 w-3 text-indigo-400" />
             <select

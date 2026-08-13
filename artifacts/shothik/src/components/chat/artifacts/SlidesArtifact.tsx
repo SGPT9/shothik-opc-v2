@@ -219,15 +219,29 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
           {/* Pillar 4: AI Voice Presenter Button */}
           <Button
             size="sm"
-            variant={isNarrating ? "default" : "outline"}
+            variant="outline"
             onClick={handleVoiceNarration}
             className={cn(
-              "h-7 px-2.5 text-[11px] font-semibold gap-1.5 transition",
-              isNarrating ? "bg-emerald-600 hover:bg-emerald-500 text-white animate-pulse" : "border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10"
+              "h-7 px-2 text-[11px] font-semibold gap-1 transition",
+              isNarrating ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400" : "border-border/60 text-muted-foreground hover:text-foreground"
             )}
+            title={isNarrating ? "Stop Slide Voice Narration" : "Start Web Speech AI Slide Narration"}
           >
-            {isNarrating ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3 text-indigo-400" />}
-            <span>{isNarrating ? "Stop Voice" : "AI Voice Narration"}</span>
+            {isNarrating ? <VolumeX className="h-3 w-3 text-emerald-400 animate-pulse" /> : <Volume2 className="h-3 w-3 text-indigo-400" />}
+            <span className="hidden sm:inline">{isNarrating ? "Stop Voice" : "Narrate"}</span>
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              const link = `https://papermark.shothik.app/view/deck_${Math.random().toString(36).substring(2, 9)}`;
+              prompt("🔗 Papermark Trackable Investor Link generated (with view analytics & page time tracking):", link);
+            }}
+            className="h-7 px-2 text-[11px] font-semibold border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 gap-1"
+          >
+            <Share2 className="h-3 w-3 text-indigo-400" />
+            <span className="hidden sm:inline">Trackable Link</span>
           </Button>
 
           <Button

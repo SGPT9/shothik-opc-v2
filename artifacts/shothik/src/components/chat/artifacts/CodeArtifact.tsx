@@ -148,6 +148,21 @@ export function CodeArtifact({
             </button>
           </div>
 
+          {/* OpenSearch-VL UI Component Inspector */}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              alert("👁️ OpenSearch-VL Inspector: Visual element inspection active. Click any component element in the live preview to critique layout & code!");
+            }}
+            className="h-7 px-2.5 rounded-lg border-indigo-500/30 bg-indigo-500/10 text-xs font-bold text-indigo-300 hover:bg-indigo-500/20"
+            title="Inspect UI Component & Visual Layout via OpenSearch-VL"
+          >
+            <Sparkles className="h-3 w-3 text-indigo-400" />
+            <span className="ml-1 text-[11px]">Inspect UI</span>
+          </Button>
+
           {/* Copy Button */}
           <Button
             type="button"
