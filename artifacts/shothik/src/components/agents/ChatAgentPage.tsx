@@ -20,6 +20,9 @@ import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
+import { ChatGPTVoiceOrbModal } from "@/components/voice/ChatGPTVoiceOrbModal";
+import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
+import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +57,9 @@ export function ChatAgentPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [voiceActive, setVoiceActive] = useState(false);
+  const [isVoiceOrbOpen, setIsVoiceOrbOpen] = useState(false);
+  const [isSwarmDebateOpen, setIsSwarmDebateOpen] = useState(false);
+  const [isPaywallOpen, setIsPaywallOpen] = useState(false);
 
   // Open artifact panel on-demand
   const handleOpenArtifact = useCallback((type: string, messageOrContent?: any) => {
@@ -153,6 +159,9 @@ export function ChatAgentPage() {
           onTabChange={(tab) => handleOpenArtifact(tab)}
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
           sidebarOpen={sidebarOpen}
+          onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
+          onSwarmDebateClick={() => setIsSwarmDebateOpen(true)}
+          onPaywallClick={() => setIsPaywallOpen(true)}
         />
 
         {/* Content: Chat + Artifact (Draggable Splitter Handle when artifact is open) */}
@@ -261,6 +270,7 @@ export function ChatAgentPage() {
                   isStreaming={streamState.isStreaming}
                   onStop={stopStream}
                   onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                  onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                 />
               </ComponentErrorBoundary>
 
@@ -269,6 +279,24 @@ export function ChatAgentPage() {
                 avatarName="Shothik 3D Avatar Presenter"
                 isActive={voiceActive}
                 onClose={() => setVoiceActive(false)}
+              />
+
+              {/* 🔮 ChatGPT Advanced Voice Mode Fluid Orb Modal */}
+              <ChatGPTVoiceOrbModal
+                isOpen={isVoiceOrbOpen}
+                onClose={() => setIsVoiceOrbOpen(false)}
+              />
+
+              {/* 🐝 Agent Swarm Adversarial Debate Modal */}
+              <SwarmAdversarialDebateModal
+                isOpen={isSwarmDebateOpen}
+                onClose={() => setIsSwarmDebateOpen(false)}
+              />
+
+              {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}
+              <MonetizationPaywallModal
+                isOpen={isPaywallOpen}
+                onClose={() => setIsPaywallOpen(false)}
               />
             </div>
           </div>

@@ -10,6 +10,9 @@ export interface ChatHeaderProps {
   onTabChange?: (tab: string) => void;
   onToggleSidebar?: () => void;
   sidebarOpen?: boolean;
+  onVoiceOrbClick?: () => void;
+  onSwarmDebateClick?: () => void;
+  onPaywallClick?: () => void;
 }
 
 export function ChatHeader({
@@ -19,6 +22,9 @@ export function ChatHeader({
   onTabChange,
   onToggleSidebar,
   sidebarOpen = false,
+  onVoiceOrbClick,
+  onSwarmDebateClick,
+  onPaywallClick,
 }: ChatHeaderProps) {
   const [isDark, setIsDark] = useState(true);
 
@@ -64,6 +70,45 @@ export function ChatHeader({
 
       {/* Right: Theme Toggle + Status indicator */}
       <div className="flex items-center gap-2">
+        {/* 🎙️ Voice Orb Button */}
+        {onVoiceOrbClick && (
+          <button
+            type="button"
+            onClick={onVoiceOrbClick}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gradient-to-r from-emerald-500/20 via-purple-500/20 to-indigo-500/20 border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 text-xs font-bold transition shadow-sm"
+            title="Open ChatGPT Advanced Voice Mode Orb"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span>Voice Orb</span>
+          </button>
+        )}
+
+        {/* 🐝 Swarm Debate Button */}
+        {onSwarmDebateClick && (
+          <button
+            type="button"
+            onClick={onSwarmDebateClick}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-500/15 border border-purple-500/40 text-purple-300 hover:bg-purple-500/25 text-xs font-bold transition shadow-sm"
+            title="Run 3-Agent Swarm Adversarial Debate"
+          >
+            <span>🐝</span>
+            <span>Swarm Debate</span>
+          </button>
+        )}
+
+        {/* ⚡ Credit Paywall Badge */}
+        {onPaywallClick && (
+          <button
+            type="button"
+            onClick={onPaywallClick}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 hover:border-emerald-400 font-mono text-xs font-bold transition shadow-sm"
+            title="Open Credit Top-Up Paywall Portal"
+          >
+            <span>⚡</span>
+            <span>550 Credits</span>
+          </button>
+        )}
+
         {/* ☀️ 🌙 Theme Toggle Button */}
         <button
           type="button"
