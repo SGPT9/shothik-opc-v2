@@ -1,5 +1,9 @@
-// Slide Generation Frontend Service
-// Connects to backend service on port 3004
+import { createClient } from "@insforge/sdk";
+
+const insforge = createClient({
+  baseUrl: import.meta.env.VITE_INSFORGE_BASE_URL || "https://ers8j28a.ap-southeast.insforge.app",
+  anonKey: import.meta.env.VITE_INSFORGE_ANON_KEY || "anon-key-placeholder",
+});
 
 const SLIDE_API_URL = import.meta.env.VITE_SLIDE_API_URL || "http://localhost:3004";
 
