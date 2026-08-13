@@ -394,6 +394,25 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
                 <p className="text-xs text-slate-400 mt-1">90th percentile adoption rate</p>
               </Card>
             </div>
+
+            {/* ── 1-Click Handoff to Sheet Canvas ── */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-800">
+              <span className="text-xs text-slate-400 font-mono">
+                Monte Carlo Simulation: 900 Runs Completed
+              </span>
+              <Button
+                size="sm"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.location.href = "/agents/chat?tab=sheet&scenario=exported";
+                  }
+                }}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl px-4 h-8 flex items-center gap-2 shadow-lg shadow-emerald-900/30"
+              >
+                <Sparkles className="h-3.5 w-3.5" />
+                Export Forecast to Sheet Canvas →
+              </Button>
+            </div>
           </TabsContent>
         </Tabs>
       </DialogContent>

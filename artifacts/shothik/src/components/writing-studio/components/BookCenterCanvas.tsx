@@ -1,8 +1,9 @@
 import React from "react";
-import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck, Sparkles } from "lucide-react";
+import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck, Sparkles, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
+import { exportManuscriptToMarkdown, exportManuscriptToHTML } from "../utils/epubPdfExporter";
 
 export type CanvasTab = "editor" | "sheet" | "mindmap" | "slides" | "web_preview";
 
@@ -69,6 +70,26 @@ export function BookCenterCanvas({
               </button>
             );
           })}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => exportManuscriptToMarkdown("Shothik Book Manuscript", [{ id: "c1", title: "Chapter 1", content: editorText }])}
+            className="h-7 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground hover:text-foreground gap-1"
+          >
+            <Download className="h-3 w-3 text-indigo-400" />
+            Export MD
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => exportManuscriptToHTML("Shothik Book Manuscript", [{ id: "c1", title: "Chapter 1", content: editorText }])}
+            className="h-7 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground hover:text-foreground gap-1"
+          >
+            <Download className="h-3 w-3 text-purple-400" />
+            Export Ebook HTML
+          </Button>
         </div>
       </div>
 

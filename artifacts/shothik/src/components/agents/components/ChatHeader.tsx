@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Bot, Menu, X, Sun, Moon } from "lucide-react";
+import { Bot, Menu, X, Sun, Moon, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ChatHeaderProps {
@@ -74,6 +74,11 @@ export function ChatHeader({
         >
           {isDark ? <Sun className="h-4 w-4 text-amber-400" /> : <Moon className="h-4 w-4 text-indigo-500" />}
         </button>
+
+        <span className="inline-flex items-center gap-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 px-2 py-0.5 text-[10px] font-semibold text-indigo-400">
+          <Sparkles className="h-2.5 w-2.5 text-indigo-400" />
+          Polsia AI Cofounder
+        </span>
 
         <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
