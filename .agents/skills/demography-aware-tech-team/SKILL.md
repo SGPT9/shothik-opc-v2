@@ -42,19 +42,20 @@ An autonomous agent skill that configures a specialized engineering team (Fronte
 
 ---
 
-## 🎛️ 3 Core Chat Modes Invariants
+## 🎛️ 3-Step Startup Validation Funnel Invariants
 
-### 1. Cofounder Mode (`cofounder`)
-- **Role**: Autonomous Strategic Technical Cofounder.
-- **Invariants**: Executes deep module architecture, database CRUD, and writes code across the codebase.
+### Step 1: Cofounder Mode (`cofounder`)
+- **Role**: Strategic AI Cofounder & Builder.
+- **Invariants**: Helps user define Problem Statement, Proposed Solution, and TAM / SAM / SOM Market Sizing ($10B TAM, $1.5B SAM, $150M SOM) in South Asia.
 
-### 2. Web Search Mode (`coresearcher`)
-- **Role**: Grounded Fact-Checking & Web Literature Analyst.
-- **Invariants**: Performs live web searches via `search_web` before drawing conclusions.
+### Step 2: Web Search Mode (`coresearcher`)
+- **Role**: Grounded Live Web Validation.
+- **Invariants**: Performs live web queries via `search_web` checking competitor landscape (ShopUp, Chaldal, Pathao) and NBR/BTRC regulatory policies.
 
-### 3. ScenarioLab Mode (`coworker`)
-- **Role**: Adversarial Stress-Testing & Demographic Simulator.
-- **Invariants**: Evaluates 2GB RAM phones, 3G cellular networks, bKash TrxID fraud, and Banglish dictations.
+### Step 3: ScenarioLab Mode (`coworker`)
+- **Role**: Stress-Test & Adversarial Lab.
+- **Invariants**: Evaluates 2GB RAM phones, 3G cellular networks, bKash TrxID fraud, courier return rates, and Banglish dictations.
+
 
 ---
 
