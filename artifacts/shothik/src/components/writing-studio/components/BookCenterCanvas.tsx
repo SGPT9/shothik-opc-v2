@@ -1,8 +1,9 @@
 import React from "react";
-import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck, Sparkles, Download } from "lucide-react";
+import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck, Sparkles, Download, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
+import { PrintPreflightModal } from "./PrintPreflightModal";
 import { exportManuscriptToMarkdown, exportManuscriptToHTML } from "../utils/epubPdfExporter";
 
 export type CanvasTab = "editor" | "sheet" | "mindmap" | "slides" | "web_preview";
@@ -25,6 +26,7 @@ export function BookCenterCanvas({
   const [isInspectorActive, setIsInspectorActive] = React.useState(false);
   const [selectedElementInfo, setSelectedElementInfo] = React.useState<{ tagName: string; textContent: string } | null>(null);
   const [isScenarioLabOpen, setIsScenarioLabOpen] = React.useState(false);
+  const [isPreflightOpen, setIsPreflightOpen] = React.useState(false);
 
 
   // December Adaptation: Keyboard shortcut Cmd + \ to toggle split preview
@@ -91,6 +93,16 @@ export function BookCenterCanvas({
           >
             <Download className="h-3 w-3 text-purple-400" />
             Export Ebook HTML
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsPreflightOpen(true)}
+            className="h-7 px-2 text-[10px] font-semibold border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 gap-1"
+          >
+            <Printer className="h-3 w-3" />
+            Print Preflight
           </Button>
         </div>
       </div>
@@ -214,6 +226,13 @@ export function BookCenterCanvas({
           </div>
         )}
       </div>
+
+      <PrintPreflightModal
+        isOpen={isPreflightOpen}
+        onClose={() => setIsPreflightOpen(false)}
+        title="Shothik Book Manuscript"
+        pageCount={Math.max(24, Math.ceil(editorText.split(/\s+/).filter(Boolean).length / 250))}
+      />
     </div>
   );
 }
