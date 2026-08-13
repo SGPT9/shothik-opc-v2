@@ -39,3 +39,28 @@ An autonomous agent skill that configures a specialized engineering team (Fronte
 - [ ] Test 1-Tap bKash deep-linking URL schemes inside mobile browsers and WhatsApp.
 - [ ] Audit Banglish speech dictation transcription accuracy.
 - [ ] Confirm Steadfast / Pathao courier parcel booking API responses.
+
+---
+
+## 🎛️ 3 Core Chat Modes Invariants
+
+### 1. Cofounder Mode (`cofounder`)
+- **Role**: Autonomous Strategic Technical Cofounder.
+- **Invariants**: Executes deep module architecture, database CRUD, and writes code across the codebase.
+
+### 2. Web Search Mode (`coresearcher`)
+- **Role**: Grounded Fact-Checking & Web Literature Analyst.
+- **Invariants**: Performs live web searches via `search_web` before drawing conclusions.
+
+### 3. ScenarioLab Mode (`coworker`)
+- **Role**: Adversarial Stress-Testing & Demographic Simulator.
+- **Invariants**: Evaluates 2GB RAM phones, 3G cellular networks, bKash TrxID fraud, and Banglish dictations.
+
+---
+
+## 🏗️ Deep Module Architecture Rules
+
+- **Depth Over Surface**: Keep interfaces small (3 or fewer methods) while hiding complex domain logic inside.
+- **Seam Isolation**: Place seams where caller leverage and maintainer locality are maximized.
+- **Test Surface**: Test directly through external module interfaces with 100% Vitest pass rate.
+
