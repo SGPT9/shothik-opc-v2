@@ -45,6 +45,13 @@ import { PerplexityFocusSelector, type PerplexityFocusMode } from "@/components/
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export interface ContextChip {
+  id: string;
+  label: string;
+  type: 'selection' | 'chapter' | 'character' | 'file';
+  preview?: string;
+}
+
 export interface ComposerAttachment {
   id: string;
   name: string;
@@ -78,6 +85,8 @@ export interface ComposerProps {
   attachments?: ComposerAttachment[];
   onAttachFiles?: (files: FileList | File[]) => void;
   onRemoveAttachment?: (attachmentId: string) => void;
+  contextChips?: ContextChip[];
+  onRemoveContextChip?: (chipId: string) => void;
   commandHint?: { name: string; description: string } | null;
   errorMessage?: string | null;
   /** Opens Research artifact panel (when mode = Web Search) */
@@ -174,6 +183,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       attachments = [],
       onAttachFiles,
       onRemoveAttachment,
+      contextChips = [],
+      onRemoveContextChip,
       commandHint,
       errorMessage,
       onOpenResearchPanel,
@@ -211,7 +222,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
     const handleTextSubmit = () => {
       const messageToSend = textValue.trim();
-      if (!messageToSend && attachments.length === 0) return;
+      if (!messageToSend && attachments.length === 0 && contextChips.length === 0) return;
 
       if (onSend) {
         onSend(messageToSend);
@@ -360,6 +371,33 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               disabled={disabled}
               className="min-h-[60px] max-h-40 w-full resize-none border-0 bg-transparent px-4 pt-3.5 pb-0 text-sm shadow-none outline-none placeholder:text-muted-foreground/50 focus:ring-0 leading-relaxed"
             />
+
+            {/* Context Chips (Qoderian Selection & Entity sync) */}
+            {contextChips.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 px-3 pt-1.5 pb-1">
+                {contextChips.map((chip) => (
+                  <div
+                    key={chip.id}
+                    className="flex max-w-[240px] items-center gap-1.5 rounded-lg border border-brand/35 bg-brand/10 px-2.5 py-1 text-[11px] text-brand shadow-xs"
+                  >
+                    <span className="text-[10px]">
+                      {chip.type === 'selection' ? '✂️' : chip.type === 'chapter' ? '📖' : chip.type === 'character' ? '👤' : '📄'}
+                    </span>
+                    <span className="truncate font-semibold">{chip.label}</span>
+                    {onRemoveContextChip && (
+                      <button
+                        type="button"
+                        onClick={() => onRemoveContextChip(chip.id)}
+                        className="ml-0.5 text-brand/70 hover:text-brand transition rounded-full p-0.5 hover:bg-brand/20"
+                        aria-label={`Remove context ${chip.label}`}
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
 
             {/* Attachment pills */}
             {attachments.length > 0 && (
