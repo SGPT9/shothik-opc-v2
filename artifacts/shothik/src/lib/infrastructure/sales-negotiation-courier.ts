@@ -102,21 +102,23 @@ export class SalesNegotiationCourierService {
   }
 
   /**
-   * Generates dynamic in-chat WhatsApp bKash / Nagad payment link and button card.
+   * Generates dynamic in-chat WhatsApp bKash / Nagad payment link, 1-tap mobile app deep-link, and button card.
    */
   static generateWhatsAppPaymentLink(params: {
     merchantPhone: string;
     amount: number;
     orderId: string;
     gateway: "bkash" | "nagad" | "sslcommerz";
-  }): { payUrl: string; qrCodeUrl: string; whatsappMessageCard: string } {
+  }): { payUrl: string; appDeepLink: string; qrCodeUrl: string; whatsappMessageCard: string } {
     const payUrl = `https://pay.${params.gateway}.com.bd/checkout?merchant=${params.merchantPhone}&amount=${params.amount}&ref=${params.orderId}`;
+    const appDeepLink = `${params.gateway}://payment?merchant=${params.merchantPhone}&amount=${params.amount}&ref=${params.orderId}`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(payUrl)}`;
 
-    const whatsappMessageCard = `💳 *${params.gateway.toUpperCase()} Direct Payment Link*\n\nOrder ID: #${params.orderId}\nTotal Payable: ৳${params.amount} BDT\n\n👇 Tap below to pay instantly:\n${payUrl}\n\nPayment শেষে TrxID টি এই চ্যাটে লিখে পাঠান।`;
+    const whatsappMessageCard = `💳 *${params.gateway.toUpperCase()} 1-Tap Mobile Payment Link*\n\nOrder ID: #${params.orderId}\nTotal Payable: ৳${params.amount} BDT\n\n👇 Mobile App 1-Tap Open:\n${appDeepLink}\n\n👇 Web Checkout Link:\n${payUrl}\n\nPayment শেষে TrxID টি এই চ্যাটে লিখে পাঠান।`;
 
     return {
       payUrl,
+      appDeepLink,
       qrCodeUrl,
       whatsappMessageCard,
     };
