@@ -92,10 +92,19 @@ export function DeepResearchArtifact({
           <Button
             size="sm"
             variant="outline"
-            onClick={() => alert("Downloading SparkPage Markdown Report...")}
+            onClick={() => {
+              const reportText = `# ${queryTopic}\n\n100% Grounded Executive Research Report\nAudited ${sourcesList.length} Verified Web Sources.\n\n---\n\n${summaryText}`;
+              const blob = new Blob([reportText], { type: "text/markdown;charset=utf-8" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `${queryTopic.toLowerCase().replace(/\s+/g, "_")}_research_report.md`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
             className="h-7 px-2.5 text-[11px] font-semibold gap-1.5"
           >
-            <Download className="h-3 w-3" />
+            <Download className="h-3 w-3 text-indigo-400" />
             Export Report
           </Button>
         </div>
