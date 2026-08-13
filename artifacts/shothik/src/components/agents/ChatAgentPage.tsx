@@ -19,6 +19,7 @@ import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
+import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 
@@ -262,6 +263,13 @@ export function ChatAgentPage() {
                   onVoiceClick={() => setVoiceActive((prev) => !prev)}
                 />
               </ComponentErrorBoundary>
+
+              {/* VTuber 3D Interactive Voice Avatar Overlay */}
+              <VTuberVoiceAvatarOverlay
+                avatarName="Shothik 3D Avatar Presenter"
+                isActive={voiceActive}
+                onClose={() => setVoiceActive(false)}
+              />
             </div>
           </div>
         )}
