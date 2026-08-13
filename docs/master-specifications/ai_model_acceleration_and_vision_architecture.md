@@ -1,5 +1,5 @@
 # ⚡ AI Model Acceleration, Vision Capabilities & Edge Architecture
-## Where DiffusionGemma 2000 tok/s, OpenSearch-VL Vision, AirLLM GGUF & Cloudflare Workers Lie in Shothik AI
+## Where DiffusionGemma 2000 tok/s, OpenSearch-VL Vision, AirLLM GGUF, Vast.ai GPUs & Cloudflare Workers Lie in Shothik AI
 
 **Target Platform**: Shothik AI / Polsia OPC (`release/v2.5.0-polsia-opc`)  
 **Audit Date**: August 13, 2026  
@@ -14,6 +14,7 @@
  └─────────────────────────────────────────────────────────────────────────────┘
   2,000+ tok/sec Diffusion LLM  ──► DiffusionGemmaEngine (diffusion-gemma-engine.ts)
   Frontier Vision Perception   ──► OpenSearchVLService (opensearch-vl-service.ts)
+  Vast.ai Dynamic GPU Bursting ──► VastAiGpuBurstingService (vast-ai-gpu-bursting.ts)
   Quantized GGUF & AirLLM VPS   ──► VpsFallbackEngine (vps-fallback-engine.ts)
   Edge Gateway Routing          ──► Cloudflare Workers / Next.js API Routes
 ```
@@ -37,7 +38,14 @@
 
 ---
 
-### 🗜️ 3. AirLLM, Colibri & Quantized GGUF Models
+### ⚡ 3. Vast.ai GPU Cloud Bursting: `VastAiGpuBurstingService`
+- **File Location**: [`artifacts/shothik/src/lib/infrastructure/vast-ai-gpu-bursting.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/vast-ai-gpu-bursting.ts)
+- **Test File**: [`artifacts/shothik/src/lib/infrastructure/__tests__/vast-ai-gpu-bursting.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/__tests__/vast-ai-gpu-bursting.test.ts)
+- **Cost**: Dynamically provisions **NVIDIA RTX 4090 (24GB VRAM)** or **A100 GPUs** at **$0.18/hour** when local VPS CPU load exceeds 80% or heavy 900-run Monte Carlo simulations execute. Terminates immediately upon completion to minimize billing.
+
+---
+
+### 🗜️ 4. AirLLM, Colibri & Quantized GGUF Models
 - **File Location**: [`artifacts/shothik/src/lib/infrastructure/vps-fallback-engine.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/vps-fallback-engine.ts#L98-L125)
 - **Overnight Engine Location**: [`artifacts/shothik/src/lib/tonight-engine/llm-overnight-client.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/tonight-engine/llm-overnight-client.ts)
 - **Hostinger VPS Node Target**: `http://187.127.125.115:11434`
@@ -45,12 +53,12 @@
 
 ---
 
-### 🌐 4. Cloudflare Workers Edge Gateway
+### 🌐 5. Cloudflare Workers Edge Gateway
 - **File Location**: [`artifacts/shothik/src/lib/infrastructure/trigger-gateway.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/trigger-gateway.ts)
-- **How It Works**: Proxies incoming user requests at the edge, routing low-latency tasks to Cloudflare Workers and heavy overnight tasks to the Hostinger VPS Tonight Engine.
+- **How It Works**: Proxies incoming user requests at the edge, routing low-latency tasks to Cloudflare Workers and heavy overnight tasks to the Hostinger VPS / Vast.ai GPU cloud instances.
 
 ---
 
 ## 🧪 Certified Infrastructure Status
-- **Vitest Test Suite**: **`✓ 24/24 test suites passed`** (`diffusion-gemma-engine.test.ts`, `opensearch-vl.test.ts`, `vps-fallback-engine.test.ts`).
-- **Git Remote Commit**: [`6315a26`](https://github.com/ahsanhab919-ux/shothik-opc-v2/commit/6315a26) pushed to `origin release/v2.5.0-polsia-opc`.
+- **Vitest Test Suite**: **`✓ 25/25 test suites passed`** (including `vast-ai-gpu-bursting.test.ts`).
+- **Git Remote Commit**: [`0074e27`](https://github.com/ahsanhab919-ux/shothik-opc-v2/commit/0074e27) pushed to `origin release/v2.5.0-polsia-opc`.
