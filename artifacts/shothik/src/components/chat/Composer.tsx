@@ -78,6 +78,8 @@ export interface ComposerProps {
   errorMessage?: string | null;
   /** Opens Research artifact panel (when mode = Web Search) */
   onOpenResearchPanel?: () => void;
+  /** Opens ChatGPT Advanced Voice Mode Orb */
+  onVoiceOrbClick?: () => void;
   /** Opens the full-screen ChatGPT-style voice overlay */
   onOpenVoice?: () => void;
 }
@@ -168,9 +170,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       attachments = [],
       onAttachFiles,
       onRemoveAttachment,
-      commandHint,
       errorMessage,
       onOpenResearchPanel,
+      onVoiceOrbClick,
       onOpenVoice,
     }: ComposerProps,
     ref,
@@ -428,6 +430,19 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   )}>
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </button>
+
+                {/* 🔮 ChatGPT Voice Orb Pop-up Button */}
+                {onVoiceOrbClick && (
+                  <button type="button"
+                    onClick={onVoiceOrbClick}
+                    disabled={disabled || activeStreaming}
+                    className="flex items-center gap-1.5 h-8 px-2.5 rounded-full bg-gradient-to-r from-emerald-500/20 via-purple-500/20 to-indigo-500/20 border border-emerald-500/40 text-emerald-400 hover:text-emerald-300 hover:border-emerald-400 text-xs font-bold transition shadow-sm"
+                    title="Open ChatGPT Advanced Voice Mode Orb"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Voice Orb</span>
+                  </button>
+                )}
               </div>
 
               {/* SPACER */}
