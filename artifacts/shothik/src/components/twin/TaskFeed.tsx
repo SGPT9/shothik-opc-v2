@@ -134,7 +134,7 @@ function TaskCard({
               <button
                 type="button"
                 onClick={() => {
-                  alert(`Executing agent task "${task.title}" via InsForge BaaS task runner…`);
+                  alert(`Executing task "${task.title}"…`);
                 }}
                 className="inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2.5 py-1 text-[10px] font-bold hover:bg-indigo-500/20 transition"
               >
