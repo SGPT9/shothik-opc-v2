@@ -240,34 +240,6 @@ export function ChatAgentPage() {
           <div className="flex flex-1 min-h-0 w-full overflow-hidden">
             {/* Full-width Chat Column */}
             <div className="relative flex flex-col min-w-0 h-full flex-1 overflow-hidden">
-              {/* Replit Agent Quick Ecosystem Action Bar */}
-              <div className="bg-slate-950/80 border-b border-slate-800 px-4 py-1.5 flex items-center justify-between overflow-x-auto text-[11px] font-medium text-slate-300 gap-2 shrink-0 select-none">
-                <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px] shrink-0">🚀 Replit AI Tools:</span>
-                <div className="flex items-center gap-1.5 overflow-x-auto">
-                  <button onClick={() => setShowFunnelModal(true)} className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/60 transition flex items-center gap-1 shrink-0">
-                    <span>⚡</span> 3-Step Funnel
-                  </button>
-                  <button onClick={() => setShowMerchantModal(true)} className="px-2.5 py-1 rounded-lg bg-blue-950/60 border border-blue-500/30 text-blue-300 hover:bg-blue-900/60 transition flex items-center gap-1 shrink-0">
-                    <span>🛍️</span> Merchant Store
-                  </button>
-                  <button onClick={() => setShowBcsModal(true)} className="px-2.5 py-1 rounded-lg bg-purple-950/60 border border-purple-500/30 text-purple-300 hover:bg-purple-900/60 transition flex items-center gap-1 shrink-0">
-                    <span>🎓</span> BCS Exam Prep
-                  </button>
-                  <button onClick={() => setShowFreelancerModal(true)} className="px-2.5 py-1 rounded-lg bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 hover:bg-cyan-900/60 transition flex items-center gap-1 shrink-0">
-                    <span>💳</span> Freelancer Tax
-                  </button>
-                  <button onClick={() => setShowLandModal(true)} className="px-2.5 py-1 rounded-lg bg-amber-950/60 border border-amber-500/30 text-amber-300 hover:bg-amber-900/60 transition flex items-center gap-1 shrink-0">
-                    <span>🏛️</span> Land Porcha
-                  </button>
-                  <button onClick={() => setShowNbrModal(true)} className="px-2.5 py-1 rounded-lg bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-900/60 transition flex items-center gap-1 shrink-0">
-                    <span>📜</span> Nbr e-Return
-                  </button>
-                  <button onClick={() => setShowSlideModal(true)} className="px-2.5 py-1 rounded-lg bg-pink-950/60 border border-pink-500/30 text-pink-300 hover:bg-pink-900/60 transition flex items-center gap-1 shrink-0">
-                    <span>📊</span> Student Slides
-                  </button>
-                </div>
-              </div>
-
               <ComponentErrorBoundary title="Transcript Panel Interrupted">
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <Transcript
