@@ -1,21 +1,19 @@
 /**
  * NeedleDispatcher — 45M Edge-Class Confidence-Gated Tool Dispatcher & Schema Extractor
  * Inspired by Cactus-Compute Needle 2 Simple Attention Network Architecture
+ * Combined with NVIDIA Switchyard Stage-Routing and MateClaw LLM-Wiki Grounding
  * 
- * Features:
- *  - High-precision intent routing across 6 flagship modes:
- *      1. chat
- *      2. coding
- *      3. deepresearch
- *      4. slide
- *      5. sheet
- *      6. bookwriting
- *  - Confidence-gated execution: fast-path on edge vs frontier model escalation
- *  - Byte-level grammar and JSON Schema constraint extraction
- *  - 256-token bounded sliding window memory with pinned tool KV sinks (28MB RAM footprint profile)
+ * Modalities:
+ *  1. chat: Persona switching, Banglish normalization, exact offline calculations, memory recall
+ *  2. websearch: Search query optimization, domain filter extraction, grounded citation verification
+ *  3. coding: Error diagnostics, syntax fix, test running, AST refactoring
+ *  4. deepresearch: Academic literature discovery, claim grounding, concept graph synthesis
+ *  5. slide: Markdown-to-Presentation AST extraction with layout, bullet list, and color tokens
+ *  6. sheet: Natural-language to Excel/Sheets formula compilation and pivot summaries
+ *  7. bookwriting: Scene beat expansion, Story Bible bidirectional linking, timeline audit
  */
 
-export type StudioMode = 'chat' | 'coding' | 'deepresearch' | 'slide' | 'sheet' | 'bookwriting';
+export type StudioMode = 'chat' | 'websearch' | 'coding' | 'deepresearch' | 'slide' | 'sheet' | 'bookwriting';
 
 export interface NeedleToolDeclaration {
   name: string;
@@ -41,6 +39,19 @@ export interface ExtractionResult<T = any> {
   error?: string;
 }
 
+export interface SourceReference {
+  id: string;
+  url: string;
+  title: string;
+  snippet?: string;
+}
+
+export interface CitationVerificationResult {
+  isGrounded: boolean;
+  citations: SourceReference[];
+  missingCitations: string[];
+}
+
 export interface MemoryFootprint {
   tokenCount: number;
   pinnedSinks: number;
@@ -63,14 +74,40 @@ const TOOL_CATALOG: Record<StudioMode, NeedleToolDeclaration[]> = {
     {
       name: 'translate_banglish',
       description: 'Translate or transliterate Banglish to Standard Bangla or English',
-      keywords: ['translate', 'bangla', 'banglish', 'transliterate', 'orthography'],
+      keywords: ['translate', 'bangla', 'banglish', 'transliterate', 'orthography', 'order', 'status', 'dekhe bolo'],
       schema: { type: 'object', properties: { text: { type: 'string' }, targetLang: { type: 'string' } }, required: ['text'] },
     },
     {
+      name: 'calculate_currency',
+      description: 'Execute exact offline currency, fee, and math calculation without LLM token cost',
+      keywords: ['calculate', 'bkash fee', 'fee', 'currency', 'bdt', 'usd', '%', 'tax', 'vat'],
+      schema: { type: 'object', properties: { amount: { type: 'number' }, rate: { type: 'number' } }, required: ['amount'] },
+    },
+    {
       name: 'retrieve_memory',
-      description: 'Retrieve episodic memories from SecondMe profile',
+      description: 'Retrieve episodic memories from SecondMe profile (SOUL.md & PROFILE.md)',
       keywords: ['remember', 'recall', 'profile', 'memory', 'past conversation'],
       schema: { type: 'object', properties: { query: { type: 'string' } }, required: ['query'] },
+    },
+  ],
+  websearch: [
+    {
+      name: 'search_query_optimizer',
+      description: 'Extract concise keyword search query and domain filters from conversational input',
+      keywords: ['search', 'live news', 'google', 'site:', 'web search', 'lookup', 'latest'],
+      schema: { type: 'object', properties: { query: { type: 'string' }, domain: { type: 'string' } }, required: ['query'] },
+    },
+    {
+      name: 'verify_grounded_citation',
+      description: 'Verify extracted claim against ground-truth search citations',
+      keywords: ['verify citation', 'grounding', 'fact check', 'source url'],
+      schema: { type: 'object', properties: { claim: { type: 'string' }, sourceId: { type: 'string' } }, required: ['claim'] },
+    },
+    {
+      name: 'cache_wiki_digest',
+      description: 'Cache web search synthesis into local MateClaw LLM-Wiki markdown page',
+      keywords: ['cache', 'wiki digest', 'store wiki', 'save search'],
+      schema: { type: 'object', properties: { topic: { type: 'string' }, content: { type: 'string' } }, required: ['topic', 'content'] },
     },
   ],
   coding: [
@@ -240,8 +277,31 @@ export class NeedleDispatcher {
       selectedTool: bestMatch,
       escalatedToFrontier: escalated,
       reason: escalated
-        ? `Confidence (${confidence}) is below threshold (${this.confidenceThreshold}). Escalating to frontier model.`
+        ? `Confidence (${confidence}) is below threshold (${this.confidenceThreshold}). Escalating to frontier model via Switchyard.`
         : `High confidence (${confidence}) on ${bestMatch?.name}. Executing fast edge path.`,
+    };
+  }
+
+  public verifyCitations(claim: string, sources: SourceReference[]): CitationVerificationResult {
+    const matches = claim.match(/\[(\d+)\]/g) || [];
+    const citedIndices = matches.map((m) => m.replace(/\[|\]/g, ''));
+    
+    const validCitations: SourceReference[] = [];
+    const missing: string[] = [];
+
+    for (const idx of citedIndices) {
+      const found = sources.find((s) => s.id === idx);
+      if (found) {
+        validCitations.push(found);
+      } else {
+        missing.push(idx);
+      }
+    }
+
+    return {
+      isGrounded: validCitations.length > 0 && missing.length === 0,
+      citations: validCitations,
+      missingCitations: missing,
     };
   }
 
@@ -251,6 +311,52 @@ export class NeedleDispatcher {
     rawInput: string
   ): ExtractionResult<T> {
     try {
+      // 1. Web Search: Query Optimization & Domain Filter Extraction
+      if (mode === 'websearch' && toolName === 'search_query_optimizer') {
+        const domainMatch = rawInput.match(/site:([a-zA-Z0-9.-]+)/i);
+        const domain = domainMatch ? domainMatch[1].trim() : undefined;
+        let cleanQuery = rawInput
+          .replace(/site:[a-zA-Z0-9.-]+/gi, '')
+          .replace(/^(search|look up|google|find news about|search live news about)\s+/i, '')
+          .trim();
+
+        return {
+          valid: true,
+          data: { query: cleanQuery, domain } as unknown as T,
+        };
+      }
+
+      // 2. Chat: Offline Exact Currency / bKash Fee Calculation
+      if (mode === 'chat' && toolName === 'calculate_currency') {
+        const amountMatch = rawInput.match(/(\d+(?:\.\d+)?)\s*(?:bdt|usd|tk|taka)/i) || rawInput.match(/(\d+(?:\.\d+)?)/);
+        const rateMatch = rawInput.match(/(\d+(?:\.\d+)?)\s*%/);
+
+        const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
+        const rate = rateMatch ? parseFloat(rateMatch[1]) : 1.85; // Default bKash 1.85%
+
+        const fee = Number(((amount * rate) / 100).toFixed(2));
+        const total = Number((amount + fee).toFixed(2));
+
+        return {
+          valid: true,
+          data: { amount, rate, fee, total, currency: 'BDT' } as unknown as T,
+        };
+      }
+
+      // 3. Chat: Banglish Normalization
+      if (mode === 'chat' && toolName === 'translate_banglish') {
+        const isCodeMixed = /\b(amar|order|status|ta|ekta|dekhe|bolo|koro|lagbe|koto)\b/i.test(rawInput);
+        let intent = 'general';
+        if (/order|status/i.test(rawInput)) intent = 'order_status';
+        if (/koto|dam|price/i.test(rawInput)) intent = 'price_inquiry';
+
+        return {
+          valid: true,
+          data: { raw: rawInput, isCodeMixed, intent } as unknown as T,
+        };
+      }
+
+      // 4. Slide Generator
       if (mode === 'slide' && toolName === 'create_slide') {
         const titleMatch = rawInput.match(/Title:\s*([^|\n]+)/i);
         const bulletsMatch = rawInput.match(/Bullets:\s*([^|\n]+)/i);
@@ -268,6 +374,7 @@ export class NeedleDispatcher {
         };
       }
 
+      // 5. Sheet Formula Generator
       if (mode === 'sheet' && toolName === 'generate_formula') {
         const sumMatch = rawInput.match(/total|sum/i);
         const rangeMatch = rawInput.match(/([A-Z]+[0-9]+)\s*(?:to|-)\s*([A-Z]+[0-9]+)/i);
@@ -309,7 +416,7 @@ export class NeedleDispatcher {
     state.turns.push({ user, assistant });
     state.tokens += turnTokens;
 
-    // Prune sliding window to keep memory within maxWindowTokens
+    // Prune sliding window to keep memory within maxWindowTokens (28MB RAM bounded profile)
     while (state.tokens > this.maxWindowTokens && state.turns.length > 1) {
       const removed = state.turns.shift();
       if (removed) {
