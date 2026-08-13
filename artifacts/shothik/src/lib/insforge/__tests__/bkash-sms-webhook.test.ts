@@ -10,10 +10,13 @@ describe("InsForge Edge Function: bkash-sms-webhook", () => {
       workspaceId: "ws_polsia_merchant",
     });
 
-    expect(res.success).toBe(true);
-    expect(res.trxID).toBe("TRX_BKASH_991823");
-    expect(res.amountBdt).toBe(1350);
-    expect(res.courierTrackingCode).toContain("BD_STEADFAST_");
-    expect(res.whatsappNotificationCard).toContain("bKash Payment Verified");
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.success).toBe(true);
+    expect(body.trxID).toBe("TRX_BKASH_991823");
+    expect(body.amountBdt).toBe(1350);
+    expect(body.courierTrackingCode).toContain("BD_STEADFAST_");
+    expect(body.whatsappNotificationCard).toContain("bKash Payment Verified");
   });
 });
