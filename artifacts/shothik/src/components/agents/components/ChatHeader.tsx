@@ -56,7 +56,7 @@ export function ChatHeader({
           </button>
         )}
 
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-emerald-500 text-white shadow-sm">
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-dark text-white shadow-sm">
           <Bot className="h-3.5 w-3.5" />
         </div>
         <div>
@@ -71,7 +71,7 @@ export function ChatHeader({
           <button
             type="button"
             onClick={onPaywallClick}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-emerald-400 hover:border-emerald-500/50 font-mono text-[11px] font-semibold transition"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800/80 border border-slate-700 text-brand hover:border-brand/50 font-mono text-[11px] font-semibold transition"
             title="Open Credit Top-Up Paywall Portal"
           >
             <span>⚡</span>
@@ -91,8 +91,8 @@ export function ChatHeader({
         </button>
 
         {/* Clean status indicator */}
-        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold text-emerald-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+        <span className="hidden sm:inline-flex items-center gap-1.5 rounded-full bg-brand/10 border border-brand/20 px-2.5 py-1 text-[11px] font-semibold text-brand">
+          <span className="h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
           <span>Online</span>
         </span>
       </div>

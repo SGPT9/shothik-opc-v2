@@ -44,7 +44,20 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './'),
+      '@': path.resolve(__dirname, './artifacts/shothik/src'),
+      '@assets': path.resolve(__dirname, './attached_assets'),
+      '@tiptap/pm/markdown': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/tiptap-pm-markdown.ts'),
+      'next/navigation': path.resolve(__dirname, './artifacts/shothik/src/lib/navigation.ts'),
+      'next/link': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-link.tsx'),
+      'next/image': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-image.tsx'),
+      'next/dynamic': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-dynamic.tsx'),
+      'next/head': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-head.tsx'),
+      'next/script': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-script.tsx'),
+      'next/headers': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-headers.ts'),
+      'next/server': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-server.ts'),
+      'next': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/next-root.ts'),
+      'motion/react-client': path.resolve(__dirname, './artifacts/shothik/src/lib/stubs/motion-react-client.ts'),
+      'motion/react': 'framer-motion',
     },
   },
 });

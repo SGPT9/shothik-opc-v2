@@ -69,3 +69,5 @@ convex-jwt-private-key.pem
 .roo
 .trae
 .windsurf
+.vercel
+.env*

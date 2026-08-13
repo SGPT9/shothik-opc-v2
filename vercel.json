@@ -1,0 +1,10 @@
+{
+  "framework": null,
+  "buildCommand": "pnpm --filter @workspace/shothik run build",
+  "outputDirectory": "artifacts/shothik/dist/public",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://shothikgpt.com/api/:path*" },
+    { "source": "/paraphrase-with-variant/:path*", "destination": "https://shothikgpt.com/paraphrase-with-variant/:path*" },
+    { "source": "/:path*", "destination": "/index.html" }
+  ]
+}

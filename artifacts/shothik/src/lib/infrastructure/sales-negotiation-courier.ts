@@ -165,4 +165,34 @@ export class SalesNegotiationCourierService {
       bookedAt: new Date().toISOString(),
     };
   }
+
+  /**
+   * Renders dynamic inline payment card details for frontend billing.
+   */
+  static renderBkashDeepLinkCard(params: {
+    merchantPhone: string;
+    amount: number;
+    orderId: string;
+    provider: "bkash" | "nagad";
+  }) {
+    const deepLinkUrl = `${params.provider}://pay?merchant=${params.merchantPhone}&amount=${params.amount}&ref=${params.orderId}`;
+    const checkoutUrl = `https://pay.${params.provider}.com.bd/checkout?ref=${params.orderId}&amount=${params.amount}`;
+    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(checkoutUrl)}`;
+
+    logger.info("[sales-negotiation] Rendering 1-tap mobile payment deep-link card details", {
+      provider: params.provider,
+      amount: params.amount,
+      orderId: params.orderId,
+    });
+
+    return {
+      provider: params.provider.toUpperCase(),
+      amount: params.amount,
+      orderId: params.orderId,
+      merchantPhone: params.merchantPhone,
+      deepLinkUrl,
+      checkoutUrl,
+      qrCodeUrl,
+    };
+  }
 }

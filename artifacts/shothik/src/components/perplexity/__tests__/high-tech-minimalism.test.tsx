@@ -22,9 +22,11 @@ describe("High-Tech UI/UX Decluttering & Minimalist Standard", () => {
     );
 
     // Verify key action controls remain present
-    expect(screen.getByText("Voice Orb")).toBeDefined();
-    expect(screen.getByText("Swarm Debate")).toBeDefined();
-    expect(screen.getByText("550 Credits")).toBeDefined();
+    expect(screen.getByText("550")).toBeDefined();
+
+    // Verify Swarm and Voice controls are decluttered from header (migrated to Composer/Orb)
+    expect(screen.queryByText("Voice Orb")).toBeNull();
+    expect(screen.queryByText("Swarm Debate")).toBeNull();
 
     // Verify static text badges are decluttered
     expect(screen.queryByText("Instant Speed")).toBeNull();

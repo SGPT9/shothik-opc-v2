@@ -3,6 +3,7 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "build", "dist", "**/*.test.ts", "**/*.test.tsx", "src/**/__tests__/**", "src/app-next"],
   "compilerOptions": {
+    "baseUrl": ".",
     "noEmit": true,
     "allowJs": true,
     "skipLibCheck": true,
