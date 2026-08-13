@@ -65,7 +65,7 @@ export function ChatSidebar({
   };
   const handleNewChat = () => {
     onAbortStream?.();
-    onNewChat();
+    onNewChat?.();
   };
   const [searchQuery, setSearchQuery] = useState("");
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);

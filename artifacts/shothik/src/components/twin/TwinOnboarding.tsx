@@ -1,9 +1,9 @@
 
 
 import { useState } from "react";
-import { useTranslation } from "@/i18n";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { useTranslation } from "../../i18n";
+import { cn } from "../../lib/utils";
+import { Button } from "../ui/button";
 import { Brain, ArrowRight, ArrowLeft, Loader2, Plus, X, Check } from "lucide-react";
 
 const COMM_STYLES = ["formal", "casual", "academic", "creative"] as const;

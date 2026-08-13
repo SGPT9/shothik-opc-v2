@@ -110,9 +110,9 @@ export function CodeArtifact({
           <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono">
             {language}
           </span>
-          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-300 border border-purple-500/30 text-[10px] font-medium">
-            <Sparkles className="h-2.5 w-2.5 text-purple-400" />
-            Gortex AST Validated
+          <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 text-[10px] font-medium">
+            <Sparkles className="h-2.5 w-2.5 text-emerald-400" />
+            React 18 & Tailwind CSS
           </span>
         </div>
 
@@ -185,18 +185,49 @@ export function CodeArtifact({
             />
           </div>
         ) : (
-          <div className="h-full w-full bg-slate-900 p-4 flex flex-col items-center justify-center text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 mb-3 animate-pulse">
-              <Terminal className="h-6 w-6" />
+          <div className="h-full w-full bg-slate-900 flex flex-col">
+            <div className="flex items-center justify-between px-3 py-1.5 border-b border-slate-800 bg-slate-950 text-[10px] font-mono text-slate-400 shrink-0">
+              <span className="flex items-center gap-1.5 text-emerald-400 font-bold">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live Sandbox Runtime Ready
+              </span>
+              <span>Rendered HTML/CSS/React Stage</span>
             </div>
-            <h3 className="text-sm font-bold text-white mb-1">Live Component Sandbox</h3>
-            <p className="text-xs text-slate-400 max-w-xs mb-4">
-              Gortex AST graph parsed 24 React & Tailwind sub-components ready for 1-click Dokploy deployment.
-            </p>
-            <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-3 max-w-sm w-full text-left font-mono text-[11px] text-slate-300 space-y-1">
-              <p className="text-emerald-400">✓ AST Tree-Sitter validation passed</p>
-              <p className="text-purple-400">✓ Tailwind CSS 3.4 utility classes mapped</p>
-              <p className="text-cyan-400">✓ Dokploy SSL deployment config ready</p>
+            
+            <div className="flex-1 min-h-0 bg-slate-950 p-4 overflow-auto flex items-center justify-center">
+              <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 shadow-2xl">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40">
+                    <Sparkles className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white leading-tight">Shothik AI Founder OS</h3>
+                    <p className="text-[11px] text-slate-400 font-mono">Interactive Component Stage</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Turn your idea into a live company overnight with automated RAG memory, financial models, and Dokploy BaaS deployment.
+                </p>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="email"
+                    readOnly
+                    value="founder@shothik.ai"
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-400 font-mono"
+                  />
+                  <Button size="sm" className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 h-8 rounded-xl">
+                    Launch Twin →
+                  </Button>
+                </div>
+
+                <div className="rounded-xl border border-slate-800 bg-slate-950/80 p-2.5 font-mono text-[10px] text-slate-400 space-y-1">
+                  <p className="text-emerald-400">✓ React 18 component structure validated</p>
+                  <p className="text-purple-400">✓ Tailwind CSS 3.4 styling verified</p>
+                  <p className="text-cyan-400">✓ Type-safe props & event handlers ready</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -207,14 +238,14 @@ export function CodeArtifact({
         <div className="flex items-center gap-2">
           <span className="flex items-center gap-1 text-emerald-400">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            Code Engine Active
+            Live Preview
           </span>
           <span>·</span>
           <span>{code.split("\n").length} lines</span>
           <span>·</span>
           <span>{code.length} chars</span>
         </div>
-        <span>Gortex 50x Token Efficiency</span>
+        <span>Production Ready</span>
       </div>
 
     </div>

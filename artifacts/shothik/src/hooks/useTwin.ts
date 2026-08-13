@@ -4,14 +4,14 @@
  */
 import { useSelector } from "react-redux";
 import { useCallback, useState, useEffect } from "react";
-import { getInsforgeBrowserClient } from "@/lib/insforge/client";
-import type { TwinRecord, TwinTask, TwinActivityLogEntry, TwinApproval, TwinTransferRequest } from "@/lib/twin-convex";
+import { getInsforgeBrowserClient } from "../lib/insforge/client";
+import type { TwinRecord, TwinTask, TwinActivityLogEntry, TwinApproval, TwinTransferRequest } from "../lib/twin-convex";
 
 interface AuthState {
   auth: { user: { id?: string; _id?: string; userId?: string; name?: string } | null };
 }
 
-export { type TwinTask } from "@/lib/twin-convex";
+export { type TwinTask } from "../lib/twin-convex";
 
 export interface TwinDoc {
   id: string;
@@ -34,7 +34,13 @@ export function useTwinData<T1, T2, T3>(initTasks: T1[], initDocs: T2[], initFee
 }
 
 export function useTwin() {
-  const { user } = useSelector((state: AuthState) => state.auth);
+  let user: { id?: string; _id?: string; userId?: string; name?: string } | null = null;
+  try {
+    const authState = useSelector((state: AuthState) => state?.auth);
+    user = authState?.user ?? null;
+  } catch {
+    user = null;
+  }
   const userId = user?.id ?? user?._id ?? user?.userId ?? null;
   const userName = user?.name ?? null;
 

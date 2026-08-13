@@ -84,7 +84,7 @@ class StitchAIClient {
 
         const transport = new SSEClientTransport(new URL(`${this.config.baseUrl}/mcp`), {
           eventSourceInit: {
-            fetch: (url, init) =>
+            fetch: (url: any, init?: any) =>
               fetchWithTimeout(
                 url,
                 {

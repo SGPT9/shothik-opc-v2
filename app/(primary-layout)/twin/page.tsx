@@ -2,19 +2,19 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTwin } from "@/hooks/useTwin";
-import { useTranslation } from "@/i18n";
-import type { TwinTask, TwinActivityLogEntry, TwinApproval, TwinTransferRequest } from "@/lib/twin-convex";
-import TwinAvatar from "@/components/twin/TwinAvatar";
-import KnowledgeBar from "@/components/twin/KnowledgeBar";
-import TrainingPanel from "@/components/twin/TrainingPanel";
-import TaskFeed from "@/components/twin/TaskFeed";
-import StyleProfileCard from "@/components/twin/StyleProfileCard";
-import TwinOnboarding from "@/components/twin/TwinOnboarding";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTwin } from "../../../artifacts/shothik/src/hooks/useTwin";
+import { useTranslation } from "../../../artifacts/shothik/src/i18n";
+import type { TwinTask, TwinActivityLogEntry, TwinApproval, TwinTransferRequest } from "../../../artifacts/shothik/src/lib/twin-convex";
+import TwinAvatar from "../../../artifacts/shothik/src/components/twin/TwinAvatar";
+import KnowledgeBar from "../../../artifacts/shothik/src/components/twin/KnowledgeBar";
+import TrainingPanel from "../../../artifacts/shothik/src/components/twin/TrainingPanel";
+import TaskFeed from "../../../artifacts/shothik/src/components/twin/TaskFeed";
+import StyleProfileCard from "../../../artifacts/shothik/src/components/twin/StyleProfileCard";
+import TwinOnboarding from "../../../artifacts/shothik/src/components/twin/TwinOnboarding";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../../../artifacts/shothik/src/components/ui/dialog";
+import { Button } from "../../../artifacts/shothik/src/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../artifacts/shothik/src/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../../artifacts/shothik/src/components/ui/tabs";
 import {
   Brain,
   Zap,
@@ -39,8 +39,10 @@ import {
   Bot,
   Moon,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { saveWritingStudioSeed } from "@/lib/writing-studio-seed";
+import { cn } from "../../../artifacts/shothik/src/lib/utils";
+import { saveWritingStudioSeed } from "../../../artifacts/shothik/src/lib/writing-studio-seed";
+import { ScenarioLabModal } from "../../../artifacts/shothik/src/components/scenariolab/ScenarioLabModal";
+
 
 function TwinLandingPage() {
   const router = useRouter();
@@ -740,6 +742,7 @@ export default function TwinPage() {
   } = useTwin();
 
   const [showNewTask, setShowNewTask] = useState(false);
+  const [showScenarioLab, setShowScenarioLab] = useState(false);
   const [showUnlinkConfirm, setShowUnlinkConfirm] = useState(false);
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
   const [newApiKey, setNewApiKey] = useState<string | null>(null);
@@ -891,14 +894,29 @@ export default function TwinPage() {
             {t("twinDashboard.pageDescription")}
           </p>
         </div>
-        <Button
-          onClick={() => setShowNewTask(true)}
-          className="shrink-0"
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("twinDashboard.queueTask")}
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            variant="outline"
+            onClick={() => setShowScenarioLab(true)}
+            className="border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 font-semibold"
+          >
+            <Activity className="mr-2 h-4 w-4 text-indigo-400" />
+            ScenarioLab™ SRE Console
+          </Button>
+          <Button
+            onClick={() => setShowNewTask(true)}
+            className="shrink-0"
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t("twinDashboard.queueTask")}
+          </Button>
+        </div>
       </div>
+
+      <ScenarioLabModal
+        isOpen={showScenarioLab}
+        onClose={() => setShowScenarioLab(false)}
+      />
 
       <PendingApprovalsSection
         approvals={pendingApprovals}

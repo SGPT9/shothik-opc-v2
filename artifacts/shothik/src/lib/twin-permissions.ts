@@ -1,4 +1,4 @@
-import { AbilityBuilder, PureAbility, createMongoAbility } from "@casl/ability";
+import { AbilityBuilder, MongoAbility, createMongoAbility } from "@casl/ability";
 
 export const ALL_SKILLS = [
   "book:write",
@@ -17,7 +17,7 @@ export interface TwinPermissionConfig {
   lifecycleState: string;
 }
 
-type AppAbility = PureAbility<[string, string]>;
+type AppAbility = MongoAbility<[string, string]>;
 
 export function buildTwinAbility(config: TwinPermissionConfig): AppAbility {
   const { can, cannot, build } = new AbilityBuilder<AppAbility>(createMongoAbility);

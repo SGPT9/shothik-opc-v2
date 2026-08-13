@@ -22,9 +22,9 @@ import { useWritingEditor } from "./hooks/useWritingEditor";
 import { useWritingHistory } from "./hooks/useWritingHistory";
 import { DeerFlowStatusBanner } from "./ux/DeerFlowStatusBanner";
 
-const PublishingPage = lazy(() => import("./PublishingPage"));
-const PolishedWriteOnboarding = lazy(() => import("./PolishedWriteOnboarding"));
-const WebMCPWidget = lazy(() => import("./WebMCPWidget"));
+const PublishingPage = lazy(() => import("./PublishingPage") as any);
+const PolishedWriteOnboarding = lazy(() => import("./PolishedWriteOnboarding") as any);
+const WebMCPWidget = lazy(() => import("./WebMCPWidget") as any);
 
 type Mode = "write" | "format" | "publish";
 type ProjectType = "book" | "research" | "assignment";

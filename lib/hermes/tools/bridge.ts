@@ -1,6 +1,9 @@
 import { ToolDefinition, ToolExecutionContext, ToolExecutionResult } from "./definition";
-import { getHermesDatabase } from "@/lib/hermes/infra/db";
-import logger from "@/lib/logger";
+const logger = {
+  info: (...args: any[]) => console.log("[ToolBridge Info]", ...args),
+  warn: (...args: any[]) => console.warn("[ToolBridge Warn]", ...args),
+  error: (...args: any[]) => console.error("[ToolBridge Error]", ...args),
+};
 
 export class ToolBridge {
   private registry: Map<string, ToolDefinition> = new Map();

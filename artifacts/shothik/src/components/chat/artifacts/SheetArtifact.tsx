@@ -1,44 +1,48 @@
 "use client";
 
-import { useState, useCallback, useRef, useId } from "react";
-import { Plus, Trash2, Download, Table2, ChevronDown } from "lucide-react";
+import { useState, useCallback, useEffect, useId } from "react";
+import { Plus, Trash2, Download, Table2, Calculator, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { cn } from "@/lib/utils";
 
 type CellValue = string;
 type Row       = CellValue[];
 type Grid      = Row[];
 
-const DEFAULT_COLS = 4;
-const DEFAULT_ROWS = 6;
+const DEFAULT_HEADERS = ["Metric / Scenario", "Base Case (BDT)", "Aggressive (BDT)", "Conservative (BDT)"];
+const DEFAULT_ROWS_DATA: Grid = [
+  ["Monthly Active Users", "15,000", "45,000", "5,000"],
+  ["Average Order Value (AOV)", "1,500", "1,850", "1,200"],
+  ["Gross Revenue (MRR)", "22,500,000", "83,250,000", "6,000,000"],
+  ["Cost of Goods Sold (COGS)", "5,250,000", "18,450,000", "1,750,000"],
+  ["Customer Acquisition Cost (CAC)", "350", "280", "520"],
+  ["Net Operating Profit", "+16,900,000", "+64,520,000", "+3,730,000"],
+];
 
-function makeGrid(rows: number, cols: number): Grid {
-  return Array.from({ length: rows }, () => Array(cols).fill(""));
-}
-
-const DEFAULT_HEADERS = ["Name", "Value", "Category", "Notes"];
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
-interface Props {
-  /** Optional initial CSV data pre-populated from chat context */
+interface SheetArtifactProps {
   initialData?: string[][];
+  title?: string;
+  isStreaming?: boolean;
 }
 
-export function SheetArtifact({ initialData }: Props) {
+export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifactProps) {
   const [headers, setHeaders] = useState<string[]>(
-    initialData?.[0] ?? DEFAULT_HEADERS.slice(0, DEFAULT_COLS),
+    initialData?.[0] ?? DEFAULT_HEADERS,
   );
   const [grid, setGrid] = useState<Grid>(
-    initialData?.slice(1) ?? makeGrid(DEFAULT_ROWS, DEFAULT_COLS),
+    initialData?.slice(1) ?? DEFAULT_ROWS_DATA,
   );
-  const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>(null);
+  const [selectedCell, setSelectedCell] = useState<{ r: number; c: number } | null>({ r: 0, c: 1 });
   const uid = useId();
 
   const colCount = headers.length;
 
-  // ── Editing ──────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (initialData && initialData.length > 0) {
+      setHeaders(initialData[0]);
+      setGrid(initialData.slice(1));
+    }
+  }, [initialData]);
 
   const setCell = useCallback((r: number, c: number, value: string) => {
     setGrid((prev) => {
@@ -52,20 +56,12 @@ export function SheetArtifact({ initialData }: Props) {
     setHeaders((prev) => { const n = [...prev]; n[c] = value; return n; });
   }, []);
 
-  // ── Row/Col ops ──────────────────────────────────────────────────────────
-
   const addRow = () => setGrid((prev) => [...prev, Array(colCount).fill("")]);
   const deleteRow = (r: number) => setGrid((prev) => prev.filter((_, i) => i !== r));
   const addCol = () => {
     setHeaders((prev) => [...prev, `Col ${prev.length + 1}`]);
     setGrid((prev) => prev.map((row) => [...row, ""]));
   };
-  const deleteCol = (c: number) => {
-    setHeaders((prev) => prev.filter((_, i) => i !== c));
-    setGrid((prev) => prev.map((row) => row.filter((_, i) => i !== c)));
-  };
-
-  // ── Export ───────────────────────────────────────────────────────────────
 
   const exportCSV = () => {
     const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
@@ -73,129 +69,163 @@ export function SheetArtifact({ initialData }: Props) {
     const blob   = new Blob([lines.join("\n")], { type: "text/csv" });
     const url    = URL.createObjectURL(blob);
     const a      = document.createElement("a");
-    a.href = url; a.download = "shothik-sheet.csv"; a.click();
+    a.href = url; a.download = "shothik-financial-model.csv"; a.click();
     URL.revokeObjectURL(url);
   };
 
-  // ── Keyboard nav ─────────────────────────────────────────────────────────
-
-  const handleKeyDown = (e: React.KeyboardEvent, r: number, c: number) => {
-    if (e.key === "Tab") {
-      e.preventDefault();
-      const nextC = c + 1 < colCount ? c + 1 : 0;
-      const nextR = c + 1 < colCount ? r : r + 1 < grid.length ? r + 1 : r;
-      setSelectedCell({ r: nextR, c: nextC });
-      document.getElementById(`${uid}-cell-${nextR}-${nextC}`)?.focus();
-    }
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const nextR = r + 1 < grid.length ? r + 1 : r;
-      setSelectedCell({ r: nextR, c });
-      document.getElementById(`${uid}-cell-${nextR}-${c}`)?.focus();
-    }
-  };
+  const selectedVal = selectedCell
+    ? grid[selectedCell.r]?.[selectedCell.c] ?? ""
+    : "";
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border/60 bg-muted/20 shrink-0">
-        <div className="flex items-center gap-1.5">
-          <Table2 className="h-3.5 w-3.5 text-indigo-400" />
-          <span className="text-xs font-semibold text-foreground">
-            {grid.length} rows × {colCount} cols
-          </span>
+    <div className="flex flex-col h-full bg-background overflow-hidden select-none">
+      
+      {/* ── Genspark Sheet Header Bar ── */}
+      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-4 py-2 shrink-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+            <Table2 className="h-4 w-4" />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-xs font-bold text-foreground truncate">
+              {title || "3-Scenario Financial Model (BDT)"}
+            </h3>
+            <p className="text-[10px] text-muted-foreground font-mono">
+              Financial Model Spreadsheet · {grid.length} Rows × {colCount} Cols
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-1">
-          <Button size="sm" variant="ghost" onClick={addRow}
-            className="h-7 px-2 rounded-lg text-[11px] text-muted-foreground hover:text-foreground">
-            <Plus className="h-3 w-3 mr-1" /> Row
+
+        <div className="flex items-center gap-1.5 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addRow}
+            className="h-7 px-2 text-[11px] font-semibold gap-1"
+          >
+            <Plus className="h-3 w-3" /> Row
           </Button>
-          <Button size="sm" variant="ghost" onClick={addCol}
-            className="h-7 px-2 rounded-lg text-[11px] text-muted-foreground hover:text-foreground">
-            <Plus className="h-3 w-3 mr-1" /> Col
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={addCol}
+            className="h-7 px-2 text-[11px] font-semibold gap-1"
+          >
+            <Plus className="h-3 w-3" /> Col
           </Button>
-          <Button size="sm" variant="ghost" onClick={exportCSV}
-            className="h-7 px-2 rounded-lg text-[11px] text-muted-foreground hover:text-foreground">
-            <Download className="h-3 w-3 mr-1" /> CSV
+
+          <Button
+            size="sm"
+            onClick={exportCSV}
+            className="h-7 px-2.5 text-[11px] font-semibold gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white"
+          >
+            <Download className="h-3 w-3" /> Export CSV
           </Button>
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="flex-1 overflow-auto">
-        <table className="w-full border-collapse text-xs select-none">
-          {/* Header row */}
+      {/* ── Live Agentic Step Progress Banner (Genspark / Manus / ChatGPT pattern) ── */}
+      {isStreaming && (
+        <div className="flex items-center justify-between border-b border-cyan-500/30 bg-cyan-500/10 px-4 py-1.5 text-xs text-cyan-300 font-mono shrink-0 animate-pulse">
+          <div className="flex items-center gap-2">
+            <Calculator className="h-3.5 w-3.5 text-cyan-400 animate-spin" />
+            <span>AI Swarm Agent: Computing cell formulas & populating financial grid live…</span>
+          </div>
+          <span className="font-bold text-cyan-400">Step 2/3 · Computing MRR & Net Profit</span>
+        </div>
+      )}
+
+      {/* ── Formula Bar ── */}
+      <div className="flex items-center gap-2 border-b border-border/60 bg-muted/10 px-3 py-1.5 shrink-0 text-xs font-mono">
+        <span className="font-bold text-cyan-400 shrink-0">fx</span>
+        <div className="h-3 w-[1px] bg-border" />
+        <span className="text-muted-foreground shrink-0 font-bold">
+          {selectedCell ? `${String.fromCharCode(65 + selectedCell.c)}${selectedCell.r + 1}` : "A1"}
+        </span>
+        <input
+          type="text"
+          value={selectedVal}
+          onChange={(e) => {
+            if (selectedCell) setCell(selectedCell.r, selectedCell.c, e.target.value);
+          }}
+          placeholder="Enter text, value, or formula..."
+          className="flex-1 bg-transparent text-foreground outline-none border-0 font-mono text-xs"
+        />
+      </div>
+
+      {/* ── Grid Stage ── */}
+      <div className="flex-1 min-h-0 overflow-auto p-2">
+        <table className="w-full border-collapse text-xs font-mono select-none">
           <thead>
-            <tr>
-              {/* Row number gutter */}
-              <th className="w-8 border-b border-r border-border/40 bg-muted/30 text-center text-[10px] text-muted-foreground/50 font-normal sticky top-0 z-10" />
+            <tr className="border-b border-border/80 bg-muted/30">
+              <th className="w-10 border-r border-border/60 p-2 text-center text-[10px] text-muted-foreground font-mono">
+                #
+              </th>
               {headers.map((h, c) => (
-                <th key={c} className="border-b border-r border-border/40 bg-muted/30 sticky top-0 z-10 min-w-[100px] p-0">
-                  <div className="flex items-center group">
-                    <input
-                      value={h}
-                      onChange={(e) => setHeader(c, e.target.value)}
-                      className="w-full px-2 py-1.5 bg-transparent font-semibold text-[11px] text-foreground outline-none focus:bg-indigo-500/10"
-                      aria-label={`Column ${c + 1} header`}
-                    />
-                    <button
-                      onClick={() => deleteCol(c)}
-                      className="shrink-0 opacity-0 group-hover:opacity-100 transition p-0.5 mr-0.5 rounded text-muted-foreground hover:text-destructive"
-                      aria-label={`Delete column ${h}`}
-                    >
-                      <Trash2 className="h-2.5 w-2.5" />
-                    </button>
-                  </div>
+                <th key={c} className="border-r border-border/60 p-2 text-left">
+                  <input
+                    type="text"
+                    value={h}
+                    onChange={(e) => setHeader(c, e.target.value)}
+                    className="w-full bg-transparent font-bold text-foreground outline-none border-0 text-xs"
+                  />
                 </th>
               ))}
+              <th className="w-8" />
             </tr>
           </thead>
-
-          {/* Data rows */}
           <tbody>
-            {grid.map((row, r) => (
-              <tr key={r} className="group/row">
-                {/* Row number */}
-                <td className="border-b border-r border-border/30 bg-muted/10 text-center text-[10px] text-muted-foreground/50 w-8 py-0.5">
-                  <div className="flex items-center justify-center gap-0.5">
-                    <span>{r + 1}</span>
+            {grid.map((row, r) => {
+              const isProfitRow = row[0]?.toLowerCase().includes("profit") || row[0]?.toLowerCase().includes("margin");
+              return (
+                <tr
+                  key={r}
+                  className={cn(
+                    "border-b border-border/40 transition-colors hover:bg-muted/30",
+                    isProfitRow && "bg-emerald-500/10 font-bold text-emerald-300 border-emerald-500/30"
+                  )}
+                >
+                  <td className="border-r border-border/60 p-2 text-center text-[10px] text-muted-foreground font-mono bg-muted/10">
+                    {r + 1}
+                  </td>
+                  {row.map((cell, c) => {
+                    const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+                    return (
+                      <td
+                        key={c}
+                        onClick={() => setSelectedCell({ r, c })}
+                        className={cn(
+                          "border-r border-border/60 p-0 relative transition-colors",
+                          isSelected && "outline outline-2 outline-cyan-400 bg-cyan-500/10 z-10"
+                        )}
+                      >
+                        <input
+                          id={`${uid}-cell-${r}-${c}`}
+                          type="text"
+                          value={cell}
+                          onChange={(e) => setCell(r, c, e.target.value)}
+                          onFocus={() => setSelectedCell({ r, c })}
+                          className="w-full h-full bg-transparent px-2 py-2 outline-none border-0 text-xs font-mono text-foreground"
+                        />
+                      </td>
+                    );
+                  })}
+                  <td className="p-1 text-center">
                     <button
+                      type="button"
                       onClick={() => deleteRow(r)}
-                      className="opacity-0 group-hover/row:opacity-100 transition p-0.5 rounded text-muted-foreground hover:text-destructive"
-                      aria-label={`Delete row ${r + 1}`}
+                      className="opacity-0 group-hover:opacity-100 hover:text-destructive text-muted-foreground transition p-1"
+                      title="Delete row"
                     >
-                      <Trash2 className="h-2 w-2" />
+                      <Trash2 className="h-3 w-3" />
                     </button>
-                  </div>
-                </td>
-
-                {row.map((cell, c) => {
-                  const isSelected = selectedCell?.r === r && selectedCell?.c === c;
-                  return (
-                    <td key={c}
-                      className={`border-b border-r border-border/30 p-0 ${isSelected ? "ring-2 ring-inset ring-indigo-500/60" : ""}`}>
-                      <input
-                        id={`${uid}-cell-${r}-${c}`}
-                        value={cell}
-                        onChange={(e) => setCell(r, c, e.target.value)}
-                        onFocus={() => setSelectedCell({ r, c })}
-                        onKeyDown={(e) => handleKeyDown(e, r, c)}
-                        className="w-full px-2 py-1.5 bg-transparent text-foreground outline-none focus:bg-indigo-500/5"
-                        aria-label={`Row ${r + 1}, ${headers[c] || `Col ${c + 1}`}`}
-                      />
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
-      </div>
-
-      {/* Footer hint */}
-      <div className="shrink-0 px-3 py-1.5 border-t border-border/40 bg-muted/10 flex items-center gap-3 text-[10px] text-muted-foreground">
-        <span>Tab to move right · Enter to move down</span>
-        <span className="ml-auto">{grid.length * colCount} cells</span>
       </div>
     </div>
   );

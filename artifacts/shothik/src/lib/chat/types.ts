@@ -120,6 +120,8 @@ export interface ChatMessage {
     stagingUrl?: string;
     activeSkill?: string;
     slashCommand?: ChatSlashCommand;
+    deerflowPlan?: any;
+    swarmTopology?: any;
     plan?: import("./streaming").ChatTurnPlan;
     progress?: ChatTurnProgressItem[];
     inlineError?: ChatInlineError;
