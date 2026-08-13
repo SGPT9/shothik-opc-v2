@@ -20,13 +20,6 @@ import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel
 import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
-import { StartupValidationFunnelModal } from "@/components/chat/StartupValidationFunnelModal";
-import { MerchantOnboardingWizard } from "@/components/onboarding/MerchantOnboardingWizard";
-import { BcsExamPrepPortal } from "@/components/education/BcsExamPrepPortal";
-import { FreelancerTaxRemittanceModal } from "@/components/finance/FreelancerTaxRemittanceModal";
-import { LandRecordPorchaModal } from "@/components/government/LandRecordPorchaModal";
-import { NbrTaxReturnModal } from "@/components/finance/NbrTaxReturnModal";
-import { StudentAssignmentSlideModal } from "@/components/education/StudentAssignmentSlideModal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 
@@ -61,15 +54,6 @@ export function ChatAgentPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [voiceActive, setVoiceActive] = useState(false);
-
-  // ── Ecosystem Modals State ──
-  const [showFunnelModal, setShowFunnelModal] = useState(false);
-  const [showMerchantModal, setShowMerchantModal] = useState(false);
-  const [showBcsModal, setShowBcsModal] = useState(false);
-  const [showFreelancerModal, setShowFreelancerModal] = useState(false);
-  const [showLandModal, setShowLandModal] = useState(false);
-  const [showNbrModal, setShowNbrModal] = useState(false);
-  const [showSlideModal, setShowSlideModal] = useState(false);
 
   // Open artifact panel on-demand
   const handleOpenArtifact = useCallback((type: string, messageOrContent?: any) => {
@@ -286,15 +270,6 @@ export function ChatAgentPage() {
                 isActive={voiceActive}
                 onClose={() => setVoiceActive(false)}
               />
-
-              {/* Mounted Ecosystem Modals */}
-              <StartupValidationFunnelModal isOpen={showFunnelModal} onClose={() => setShowFunnelModal(false)} />
-              <MerchantOnboardingWizard isOpen={showMerchantModal} onClose={() => setShowMerchantModal(false)} />
-              <BcsExamPrepPortal isOpen={showBcsModal} onClose={() => setShowBcsModal(false)} />
-              <FreelancerTaxRemittanceModal isOpen={showFreelancerModal} onClose={() => setShowFreelancerModal(false)} />
-              <LandRecordPorchaModal isOpen={showLandModal} onClose={() => setShowLandModal(false)} />
-              <NbrTaxReturnModal isOpen={showNbrModal} onClose={() => setShowNbrModal(false)} />
-              <StudentAssignmentSlideModal isOpen={showSlideModal} onClose={() => setShowSlideModal(false)} />
             </div>
           </div>
         )}
