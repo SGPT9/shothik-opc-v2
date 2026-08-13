@@ -102,7 +102,7 @@ const MODES: {
     color: "text-brand",
     bg: "bg-brand/10",
     border: "border-brand/30",
-    description: "Strategic AI cofounder & builder",
+    description: "Step 1: Problem, Solution & TAM/SAM/SOM",
   },
   {
     value: "coresearcher",
@@ -112,7 +112,7 @@ const MODES: {
     color: "text-sky-400",
     bg: "bg-sky-500/10",
     border: "border-sky-500/30",
-    description: "Grounded in live web results",
+    description: "Step 2: Grounded Live Web Validation",
   },
   {
     value: "coworker",
@@ -122,7 +122,7 @@ const MODES: {
     color: "text-violet-400",
     bg: "bg-violet-500/10",
     border: "border-violet-500/30",
-    description: "Stress-test & adversarial thinking",
+    description: "Step 3: Stress-Test & Adversarial Lab",
   },
 ];
 
