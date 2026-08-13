@@ -76,7 +76,6 @@ export function CenterEditor({
   const editor = useEditor({
     extensions: [
       StarterKit,
-      Typography,
       Placeholder.configure({
         placeholder: 'Start writing your masterpiece...',
       }),
