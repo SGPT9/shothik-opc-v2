@@ -353,9 +353,9 @@ export function LeftSidebar({
                     <div className="flex-1 text-left min-w-0">
                       <span className={cn(
                         'text-xs font-semibold truncate block',
-                        displayStatus === 'complete' ? 'text-zinc-400' :
-                        displayStatus === 'in-progress' ? 'text-zinc-700 dark:text-zinc-200' :
-                        'text-zinc-500'
+                        displayStatus === 'complete' ? 'text-emerald-400 font-medium' :
+                        displayStatus === 'in-progress' ? 'text-foreground dark:text-zinc-100 font-bold' :
+                        'text-zinc-700 dark:text-zinc-200 font-medium'
                       )}>
                         {chapter.title}
                       </span>

@@ -104,9 +104,9 @@ export function PolishedWriteView({
   const initialContent = useMemo(() => {
     if (project?.content && project.content.trim()) return project.content;
     if (activeChapter?.synopsis) {
-      return `<h1>${activeChapter.title}</h1><p><em>${activeChapter.synopsis}</em></p><p><br></p><p>Start writing chapter manuscript here in Bengali or English…</p>`;
+      return `<p><em>${activeChapter.synopsis}</em></p><p><br></p><p>Start writing chapter manuscript here in Bengali or English…</p>`;
     }
-    return `<h1>${bookTitle}</h1><p>Start writing your masterpiece…</p>`;
+    return `<p>Start writing your masterpiece…</p>`;
   }, [project, activeChapter, bookTitle]);
 
   const {
