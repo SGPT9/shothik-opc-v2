@@ -1,6 +1,4 @@
-
-
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bold,
@@ -13,6 +11,12 @@ import {
   Loader2,
   X,
   SplitSquareHorizontal,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX,
+  Languages,
+  Sparkles as SparklesIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -23,7 +27,8 @@ import type { CitationStyle } from '@/lib/reference-list';
 import { useGhostText } from '@/hooks/useGhostText';
 import { useInlineRewrite } from '../hooks/useInlineRewrite';
 import { InlineDiffModal } from '../InlineDiffModal';
-import { Sparkles as SparklesIcon } from 'lucide-react';
+import { useVoiceDictation } from '@/hooks/useVoiceDictation';
+import { convertBijoyToUnicode } from '@/lib/BijoyConverter';
 
 interface CenterEditorProps {
   content?: string;
@@ -56,11 +61,12 @@ export function CenterEditor({
 }: CenterEditorProps) {
   const [showCitationPanel, setShowCitationPanel] = useState(false);
   const [citationQuery, setCitationQuery] = useState('');
+  const [voiceLang, setVoiceLang] = useState<'bn-BD' | 'en-US'>('bn-BD');
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const citationInputRef = useRef<HTMLInputElement>(null);
   const footnoteCountRef = useRef(0);
 
   const { suggestion, isLoading: ghostLoading, accept: acceptGhost, dismiss: dismissGhost } = useGhostText(content);
-
   const { suggestions, isSearching, searchPapers, clearSuggestions } = useCitationSuggestions();
 
   const inlineRewrite = useInlineRewrite((replacementText) => {
@@ -77,7 +83,7 @@ export function CenterEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Start writing your masterpiece...',
+        placeholder: 'Start writing your masterpiece… Speak or type in Bengali / English…',
       }),
     ],
     content,
@@ -85,7 +91,7 @@ export function CenterEditor({
     editorProps: {
       attributes: {
         spellcheck: 'true',
-        class: 'outline-none',
+        class: 'outline-none min-h-[400px]',
         role: 'textbox',
         'aria-label': 'Document editor',
         'aria-multiline': 'true',
@@ -96,6 +102,61 @@ export function CenterEditor({
     },
   });
 
+  // Real-time Voice Dictation
+  const handleVoiceTranscript = useCallback(
+    (text: string, isFinal: boolean) => {
+      if (!editor || !isFinal) return;
+      editor.chain().focus().insertContent(text + ' ').run();
+    },
+    [editor]
+  );
+
+  const { isListening, isSupported: isVoiceSupported, toggleListening } = useVoiceDictation({
+    lang: voiceLang,
+    onTranscript: handleVoiceTranscript,
+  });
+
+  // Audio Proofing (Read Aloud)
+  const toggleReadAloud = () => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    if (!editor) return;
+    const plainText = editor.getText();
+    if (!plainText.trim()) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(plainText);
+    utterance.lang = voiceLang === 'bn-BD' ? 'bn-BD' : 'en-US';
+    utterance.rate = 1.0;
+
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // 1-Click Bijoy to Unicode conversion on current selection or whole document
+  const handleConvertBijoyInEditor = () => {
+    if (!editor) return;
+    const { from, to } = editor.state.selection;
+    if (from !== to) {
+      const selected = editor.state.doc.textBetween(from, to, ' ');
+      const converted = convertBijoyToUnicode(selected);
+      editor.chain().focus().deleteRange({ from, to }).insertContent(converted).run();
+    } else {
+      const allText = editor.getText();
+      const converted = convertBijoyToUnicode(allText);
+      editor.commands.setContent(`<p>${converted.replace(/\n/g, '<br>')}</p>`);
+    }
+  };
+
   useEffect(() => {
     if (!editor) return;
     const currentHtml = editor.getHTML();
@@ -104,239 +165,115 @@ export function CenterEditor({
     }
   }, [content]);
 
-  const buildCitationText = (result: CitationResult): string => {
-    const firstAuthor = result.authors[0];
-    const familyName = firstAuthor?.family || 'Unknown';
-    const hasMultiple = result.authors.length > 1;
-    const year = result.year || 'n.d.';
-
-    switch (citationStyle) {
-      case 'APA':
-      case 'Harvard':
-        return hasMultiple
-          ? `(${familyName} et al., ${year})`
-          : `(${familyName}, ${year})`;
-      case 'MLA':
-        return `(${familyName})`;
-      case 'Chicago': {
-        footnoteCountRef.current += 1;
-        const num = footnoteCountRef.current;
-        const doi = (result as any).doi ? ` doi:${(result as any).doi}.` : '';
-        const footnoteText = `${familyName}, "${result.title}" (${year}).${doi}`;
-        if (onAppendContent) {
-          onAppendContent(`<p><sup>${num}</sup> ${footnoteText}</p>`);
-        }
-        return `<sup>${num}</sup>`;
-      }
-      default:
-        return `(${familyName}, ${year})`;
-    }
-  };
-
-  const handleCitationSearch = (q: string) => {
-    setCitationQuery(q);
-    if (q.length >= 3) searchPapers(q);
-  };
-
-  const handleInsertCitation = (result: CitationResult) => {
-    if (!editor) return;
-    const citationText = buildCitationText(result);
-    editor
-      .chain()
-      .focus()
-      .insertContent(` <cite title="${result.title}">${citationText}</cite> `)
-      .run();
-    setShowCitationPanel(false);
-    setCitationQuery('');
-    clearSuggestions();
-  };
-
-  const openCitationPanel = () => {
-    setShowCitationPanel(true);
-    setTimeout(() => citationInputRef.current?.focus(), 100);
-  };
-
-  const handleTriggerRewrite = () => {
-    if (!editor) return;
-    const { from, to } = editor.state.selection;
-    const selected = editor.state.doc.textBetween(from, to, ' ');
-    if (selected.trim()) {
-      inlineRewrite.openRewrite(selected.trim());
-    } else {
-      const $pos = editor.state.selection.$from;
-      const nodeText = $pos.parent.textContent;
-      if (nodeText.trim()) {
-        inlineRewrite.openRewrite(nodeText.trim());
-      }
-    }
-  };
-
   return (
     <section
-      className="flex-1 flex flex-col bg-white dark:bg-zinc-900/40 relative overflow-hidden"
-      onKeyDown={e => {
+      className="flex-1 flex flex-col bg-white dark:bg-zinc-900/40 relative overflow-hidden h-full"
+      onKeyDown={(e) => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
           e.preventDefault();
-          handleTriggerRewrite();
+          inlineRewrite.openRewrite(editor?.getText() || '');
         }
-        if (e.key === 'Tab' && suggestion) { e.preventDefault(); acceptGhost(editor); }
-        if (e.key === 'Escape' && suggestion) { e.preventDefault(); dismissGhost(); }
+        if (e.key === 'Tab' && suggestion) {
+          e.preventDefault();
+          acceptGhost(editor);
+        }
+        if (e.key === 'Escape' && suggestion) {
+          e.preventDefault();
+          dismissGhost();
+        }
       }}
     >
-      {/* Toolbar */}
-      <div className="h-12 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-4 sticky top-0 bg-white/80 dark:bg-brand-surface/80 backdrop-blur-sm z-20 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
+      {/* Top Toolbar */}
+      <div className="h-12 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between px-4 sticky top-0 bg-white/90 dark:bg-brand-surface/90 backdrop-blur-sm z-20 shrink-0">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {/* Bold / Italic */}
+          <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5 shrink-0">
             <ToolbarButton
               onClick={() => editor?.chain().focus().toggleBold().run()}
               isActive={editor?.isActive('bold')}
-              title="Bold"
+              title="Bold (Ctrl+B)"
             >
               <Bold className="w-4 h-4" />
             </ToolbarButton>
             <ToolbarButton
               onClick={() => editor?.chain().focus().toggleItalic().run()}
               isActive={editor?.isActive('italic')}
-              title="Italic"
+              title="Italic (Ctrl+I)"
             >
               <Italic className="w-4 h-4" />
             </ToolbarButton>
           </div>
 
-          <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
+          <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800 shrink-0" />
 
-          {/* Qoderian-Style Inline AI Rewrite Button */}
+          {/* 🎙️ Voice Dictation Button */}
+          {isVoiceSupported && (
+            <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5 shrink-0">
+              <button
+                onClick={toggleListening}
+                className={cn(
+                  'flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer',
+                  isListening
+                    ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30 animate-pulse'
+                    : 'text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700'
+                )}
+                title={isListening ? 'Stop Voice Dictation' : 'Start Voice Dictation'}
+              >
+                {isListening ? <Mic className="w-3.5 h-3.5" /> : <MicOff className="w-3.5 h-3.5" />}
+                <span>{isListening ? 'Listening…' : 'Voice'}</span>
+              </button>
+
+              <button
+                onClick={() => setVoiceLang(voiceLang === 'bn-BD' ? 'en-US' : 'bn-BD')}
+                className="px-1.5 py-0.5 text-[10px] font-mono font-bold text-muted-foreground hover:text-foreground cursor-pointer"
+                title="Switch Dictation Language"
+              >
+                {voiceLang === 'bn-BD' ? 'বাংলা' : 'EN'}
+              </button>
+            </div>
+          )}
+
+          {/* 🎧 Read Aloud (Audio Proofing) */}
           <button
-            onClick={handleTriggerRewrite}
+            onClick={toggleReadAloud}
+            className={cn(
+              'flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg transition-all border shrink-0 cursor-pointer',
+              isSpeaking
+                ? 'bg-indigo-500/20 text-indigo-400 border-indigo-500/40 animate-pulse'
+                : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+            )}
+            title="Read Chapter Aloud (Audio Proofing)"
+          >
+            {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            <span>{isSpeaking ? 'Stop Audio' : 'Listen'}</span>
+          </button>
+
+          {/* 🔤 Bijoy to Unicode */}
+          <button
+            onClick={handleConvertBijoyInEditor}
+            className="flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-lg border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 transition shrink-0 cursor-pointer"
+            title="Convert selected or whole Bijoy text to Unicode Bengali"
+          >
+            <Languages className="w-3 h-3 text-emerald-400" />
+            <span>Bijoy ➔ Unicode</span>
+          </button>
+
+          <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+
+          {/* AI Rewrite Button */}
+          <button
+            onClick={() => inlineRewrite.openRewrite(editor?.getText() || '')}
             title="Inline AI Rewrite (Ctrl+K)"
-            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-brand/10 text-brand hover:bg-brand/20 transition-all border border-brand/20 shadow-xs"
+            className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-brand/10 text-brand hover:bg-brand/20 transition-all border border-brand/20 shadow-xs shrink-0 cursor-pointer"
           >
             <SparklesIcon className="w-3.5 h-3.5" />
             <span>AI Rewrite</span>
             <kbd className="text-[10px] opacity-60 font-mono px-1 py-0.5 bg-brand/15 rounded">Ctrl+K</kbd>
           </button>
-
-          <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
-
-          <div className="relative">
-            <button
-              onClick={openCitationPanel}
-              className={cn(
-                'p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-300 flex items-center gap-1.5 text-[11px] font-medium transition-colors',
-                showCitationPanel && 'bg-brand/10 text-brand'
-              )}
-            >
-              <Quote className="w-4 h-4" />
-              Cite
-              <span className="text-[9px] font-bold uppercase text-zinc-400 bg-zinc-100 dark:bg-zinc-700 px-1 rounded">
-                {citationStyle}
-              </span>
-            </button>
-
-            <AnimatePresence>
-              {showCitationPanel && (
-                <>
-                  <div
-                    className="fixed inset-0 z-30"
-                    onClick={() => {
-                      setShowCitationPanel(false);
-                      clearSuggestions();
-                    }}
-                  />
-                  <motion.div
-                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                    transition={{ duration: 0.15 }}
-                    className="absolute top-full left-0 mt-2 w-[360px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl shadow-2xl z-40 overflow-hidden"
-                  >
-                    <div className="p-3 border-b border-zinc-100 dark:border-zinc-800">
-                      <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg px-3 py-2 border border-zinc-200 dark:border-zinc-700 focus-within:border-brand transition-colors">
-                        <Search className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                        <input
-                          ref={citationInputRef}
-                          type="text"
-                          value={citationQuery}
-                          onChange={e => handleCitationSearch(e.target.value)}
-                          placeholder="Search papers, authors, DOI..."
-                          className="flex-1 text-xs bg-transparent outline-none text-zinc-800 dark:text-zinc-200 placeholder:text-zinc-400"
-                        />
-                        {isSearching && <Loader2 className="w-3.5 h-3.5 text-brand animate-spin shrink-0" />}
-                        {citationQuery && !isSearching && (
-                          <button
-                            onClick={() => { setCitationQuery(''); clearSuggestions(); }}
-                            className="text-zinc-400 hover:text-zinc-600"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="max-h-[280px] overflow-y-auto">
-                      {citationQuery.length < 3 ? (
-                        <div className="p-4 text-center text-xs text-zinc-400">
-                          Type at least 3 characters to search Semantic Scholar
-                        </div>
-                      ) : isSearching ? (
-                        <div className="p-4 text-center text-xs text-zinc-400">Searching...</div>
-                      ) : suggestions.length === 0 ? (
-                        <div className="p-4 text-center text-xs text-zinc-400">
-                          No results found. Try different keywords.
-                        </div>
-                      ) : (
-                        <div className="divide-y divide-zinc-100 dark:divide-zinc-800">
-                          {suggestions.slice(0, 8).map((result, idx) => (
-                            <button
-                              key={result.paperId || idx}
-                              onClick={() => handleInsertCitation(result)}
-                              className="w-full text-left px-3 py-2.5 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors group"
-                            >
-                              <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 line-clamp-2 group-hover:text-brand transition-colors">
-                                {result.title}
-                              </p>
-                              <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[10px] text-zinc-400">
-                                  {result.authors.slice(0, 2).map(a => a.family).join(', ')}
-                                  {result.authors.length > 2 ? ' et al.' : ''}
-                                </span>
-                                {result.year && <span className="text-[10px] text-zinc-400">{result.year}</span>}
-                                {result.citationCount !== undefined && (
-                                  <span className="text-[10px] text-zinc-400">{result.citationCount} citations</span>
-                                )}
-                                {result.isOpenAccess && (
-                                  <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1 py-0.5 rounded">OA</span>
-                                )}
-                              </div>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-2 border-t border-zinc-100 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50">
-                      <p className="text-[10px] text-zinc-400 text-center">
-                        Powered by Semantic Scholar · Inserting as {citationStyle}
-                      </p>
-                    </div>
-                  </motion.div>
-                </>
-              )}
-            </AnimatePresence>
-          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={onRollbackClick}
-            className="px-2 py-1 text-[10px] font-bold flex items-center gap-1.5 bg-brand/10 text-brand hover:bg-brand/20 rounded-md transition-all border border-brand/20"
-          >
-            <History className="w-3.5 h-3.5" />
-            ROLLBACK
-          </button>
-
-          <div className="w-px h-6 bg-zinc-200 dark:bg-zinc-800" />
-
+        {/* Right Toolbar Controls */}
+        <div className="flex items-center gap-2 shrink-0">
           <div className="flex items-center bg-zinc-100 dark:bg-zinc-800 rounded-lg p-0.5">
             <ToolbarButton onClick={onUndo} disabled={!canUndo} title="Undo (Ctrl+Z)">
               <Undo className="w-4 h-4" />
@@ -352,7 +289,7 @@ export function CenterEditor({
               <ToolbarButton
                 onClick={onTogglePreview}
                 isActive={showPreview}
-                title={showPreview ? 'Hide preview' : 'Live preview'}
+                title={showPreview ? 'Hide live book proof' : 'Show live 6x9 book proof'}
               >
                 <SplitSquareHorizontal className="w-4 h-4" />
               </ToolbarButton>
@@ -361,24 +298,20 @@ export function CenterEditor({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto custom-scrollbar">
-        <div className="max-w-2xl mx-auto py-16 px-8 min-h-full">
-          <h1 className="text-3xl font-bold mb-8 text-zinc-800 dark:text-zinc-100">
+      {/* Editor Main Text Canvas */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-8">
+        <div className="max-w-2xl mx-auto py-8">
+          <h1 className="text-2xl md:text-3xl font-bold mb-6 text-zinc-900 dark:text-zinc-100 font-serif">
             {chapterTitle}
           </h1>
 
-          <div className="prose prose-slate dark:prose-invert max-w-none text-lg leading-relaxed text-zinc-700 dark:text-zinc-300 space-y-6">
+          <div className="prose prose-slate dark:prose-invert max-w-none text-base leading-relaxed text-zinc-800 dark:text-zinc-200 font-serif space-y-4">
             <EditorContent editor={editor} />
           </div>
         </div>
       </div>
 
-      {/* Ghost text loading dot */}
-      {ghostLoading && !suggestion && (
-        <span className="absolute bottom-4 right-6 w-2 h-2 rounded-full bg-brand animate-pulse z-10" />
-      )}
-
-      {/* Ghost text suggestion pill */}
+      {/* Ghost Text Auto-completion Pill */}
       <AnimatePresence>
         {suggestion && (
           <motion.div
@@ -390,7 +323,8 @@ export function CenterEditor({
           >
             <span className="w-1.5 h-1.5 rounded-full bg-brand shrink-0 animate-pulse" />
             <span className="font-mono text-xs text-zinc-400 italic truncate max-w-[280px]">
-              {suggestion.slice(0, 70)}{suggestion.length > 70 ? '…' : ''}
+              {suggestion.slice(0, 70)}
+              {suggestion.length > 70 ? '…' : ''}
             </span>
             <button
               onClick={() => acceptGhost(editor)}
@@ -408,7 +342,7 @@ export function CenterEditor({
         )}
       </AnimatePresence>
 
-      {/* Qoderian-Inspired Inline AI Diff Modal */}
+      {/* Inline AI Diff Modal */}
       <InlineDiffModal
         isOpen={inlineRewrite.isOpen}
         selectedText={inlineRewrite.selectedText}
@@ -441,18 +375,14 @@ function ToolbarButton({
       onClick={onClick}
       disabled={disabled}
       title={title}
-      aria-label={title}
-      aria-pressed={isActive}
       className={cn(
-        'min-w-[44px] min-h-[44px] flex items-center justify-center rounded transition-colors',
-        isActive
-          ? 'bg-white dark:bg-zinc-700 text-brand shadow-sm'
-          : disabled
-          ? 'opacity-30 cursor-not-allowed'
-          : 'hover:bg-white dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300'
+        'p-1.5 rounded text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer',
+        isActive && 'bg-brand/15 text-brand dark:bg-brand/20 font-bold'
       )}
     >
       {children}
     </button>
   );
 }
+
+export default CenterEditor;
