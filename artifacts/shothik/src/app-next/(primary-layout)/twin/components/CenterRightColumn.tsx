@@ -44,6 +44,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { SectionLabel, PanelCard } from "./shared";
+import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
 import {
   MOCK_TWITTER_CHANNEL,
   MOCK_EMAIL_CHANNEL,
@@ -445,6 +446,9 @@ export function GrowthChannels() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Cold Email Outreach Sequence Modal */}
+      <EmailOutreachModal open={showEmailModal} onOpenChange={setShowEmailModal} />
     </div>
   );
 }
