@@ -22,6 +22,7 @@ import {
   Sparkles,
   Briefcase,
   ShoppingBag,
+  Terminal,
 } from "lucide-react";
 import {
   forwardRef,
@@ -40,6 +41,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PerplexityFocusSelector, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
+import { TrajectoryReceiptModal } from "./TrajectoryReceiptModal";
 
 
 
@@ -146,8 +148,10 @@ const MODES: {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 const MODELS = [
-  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
-  { value: "gemini-2.5-pro",   label: "Gemini 2.5 Pro"   },
+  { value: "deepseek-v4-flash", label: "DeepSeek V4 Flash", badge: "⚡ 1.8¢ / Fast", desc: "6x Cheaper MoE · Instant Reasoning" },
+  { value: "deepseek-v4-pro",   label: "DeepSeek V4 Pro",   badge: "🧠 Flagship 49B", desc: "1M Context MoE · Deep Reasoning" },
+  { value: "gemini-2.5-flash",  label: "Gemini 2.5 Flash",  badge: "⚡ Multimodal",   desc: "Google Flash Reasoning" },
+  { value: "gemini-2.5-pro",    label: "Gemini 2.5 Pro",    badge: "✨ Complex",      desc: "Deep Thinking Engine" },
 ];
 
 // ─── Voice languages for South Asia ──────────────────────────────────────────
@@ -204,6 +208,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [attachMenuOpen, setAttachMenuOpen] = useState(false);
     const [modeMenuOpen,   setModeMenuOpen]   = useState(false);
     const [modelMenuOpen,  setModelMenuOpen]  = useState(false);
+    const [trajectoryOpen, setTrajectoryOpen] = useState(false);
     const [isListening,    setIsListening]    = useState(false);
     const [voiceLang,      setVoiceLang]      = useState("bn-BD");
     const [voiceLangOpen, setVoiceLangOpen] = useState(false);
@@ -587,25 +592,51 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   <button type="button"
                     onClick={() => { setModelMenuOpen((o) => !o); setAttachMenuOpen(false); setModeMenuOpen(false); }}
                     disabled={disabled || activeStreaming}
-                    className="flex items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition">
+                    className="flex items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer">
                     <span className="hidden md:inline">{activeModel.label}</span>
                     <span className="md:hidden">Model</span>
                     <ChevronDown className="h-2.5 w-2.5 opacity-60" />
                   </button>
 
                   {modelMenuOpen && (
-                    <div className="absolute bottom-full right-0 mb-1 z-50 w-44 rounded-2xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute bottom-full right-0 mb-1 z-50 w-64 rounded-2xl border border-border/80 bg-popover shadow-xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
+                      <div className="px-3 py-1 border-b border-border/50 text-[10px] font-mono text-muted-foreground font-semibold flex items-center justify-between">
+                        <span>SELECT REASONING ENGINE</span>
+                        <span className="text-emerald-400">⚡ 1.8¢/job</span>
+                      </div>
                       {MODELS.map((m) => (
                         <button key={m.value} type="button"
                           onClick={() => { onModelChange?.(m.value); setModelMenuOpen(false); }}
-                          className="flex w-full items-center justify-between px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition">
-                          <span>{m.label}</span>
-                          {modelHandle === m.value && <Check className="h-3 w-3 text-brand" />}
+                          className={cn(
+                            "flex w-full items-start justify-between px-3 py-2 text-left hover:bg-muted/60 transition cursor-pointer",
+                            modelHandle === m.value ? "bg-muted/40" : ""
+                          )}>
+                          <div>
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-xs font-semibold text-foreground">{m.label}</span>
+                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                                {m.badge}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{m.desc}</p>
+                          </div>
+                          {modelHandle === m.value && <Check className="h-3.5 w-3.5 text-brand shrink-0 mt-0.5" />}
                         </button>
                       ))}
                     </div>
                   )}
                 </div>
+
+                {/* 🧾 Trajectory View & Receipt Trail Modal Launcher */}
+                <button
+                  type="button"
+                  onClick={() => setTrajectoryOpen(true)}
+                  className="flex items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-mono font-medium text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition cursor-pointer"
+                  title="View Replayable Execution Trajectory & Audit Receipt Trail"
+                >
+                  <Terminal className="h-3 w-3" />
+                  <span className="hidden lg:inline">Receipt (1.8¢)</span>
+                </button>
 
                 {/* ⚡ Advanced Voice Mode Button (Interactive AI Voice) */}
                 {onVoiceOrbClick && (
@@ -681,6 +712,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           )}
 
           {footer && <p className="text-center text-[10px] text-muted-foreground/70 mt-0.5">{footer}</p>}
+
+          {/* Replayable Trajectory & Audit Receipt Trail Modal */}
+          {trajectoryOpen && (
+            <TrajectoryReceiptModal
+              open={trajectoryOpen}
+              onOpenChange={setTrajectoryOpen}
+              modelUsed={activeModel.label}
+            />
+          )}
         </div>
       </div>
     );
