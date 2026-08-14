@@ -4,6 +4,9 @@ import {
   getOfflineManuscript,
   listOfflineManuscripts,
   deleteOfflineManuscript,
+  saveOfflineTask,
+  listOfflineTasks,
+  deleteOfflineTask,
   clearOfflineStorage,
 } from '../offline-storage';
 
@@ -40,5 +43,25 @@ describe('Offline-First Storage Engine (offline-storage.ts)', () => {
     deleteOfflineManuscript('doc-1');
 
     expect(getOfflineManuscript('doc-1')).toBeUndefined();
+  });
+
+  it('saves, lists, and deletes offline tasks persistently', () => {
+    saveOfflineTask({
+      id: 'task-101',
+      title: 'Fix MFS webhook signature verification',
+      category: 'code',
+      status: 'todo',
+      urgency: 'TONIGHT',
+      cost: '5 Credits',
+      updatedAt: 3000,
+    });
+
+    const tasks = listOfflineTasks();
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0].id).toBe('task-101');
+    expect(tasks[0].title).toContain('MFS webhook');
+
+    deleteOfflineTask('task-101');
+    expect(listOfflineTasks()).toHaveLength(0);
   });
 });

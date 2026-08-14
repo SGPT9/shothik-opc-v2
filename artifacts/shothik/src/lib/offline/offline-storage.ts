@@ -83,7 +83,7 @@ export function clearOfflineStorage(): void {
       const keysToRemove: string[] = [];
       for (let i = 0; i < window.localStorage.length; i++) {
         const key = window.localStorage.key(i);
-        if (key && key.startsWith('shothik_offline_doc_')) {
+        if (key && (key.startsWith('shothik_offline_doc_') || key.startsWith('shothik_offline_task_'))) {
           keysToRemove.push(key);
         }
       }
@@ -91,3 +91,57 @@ export function clearOfflineStorage(): void {
     } catch {}
   }
 }
+
+export interface OfflineTask {
+  id: string;
+  title: string;
+  category: string;
+  status: string;
+  urgency?: string;
+  cost?: string;
+  dependencies?: string[];
+  updatedAt: number;
+}
+
+const TASK_CACHE = new Map<string, OfflineTask>();
+
+export function saveOfflineTask(task: OfflineTask): void {
+  TASK_CACHE.set(task.id, { ...task, updatedAt: task.updatedAt || Date.now() });
+
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      window.localStorage.setItem(`shothik_offline_task_${task.id}`, JSON.stringify(task));
+    } catch {}
+  }
+}
+
+export function listOfflineTasks(): OfflineTask[] {
+  const tasks: OfflineTask[] = [];
+
+  if (TASK_CACHE.size > 0) {
+    tasks.push(...Array.from(TASK_CACHE.values()));
+  } else if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      for (let i = 0; i < window.localStorage.length; i++) {
+        const key = window.localStorage.key(i);
+        if (key && key.startsWith('shothik_offline_task_')) {
+          const item = window.localStorage.getItem(key);
+          if (item) tasks.push(JSON.parse(item));
+        }
+      }
+    } catch {}
+  }
+
+  return tasks.sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+export function deleteOfflineTask(id: string): void {
+  TASK_CACHE.delete(id);
+
+  if (typeof window !== 'undefined' && window.localStorage) {
+    try {
+      window.localStorage.removeItem(`shothik_offline_task_${id}`);
+    } catch {}
+  }
+}
+
