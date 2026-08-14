@@ -13,6 +13,7 @@ out-tsc
 
 # dependencies
 node_modules
+deepseek-harness
 
 # IDEs and editors
 /.idea
