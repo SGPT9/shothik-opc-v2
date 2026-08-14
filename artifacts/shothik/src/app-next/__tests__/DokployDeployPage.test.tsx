@@ -10,7 +10,7 @@ describe("Dokploy Container & PaaS Dashboard (/deploy)", () => {
     expect(screen.getByText(/Dokploy Container & PaaS Runtime/i)).toBeInTheDocument();
     expect(screen.getByText(/28.4 MB/i)).toBeInTheDocument();
     expect(screen.getByText(/Active \(ACM\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/https:\/\/verifiq.polsia.app/i)).toBeInTheDocument();
+    expect(screen.getByText(/https:\/\/verifiq.shothikgpt.com/i)).toBeInTheDocument();
     expect(screen.getByText(/app.verifiq.ai/i)).toBeInTheDocument();
     expect(screen.getByText(/Container Live Logs/i)).toBeInTheDocument();
   });

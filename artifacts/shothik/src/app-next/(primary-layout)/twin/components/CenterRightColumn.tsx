@@ -450,7 +450,7 @@ export function GrowthChannels() {
                 <CheckCircle2 className="h-4 w-4" /> DNS & ACM SSL Status: Live (Verified)
               </p>
               <p className="text-[10px] mt-1 text-emerald-300/80 font-mono">
-                CNAME record points to `cname.polsia.app`.
+                CNAME record points to `cname.shothikgpt.com`.
               </p>
             </div>
           </div>

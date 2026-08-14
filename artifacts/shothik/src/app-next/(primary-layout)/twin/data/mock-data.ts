@@ -179,7 +179,7 @@ export const MOCK_META_ADS: MetaAdsConfig = {
 };
 
 export const MOCK_WEBSITE_DOMAIN: WebsiteDomainConfig = {
-  subdomain: "yourbusiness.polsia.app",
+  subdomain: "yourbusiness.shothikgpt.com",
   customDomain: "yourbusiness.com",
   status: "Live",
   sslActive: true,

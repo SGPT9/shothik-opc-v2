@@ -150,7 +150,7 @@ export function CommercializeBookModal({
               <div>
                 <label className="block text-[10px] text-slate-500 uppercase mb-1">Subdomain Ingress</label>
                 <div className="rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-slate-300 truncate">
-                  {slug}.polsia.app
+                  {slug}.shothikgpt.com
                 </div>
               </div>
             </div>
@@ -167,7 +167,7 @@ export function CommercializeBookModal({
                 <Globe className="h-4 w-4 text-emerald-400 shrink-0 mt-0.5" />
                 <div className="text-xs space-y-0.5">
                   <p className="font-semibold text-slate-200">1-Tap bKash Checkout Storefront</p>
-                  <p className="text-[11px] text-slate-400">Pre-built landing page at https://{slug}.polsia.app</p>
+                  <p className="text-[11px] text-slate-400">Pre-built landing page at https://{slug}.shothikgpt.com</p>
                 </div>
               </div>
 

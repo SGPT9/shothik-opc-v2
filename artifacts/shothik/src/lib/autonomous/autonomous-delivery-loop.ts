@@ -77,7 +77,7 @@ export class AutonomousDeliveryLoop {
 
     // Simulate autonomous Gortex AST code modification & sandbox testing
     const commitMessage = `feat(autopilot): implement ${unblockedTask.title} [autonomous-cofounder]`;
-    const deployedUrl = `https://${this.companyId}.polsia.app`;
+    const deployedUrl = `https://${this.companyId}.shothikgpt.com`;
 
     return {
       success: true,

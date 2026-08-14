@@ -29,7 +29,7 @@ export interface DailyDigestSummary {
 
 export class DailyDigestService {
   private static config: DailyDigestConfig = {
-    recipientEmail: "founder@polsia.app",
+    recipientEmail: "founder@shothikgpt.com",
     deliveryTime: "08:00 AM",
     timezone: "Asia/Dhaka (BST)",
     includePnl: true,
@@ -99,7 +99,7 @@ export class DailyDigestService {
     <!-- Header -->
     <div style="border-bottom: 1px solid #1e293b; padding-bottom: 16px; margin-bottom: 20px;">
       <div style="display: flex; align-items: center; justify-content: space-between;">
-        <span style="font-size: 12px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.05em;">POLSIA OPC · DAILY CEO BRIEFING</span>
+        <span style="font-size: 12px; font-weight: 700; color: #6366f1; text-transform: uppercase; letter-spacing: 0.05em;">SHOTHIK TWIN · DAILY CEO BRIEFING</span>
         <span style="font-size: 11px; color: #94a3b8; font-family: monospace;">${todayStr}</span>
       </div>
       <h1 style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 8px 0 0 0;">
@@ -158,14 +158,14 @@ export class DailyDigestService {
       <p style="font-size: 12px; color: #c7d2fe; margin: 0 0 12px 0; line-height: 1.5;">
         "Integrate 1-Tap bKash & Nagad MFS payment webhooks" is ready to deploy. Review credentials and approve 10 credit allocation.
       </p>
-      <a href="https://${companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.polsia.app/twin" style="display: inline-block; background-color: #6366f1; color: #ffffff; font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 8px; text-decoration: none;">
+      <a href="https://${companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.shothikgpt.com/twin" style="display: inline-block; background-color: #6366f1; color: #ffffff; font-size: 12px; font-weight: 700; padding: 8px 16px; border-radius: 8px; text-decoration: none;">
         Open Twin Dashboard & Approve
       </a>
     </div>
 
     <!-- Footer -->
     <div style="border-top: 1px solid #1e293b; padding-top: 16px; text-align: center; font-size: 11px; color: #64748b;">
-      Sent automatically by <strong style="color: #94a3b8;">Polsia OPC Autonomous Engine</strong> · 100% Zero-Employee Architecture
+      Sent automatically by <strong style="color: #94a3b8;">Shothik Twin Autonomous Engine</strong> · 100% Zero-Employee Architecture
     </div>
 
   </div>

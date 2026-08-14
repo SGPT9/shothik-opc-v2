@@ -8,8 +8,8 @@ describe("InsForgeAuthRlsService Auth & RLS Policy Engine", () => {
   });
 
   it("should authenticate user via Email and return InsForge profile and JWT token", async () => {
-    const auth = await InsForgeAuthRlsService.signInWithEmail("tanvir@polsia.app", "SecretPass123!");
-    expect(auth.user.email).toBe("tanvir@polsia.app");
+    const auth = await InsForgeAuthRlsService.signInWithEmail("tanvir@shothikgpt.com", "SecretPass123!");
+    expect(auth.user.email).toBe("tanvir@shothikgpt.com");
     expect(auth.user.badges).toContain("verified_merchant");
     expect(auth.token).toContain("jwt_insforge_");
   });

@@ -21,7 +21,7 @@ describe("Daily CEO Briefing Digest Service (DailyDigestService.ts)", () => {
 
     expect(digest.completedTasksCount).toBe(1);
     expect(digest.htmlContent).toContain("Deploy Let's Encrypt SSL container on Dokploy");
-    expect(digest.htmlContent).toContain("POLSIA OPC · DAILY CEO BRIEFING");
+    expect(digest.htmlContent).toContain("SHOTHIK TWIN · DAILY CEO BRIEFING");
     expect(digest.netMarginPct).toBe(84.6);
     expect(digest.containerMemoryMb).toBe(28.4);
   });
