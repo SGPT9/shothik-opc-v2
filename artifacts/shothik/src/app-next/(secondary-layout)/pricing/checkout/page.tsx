@@ -24,8 +24,8 @@ type PaymentStatus = "idle" | "processing" | "success" | "failed" | "pending";
 const CheckoutPage = () => {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
-  const packageId = searchParams.get("package_id");
-  const planIdFromQuery = searchParams.get("plan_id");
+  const packageId = searchParams.get("package_id") || searchParams.get("packageId") || "starter-pass";
+  const planIdFromQuery = searchParams.get("plan_id") || searchParams.get("planId") || "monthly";
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<string>("");
@@ -172,7 +172,7 @@ const CheckoutPage = () => {
   }, [searchParams]);
 
   // Loading state
-  if (packageLoading || methodsLoading || locationLoading) {
+  if (packageLoading && !currentPackage) {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-6 lg:py-12">
         <Spinner className="text-primary h-8 w-8" />

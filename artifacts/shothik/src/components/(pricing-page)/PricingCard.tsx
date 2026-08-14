@@ -433,7 +433,7 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
   if (!!isInitial) {
     return (
       <Button onClick={handleAuthPopup} size="lg" className="w-full">
-        Sing-Up to Get Started
+        Sign Up to Get Started
       </Button>
     );
   }
