@@ -17,6 +17,7 @@ import { useSearchParams } from "@/lib/navigation";
 import { useTwinData, type TwinTask, type TwinDoc, type TwinFeedEntry } from "@/hooks/useTwin";
 import { saveOfflineTask, listOfflineTasks } from "@/lib/offline/offline-storage";
 import { AutonomousDeliveryLoop } from "@/lib/autonomous/autonomous-delivery-loop";
+import { DailyDigestModal } from "@/components/twin/DailyDigestModal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, CheckCircle } from "lucide-react";
 import {
@@ -581,7 +582,7 @@ function SubscriptionCard() {
   );
 }
 
-function CashFlowPnlCard() {
+function CashFlowPnlCard({ onOpenDailyDigest }: { onOpenDailyDigest?: () => void }) {
   return (
     <PanelCard className="border-emerald-500/30 bg-gradient-to-br from-background to-emerald-950/20">
       <div className="flex items-center justify-between">
@@ -619,6 +620,19 @@ function CashFlowPnlCard() {
         <div className="pt-1.5 border-t border-border flex justify-between font-bold text-xs">
           <span className="text-foreground">Net Monthly Profit:</span>
           <span className="text-emerald-400">৳38,047.50</span>
+        </div>
+
+        <div className="pt-2 border-t border-border flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onOpenDailyDigest}
+            className="flex items-center gap-1.5 text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition"
+            data-testid="button-open-daily-digest"
+          >
+            <Mail className="h-3 w-3" />
+            <span>Daily CEO Briefing (08:00 AM)</span>
+          </button>
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
         </div>
       </div>
     </PanelCard>
@@ -1614,6 +1628,7 @@ function TwinDashboardPage() {
   const [showManage, setShowManage] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
+  const [showDailyDigest, setShowDailyDigest] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
   const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
 
@@ -1716,6 +1731,7 @@ function TwinDashboardPage() {
         onRun={handleRunTask}
       />
       <InviteModal open={showInvite} onOpenChange={setShowInvite} />
+      <DailyDigestModal open={showDailyDigest} onOpenChange={setShowDailyDigest} />
       <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
       <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
         <DialogContent
@@ -1737,7 +1753,7 @@ function TwinDashboardPage() {
         <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
           <AgentStatusWidget autoMode={autoMode} />
           <AutoModeCard autoMode={autoMode} onToggle={setAutoMode} />
-          <CashFlowPnlCard />
+          <CashFlowPnlCard onOpenDailyDigest={() => setShowDailyDigest(true)} />
           <ProgressStatsCard />
           <TeamCard onInvite={() => setShowInvite(true)} />
           <SubscriptionCard />
