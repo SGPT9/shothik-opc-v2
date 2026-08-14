@@ -25,8 +25,10 @@ import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
 import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
 import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
 import { CompetitorAdSpyModal } from "@/components/twin/CompetitorAdSpyModal";
+import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
+import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefrontModal";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, CheckCircle, Crosshair } from "lucide-react";
+import { Brain, CheckCircle, Crosshair, Truck } from "lucide-react";
 import {
   Sparkles,
   Plus,
@@ -1613,11 +1615,13 @@ function PlatformTopBar({
   onConnectWebsite,
   onOpenVoiceCommander,
   onOpenAdSpy,
+  onOpenSteadfast,
 }: {
   onOpenAccountDrawer: () => void;
   onConnectWebsite?: () => void;
   onOpenVoiceCommander?: () => void;
   onOpenAdSpy?: () => void;
+  onOpenSteadfast?: () => void;
 }) {
   const [activeCompany, setActiveCompany] = useState('VerifiQ AI (Active)');
   return (
@@ -1663,6 +1667,16 @@ function PlatformTopBar({
         >
           <Crosshair className="h-3.5 w-3.5" />
           <span>Ad Spy</span>
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onOpenSteadfast}
+          className="hidden xl:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-orange-500/30 text-orange-400 bg-orange-500/5 hover:bg-orange-500/10"
+          data-testid="button-open-steadfast"
+        >
+          <Truck className="h-3.5 w-3.5" />
+          <span>Courier COD</span>
         </Button>
         <Button
           size="sm"
@@ -1713,6 +1727,8 @@ function TwinDashboardPage() {
   const [showVisualBuilder, setShowVisualBuilder] = useState(false);
   const [showLeadCrm, setShowLeadCrm] = useState(false);
   const [showAdSpy, setShowAdSpy] = useState(false);
+  const [showSteadfast, setShowSteadfast] = useState(false);
+  const [showBookReader, setShowBookReader] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
   const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
 
@@ -1805,6 +1821,7 @@ function TwinDashboardPage() {
         onConnectWebsite={() => setShowConnectCompany(true)}
         onOpenVoiceCommander={() => setShowVoiceCommander(true)}
         onOpenAdSpy={() => setShowAdSpy(true)}
+        onOpenSteadfast={() => setShowSteadfast(true)}
       />
       <AccountDrawerModal open={showAccountDrawer} onOpenChange={setShowAccountDrawer} />
 
@@ -1828,6 +1845,8 @@ function TwinDashboardPage() {
       <VisualStorefrontBuilderModal open={showVisualBuilder} onOpenChange={setShowVisualBuilder} />
       <LeadCrmDrawer open={showLeadCrm} onOpenChange={setShowLeadCrm} />
       <CompetitorAdSpyModal open={showAdSpy} onOpenChange={setShowAdSpy} />
+      <SteadfastCourierModal open={showSteadfast} onOpenChange={setShowSteadfast} />
+      <BookReaderStorefrontModal open={showBookReader} onOpenChange={setShowBookReader} />
       <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
       <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
         <DialogContent
