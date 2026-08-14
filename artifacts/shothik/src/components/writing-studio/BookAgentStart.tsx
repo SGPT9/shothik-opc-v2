@@ -18,6 +18,9 @@ import {
   Presentation,
   Table,
   Search,
+  X,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { Link } from 'wouter';
 import SvgColor from '@/components/common/SvgColor';
@@ -26,6 +29,7 @@ import { createProject } from '@/lib/projects-store';
 import { cn } from '@/lib/utils';
 import { debugLog } from '@/lib/debug-log';
 import { SourceIntake, type ProjectSource } from './SourceIntake';
+import { convertBijoyToUnicode, convertUnicodeToBijoy } from '@/lib/BijoyConverter';
 
 const TOOL_TILES = [
   { label: 'Paraphrase', icon: 'paraphrase', href: '/paraphrase' },
@@ -189,10 +193,25 @@ export function BookAgentStart({
   const [generatedPlan, setGeneratedPlan] = useState<BookPlan | null>(null);
   const [visibleChapters, setVisibleChapters] = useState<GeneratedChapter[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showBijoyModal, setShowBijoyModal] = useState(false);
+  const [bijoyInput, setBijoyInput] = useState('');
+  const [unicodeOutput, setUnicodeOutput] = useState('');
+  const [copied, setCopied] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chapterRevealRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reducedMotion = useReducedMotion();
   const { t } = useTranslation();
+
+  const handleConvertBijoy = () => {
+    const converted = convertBijoyToUnicode(bijoyInput);
+    setUnicodeOutput(converted);
+  };
+
+  const handleCopyUnicode = () => {
+    navigator.clipboard.writeText(unicodeOutput);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const config = TYPE_CONFIGS[projectType];
   const SelectedTypeIcon = config.icon;
@@ -553,6 +572,19 @@ export function BookAgentStart({
 
                   <div className="flex-shrink-0 w-px h-10 bg-border self-center mx-1" />
 
+                  {/* 1-Click Bijoy Converter Tile */}
+                  <button
+                    type="button"
+                    onClick={() => setShowBijoyModal(true)}
+                    className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 hover:border-emerald-500/40 hover:from-emerald-500/15 hover:to-teal-500/15 transition-all group cursor-pointer"
+                    title="Convert Bijoy keyboard text to clean Unicode Bengali"
+                  >
+                    <BookOpen className="h-5 w-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                    <span className="text-[10px] text-emerald-400 group-hover:text-emerald-300 transition-colors whitespace-nowrap font-medium">
+                      Bijoy ➔ Uni
+                    </span>
+                  </button>
+
                   <Link
                     href="/twin"
                     className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-br from-violet-500/10 to-blue-500/10 border border-violet-500/20 hover:border-violet-500/40 hover:from-violet-500/15 hover:to-blue-500/15 transition-all no-underline group"
@@ -766,6 +798,91 @@ export function BookAgentStart({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── 1-Click Bijoy ➔ Unicode Converter Modal ── */}
+      {showBijoyModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200 select-text">
+          <div className="bg-background border border-border rounded-2xl p-6 w-full max-w-xl shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-emerald-500" />
+                <h3 className="font-bold text-base text-foreground">1-Click Bijoy ➔ Unicode Converter</h3>
+              </div>
+              <button
+                onClick={() => setShowBijoyModal(false)}
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Paste legacy Bijoy keyboard ANSI text to convert into standard Bengali Unicode UTF-8 suitable for AI models, editors, and web publishing.
+            </p>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Bijoy ASCII Input</label>
+                <textarea
+                  rows={5}
+                  value={bijoyInput}
+                  onChange={(e) => {
+                    setBijoyInput(e.target.value);
+                    setUnicodeOutput(convertBijoyToUnicode(e.target.value));
+                  }}
+                  placeholder="Paste Bijoy text here..."
+                  className="w-full bg-muted/50 border border-border rounded-lg p-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-emerald-500 resize-none font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Bengali Unicode Output</label>
+                <textarea
+                  readOnly
+                  rows={5}
+                  value={unicodeOutput}
+                  placeholder="Converted Unicode will appear here..."
+                  className="w-full bg-muted/30 border border-border rounded-lg p-2.5 text-xs text-foreground focus:outline-none resize-none font-sans"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <button
+                type="button"
+                onClick={handleConvertBijoy}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs cursor-pointer"
+              >
+                Instant Convert
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCopyUnicode}
+                  disabled={!unicodeOutput}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-medium transition cursor-pointer disabled:opacity-40"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5 text-muted-foreground" />}
+                  <span>{copied ? "Copied!" : "Copy Unicode"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDescription(unicodeOutput || bijoyInput);
+                    setShowBijoyModal(false);
+                  }}
+                  disabled={!unicodeOutput}
+                  className="px-3 py-1.5 rounded-lg bg-brand text-white hover:bg-brand/90 text-xs font-semibold shadow-xs cursor-pointer disabled:opacity-40"
+                >
+                  Use as Book Prompt
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

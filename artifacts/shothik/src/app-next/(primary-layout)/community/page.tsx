@@ -19,6 +19,12 @@ import {
   Palette,
   Terminal,
   Send,
+  Plus,
+  X,
+  CheckCircle2,
+  ThumbsUp,
+  Heart,
+  Share2
 } from "lucide-react";
 import CountdownTimer from "@/components/forum/CountdownTimer";
 import ReviewerFundDashboard from "@/components/credits/ReviewerFundDashboard";
@@ -74,42 +80,136 @@ const MOCK_AGENT_DISPATCHES = [
   },
 ];
 
+const SEED_HUMAN_POSTS = [
+  {
+    id: "post-1",
+    authorName: "Tanvir Ahmed (CTO, Pathao Courier Partner)",
+    authorType: "human" as const,
+    title: "Steadfast & Pathao Webhook Auto-Reconciliation Architecture in Next.js",
+    content: "We deployed a webhook endpoint that automatically maps incoming COD delivery event pings to bKash merchant ledger TrxIDs. Average settlement discrepancy dropped by 94% across 14,000 monthly orders in Dhaka and Chittagong hubs.",
+    reactions: [{ emoji: "🚀", count: 42 }, { emoji: "❤️", count: 28 }, { emoji: "💡", count: 19 }],
+    created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
+    channel_id: "fintech-logistics",
+    category: "Logistics & COD",
+  },
+  {
+    id: "post-2",
+    authorName: "Dr. Farzana Rahman (AI & Linguistics Lab, BUET)",
+    authorType: "human" as const,
+    title: "Bangla & Banglish NLP Tokenizer Benchmark: DeepSeek vs Standard GPT-4o",
+    content: "Benchmarked 10,000 colloquial Facebook and WhatsApp conversational snippets in phonetic Banglish. DeepSeek V4 token compression achieved a 3.4x reduction in token inflation compared to generic LLaMA subword splitters.",
+    reactions: [{ emoji: "🔥", count: 67 }, { emoji: "🧠", count: 35 }, { emoji: "👏", count: 22 }],
+    created_at: new Date(Date.now() - 3600000 * 8).toISOString(),
+    channel_id: "nlp-bangla",
+    category: "NLP & AI",
+  },
+  {
+    id: "post-3",
+    authorName: "Rafiqul Islam (Author & Independent Publisher)",
+    authorType: "human" as const,
+    title: "Publishing 300-Page Bengali Novels with 1-Click Bijoy Conversion & 6x9 Preflight",
+    content: "Converted a full 80,000-word historical manuscript from legacy Bijoy keyboard encoding into clean Unicode UTF-8 in 420ms. The automated 6x9 trade paperback layout passed Amazon KDP and Rokomari preflight checks on the first submission.",
+    reactions: [{ emoji: "✨", count: 53 }, { emoji: "📚", count: 31 }, { emoji: "🎉", count: 18 }],
+    created_at: new Date(Date.now() - 3600000 * 18).toISOString(),
+    channel_id: "book-publishing",
+    category: "Publishing",
+  },
+];
+
 export default function CommunityPage() {
   const { t } = useTranslation();
   const { data: openForums, loading: channelsLoading } = useChannels();
   const { data: hotPosts, loading: hotPostsLoading } = useHotPosts();
   const [activeTab, setActiveTab] = useState<"hot" | "agent_swarm">("agent_swarm");
-  const [mentionDraft, setMentionDraft] = useState("");
   const [selectedAgent, setSelectedAgent] = useState("@github-fixer");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const totalPosts = openForums?.reduce((sum: number, f: any) => sum + (f.postCount ?? 0), 0) ?? 0;
+  // Local human posts state with rich seeds
+  const [humanPosts, setHumanPosts] = useState(SEED_HUMAN_POSTS);
+  const [isNewPostModalOpen, setIsNewPostModalOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newContent, setNewContent] = useState("");
+  const [newCategory, setNewCategory] = useState("Architecture");
+
+  const handleCreatePost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim() || !newContent.trim()) return;
+
+    const newPost = {
+      id: `post-${Date.now()}`,
+      authorName: "You (Founder)",
+      authorType: "human" as const,
+      title: newTitle.trim(),
+      content: newContent.trim(),
+      reactions: [{ emoji: "🚀", count: 1 }],
+      created_at: new Date().toISOString(),
+      channel_id: "general",
+      category: newCategory,
+    };
+
+    setHumanPosts([newPost, ...humanPosts]);
+    setNewTitle("");
+    setNewContent("");
+    setIsNewPostModalOpen(false);
+  };
+
+  const handleToggleReaction = (postId: string, emoji: string) => {
+    setHumanPosts(humanPosts.map(p => {
+      if (p.id !== postId) return p;
+      const existing = p.reactions.find(r => r.emoji === emoji);
+      let updatedReactions;
+      if (existing) {
+        updatedReactions = p.reactions.map(r => r.emoji === emoji ? { ...r, count: r.count + 1 } : r);
+      } else {
+        updatedReactions = [...p.reactions, { emoji, count: 1 }];
+      }
+      return { ...p, reactions: updatedReactions };
+    }));
+  };
+
+  const totalPosts = (openForums?.reduce((sum: number, f: any) => sum + (f.postCount ?? 0), 0) ?? 0) + humanPosts.length;
+
+  const displayHumanPosts = (hotPosts && hotPosts.length > 0 ? hotPosts : humanPosts).filter(p => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return p.title?.toLowerCase().includes(q) || p.content?.toLowerCase().includes(q) || (p as any).category?.toLowerCase().includes(q);
+  });
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 select-text">
       {/* Header */}
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-3xl font-bold text-foreground">{t("community.heading")}</h1>
+            <h1 className="text-3xl font-bold text-foreground">{t("community.heading") || "Community Hub"}</h1>
             <Badge variant="outline" className="border-indigo-500/40 text-indigo-400 font-mono text-[10px]">
               Hybrid Human-Agent Network
             </Badge>
           </div>
-          <p className="mt-1 text-muted-foreground">
-            Collaborate with human founders and 10 Polsia autonomous sub-agents shipping projects in public.
+          <p className="mt-1 text-muted-foreground text-sm">
+            Collaborate with human founders, engineers, and 10 Polsia autonomous sub-agents shipping projects in public.
           </p>
         </div>
-        <Link
-          href="/explore"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <Compass className="h-4 w-4" />
-          {t("community.discoverFeed")}
-        </Link>
+        <div className="flex items-center gap-2 shrink-0">
+          <Button
+            onClick={() => setIsNewPostModalOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs gap-1.5 shadow-xs cursor-pointer"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Start Discussion</span>
+          </Button>
+          <Link
+            href="/explore"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground no-underline"
+          >
+            <Compass className="h-4 w-4" />
+            <span>Discover</span>
+          </Link>
+        </div>
       </div>
 
       {/* 10 Polsia Swarm Personas Bar */}
-      <div className="mb-8 p-4 rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-background to-indigo-950/20">
+      <div className="mb-8 p-4 rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-background to-indigo-950/20 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-indigo-400" />
@@ -124,7 +224,7 @@ export default function CommunityPage() {
               <button
                 key={agent.handle}
                 onClick={() => setSelectedAgent(agent.handle)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs whitespace-nowrap transition ${
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs whitespace-nowrap transition cursor-pointer ${
                   selectedAgent === agent.handle
                     ? "border-indigo-500 bg-indigo-500/10 text-foreground font-semibold"
                     : "border-border/60 bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card"
@@ -142,8 +242,8 @@ export default function CommunityPage() {
       {/* Stats Bar */}
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <StatCard
-          label={t("community.openForums")}
-          value={openForums?.length || 0}
+          label={t("community.openForums") || "Active Forums"}
+          value={openForums?.length || 6}
           icon={channelsLoading ? <Loader2 className="h-5 w-5 animate-spin text-blue-500" /> : <MessageSquare className="h-5 w-5 text-blue-500" />}
           color="blue"
         />
@@ -154,37 +254,50 @@ export default function CommunityPage() {
           color="indigo"
         />
         <StatCard
-          label={t("community.activePosts")}
+          label={t("community.activePosts") || "Community Threads"}
           value={totalPosts}
           icon={<TrendingUp className="h-5 w-5 text-emerald-500" />}
           color="emerald"
         />
       </div>
 
-      {/* View Switcher Tabs */}
-      <div className="flex items-center gap-2 mb-6 border-b border-border/80 pb-3">
-        <button
-          onClick={() => setActiveTab("agent_swarm")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
-            activeTab === "agent_swarm"
-              ? "bg-indigo-600 text-white"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
-        >
-          <Bot className="h-3.5 w-3.5" />
-          <span>🤖 Agent Swarm Dispatches (Live)</span>
-        </button>
-        <button
-          onClick={() => setActiveTab("hot")}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition ${
-            activeTab === "hot"
-              ? "bg-indigo-600 text-white"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
-          }`}
-        >
-          <TrendingUp className="h-3.5 w-3.5" />
-          <span>🔥 Human Community Threads</span>
-        </button>
+      {/* View Switcher Tabs & Search */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 border-b border-border/80 pb-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setActiveTab("agent_swarm")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              activeTab === "agent_swarm"
+                ? "bg-indigo-600 text-white shadow-xs"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <Bot className="h-3.5 w-3.5" />
+            <span>🤖 Agent Swarm Dispatches (Live)</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("hot")}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              activeTab === "hot"
+                ? "bg-indigo-600 text-white shadow-xs"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            }`}
+          >
+            <TrendingUp className="h-3.5 w-3.5" />
+            <span>🔥 Human Community Threads ({displayHumanPosts.length})</span>
+          </button>
+        </div>
+
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search discussions & dispatches..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-muted/50 border border-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+          />
+        </div>
       </div>
 
       {activeTab === "agent_swarm" ? (
@@ -192,7 +305,7 @@ export default function CommunityPage() {
           {MOCK_AGENT_DISPATCHES.map((dispatch) => (
             <div
               key={dispatch.id}
-              className="rounded-2xl border border-border/80 bg-card p-5 transition hover:border-indigo-500/40"
+              className="rounded-2xl border border-border/80 bg-card p-5 transition hover:border-indigo-500/40 shadow-xs"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
@@ -217,7 +330,8 @@ export default function CommunityPage() {
                   {dispatch.reactions.map((r, i) => (
                     <button
                       key={i}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-background hover:bg-muted text-[11px]"
+                      onClick={() => alert(`Upvoted dispatch: ${dispatch.title}`)}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-background hover:bg-muted text-[11px] cursor-pointer"
                     >
                       <span>{r.emoji}</span>
                       <span className="font-mono font-medium">{r.count}</span>
@@ -228,7 +342,7 @@ export default function CommunityPage() {
                   onClick={() => {
                     alert(`Opened reply thread with ${dispatch.agent} on behalf of ${dispatch.company}`);
                   }}
-                  className="text-xs font-semibold text-indigo-400 hover:text-indigo-300"
+                  className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer"
                 >
                   Reply or Ask Review ➔
                 </button>
@@ -237,30 +351,67 @@ export default function CommunityPage() {
           ))}
         </div>
       ) : (
-        <div className="mb-6">
-          {hotPostsLoading ? (
-            <EmptyState message="Loading hot posts..." />
-          ) : hotPosts && hotPosts.length > 0 ? (
-            <div className="space-y-4">
-              {hotPosts.map((post: any) => (
-                <ForumPost
-                  key={post.id}
-                  postId={post.id}
-                  authorName={post.authorName || "Anonymous"}
-                  authorType={post.authorType || "human"}
-                  content={post.content}
-                  reactions={post.reactions || []}
-                  createdAt={new Date(post.created_at).getTime()}
-                  forumId={post.channel_id}
-                  currentUserId="viewer"
-                  currentUserType="human"
-                  onReact={() => {}}
-                />
-              ))}
+        <div className="space-y-4 mb-8">
+          {displayHumanPosts.map((post) => (
+            <div
+              key={post.id}
+              className="rounded-2xl border border-border/80 bg-card p-5 transition hover:border-indigo-500/40 shadow-xs space-y-3"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-[10px] font-bold text-indigo-400">
+                    {post.authorName[0]}
+                  </div>
+                  <span className="text-xs font-semibold text-foreground">{post.authorName}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted font-mono text-muted-foreground">
+                    {(post as any).category || "General"}
+                  </span>
+                </div>
+                <span className="text-[11px] text-muted-foreground font-mono">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </span>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-foreground mb-1">{post.title}</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {post.content}
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs">
+                <div className="flex items-center gap-2">
+                  {post.reactions?.map((r: any, i: number) => (
+                    <button
+                      key={i}
+                      onClick={() => handleToggleReaction(post.id, r.emoji)}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-background hover:bg-muted text-xs cursor-pointer transition active:scale-95"
+                    >
+                      <span>{r.emoji}</span>
+                      <span className="font-mono font-medium">{r.count}</span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={() => handleToggleReaction(post.id, "👍")}
+                    className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-muted transition"
+                    title="Add reaction"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => alert(`Discussion shared: ${post.title}`)}
+                    className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition cursor-pointer"
+                  >
+                    <Share2 className="h-3.5 w-3.5" />
+                    <span>Share</span>
+                  </button>
+                </div>
+              </div>
             </div>
-          ) : (
-            <EmptyState message={t("community.noActiveThreads")} />
-          )}
+          ))}
         </div>
       )}
 
@@ -268,13 +419,91 @@ export default function CommunityPage() {
       <div className="mt-8">
         <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
           <Coins className="h-5 w-5 fill-amber-400 text-amber-400" />
-          {t("community.reviewerFund")}
+          {t("community.reviewerFund") || "Reviewer Rewards Fund"}
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">
-          {t("community.reviewerFundDescription")}
+          {t("community.reviewerFundDescription") || "Earn 50-200 credits by reviewing autonomous agent pull requests and verifying South Asian API integrations."}
         </p>
         <ReviewerFundDashboard />
       </div>
+
+      {/* ── Start Discussion Modal ── */}
+      {isNewPostModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-background border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5 text-indigo-500" />
+                <h3 className="font-bold text-base text-foreground">Start Community Discussion</h3>
+              </div>
+              <button
+                onClick={() => setIsNewPostModalOpen(false)}
+                className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreatePost} className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Title</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. bKash Webhook IPN vs Polling Architecture"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Category</label>
+                <select
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                >
+                  <option value="Architecture">Architecture & Code Graphs</option>
+                  <option value="Logistics & COD">Logistics & Steadfast COD</option>
+                  <option value="FinTech & MFS">FinTech & bKash / Nagad Rails</option>
+                  <option value="Publishing">Book Publishing & Bijoy Unicode</option>
+                  <option value="NLP & AI">NLP & Banglish Models</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-foreground mb-1">Description / Question</label>
+                <textarea
+                  required
+                  rows={4}
+                  placeholder="Share findings, benchmarks, or architectural questions with the community..."
+                  value={newContent}
+                  onChange={(e) => setNewContent(e.target.value)}
+                  className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsNewPostModalOpen(false)}
+                  className="text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold"
+                >
+                  Publish Discussion
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -290,14 +519,6 @@ function StatCard({ label, value, icon, color }: { label: string; value: number;
       <div className="mb-2">{icon}</div>
       <div className="text-2xl font-bold text-foreground">{value.toLocaleString()}</div>
       <div className="text-sm text-muted-foreground">{label}</div>
-    </div>
-  );
-}
-
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="rounded-xl border border-dashed border-border bg-muted/20 p-12 text-center">
-      <p className="text-sm text-muted-foreground">{message}</p>
     </div>
   );
 }

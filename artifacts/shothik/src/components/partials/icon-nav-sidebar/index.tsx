@@ -41,12 +41,40 @@ export default function IconNavSidebar() {
   const user = useSelector((state: any) => state.auth?.user);
   const masterId = user?._id || user?.email || "";
 
+  const isWritingRoute = pathname.includes('/writing-studio') ||
+    pathname.includes('/paraphrase') ||
+    pathname.includes('/humanize-gpt') ||
+    pathname.includes('/ai-detector') ||
+    pathname.includes('/plagiarism-checker') ||
+    pathname.includes('/summarize') ||
+    pathname.includes('/grammar-checker') ||
+    pathname.includes('/translator');
+
   // Collapsible sections state
-  const [isCollapsed, setIsCollapsed] = useState(false);
-  const [isWritingSuiteOpen, setIsWritingSuiteOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("shothik_sidebar_collapsed") === "true";
+    }
+    return false;
+  });
+  const [isWritingSuiteOpen, setIsWritingSuiteOpen] = useState(isWritingRoute);
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
   const [isSessionsOpen, setIsSessionsOpen] = useState(true);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+
+  useEffect(() => {
+    if (isWritingRoute) {
+      setIsWritingSuiteOpen(true);
+    }
+  }, [pathname, isWritingRoute]);
+
+  const toggleCollapse = () => {
+    const next = !isCollapsed;
+    setIsCollapsed(next);
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shothik_sidebar_collapsed", String(next));
+    }
+  };
 
   // Sessions state synced across tabs
   const [sessions, setSessions] = useState<StoredChatSession[]>([]);
@@ -97,7 +125,7 @@ export default function IconNavSidebar() {
           )}
           <button
             type="button"
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={toggleCollapse}
             className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] transition cursor-pointer"
             title={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
