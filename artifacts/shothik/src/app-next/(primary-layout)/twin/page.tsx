@@ -21,6 +21,9 @@ import { DailyDigestModal } from "@/components/twin/DailyDigestModal";
 import { ConnectExistingCompanyModal } from "@/components/twin/ConnectExistingCompanyModal";
 import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
 import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
+import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
+import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
+import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, CheckCircle } from "lucide-react";
 import {
@@ -1607,9 +1610,11 @@ function AccountDrawerModal({ open, onOpenChange }: { open: boolean; onOpenChang
 function PlatformTopBar({
   onOpenAccountDrawer,
   onConnectWebsite,
+  onOpenVoiceCommander,
 }: {
   onOpenAccountDrawer: () => void;
   onConnectWebsite?: () => void;
+  onOpenVoiceCommander?: () => void;
 }) {
   const [activeCompany, setActiveCompany] = useState('VerifiQ AI (Active)');
   return (
@@ -1646,6 +1651,16 @@ function PlatformTopBar({
           <Globe className="h-3.5 w-3.5" />
           <span>Connect Website</span>
         </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onOpenVoiceCommander}
+          className="h-8 rounded-xl text-xs gap-1.5 font-semibold border-violet-500/30 text-violet-400 bg-violet-500/5 hover:bg-violet-500/10"
+          data-testid="button-open-voice-commander"
+        >
+          <Mic className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Voice Agent</span>
+        </Button>
         <span className="hidden lg:inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           Autonomous Co-Founder Online
@@ -1681,6 +1696,9 @@ function TwinDashboardPage() {
   const [showConnectCompany, setShowConnectCompany] = useState(false);
   const [showMfsGateway, setShowMfsGateway] = useState(false);
   const [showDbSchema, setShowDbSchema] = useState(false);
+  const [showVoiceCommander, setShowVoiceCommander] = useState(false);
+  const [showVisualBuilder, setShowVisualBuilder] = useState(false);
+  const [showLeadCrm, setShowLeadCrm] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
   const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
 
@@ -1771,6 +1789,7 @@ function TwinDashboardPage() {
       <PlatformTopBar
         onOpenAccountDrawer={() => setShowAccountDrawer(true)}
         onConnectWebsite={() => setShowConnectCompany(true)}
+        onOpenVoiceCommander={() => setShowVoiceCommander(true)}
       />
       <AccountDrawerModal open={showAccountDrawer} onOpenChange={setShowAccountDrawer} />
 
@@ -1790,6 +1809,9 @@ function TwinDashboardPage() {
       <ConnectExistingCompanyModal open={showConnectCompany} onOpenChange={setShowConnectCompany} />
       <MfsGatewayModal open={showMfsGateway} onOpenChange={setShowMfsGateway} />
       <DatabaseSchemaModal open={showDbSchema} onOpenChange={setShowDbSchema} />
+      <VoiceCommanderModal open={showVoiceCommander} onOpenChange={setShowVoiceCommander} />
+      <VisualStorefrontBuilderModal open={showVisualBuilder} onOpenChange={setShowVisualBuilder} />
+      <LeadCrmDrawer open={showLeadCrm} onOpenChange={setShowLeadCrm} />
       <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
       <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
         <DialogContent
