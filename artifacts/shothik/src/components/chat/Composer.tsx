@@ -89,6 +89,8 @@ export interface ComposerProps {
   onRemoveContextChip?: (chipId: string) => void;
   commandHint?: { name: string; description: string } | null;
   errorMessage?: string | null;
+  /** Opens artifact dual-pane canvas (slides, research, sheet, code) */
+  onOpenArtifact?: (tab: "slides" | "research" | "sheet" | "code") => void;
   /** Opens Research artifact panel (when mode = Web Search) */
   onOpenResearchPanel?: () => void;
   /** Opens ChatGPT Advanced Voice Mode Orb */
@@ -187,6 +189,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       onRemoveContextChip,
       commandHint,
       errorMessage,
+      onOpenArtifact,
       onOpenResearchPanel,
       onVoiceOrbClick,
       onOpenVoice,
@@ -342,11 +345,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const activeModel = MODELS.find((m) => m.value === modelHandle) ?? MODELS[0];
 
     return (
-      <div className="border-t border-border/50 bg-background/90 backdrop-blur-sm px-4 pt-3 pb-4">
+      <div className="border-t border-zinc-200/80 dark:border-white/[0.06] bg-white/90 dark:bg-background/90 backdrop-blur-sm px-4 pt-3 pb-4 transition-colors">
         <div className="mx-auto flex max-w-3xl flex-col gap-2">
 
           {/* ── Main input container (Perplexity rounded-3xl glassmorphic) ── */}
-          <div className="flex flex-col rounded-3xl border border-slate-800 bg-slate-900/90 shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-brand/50 focus-within:shadow-[0_0_20px_rgba(0,171,85,0.15)] focus-within:bg-slate-900">
+          <div className="flex flex-col rounded-3xl border border-zinc-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 shadow-lg dark:shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-brand/50 focus-within:shadow-[0_0_20px_rgba(0,171,85,0.15)] focus-within:bg-white dark:focus-within:bg-slate-900">
 
             {/* Hidden file inputs */}
             <input ref={pdfInputRef} type="file" multiple className="hidden"
@@ -367,7 +370,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleTextSubmit(); }
               }}
-              placeholder={placeholder ?? "Ask anything — strategy, research, code, slides…"}
+              placeholder={placeholder ?? "Type @ for connectors, / for search modes"}
               disabled={disabled}
               className="min-h-[60px] max-h-40 w-full resize-none border-0 bg-transparent px-4 pt-3.5 pb-0 text-sm shadow-none outline-none placeholder:text-muted-foreground/50 focus:ring-0 leading-relaxed"
             />
@@ -424,6 +427,55 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               </div>
             )}
 
+            {/* ── Quick Studio & Mode Chips ── */}
+            <div className="flex items-center gap-1.5 px-2 pb-1.5 overflow-x-auto no-scrollbar">
+              <button
+                type="button"
+                onClick={() => onOpenArtifact?.("slides")}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-indigo-500/15 hover:border-indigo-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-300 transition cursor-pointer shrink-0"
+                title="Open Slide Generation Studio"
+              >
+                <span>📽️</span>
+                <span>Slide Studio</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenArtifact?.("synthesizer" as any)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-[11px] font-medium text-purple-600 dark:text-purple-300 transition cursor-pointer shrink-0"
+                title="Ponytail Zero-Prompt Intent Synthesizer: 1 Sentence to Full Business Infrastructure"
+              >
+                <span>🪄</span>
+                <span>Synthesize Venture</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenArtifact?.("research")}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-violet-500/15 hover:border-violet-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-violet-600 dark:hover:text-violet-300 transition cursor-pointer shrink-0"
+                title="Launch Deep Research Engine"
+              >
+                <span>🔬</span>
+                <span>Deep Research</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenArtifact?.("sheet")}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-cyan-500/15 hover:border-cyan-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-cyan-600 dark:hover:text-cyan-300 transition cursor-pointer shrink-0"
+                title="Open ScenarioLab Financial Modeling"
+              >
+                <span>📊</span>
+                <span>Financial Model</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onOpenArtifact?.("code")}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-emerald-500/15 hover:border-emerald-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-300 transition cursor-pointer shrink-0"
+                title="Generate Full-Stack Code & DB Schema"
+              >
+                <span>💻</span>
+                <span>Code Engine</span>
+              </button>
+            </div>
+
             {/* ── Perplexity Focus Mode Selector ── */}
             <div className="px-2 pb-1">
               <PerplexityFocusSelector
@@ -469,33 +521,20 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   )}
                 </div>
 
-                {/* 🎤 Mic */}
+                {/* 🎤 Dictation (Speech-to-text typing) */}
                 <button type="button"
                   onClick={isListening ? stopListening : startListening}
                   disabled={disabled || activeStreaming}
-                  aria-label={isListening ? "Stop voice input" : "Start voice input"}
+                  aria-label={isListening ? "Stop voice dictation" : "Start voice dictation"}
+                  title={isListening ? "Stop dictation" : "Voice Typing (Dictation)"}
                   className={cn(
-                    "flex items-center justify-center h-8 w-8 rounded-lg transition",
+                    "flex items-center justify-center h-8 w-8 rounded-lg transition cursor-pointer",
                     isListening
                       ? "bg-rose-500/15 text-rose-400 animate-pulse"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
                   )}>
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </button>
-
-                {/* 🔮 Voice Orb — exclusive placement */}
-                {onVoiceOrbClick && (
-                  <button type="button"
-                    onClick={onVoiceOrbClick}
-                    disabled={disabled || activeStreaming}
-                    className="relative flex items-center justify-center h-8 w-8 rounded-full bg-brand/15 border border-brand/30 text-brand hover:text-brand hover:border-brand/60 hover:bg-brand/25 transition-all"
-                    title="Open ChatGPT Advanced Voice Mode Orb"
-                    aria-label="Open Voice Orb"
-                  >
-                    <span className="absolute inset-0 rounded-full bg-brand/20 animate-ping opacity-30" />
-                    <span className="relative w-2.5 h-2.5 rounded-full bg-brand shadow-[0_0_8px_rgba(0,171,85,0.5)]" />
-                  </button>
-                )}
               </div>
 
               {/* SPACER */}
@@ -567,6 +606,25 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     </div>
                   )}
                 </div>
+
+                {/* ⚡ Advanced Voice Mode Button (Interactive AI Voice) */}
+                {onVoiceOrbClick && (
+                  <button
+                    type="button"
+                    onClick={onVoiceOrbClick}
+                    disabled={disabled || activeStreaming}
+                    className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.12] border border-zinc-200 dark:border-white/[0.08] text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white text-xs font-medium transition cursor-pointer active:scale-95"
+                    title="Start Advanced Voice Mode"
+                    aria-label="Start Advanced Voice Mode"
+                  >
+                    <span className="flex items-center gap-0.5 h-3 text-teal-500 dark:text-teal-400">
+                      <span className="w-0.5 h-2 bg-current rounded-full animate-pulse" />
+                      <span className="w-0.5 h-3 bg-current rounded-full animate-pulse [animation-delay:0.15s]" />
+                      <span className="w-0.5 h-1.5 bg-current rounded-full animate-pulse [animation-delay:0.3s]" />
+                    </span>
+                    <span className="hidden sm:inline">Voice</span>
+                  </button>
+                )}
 
                 {/* Send / Stop */}
                 {activeStreaming ? (

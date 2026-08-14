@@ -140,35 +140,48 @@ export default function Header({ className, layout }) {
     return (
       <header
         className={cn(
-          "bg-card relative z-50 h-12 border-b backdrop-blur-lg lg:h-16",
+          "relative z-40 h-13 border-none bg-transparent px-4 sm:px-6 transition-colors duration-200",
           className,
         )}
       >
-        <div className="flex h-full items-center justify-between gap-6 px-4">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-2">
-              <Logo className="lg:hidden" />
-            </div>
-
-            <div className="hidden items-center gap-1 lg:flex">
-              {navLinks.map((link) => (
-                <Button
-                  key={link.label}
-                  variant="ghost"
-                  asChild
-                  className="text-muted-foreground hover:text-primary hover:bg-muted/50 px-2 text-sm font-semibold transition-colors"
-                  data-testid={`nav-${link.label.toLowerCase()}`}
-                  data-rybbit-event="Top Navbar"
-                  data-rybbit-prop-top_navbar={link.label}
-                >
-                  <Link href={link.href}>{link.label}</Link>
-                </Button>
-              ))}
+        <div className="flex h-full items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Logo className="lg:hidden" />
+            <div className="hidden lg:flex items-center gap-2 text-zinc-500 hover:text-zinc-400 transition cursor-default">
+              <span className="p-1 rounded-md hover:bg-white/[0.05]">
+                <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
+              {/* 🎙️ Advanced Voice Mode Button */}
+              <button
+                type="button"
+                onClick={() => {
+                  window.dispatchEvent(new CustomEvent("shothik_toggle_vtuber"));
+                }}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 text-xs font-semibold transition cursor-pointer"
+                title="Launch Interactive Advanced Voice Mode"
+              >
+                <span>🎙️</span>
+                <span>Advanced Voice</span>
+              </button>
+
+              {/* ⚡ Credit Badge */}
+              <Link
+                href="/pricing"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-slate-800/80 border border-zinc-200 dark:border-slate-700 text-brand hover:border-brand/50 font-mono text-xs font-semibold transition no-underline"
+                title="Workspace Credit Balance (Click to top-up)"
+              >
+                <span>⚡</span>
+                <span>550 Credits</span>
+              </Link>
+
               <LanguageSwitcher className="inline-flex" />
               <ThemeToggle className="inline-flex" />
               <div className="flex items-center gap-2 md:gap-3">
@@ -186,10 +199,10 @@ export default function Header({ className, layout }) {
                     {user?.package !== "unlimited" && (
                       <Link href={"/pricing?redirect=" + pathname}>
                         <Button
-                          className={cn("h-9 px-1 text-xs md:text-sm")}
+                          className={cn("h-9 px-3 text-xs md:text-sm")}
                           data-rybbit-event="clicked_upgrade_plan"
                         >
-                          <Gem className="h-5 w-5" />
+                          <Gem className="h-4 w-4 mr-1.5" />
                           {user?.email ? t("header.upgrade") : t("header.upgradePlan")}
                         </Button>
                       </Link>

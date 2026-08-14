@@ -11,21 +11,34 @@ import {
   Layers,
   MessageSquare,
   Share2,
-  Volume2,
-  VolumeX,
+  Palette,
+  ExternalLink,
+  CheckCircle2,
+  Play,
+  Copy,
+  Check,
+  Printer,
+  TrendingUp,
+  ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+export type SlideLayout = "hero" | "split" | "stats" | "timeline";
 
 export interface SlideData {
   id: number;
   tag: string;
   title: string;
   subtitle: string;
+  layout?: SlideLayout;
   bullets: string[];
+  splitLeft?: { heading: string; points: string[] };
+  splitRight?: { heading: string; points: string[] };
+  timelineSteps?: { step: string; title: string; desc: string; status: "completed" | "active" | "upcoming" }[];
   metrics?: { label: string; value: string; trend?: string }[];
   speakerNotes: string;
-  bgGradient: string;
+  bgGradient?: string;
 }
 
 interface SlidesArtifactProps {
@@ -34,382 +47,395 @@ interface SlidesArtifactProps {
   isStreaming?: boolean;
 }
 
+const TEMPLATES = [
+  { id: "business", label: "Business", icon: "📊", themeClass: "from-slate-900 via-indigo-950/70 to-slate-900", accent: "text-indigo-400", border: "border-indigo-500/30" },
+  { id: "creative", label: "Creative", icon: "🎨", themeClass: "from-purple-950/80 via-slate-900 to-indigo-950/80", accent: "text-purple-400", border: "border-purple-500/30" },
+  { id: "minimal",  label: "Minimal",  icon: "⬜", themeClass: "from-zinc-900 via-zinc-950 to-black", accent: "text-zinc-300", border: "border-zinc-700/40" },
+  { id: "modern",   label: "Modern",   icon: "✨", themeClass: "from-slate-900 via-emerald-950/60 to-slate-900", accent: "text-emerald-400", border: "border-emerald-500/30" },
+];
+
+const PIPELINE_STEPS = ["Outline", "Design", "Content", "Formatting", "Review"];
+
 export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming }: SlidesArtifactProps) {
-  const topicTitle = initialTopic || "AI-Powered E-Commerce & Retail in Bangladesh";
+  const topicTitle = initialTopic || "AI-Powered E-Commerce & Logistics in South Asia";
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeTemplate, setActiveTemplate] = useState("business");
+  const [showNotes, setShowNotes] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   const defaultSlides: SlideData[] = [
     {
       id: 1,
-      tag: "Executive Summary",
+      layout: "hero",
+      tag: "Executive Vision",
       title: topicTitle,
-      subtitle: "Strategic Opportunity & Market Entry Analysis for South Asia",
+      subtitle: "Unlocking Autonomous Commerce, MFS Settlement & Next-Gen Logistics across Emerging Markets",
       bullets: [
-        "Unlocking $2.4B Addressable Market across major urban hubs in Bangladesh",
-        "Proprietary AI cofounder engine with BaaS database & realtime event pipeline",
-        "Targeting 75%+ gross margin through direct supplier relationships & AI automation",
+        "Democratizing venture creation for 650M+ South Asian digital consumers",
+        "Unified operator platform replacing 5 fragmented subscriptions",
+        "Prepaid local credit wallets with instant bKash, Nagad & UPI checkout",
       ],
       metrics: [
-        { label: "TAM", value: "$2.4B", trend: "+24% YoY" },
-        { label: "Target Margin", value: "75.4%", trend: "High Efficiency" },
-        { label: "Payback", value: "3.2 Mo", trend: "Fast ROI" },
+        { label: "Target Market", value: "650M+", trend: "+18% YoY" },
+        { label: "Gross Margin", value: "76.6%", trend: "Unit Profitable" },
+        { label: "Payback Period", value: "3.2 Mo", trend: "High Efficiency" },
       ],
-      speakerNotes: "Introduce the problem statement, regional market timing, and automated BaaS infrastructure.",
-      bgGradient: "from-slate-900 via-indigo-950/60 to-slate-900",
+      speakerNotes: "Open the pitch by framing the $10B market opportunity across South Asia and how Shothik unifies fragmented tooling.",
     },
     {
       id: 2,
-      tag: "Market Analysis",
-      title: "Problem & Regional Opportunity",
-      subtitle: "Why Legacy Solutions Fail in South Asian E-Commerce",
-      bullets: [
-        "Fragmented logistics & high Cash-on-Delivery (COD) reconciliation friction",
-        "Manual inventory management leading to 22% stockout losses",
-        "High Customer Acquisition Cost (CAC) without hyper-localized AI personalization",
-      ],
-      metrics: [
-        { label: "COD Friction", value: "68%", trend: "Pain Point" },
-        { label: "Stockout Loss", value: "22%", trend: "Opportunity" },
-      ],
-      speakerNotes: "Detail regional operational bottlenecks and how AI automation addresses COD reconciliation.",
-      bgGradient: "from-slate-900 via-emerald-950/50 to-slate-900",
+      layout: "split",
+      tag: "Problem vs Solution",
+      title: "The Fragmented Tooling Crisis",
+      subtitle: "Why Western Subscriptions Fail in Emerging Markets",
+      bullets: [],
+      splitLeft: {
+        heading: "⚠️ Current Reality (Friction)",
+        points: [
+          "USD Credit Card Barrier: <3% dual-currency card penetration in South Asia",
+          "High Subscription Stack: Paying $120+/mo across 5 separate point tools",
+          "High COD Return Friction: 18%-25% parcel dropouts without automated verification",
+        ],
+      },
+      splitRight: {
+        heading: "✅ The Shothik Edge (Operator)",
+        points: [
+          "Native bKash & Nagad MFS micro-passes starting at ৳100 BDT ($0.85 USD)",
+          "Unified workspace: Search, Slides, Financial Models & Book Studio in one",
+          "1-Click Steadfast & Pathao courier dispatch with automated WhatsApp DMs",
+        ],
+      },
+      speakerNotes: "Highlight the contrast between expensive Western USD tools and Shothik's hyper-localized BDT infrastructure.",
     },
     {
       id: 3,
-      tag: "Product Architecture",
-      title: "Shothik 3-Fold Operating System",
-      subtitle: "Thread, Canvas & ScenarioLab Integration",
+      layout: "stats",
+      tag: "Unit Economics",
+      title: "Scalable Margins & Profitability",
+      subtitle: "3-Scenario Financial Projection (Base vs Aggressive)",
       bullets: [
-        "Interactive Dual-Pane Workspace: Realtime SSE Streaming & Live Canvas",
-        "InsForge Postgres BaaS + PostgREST API with Vector RAG Context Memory",
-        "Instant Export to Marp Slides, Interactive Sheets & Deep Research Reports",
+        "High LTV/CAC Ratio driven by organic viral WhatsApp sharing loops",
+        "Sub-second container deployment via Dokploy PaaS running <88MB memory footprints",
       ],
       metrics: [
-        { label: "Latency", value: "<120ms", trend: "Realtime" },
-        { label: "RAG Accuracy", value: "99.2%", trend: "Vector Search" },
+        { label: "LTV / CAC", value: "12 : 1", trend: "Top Quartile" },
+        { label: "ARPU (Monthly)", value: "৳990 BDT", trend: "$8.50 USD" },
+        { label: "Net Profit Margin", value: "38.5%", trend: "Post COD Buffer" },
+        { label: "Cloud Cost / Slot", value: "<$0.50 / mo", trend: "Dokploy PaaS" },
       ],
-      speakerNotes: "Walk investors through the technical architecture and modular dual-pane workspace.",
-      bgGradient: "from-slate-900 via-purple-950/50 to-slate-900",
+      speakerNotes: "Demonstrate strong unit economics and low infrastructure overhead running on standalone containers.",
     },
     {
       id: 4,
-      tag: "Financial Model",
-      title: "Unit Economics & Profitability",
-      subtitle: "3-Scenario Financial Projection (BDT / USD)",
-      bullets: [
-        "Customer Acquisition Cost (CAC): BDT 350 / $2.90",
-        "Average Order Value (AOV): BDT 1,500 / $12.50",
-        "Projected Year 1 MRR: BDT 22.5M / $187.5K at 23.3x LTV/CAC ratio",
-      ],
-      metrics: [
-        { label: "LTV / CAC", value: "23.3x", trend: "Top Tier" },
-        { label: "Year 1 MRR", value: "BDT 22.5M", trend: "Base Case" },
-      ],
-      speakerNotes: "Emphasize exceptional LTV/CAC efficiency driven by organic founder community loops.",
-      bgGradient: "from-slate-900 via-cyan-950/50 to-slate-900",
-    },
-    {
-      id: 5,
+      layout: "timeline",
       tag: "Execution Roadmap",
-      title: "Growth & Milestone Timeline",
-      subtitle: "Scaling from Launch to Market Leadership",
-      bullets: [
-        "Q1 2026: Beta Cohort Onboarding & RAG Memory Indexing",
-        "Q2 2026: Enterprise BaaS Deployment & ScenarioLab Engine",
-        "Q3 2026: Regional Expansion across South Asia & API Marketplace",
+      title: "Strategic Growth & Deployment Milestones",
+      subtitle: "From Regional MVP to Pan-South Asian Scale",
+      bullets: [],
+      timelineSteps: [
+        { step: "Q1", title: "Core Platform", desc: "Launch unified Search, Slide Studio & bKash rails", status: "completed" },
+        { step: "Q2", title: "Logistics Hub", desc: "Steadfast & Pathao automated parcel dispatch API", status: "active" },
+        { step: "Q3", title: "Regional Expansion", desc: "India (UPI) & Pakistan (Easypaisa) rollout", status: "upcoming" },
+        { step: "Q4", title: "Creator Marketplace", desc: "Prompt & Agent monetization with direct MFS cashout", status: "upcoming" },
       ],
-      metrics: [
-        { label: "Q1 Milestone", value: "500 Founders", trend: "On Track" },
-        { label: "Q3 Target", value: "5,000 SMEs", trend: "Expansion" },
-      ],
-      speakerNotes: "Conclude with key execution milestones and open Q&A.",
-      bgGradient: "from-slate-900 via-amber-950/40 to-slate-900",
+      speakerNotes: "Walk through quarterly milestones from Bangladesh market leadership to regional pan-South Asian expansion.",
     },
   ];
 
-  const slideList = customSlides || defaultSlides;
-  // Pillar 4: Web Speech AI Voice Narration
-  const [isNarrating, setIsNarrating] = useState(false);
+  const [slideList, setSlideList] = useState<SlideData[]>(customSlides || defaultSlides);
 
-  const handleVoiceNarration = () => {
-    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
-      alert("Web Speech API is not supported in this browser environment.");
-      return;
+  useEffect(() => {
+    if (customSlides && customSlides.length > 0) {
+      setSlideList(customSlides);
+      setCurrentSlide(0);
     }
+  }, [customSlides]);
 
-    if (isNarrating) {
-      window.speechSynthesis.cancel();
-      setIsNarrating(false);
-      return;
-    }
+  const active = slideList[currentSlide] || slideList[0];
+  const currentTemplate = TEMPLATES.find((t) => t.id === activeTemplate) || TEMPLATES[0];
 
-    window.speechSynthesis.cancel();
-    const activeSlide = slideList[currentSlide];
-    const textToSpeak = `${activeSlide.title}. ${activeSlide.subtitle}. ${activeSlide.bullets.join(". ")}`;
-    
-    const utterance = new SpeechSynthesisUtterance(textToSpeak);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    
-    utterance.onend = () => {
-      setIsNarrating(false);
-      if (currentSlide < slideList.length - 1) {
-        setCurrentSlide((c) => c + 1);
-      }
-    };
-
-    utterance.onerror = () => setIsNarrating(false);
-
-    setIsNarrating(true);
-    window.speechSynthesis.speak(utterance);
+  const handleCopyMarkdown = () => {
+    const md = slideList
+      .map(
+        (s) =>
+          `---\n# ${s.title}\n### ${s.subtitle}\n\n` +
+          (s.bullets || []).map((b) => `- ${b}`).join("\n") +
+          `\n\n> **Speaker Notes:** ${s.speakerNotes}`
+      )
+      .join("\n\n");
+    navigator.clipboard.writeText(md);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % slideList.length);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + slideList.length) % slideList.length);
+  const handlePrint = () => {
+    window.print();
+  };
 
   return (
-    <div className="flex flex-col h-full bg-background overflow-hidden select-none">
-      
-      {/* ── Genspark-Style Canvas Header Bar ── */}
-      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-4 py-2 shrink-0">
+    <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0d0e10] text-zinc-900 dark:text-[#e3e3e3] overflow-hidden select-none transition-colors duration-200">
+      {/* ── Top Suite Header Bar ── */}
+      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] bg-white/95 dark:bg-white/[0.02] px-3.5 py-2 shrink-0">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/30">
             <Presentation className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-xs font-bold text-foreground truncate">{topicTitle}</h3>
-            <p className="text-[10px] text-muted-foreground font-mono">
-              Presentation Stage · Slide {currentSlide + 1} of {slideList.length}
+            <h3 className="text-xs font-bold text-zinc-900 dark:text-white truncate">{topicTitle}</h3>
+            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">
+              Slide {currentSlide + 1} of {slideList.length} · 16:9 Presentation Stage
             </p>
           </div>
         </div>
 
+        {/* Action Controls */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Slide Navigation Buttons */}
-          <div className="flex items-center rounded-lg border border-border/60 bg-background/80 p-0.5 mr-2">
-            <button
-              onClick={prevSlide}
-              className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition"
-              title="Previous slide"
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
-            <span className="px-2 text-[11px] font-mono font-bold text-foreground">
-              {currentSlide + 1} / {slideList.length}
-            </span>
-            <button
-              onClick={nextSlide}
-              className="flex h-6 w-6 items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-muted transition"
-              title="Next slide"
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => alert("Downloading presentation deck (.pptx / .pdf)...")}
-            className="h-7 px-2.5 text-[11px] font-semibold gap-1.5"
+          {/* Advanced Voice Presenter Launcher */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new CustomEvent("shothik_toggle_vtuber"))}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 hover:bg-purple-500/25 text-purple-600 dark:text-purple-300 text-[11px] font-medium transition cursor-pointer"
+            title="Launch Voice Presentation with Lip-Sync Narration"
           >
-            <Download className="h-3 w-3" />
-            Export
-          </Button>
+            <Play className="h-3 w-3 fill-current" />
+            <span className="hidden sm:inline">Present</span>
+          </button>
 
-          {/* Pillar 4: AI Voice Presenter Button */}
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={handleVoiceNarration}
-            className={cn(
-              "h-7 px-2 text-[11px] font-semibold gap-1 transition",
-              isNarrating ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-400" : "border-border/60 text-muted-foreground hover:text-foreground"
-            )}
-            title={isNarrating ? "Stop Slide Voice Narration" : "Start Web Speech AI Slide Narration"}
+          {/* Print / Export */}
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            title="Print Slide Deck"
           >
-            {isNarrating ? <VolumeX className="h-3 w-3 text-emerald-400 animate-pulse" /> : <Volume2 className="h-3 w-3 text-indigo-400" />}
-            <span className="hidden sm:inline">{isNarrating ? "Stop Voice" : "Narrate"}</span>
-          </Button>
+            <Printer className="h-3 w-3" />
+          </button>
 
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              const link = `https://papermark.shothik.app/view/deck_${Math.random().toString(36).substring(2, 9)}`;
-              prompt("🔗 Papermark Trackable Investor Link generated (with view analytics & page time tracking):", link);
-            }}
-            className="h-7 px-2 text-[11px] font-semibold border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20 gap-1"
+          {/* Copy Markdown */}
+          <button
+            type="button"
+            onClick={handleCopyMarkdown}
+            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            title="Copy Deck Markdown"
           >
-            <Share2 className="h-3 w-3 text-indigo-400" />
-            <span className="hidden sm:inline">Trackable Link</span>
-          </Button>
-
-          <Button
-            size="sm"
-            className="h-7 px-2.5 text-[11px] font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white"
-            onClick={() => {
-              if (document.documentElement.requestFullscreen) {
-                document.documentElement.requestFullscreen();
-              }
-            }}
-          >
-            <Maximize2 className="h-3 w-3" />
-            Present
-          </Button>
+            {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+          </button>
         </div>
       </div>
 
-      {/* ── Live Agentic Step Progress Banner (Genspark / Manus / ChatGPT pattern) ── */}
-      {isStreaming && (
-        <div className="flex items-center justify-between border-b border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs text-indigo-300 font-mono shrink-0 animate-pulse">
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-3.5 w-3.5 text-indigo-400 animate-spin" />
-            <span>AI Swarm Agent: Building slide presentation live in Canvas…</span>
-          </div>
-          <span className="font-bold text-indigo-400">Step 3/4 · Compiling Layout</span>
-        </div>
-      )}
-
-      {/* ── Main Slide Display Canvas ── */}
-      <div className="flex-1 min-h-0 p-4 md:p-6 overflow-y-auto flex flex-col justify-between items-center">
-        
-        {/* Slide 16:9 Stage */}
-        <div
-          className={cn(
-            "relative w-full max-w-3xl aspect-[16/9] rounded-2xl border border-white/10 bg-gradient-to-br p-6 md:p-8 flex flex-col justify-between shadow-2xl transition-all duration-300 overflow-hidden",
-            activeSlide.bgGradient
-          )}
-        >
-          {/* Subtle ambient lighting grid overlay */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none" />
-
-          {/* Top Stage Header */}
-          <div className="relative z-10 flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-500/30 bg-indigo-500/15 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-indigo-300">
-              <Sparkles className="h-3 w-3" />
-              {activeSlide.tag}
-            </span>
-            <span className="text-[11px] font-mono text-muted-foreground/60">
-              0{activeSlide.id}
-            </span>
-          </div>
-
-          {/* Center Stage Title & Bullets (Editable In-Place) */}
-          <div className="relative z-10 space-y-3 my-auto">
-            <h2
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => {
-                const text = e.currentTarget.textContent || "";
-                setSlideList((prev) =>
-                  prev.map((s, idx) => (idx === currentSlide ? { ...s, title: text } : s))
-                );
-              }}
-              className="text-xl md:text-2xl font-black tracking-tight text-white leading-tight outline-none focus:ring-1 focus:ring-indigo-400/50 rounded px-1 transition hover:bg-white/5 cursor-text"
-              title="Click to edit slide title inline"
-            >
-              {activeSlide.title}
-            </h2>
-            <p
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => {
-                const text = e.currentTarget.textContent || "";
-                setSlideList((prev) =>
-                  prev.map((s, idx) => (idx === currentSlide ? { ...s, subtitle: text } : s))
-                );
-              }}
-              className="text-xs md:text-sm text-indigo-200/80 font-medium outline-none focus:ring-1 focus:ring-indigo-400/50 rounded px-1 transition hover:bg-white/5 cursor-text"
-              title="Click to edit slide subtitle inline"
-            >
-              {activeSlide.subtitle}
-            </p>
-
-            {/* Bullets (Editable In-Place) */}
-            <div className="pt-2 space-y-1.5">
-              {activeSlide.bullets.map((b, i) => (
-                <p key={i} className="text-xs md:text-sm text-slate-200 leading-relaxed font-sans flex items-start gap-2">
-                  <span className="text-indigo-400 font-bold mt-0.5">•</span>
-                  <span
-                    contentEditable
-                    suppressContentEditableWarning
-                    onBlur={(e) => {
-                      const text = e.currentTarget.textContent || "";
-                      setSlideList((prev) =>
-                        prev.map((s, idx) =>
-                          idx === currentSlide
-                            ? {
-                                ...s,
-                                bullets: s.bullets.map((item, bIdx) => (bIdx === i ? text : item)),
-                              }
-                            : s
-                        )
-                      );
-                    }}
-                    className="outline-none focus:ring-1 focus:ring-indigo-400/50 rounded px-1 transition hover:bg-white/5 cursor-text flex-1"
-                    title="Click to edit bullet inline"
-                  >
-                    {b}
-                  </span>
-                </p>
-              ))}
+      {/* ── Pipeline Steps Bar ── */}
+      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] bg-zinc-100/70 dark:bg-black/20 px-3.5 py-1 text-[10px] font-mono text-zinc-500 shrink-0">
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          {PIPELINE_STEPS.map((step, idx) => (
+            <div key={idx} className="flex items-center gap-1.5">
+              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
+              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{step}</span>
+              {idx < PIPELINE_STEPS.length - 1 && <span className="text-zinc-400 dark:text-zinc-600">→</span>}
             </div>
-
-            {/* Key Metrics Cards if present */}
-            {activeSlide.metrics && (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 pt-3">
-                {activeSlide.metrics.map((m, idx) => (
-                  <div key={idx} className="rounded-xl border border-white/10 bg-white/5 p-2.5 backdrop-blur-md">
-                    <p className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">{m.label}</p>
-                    <p className="text-sm font-bold text-white mt-0.5">{m.value}</p>
-                    {m.trend && <p className="text-[9px] text-emerald-400 font-mono mt-0.5">{m.trend}</p>}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Bottom Stage Footer */}
-          <div className="relative z-10 flex items-center justify-between border-t border-white/10 pt-3 mt-2 text-[10px] text-slate-400">
-            <span className="font-semibold text-slate-300">{topicTitle}</span>
-            <span>Slide {currentSlide + 1} of {slideList.length}</span>
-          </div>
+          ))}
         </div>
 
-        {/* Speaker Notes Drawer */}
-        <div className="w-full max-w-3xl mt-4 rounded-xl border border-border/60 bg-muted/20 p-3 flex items-start gap-2 text-xs">
-          <MessageSquare className="h-4 w-4 text-indigo-400 shrink-0 mt-0.5" />
-          <div className="min-w-0 flex-1">
-            <span className="font-bold text-foreground mr-1">Speaker Notes:</span>
-            <span className="text-muted-foreground">{activeSlide.speakerNotes}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── Slide Thumbnail Navigation Rail ── */}
-      <div className="border-t border-border/60 bg-muted/10 p-2 shrink-0">
-        <div className="flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
-          {slideList.map((s, idx) => (
+        {/* Template Selector */}
+        <div className="flex items-center gap-1 shrink-0 ml-2">
+          <Palette className="h-3 w-3 text-zinc-400" />
+          {TEMPLATES.map((tpl) => (
             <button
-              key={s.id}
-              onClick={() => setCurrentSlide(idx)}
+              key={tpl.id}
+              onClick={() => setActiveTemplate(tpl.id)}
               className={cn(
-                "group flex flex-col items-start gap-1 rounded-xl border p-2 text-left transition-all w-36 shrink-0",
-                currentSlide === idx
-                  ? "border-indigo-500 bg-indigo-500/10 shadow-sm"
-                  : "border-border/60 bg-background/60 hover:bg-background"
+                "px-2 py-0.5 rounded text-[10px] font-medium transition cursor-pointer",
+                activeTemplate === tpl.id
+                  ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/40"
+                  : "text-zinc-400 hover:text-zinc-200"
               )}
             >
-              <div className="flex items-center justify-between w-full text-[9px] font-mono text-muted-foreground">
-                <span>Slide {idx + 1}</span>
-                {currentSlide === idx && <span className="h-1.5 w-1.5 rounded-full bg-indigo-400" />}
-              </div>
-              <p className="text-[10px] font-bold text-foreground truncate w-full group-hover:text-indigo-400 transition-colors">
-                {s.title}
-              </p>
+              {tpl.icon} {tpl.label}
             </button>
           ))}
         </div>
+      </div>
+
+      {/* ── Main 16:9 Presentation Stage ── */}
+      <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-3 sm:p-4 bg-zinc-950">
+        <div
+          className={cn(
+            "relative w-full max-w-2xl aspect-[16/9] rounded-2xl border shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden bg-gradient-to-br transition-all duration-300",
+            currentTemplate.themeClass,
+            currentTemplate.border
+          )}
+        >
+          {/* Top Tag & Slide Number */}
+          <div className="flex items-center justify-between shrink-0">
+            <span className={cn("text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/[0.1] border border-white/[0.15]", currentTemplate.accent)}>
+              {active.tag}
+            </span>
+            <span className="text-xs font-mono font-semibold text-zinc-400">
+              {currentSlide + 1} / {slideList.length}
+            </span>
+          </div>
+
+          {/* ── Polymorphic Layout Renderers ── */}
+          <div className="my-auto space-y-3">
+            {/* 1. HERO LAYOUT */}
+            {(!active.layout || active.layout === "hero") && (
+              <div className="space-y-3">
+                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
+                  {active.title}
+                </h2>
+                <p className="text-xs text-zinc-300 leading-relaxed max-w-xl">
+                  {active.subtitle}
+                </p>
+                <ul className="space-y-1.5 pt-1 text-xs text-zinc-200">
+                  {active.bullets?.map((bullet, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <span className={cn("font-bold mt-0.5", currentTemplate.accent)}>•</span>
+                      <span>{bullet}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* 2. SPLIT 2-COLUMN LAYOUT */}
+            {active.layout === "split" && (
+              <div className="space-y-2">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">{active.title}</h2>
+                  <p className="text-[11px] text-zinc-300">{active.subtitle}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/20 text-xs space-y-1.5">
+                    <p className="font-bold text-red-400">{active.splitLeft?.heading}</p>
+                    <ul className="space-y-1 text-[11px] text-zinc-300">
+                      {active.splitLeft?.points.map((p, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <span className="text-red-400 font-bold shrink-0">✕</span>
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-xs space-y-1.5">
+                    <p className="font-bold text-emerald-400">{active.splitRight?.heading}</p>
+                    <ul className="space-y-1 text-[11px] text-zinc-300">
+                      {active.splitRight?.points.map((p, i) => (
+                        <li key={i} className="flex items-start gap-1.5">
+                          <span className="text-emerald-400 font-bold shrink-0">✓</span>
+                          <span>{p}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 3. STATS CALLOUT LAYOUT */}
+            {active.layout === "stats" && (
+              <div className="space-y-3">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">{active.title}</h2>
+                  <p className="text-[11px] text-zinc-300">{active.subtitle}</p>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                  {active.metrics?.map((m, idx) => (
+                    <div key={idx} className="rounded-xl border border-white/[0.08] bg-white/[0.04] p-2.5 text-center space-y-0.5">
+                      <p className="text-[10px] text-zinc-400">{m.label}</p>
+                      <p className={cn("text-base font-bold font-mono", currentTemplate.accent)}>{m.value}</p>
+                      {m.trend && <p className="text-[9px] text-emerald-400 flex items-center justify-center gap-0.5"><TrendingUp className="w-2.5 h-2.5" /> {m.trend}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 4. TIMELINE ROADMAP LAYOUT */}
+            {active.layout === "timeline" && (
+              <div className="space-y-2">
+                <div>
+                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">{active.title}</h2>
+                  <p className="text-[11px] text-zinc-300">{active.subtitle}</p>
+                </div>
+                <div className="grid grid-cols-4 gap-2 pt-1">
+                  {active.timelineSteps?.map((s, idx) => (
+                    <div key={idx} className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1 text-left">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-bold text-purple-400">{s.step}</span>
+                        <span className="text-[8px] uppercase px-1 py-0.2 rounded bg-white/10 text-zinc-300">{s.status}</span>
+                      </div>
+                      <p className="text-xs font-bold text-white truncate">{s.title}</p>
+                      <p className="text-[10px] text-zinc-400 line-clamp-2 leading-tight">{s.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Footer Logo */}
+          <div className="flex items-center justify-between pt-2 border-t border-white/[0.06] text-[10px] text-zinc-500 font-mono shrink-0">
+            <span>SHOTHIK OPERATOR SUITE</span>
+            <span>POLSIA OPC MASTER</span>
+          </div>
+        </div>
+
+        {/* ── Navigation Carousel Controls ── */}
+        <div className="flex items-center justify-center gap-3 mt-3 w-full">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={currentSlide === 0}
+            onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
+            className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white cursor-pointer"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <div className="flex items-center gap-1">
+            {slideList.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentSlide(idx)}
+                className={cn(
+                  "h-1.5 rounded-full transition-all cursor-pointer",
+                  currentSlide === idx ? "w-5 bg-indigo-500" : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                )}
+              />
+            ))}
+          </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={currentSlide === slideList.length - 1}
+            onClick={() => setCurrentSlide((prev) => Math.min(slideList.length - 1, prev + 1))}
+            className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white cursor-pointer"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Presenter Speaker Notes Accordion ── */}
+      <div className="border-t border-zinc-200 dark:border-white/[0.06] bg-zinc-100/90 dark:bg-[#111214] p-3 shrink-0">
+        <button
+          type="button"
+          onClick={() => setShowNotes(!showNotes)}
+          className="flex items-center justify-between w-full text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 transition cursor-pointer"
+        >
+          <div className="flex items-center gap-1.5">
+            <MessageSquare className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+            <span>Presenter Lip-Sync Narration Notes</span>
+          </div>
+          <span className="text-[10px] text-zinc-500 font-mono">{showNotes ? "Hide" : "Show"}</span>
+        </button>
+
+        {showNotes && (
+          <p className="mt-2 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed font-mono bg-white dark:bg-white/[0.02] p-2.5 rounded-lg border border-zinc-200 dark:border-white/[0.04]">
+            "{active.speakerNotes}"
+          </p>
+        )}
       </div>
     </div>
   );

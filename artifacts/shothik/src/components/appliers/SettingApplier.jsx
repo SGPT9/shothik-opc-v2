@@ -1,5 +1,3 @@
-
-
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { hydrateSettings } from "@/redux/slices/settings-slice";
@@ -8,10 +6,10 @@ import { useTranslation } from "@/i18n";
 
 const SettingApplier = () => {
   const dispatch = useDispatch();
-  const direction = useSelector((state) => state.settings.direction);
-  const theme = useSelector((state) => state.settings.theme);
-  const settingsHydrated = useSelector((state) => state.settings._hydrated);
-  const authHydrated = useSelector((state) => state.auth._hydrated);
+  const direction = useSelector((state) => state.settings?.direction);
+  const theme = useSelector((state) => state.settings?.theme);
+  const settingsHydrated = useSelector((state) => state.settings?._hydrated);
+  const authHydrated = useSelector((state) => state.auth?._hydrated);
   const { locale } = useTranslation();
 
   useEffect(() => {
@@ -24,20 +22,22 @@ const SettingApplier = () => {
   }, [dispatch, settingsHydrated, authHydrated]);
 
   useEffect(() => {
-    if (direction) {
+    if (direction && typeof document !== "undefined") {
       document.documentElement.setAttribute("dir", direction);
     }
   }, [direction]);
 
   useEffect(() => {
+    if (typeof document === "undefined") return;
     const root = document.documentElement;
 
     const applyTheme = (mode) => {
       root.classList.remove("light", "dark");
       root.classList.add(mode);
+      root.setAttribute("data-theme", mode);
     };
 
-    if (theme === "system") {
+    if (!theme || theme === "system") {
       const media = window.matchMedia("(prefers-color-scheme: dark)");
       applyTheme(media.matches ? "dark" : "light");
 
@@ -46,17 +46,14 @@ const SettingApplier = () => {
       };
 
       media.addEventListener("change", listener);
-
       return () => media.removeEventListener("change", listener);
-    } else {
-      if (theme === "light" || theme === "dark") {
-        applyTheme(theme);
-      }
+    } else if (theme === "light" || theme === "dark") {
+      applyTheme(theme);
     }
   }, [theme]);
 
   useEffect(() => {
-    if (locale) {
+    if (locale && typeof document !== "undefined") {
       document.documentElement.setAttribute("lang", locale);
     }
   }, [locale]);

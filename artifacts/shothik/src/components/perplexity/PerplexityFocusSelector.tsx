@@ -51,10 +51,10 @@ export const PerplexityFocusSelector: React.FC<PerplexityFocusSelectorProps> = (
             key={opt.value}
             type="button"
             onClick={() => onSelectFocus(opt.value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all cursor-pointer ${
               isSelected
-                ? "bg-brand/20 border border-brand/50 text-brand font-bold shadow-sm"
-                : "bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700"
+                ? "bg-brand/15 border border-brand/40 text-brand font-semibold shadow-xs"
+                : "bg-zinc-100 dark:bg-slate-800/80 border border-zinc-200/80 dark:border-slate-700/60 text-zinc-600 dark:text-slate-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/70 dark:hover:bg-slate-700/60 hover:border-zinc-300 dark:hover:border-slate-600"
             }`}
           >
             <span>{opt.icon}</span>

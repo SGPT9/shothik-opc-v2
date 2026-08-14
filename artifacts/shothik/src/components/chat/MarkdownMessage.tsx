@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -14,6 +12,9 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  ExternalLink,
+  Sparkles,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -56,15 +57,15 @@ export function MarkdownMessage({
   return (
     <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words space-y-3", className)}>
       {/* AI Partner Response Lens Switcher */}
-      <div className="flex items-center gap-1 text-[11px] font-mono border-b border-border/40 pb-2 mb-2 not-prose overflow-x-auto">
+      <div className="flex items-center gap-1 text-[11px] font-mono border-b border-border/40 pb-2 mb-2 not-prose overflow-x-auto no-scrollbar">
         <span className="text-[10px] text-muted-foreground uppercase font-bold mr-1 shrink-0">View Lens:</span>
         <button
           type="button"
           onClick={() => setActiveLens("executive")}
           className={cn(
-            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0",
+            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0 cursor-pointer",
             activeLens === "executive"
-              ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40 shadow-sm"
+              ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border border-indigo-500/40 shadow-xs"
               : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
@@ -74,9 +75,9 @@ export function MarkdownMessage({
           type="button"
           onClick={() => setActiveLens("research")}
           className={cn(
-            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0",
+            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0 cursor-pointer",
             activeLens === "research"
-              ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 shadow-sm"
+              ? "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/40 shadow-xs"
               : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
@@ -86,18 +87,75 @@ export function MarkdownMessage({
           type="button"
           onClick={() => setActiveLens("action")}
           className={cn(
-            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0",
+            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0 cursor-pointer",
             activeLens === "action"
-              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm"
+              ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 shadow-xs"
               : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
           )}
         >
           <span>💼 Task Action</span>
         </button>
       </div>
+
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
+          // Mobile-friendly responsive table container with sticky headers
+          table: ({ children }) => (
+            <div className="my-3 overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
+              <table className="w-full text-left text-xs border-collapse divide-y divide-border">
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children }) => (
+            <thead className="bg-muted/60 text-foreground font-semibold">
+              {children}
+            </thead>
+          ),
+          th: ({ children }) => (
+            <th className="px-3.5 py-2.5 text-xs font-bold text-foreground uppercase tracking-wider border-b border-border">
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="px-3.5 py-2.5 text-xs text-muted-foreground border-b border-border/50">
+              {children}
+            </td>
+          ),
+
+          // Interactive Citation Badges
+          a: ({ href, children }) => {
+            const text = String(children);
+            const isCitation = /^\[?\d+\]?$/.test(text.trim());
+
+            if (isCitation) {
+              return (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center h-4 min-w-4 px-1 mx-0.5 text-[10px] font-mono font-bold rounded-full bg-brand/15 text-brand border border-brand/30 hover:bg-brand hover:text-white transition-all no-underline align-super cursor-pointer shadow-2xs"
+                  title={`View Verified Citation Source: ${href}`}
+                >
+                  {text.replace(/[\[\]]/g, "")}
+                </a>
+              );
+            }
+
+            return (
+              <a
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-brand hover:underline font-medium break-all"
+              >
+                <span>{children}</span>
+                <ExternalLink className="h-3 w-3 inline shrink-0" />
+              </a>
+            );
+          },
+
           pre: ({ children }) => (
             <div className="my-3 overflow-hidden rounded-xl border border-border/80 bg-[#0b0f19] text-xs font-mono shadow-md">
               {children}
@@ -112,7 +170,7 @@ export function MarkdownMessage({
 
             if (isInline) {
               return (
-                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-cyan-400" {...props}>
+                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-cyan-600 dark:text-cyan-400" {...props}>
                   {children}
                 </code>
               );
@@ -139,7 +197,7 @@ export function MarkdownMessage({
                       type="button"
                       onClick={() => handleRunCode(codeId, text, lang)}
                       disabled={isRunning}
-                      className="flex items-center space-x-1 rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300 hover:bg-emerald-500/30 transition text-[10px] font-mono border border-emerald-500/30"
+                      className="flex items-center space-x-1 rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300 hover:bg-emerald-500/30 transition text-[10px] font-mono border border-emerald-500/30 cursor-pointer"
                     >
                       {isRunning ? (
                         <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />
@@ -152,7 +210,7 @@ export function MarkdownMessage({
                     <button
                       type="button"
                       onClick={() => handleCopy(text)}
-                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono"
+                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer"
                     >
                       {isCopied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
                       <span>{isCopied ? "Copied" : "Copy"}</span>
@@ -174,7 +232,7 @@ export function MarkdownMessage({
                       onClick={() =>
                         setOpenConsole((prev) => ({ ...prev, [codeId]: !prev[codeId] }))
                       }
-                      className="w-full px-3 py-1 flex items-center justify-between text-slate-400 hover:bg-slate-900/50 transition text-[10px]"
+                      className="w-full px-3 py-1 flex items-center justify-between text-slate-400 hover:bg-slate-900/50 transition text-[10px] cursor-pointer"
                     >
                       <div className="flex items-center space-x-1.5">
                         <Terminal className="h-3 w-3 text-amber-400" />
@@ -197,7 +255,7 @@ export function MarkdownMessage({
         {content ?? ""}
       </ReactMarkdown>
 
-      {/* Artifact Action Cards (Rendered below response if artifact present) */}
+      {/* Artifact Action Cards */}
       {(artifactId || artifactType) && (
         <div className="mt-3 flex flex-wrap gap-2 pt-2 border-t border-border/40 font-sans">
           {artifactType === "chart" && (
@@ -209,7 +267,7 @@ export function MarkdownMessage({
           {artifactType === "presentation" && (
             <Button variant="outline" size="sm" className="gap-1.5 text-xs border-amber-500/40 bg-amber-950/20 text-amber-300 hover:bg-amber-900/30">
               <Presentation className="h-3.5 w-3.5 text-amber-400" />
-              <span>🎴 Launch Marp Slide Deck</span>
+              <span>🎴 Launch Presentation Slide Deck</span>
             </Button>
           )}
           {artifactType === "document" && (

@@ -5,23 +5,22 @@
  * Panel slides in on-demand when user triggers slides/sheet/research/code.
  * Sidebar collapsed by default (hamburger toggle).
  */
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "@/lib/navigation";
 import { useChatSession } from "./hooks/useChatSession";
 import { useChatStreamEngine } from "./hooks/useChatStreamEngine";
 import { useAttachmentUploader } from "./hooks/useAttachmentUploader";
 import { useTwinHandoffDetector } from "./hooks/useTwinHandoffDetector";
-import { ChatHeader } from "./components/ChatHeader";
 import { ComponentErrorBoundary } from "./components/ChatErrorBoundaries";
 
 import { Composer } from "@/components/chat/Composer";
 import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
-import { ChatSidebar } from "@/components/chat/ChatSidebar";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
 import { ChatGPTVoiceOrbModal } from "@/components/voice/ChatGPTVoiceOrbModal";
 import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
+import { PerplexityChecklist } from "@/components/chat/PerplexityChecklist";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
@@ -53,14 +52,18 @@ export function ChatAgentPage() {
   const [sheetData, setSheetData] = useState<string[][] | undefined>();
   const [codeSnippet, setCodeSnippet] = useState<string | undefined>();
 
-  // ── Sidebar: collapsed by default (hamburger) ──
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
   const [voiceActive, setVoiceActive] = useState(false);
   const [isVoiceOrbOpen, setIsVoiceOrbOpen] = useState(false);
   const [isSwarmDebateOpen, setIsSwarmDebateOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [persona, setPersona] = useState<ChatPersona>("cofounder");
+
+  // Listen to global VTuber trigger event from main header
+  useEffect(() => {
+    const handleToggle = () => setVoiceActive((prev) => !prev);
+    window.addEventListener("shothik_toggle_vtuber", handleToggle);
+    return () => window.removeEventListener("shothik_toggle_vtuber", handleToggle);
+  }, []);
 
   const createNewConversation = useCallback(() => {
     const newId = `conv_${Date.now()}`;
@@ -151,33 +154,9 @@ export function ChatAgentPage() {
   );
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-background">
-      {/* Sidebar — collapsed by default, overlay on mobile */}
-      <ChatSidebar
-        isOpen={sidebarOpen}
-        onToggle={() => setSidebarOpen((prev) => !prev)}
-        onNewChat={() => createNewConversation()}
-        onAbortStream={stopStream}
-        onSelectConversation={(id) => {
-          switchConversation(id);
-          setSidebarOpen(false); // auto-close on mobile
-        }}
-      />
-
+    <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden bg-background">
       {/* Main Workspace Column */}
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
-        {/* Top Header — includes hamburger for sidebar */}
-        <ChatHeader
-          currentPersona={persona}
-          executionMode="realtime"
-          activeTab={artifactOpen ? activeTab : null}
-          onTabChange={(tab) => handleOpenArtifact(tab)}
-          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
-          sidebarOpen={sidebarOpen}
-          onPaywallClick={() => setIsPaywallOpen(true)}
-          onVTuberClick={() => setVoiceActive((prev) => !prev)}
-        />
-
         {/* Content: Chat + Artifact (Draggable Splitter Handle when artifact is open) */}
         {artifactOpen ? (
           <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 w-full overflow-hidden">
@@ -246,6 +225,39 @@ export function ChatAgentPage() {
               </ComponentErrorBoundary>
             </ResizablePanel>
           </ResizablePanelGroup>
+        ) : messages.length === 0 ? (
+          <div className="flex flex-1 flex-col items-center justify-center min-h-0 w-full overflow-y-auto px-4 py-6 custom-scrollbar animate-fade-in">
+            <div className="w-full max-w-2xl space-y-6 text-center">
+              {/* ── Perplexity Hero Title ── */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-mono font-medium text-zinc-500 uppercase tracking-widest">
+                  Search
+                </span>
+                <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-zinc-900 dark:text-white/95">
+                  What do you want to know?
+                </h1>
+              </div>
+
+              {/* ── Center Perplexity Composer ── */}
+              <div className="w-full text-left shadow-2xl rounded-2xl border border-zinc-200 dark:border-white/[0.08] bg-white/95 dark:bg-[#161719]/90 backdrop-blur-md transition-colors duration-200">
+                <ComponentErrorBoundary title="Composer Input Interrupted">
+                  <Composer
+                    onSend={handleSendMessage}
+                    isStreaming={streamState.isStreaming}
+                    onStop={stopStream}
+                    onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                    onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
+                    persona={persona}
+                    onPersonaChange={handlePersonaChange}
+                    onOpenArtifact={(tab) => handleOpenArtifact(tab)}
+                  />
+                </ComponentErrorBoundary>
+              </div>
+
+              {/* ── Set up Computer Checklist ── */}
+              <PerplexityChecklist onSelectPrompt={handleSendMessage} />
+            </div>
+          </div>
         ) : (
           <div className="flex flex-1 min-h-0 w-full overflow-hidden">
             {/* Full-width Chat Column */}
@@ -290,6 +302,7 @@ export function ChatAgentPage() {
                   onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                   persona={persona}
                   onPersonaChange={handlePersonaChange}
+                  onOpenArtifact={(tab) => handleOpenArtifact(tab)}
                 />
               </ComponentErrorBoundary>
             </div>

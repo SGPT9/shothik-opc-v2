@@ -1,6 +1,7 @@
 import AgentHistory from "@/components/agents/shared/AgentHistory";
 import AuthApplier from "@/components/appliers/AuthApplier";
 import DebugLogApplier from "@/components/appliers/DebugLogApplier";
+import SettingApplier from "@/components/appliers/SettingApplier";
 import AuthSuccessPopup from "@/components/auth/AuthSuccessPopoup";
 import VerifyEmailAlert from "@/components/auth/VerifyEmailAlert";
 import FooterViewProvider from "@/components/common/FooterViewProvider";
@@ -24,16 +25,15 @@ export default function PrimaryLayout({ children }) {
       <>
         <AuthApplier />
         <DebugLogApplier />
+        <SettingApplier />
       </>
       <div suppressHydrationWarning>
         <SidebarProvider defaultOpen={false}>
-          <div className="flex h-screen w-full">
+          <div className="flex h-screen w-full bg-background text-foreground transition-colors duration-200">
             <IconNavSidebar />
-            <div className="flex min-h-screen flex-1 flex-col">
-              <div>
-                <Header layout="primary" />
-                <VerifyEmailAlert />
-              </div>
+            <div className="flex h-screen flex-1 flex-col overflow-hidden">
+              <Header layout="primary" />
+              <VerifyEmailAlert />
               <div className="primary-layout-wrapper flex max-w-full flex-1 flex-col overflow-y-auto pb-14 md:pb-0">
                 <div className="relative flex flex-1 flex-col">
                   <Suspense fallback={null}>

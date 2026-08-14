@@ -2,7 +2,7 @@
 @import 'tw-animate-css';
 @plugin "@tailwindcss/typography";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
 
 @theme inline {
   /* Custom breakpoint for extra-small screens (360px+) */
@@ -69,7 +69,7 @@
 }
 
 /* LIGHT MODE (ChatGPT + Perplexity crisp light theme) */
-:root {
+:root, .light, [data-theme="light"] {
   --radius: 0.625rem;
 
   --background: oklch(0.99 0.002 240);
@@ -142,6 +142,8 @@
 }
 
 /* DARK MODE (ChatGPT #212121 / Perplexity #191A1A warm dark theme) */
+:root.dark,
+[data-theme="dark"],
 .dark {
   --background: oklch(0.16 0.008 240);
   --foreground: oklch(0.95 0.005 240);

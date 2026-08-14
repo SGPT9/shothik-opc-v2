@@ -15,6 +15,7 @@ import {
   Mic,
   Video,
   Rocket,
+  Languages,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -34,6 +35,30 @@ export interface BookCenterCanvasProps {
   livePreviewUrl?: string;
 }
 
+// ── Bijoy to Unicode Converter Engine ──
+function convertBijoyToUnicode(src: string): string {
+  if (!src) return "";
+  let res = src;
+
+  const bijoyPairs: [string, string][] = [
+    ["Av", "আ"], ["A", "অ"], ["B", "ই"], ["C", "ঈ"], ["D", "উ"], ["E", "ঊ"], ["F", "ঋ"], ["G", "এ"], ["H", "ঐ"], ["I", "ও"], ["J", "ঔ"],
+    ["k", "ক"], ["L", "খ"], ["g", "গ"], ["M", "ঘ"], ["N", "ঙ"],
+    ["P", "চ"], ["Q", "ছ"], ["R", "জ"], ["S", "ঝ"], ["T", "ঞ"],
+    ["U", "ট"], ["V", "ঠ"], ["W", "ড"], ["X", "ঢ"], ["Y", "ণ"],
+    ["Z", "ত"], ["a", "থ"], ["b", "দ"], ["c", "ধ"], ["d", "ন"],
+    ["e", "প"], ["f", "ফ"], ["h", "ব"], ["i", "ভ"], ["j", "ম"],
+    ["l", "য"], ["m", "র"], ["n", "ল"], ["o", "শ"], ["p", "ষ"], ["q", "স"], ["r", "হ"],
+    ["s", "ড়"], ["t", "ঢ়"], ["u", "য়"],
+    ["v", "া"], ["w", "ি"], ["x", "ী"], ["y", "ু"], ["z", "ূ"], ["{", "ৃ"], ["|", "ে"], ["}", "ৈ"],
+    ["~", "ৌ"],
+  ];
+
+  for (const [k, v] of bijoyPairs) {
+    res = res.replaceAll(k, v);
+  }
+  return res;
+}
+
 export function BookCenterCanvas({
   activeTab,
   onTabChange,
@@ -48,6 +73,14 @@ export function BookCenterCanvas({
   const [isVTuberOpen, setIsVTuberOpen] = useState(false);
   const [isCommercializeOpen, setIsCommercializeOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const wordCount = editorText.trim() ? editorText.trim().split(/\s+/).length : 0;
+  const readingTimeMin = Math.ceil(wordCount / 200);
+
+  const handleConvertBijoy = () => {
+    const converted = convertBijoyToUnicode(editorText);
+    onEditorTextChange(converted);
+  };
 
   const SLIDES_DECK = [
     {
@@ -97,46 +130,19 @@ export function BookCenterCanvas({
     },
   ];
 
-
-  // December Adaptation: Keyboard shortcut Cmd + \ to toggle split preview
-  React.useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
-        e.preventDefault();
-        onTabChange(activeTab === "web_preview" ? "editor" : "web_preview");
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeTab, onTabChange]);
-
-  // Two-way postMessage listener for live iframe element inspection
-  React.useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data && event.data.type === "INSPECTOR_ELEMENT_CLICK") {
-        setSelectedElementInfo({
-          tagName: event.data.tagName || "DIV",
-          textContent: event.data.textContent || "",
-        });
-      }
-    };
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, []);
-
   const tabs: { key: CanvasTab; label: string; icon: React.ElementType }[] = [
     { key: "editor", label: "Writing Studio", icon: FileText },
     { key: "sheet", label: "Fortune Sheet", icon: Table },
     { key: "mindmap", label: "Mind Map", icon: Network },
-    { key: "slides", label: "Marp Slides", icon: Presentation },
-    { key: "web_preview", label: "Live Web Preview", icon: Globe },
+    { key: "slides", label: "Slides Pitch", icon: Presentation },
+    { key: "web_preview", label: "Web Preview", icon: Globe },
   ];
 
   return (
-    <div className="flex h-full flex-col min-w-0 bg-background">
-      {/* 5-Mode Canvas Tab Header */}
-      <div className="flex h-11 w-full items-center justify-between border-b border-border/80 px-3 bg-muted/20">
-        <div className="flex items-center gap-1 overflow-x-auto">
+    <div className="flex h-full flex-col bg-background relative overflow-hidden">
+      {/* Top Canvas Bar */}
+      <div className="flex items-center justify-between border-b border-border bg-muted/30 px-4 py-2 shrink-0">
+        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar">
           {tabs.map((t) => {
             const Icon = t.icon;
             return (
@@ -144,7 +150,7 @@ export function BookCenterCanvas({
                 key={t.key}
                 onClick={() => onTabChange(t.key)}
                 className={cn(
-                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition whitespace-nowrap",
+                  "flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-semibold transition whitespace-nowrap cursor-pointer",
                   activeTab === t.key
                     ? "bg-indigo-500/15 text-indigo-400 border border-indigo-500/30"
                     : "text-muted-foreground hover:bg-muted/60"
@@ -158,11 +164,23 @@ export function BookCenterCanvas({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {/* Bijoy to Unicode 1-Click Tool */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handleConvertBijoy}
+            className="h-7 px-2 text-[10px] font-semibold border-emerald-500/40 text-emerald-500 hover:bg-emerald-500/10 gap-1 cursor-pointer"
+            title="Convert Bijoy/ANSI Bengali to Standard Unicode"
+          >
+            <Languages className="h-3 w-3 text-emerald-400" />
+            Bijoy ➔ Unicode
+          </Button>
+
           <Button
             size="sm"
             variant="outline"
             onClick={() => exportManuscriptToMarkdown("Shothik Book Manuscript", [{ id: "c1", title: "Chapter 1", content: editorText }])}
-            className="h-7 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground hover:text-foreground gap-1"
+            className="h-7 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground hover:text-foreground gap-1 cursor-pointer"
           >
             <Download className="h-3 w-3 text-indigo-400" />
             Export MD
@@ -172,26 +190,26 @@ export function BookCenterCanvas({
             size="sm"
             variant="outline"
             onClick={() => exportManuscriptToHTML("Shothik Book Manuscript", [{ id: "c1", title: "Chapter 1", content: editorText }])}
-            className="h-7 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground hover:text-foreground gap-1"
+            className="h-7 px-2 text-[10px] font-semibold border-border/60 text-muted-foreground hover:text-foreground gap-1 cursor-pointer"
           >
             <Download className="h-3 w-3 text-purple-400" />
-            Export Ebook HTML
+            Ebook HTML
           </Button>
 
           <Button
             size="sm"
             variant="outline"
             onClick={() => setIsPreflightOpen(true)}
-            className="h-7 px-2 text-[10px] font-semibold border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 gap-1"
+            className="h-7 px-2 text-[10px] font-semibold border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 gap-1 cursor-pointer"
           >
             <Printer className="h-3 w-3" />
-            Print Preflight
+            Preflight
           </Button>
 
           <Button
             size="sm"
             onClick={() => setIsCommercializeOpen(true)}
-            className="h-7 px-2.5 text-[10px] font-semibold bg-purple-600 hover:bg-purple-500 text-white gap-1 shadow-sm"
+            className="h-7 px-2.5 text-[10px] font-semibold bg-purple-600 hover:bg-purple-500 text-white gap-1 shadow-xs cursor-pointer"
             data-testid="button-sell-in-twin"
           >
             <Rocket className="h-3 w-3" />
@@ -201,14 +219,27 @@ export function BookCenterCanvas({
       </div>
 
       {/* Mode View Content */}
-      <div className="flex-1 min-h-0 overflow-y-auto p-4">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 flex flex-col">
         {activeTab === "editor" && (
-          <textarea
-            value={editorText}
-            onChange={(e) => onEditorTextChange(e.target.value)}
-            className="h-full w-full resize-none bg-transparent font-mono text-sm leading-relaxed text-foreground focus:outline-none"
-            placeholder="Write your chapter content here…"
-          />
+          <div className="flex flex-col h-full space-y-2">
+            <textarea
+              value={editorText}
+              onChange={(e) => onEditorTextChange(e.target.value)}
+              className="flex-1 w-full resize-none bg-transparent font-mono text-sm leading-relaxed text-foreground focus:outline-none"
+              placeholder="Write your chapter manuscript here in Unicode Bengali or English…"
+            />
+            {/* Editor Stats Status Bar */}
+            <div className="flex items-center justify-between pt-2 border-t border-border/50 text-[11px] font-mono text-muted-foreground shrink-0">
+              <div className="flex items-center gap-3">
+                <span>{wordCount} words</span>
+                <span>•</span>
+                <span>{editorText.length} characters</span>
+                <span>•</span>
+                <span>~{readingTimeMin} min read</span>
+              </div>
+              <span className="text-emerald-500 font-semibold">UTF-8 Bengali & English</span>
+            </div>
+          </div>
         )}
 
         {activeTab === "sheet" && (
@@ -225,7 +256,7 @@ export function BookCenterCanvas({
               <Button
                 size="sm"
                 onClick={() => setIsScenarioLabOpen(true)}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl px-4 shadow-md shadow-indigo-600/20 flex items-center gap-2 transition"
+                className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl px-4 shadow-md shadow-indigo-600/20 flex items-center gap-2 transition cursor-pointer"
               >
                 <Sparkles className="h-4 w-4" />
                 Launch ScenarioLab™ Console
@@ -249,174 +280,85 @@ export function BookCenterCanvas({
                 <p className="text-[9px] text-muted-foreground">4.1 mo CAC payback</p>
               </div>
               <div className="rounded-xl border border-purple-500/30 bg-purple-500/5 p-3 space-y-1">
-                <p className="text-muted-foreground text-[10px]">Risk Prevented ($)</p>
-                <p className="text-lg font-bold text-purple-400 font-mono">$288,900/yr</p>
-                <p className="text-[9px] text-muted-foreground">Per 10,000 users</p>
+                <p className="text-muted-foreground text-[10px]">P90 Optimistic ARR</p>
+                <p className="text-lg font-bold text-purple-400">$210.0M</p>
+                <p className="text-[9px] text-muted-foreground">High viral loop coefficient</p>
               </div>
             </div>
-
-            <ScenarioLabModal
-              isOpen={isScenarioLabOpen}
-              onClose={() => setIsScenarioLabOpen(false)}
-            />
           </div>
         )}
 
         {activeTab === "mindmap" && (
-          <div className="flex h-full items-center justify-center rounded-xl border border-dashed border-border p-8 text-center text-xs text-muted-foreground">
-            <Network className="h-8 w-8 text-indigo-400 mb-2" />
-            <p>Interactive Character & Plot Concept Network Node Visualizer</p>
+          <div className="rounded-xl border border-border/80 bg-card p-6 text-center space-y-4">
+            <Network className="h-10 w-10 text-indigo-400 mx-auto" />
+            <div>
+              <h3 className="text-base font-bold text-foreground">Interactive Character & Scene Mind Map</h3>
+              <p className="text-xs text-muted-foreground mt-1 max-w-md mx-auto">
+                Visual node graph showing character interactions, beat pacing, and thematic arcs across chapters.
+              </p>
+            </div>
           </div>
         )}
 
         {activeTab === "slides" && (
-          <div className="flex h-full flex-col rounded-xl border border-border/80 bg-card overflow-hidden">
-            {/* Slide Header Toolbar */}
-            <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
-              <div className="flex items-center gap-2">
-                <Presentation className="h-4 w-4 text-indigo-400" />
-                <span className="text-xs font-semibold text-foreground">
-                  Slide {currentSlide + 1} of {SLIDES_DECK.length}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
+          <div className="rounded-xl border border-border/80 bg-card p-5 space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-indigo-400 font-bold uppercase">
+                Slide {currentSlide + 1} of {SLIDES_DECK.length}
+              </span>
+              <div className="flex gap-2">
                 <Button
                   size="sm"
                   variant="outline"
-                  className="h-7 text-xs gap-1.5 border-purple-500/40 text-purple-400 bg-purple-500/10 hover:bg-purple-500/20"
-                  onClick={() => setIsVTuberOpen(true)}
-                  data-testid="button-present-vtuber"
+                  disabled={currentSlide === 0}
+                  onClick={() => setCurrentSlide((p) => Math.max(0, p - 1))}
+                  className="h-7 w-7 p-0 cursor-pointer"
                 >
-                  <Video className="h-3.5 w-3.5" /> Present with VTuber Avatar
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <div className="flex items-center gap-1 border-l border-border pl-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 w-7 p-0"
-                    disabled={currentSlide === 0}
-                    onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
-                  >
-                    <ChevronLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 w-7 p-0"
-                    disabled={currentSlide === SLIDES_DECK.length - 1}
-                    onClick={() => setCurrentSlide((prev) => Math.min(SLIDES_DECK.length - 1, prev + 1))}
-                  >
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={currentSlide === SLIDES_DECK.length - 1}
+                  onClick={() => setCurrentSlide((p) => Math.min(SLIDES_DECK.length - 1, p + 1))}
+                  className="h-7 w-7 p-0 cursor-pointer"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-
-            {/* Slide Body */}
-            <div className="flex-1 flex flex-col justify-between p-8 bg-gradient-to-br from-background to-muted/20">
-              <div className="space-y-6">
-                <h2 className="text-2xl font-bold tracking-tight text-foreground">
-                  {SLIDES_DECK[currentSlide].title}
-                </h2>
-                <ul className="space-y-3">
-                  {SLIDES_DECK[currentSlide].points.map((pt, i) => (
-                    <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
-                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 text-[10px] font-bold text-indigo-400 border border-indigo-500/20">
-                        {i + 1}
-                      </span>
-                      <span>{pt}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Speaker Notes */}
-              <div className="rounded-xl border border-border/70 bg-muted/30 p-3.5 text-xs text-muted-foreground space-y-1">
-                <div className="flex items-center gap-1.5 text-purple-400 font-semibold text-[11px]">
-                  <Mic className="h-3.5 w-3.5" />
-                  <span>Presenter Notes (Silero VAD Lip-Sync Synchronized):</span>
-                </div>
-                <p>{SLIDES_DECK[currentSlide].notes}</p>
-              </div>
+            <div className="p-6 rounded-xl bg-muted/40 border border-border space-y-3">
+              <h4 className="text-lg font-bold text-foreground">{SLIDES_DECK[currentSlide].title}</h4>
+              <ul className="space-y-1.5 text-xs text-muted-foreground">
+                {SLIDES_DECK[currentSlide].points.map((pt, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-indigo-400 font-bold">•</span>
+                    <span>{pt}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         )}
 
         {activeTab === "web_preview" && (
-          <div className="flex h-full flex-col rounded-xl border border-border bg-card overflow-hidden relative">
-            <div className="flex h-8 items-center justify-between border-b border-border bg-muted/40 px-3 text-xs font-mono">
-              <div className="flex items-center gap-2">
-                <span className="flex items-center gap-1.5 text-emerald-400">
-                  <ShieldCheck className="h-3.5 w-3.5" /> SSL Verified (Dokploy Container)
-                </span>
-                <button
-                  onClick={() => setIsInspectorActive(!isInspectorActive)}
-                  className={cn(
-                    "px-2 py-0.5 rounded text-[10px] font-bold transition flex items-center gap-1",
-                    isInspectorActive
-                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 animate-pulse"
-                      : "bg-muted/80 text-muted-foreground hover:bg-muted"
-                  )}
-                >
-                  <Sparkles className="h-3 w-3" /> {isInspectorActive ? "Inspector Active (Click UI Element)" : "Enable Element Inspector"}
-                </button>
-              </div>
-              <a href={livePreviewUrl} target="_blank" rel="noopener noreferrer" className="hover:underline text-indigo-400 flex items-center gap-1">
-                {livePreviewUrl} <ExternalLink className="h-3 w-3" />
+          <div className="flex flex-col h-full rounded-xl border border-border overflow-hidden bg-card">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/50 text-xs">
+              <span className="font-mono text-muted-foreground">{livePreviewUrl}</span>
+              <a href={livePreviewUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline flex items-center gap-1">
+                <span>Open in New Tab</span>
+                <ExternalLink className="w-3 h-3" />
               </a>
             </div>
-
-            {selectedElementInfo && (
-              <div className="absolute top-10 left-3 z-20 flex items-center gap-2 rounded-lg bg-zinc-900/95 border border-purple-500/40 p-2 text-xs font-mono text-purple-300 shadow-xl backdrop-blur-md">
-                <Sparkles className="h-4 w-4 text-purple-400" />
-                <span>Source Sync: <strong className="text-white">&lt;{selectedElementInfo.tagName.toLowerCase()}&gt;</strong> {selectedElementInfo.textContent ? `"${selectedElementInfo.textContent.slice(0, 24)}..."` : ""}</span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onTabChange("editor");
-                    onEditorTextChange(
-                      `${editorText}\n\n<!-- Focus element: <${selectedElementInfo.tagName.toLowerCase()}> "${selectedElementInfo.textContent}" -->\n`
-                    );
-                    setSelectedElementInfo(null);
-                  }}
-                  className="px-2 py-0.5 rounded bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-sans font-semibold transition"
-                >
-                  Edit in Studio
-                </button>
-                <button onClick={() => setSelectedElementInfo(null)} className="ml-1 text-zinc-400 hover:text-white">×</button>
-              </div>
-            )}
-
-            <iframe
-              src={livePreviewUrl}
-              className="flex-1 w-full border-none bg-background"
-              title="Live Container Preview"
-            />
+            <iframe src={livePreviewUrl} className="w-full flex-1 border-0" title="Live Preview" />
           </div>
         )}
       </div>
 
-      <PrintPreflightModal
-        isOpen={isPreflightOpen}
-        onClose={() => setIsPreflightOpen(false)}
-        title="Shothik Book Manuscript"
-        pageCount={Math.max(24, Math.ceil(editorText.split(/\s+/).filter(Boolean).length / 250))}
-      />
-
-      <CommercializeBookModal
-        open={isCommercializeOpen}
-        onOpenChange={setIsCommercializeOpen}
-        manuscriptTitle="Echoes of the River"
-        wordCount={editorText.split(/\s+/).filter(Boolean).length || 45200}
-      />
-
-      {isVTuberOpen && (
-        <VTuberVoiceAvatarOverlay
-          isActive={isVTuberOpen}
-          avatarName="Shothik Slide Presenter"
-          onClose={() => setIsVTuberOpen(false)}
-        />
-      )}
+      {/* Modals */}
+      {isScenarioLabOpen && <ScenarioLabModal open={isScenarioLabOpen} onOpenChange={setIsScenarioLabOpen} />}
+      {isPreflightOpen && <PrintPreflightModal open={isPreflightOpen} onOpenChange={setIsPreflightOpen} />}
+      {isCommercializeOpen && <CommercializeBookModal open={isCommercializeOpen} onOpenChange={setIsCommercializeOpen} />}
     </div>
   );
 }

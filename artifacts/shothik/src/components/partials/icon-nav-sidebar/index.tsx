@@ -1,264 +1,452 @@
-import { Link } from 'wouter';
-import { usePathname, useRouter } from '@/lib/navigation';
-import { useSelector } from 'react-redux';
-import { useTranslation } from '@/i18n';
-import NotificationBell from '@/components/forum/NotificationBell';
-import { useChatHistory } from "@/hooks/useChatHistory";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
-  MessageSquare,
-  FolderOpen,
-  Link2,
+  Plus,
   Brain,
+  PenTool,
+  Link2,
+  FolderOpen,
   FileText,
+  FolderPlus,
   Users,
   Settings,
-  Plus,
-  Briefcase,
   ChevronDown,
   ChevronRight,
-  PenTool
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { useState } from 'react';
-
+  Pin,
+  Trash2,
+  Bell,
+  UserPlus,
+  PanelLeft,
+  Search,
+} from "lucide-react";
+import { useSelector } from "react-redux";
+import { useChatSession } from "@/components/agents/hooks/useChatSession";
 import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuGroup,
-} from '@/components/ui/dropdown-menu';
-
-function NavItem({
-  icon,
-  label,
-  href,
-  isActive,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  href: string;
-  isActive: boolean;
-}) {
-  return (
-    <Link
-      href={href}
-      className={cn(
-        "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors no-underline",
-        isActive
-          ? "bg-brand/10 text-brand font-semibold shadow-sm"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-      )}
-    >
-      <div className={cn("flex items-center justify-center", isActive ? "text-brand" : "text-muted-foreground")}>
-        {icon}
-      </div>
-      <span className="truncate">{label}</span>
-    </Link>
-  );
-}
+  getChatSessions,
+  deleteChatSession,
+  pinChatSession,
+  StoredChatSession,
+  subscribeChatSessions,
+} from "@/lib/chat-sessions-store";
+import CreateProjectModal from "@/components/tools/writing-studio/dashboard/CreateProjectModal";
+import NotificationBell from "@/components/forum/NotificationBell";
+import { cn } from "@/lib/utils";
 
 export default function IconNavSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const isActive = (match: string) => pathname.startsWith(match);
   const user = useSelector((state: any) => state.auth?.user);
-  const masterId: string | null = user?._id ?? user?.email ?? null;
-  const { t } = useTranslation();
-  const { conversations } = useChatHistory({
-    surface: "flagship",
-    limit: 5,
-    enabled: !!user?._id,
-  });
-  
+  const masterId = user?._id || user?.email || "";
+
+  // Collapsible sections state
   const [isWritingSuiteOpen, setIsWritingSuiteOpen] = useState(false);
+  const [isProjectsOpen, setIsProjectsOpen] = useState(true);
+  const [isSessionsOpen, setIsSessionsOpen] = useState(true);
+  const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+
+  // Sessions state synced across tabs
+  const [sessions, setSessions] = useState<StoredChatSession[]>([]);
+  const { conversationId: currentConvId } = useChatSession();
+
+  useEffect(() => {
+    // Initial fetch
+    setSessions(getChatSessions());
+
+    // Live subscription
+    const unsubscribe = subscribeChatSessions((updated) => {
+      setSessions(updated);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  const isActive = (path: string) => {
+    if (path === "/" && pathname === "/") return true;
+    if (path !== "/" && pathname.startsWith(path)) return true;
+    return false;
+  };
+
+  const startNewChat = () => {
+    const newId = `conv_${Date.now()}`;
+    router.push(`/agents/chat?conversationId=${newId}`);
+  };
 
   return (
-    <aside className="hidden md:flex flex-col h-screen w-64 bg-sidebar border-r border-sidebar-border z-40 overflow-hidden flex-shrink-0">
-      {/* Brand Header */}
-      <div className="flex items-center h-16 px-4 border-b border-sidebar-border flex-shrink-0">
-        <Link href="/" className="flex items-center gap-2">
-          <img
-            src="/moscot.png"
-            alt="Shothik AI"
-            width={28}
-            height={28}
-            className="object-contain"
-          />
-          <span className="font-semibold text-lg tracking-tight text-foreground">Shothik</span>
-        </Link>
-      </div>
-
-      <div className="flex-1 overflow-y-auto py-3 space-y-6">
-        
-        {/* Workspace Actions */}
-        <div className="space-y-4 px-3">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <div className="flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 shadow-sm cursor-pointer hover:bg-muted transition-colors">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                  <Briefcase className="h-4 w-4" />
-                </div>
-                <div className="flex-1 overflow-hidden">
-                  <p className="truncate text-sm font-semibold leading-none text-foreground">My Workspace</p>
-                  <p className="truncate text-[11px] text-muted-foreground mt-1.5 uppercase font-medium tracking-wide">Personal Plan</p>
-                </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </div>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="start" side="bottom" sideOffset={8}>
-              <DropdownMenuLabel>Workspaces</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuGroup>
-                <DropdownMenuItem className="font-medium">
-                  <Briefcase className="mr-2 h-4 w-4 shrink-0" />
-                  <span>My Workspace</span>
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/settings')}>
-                <Settings className="mr-2 h-4 w-4 shrink-0" />
-                <span>Workspace Settings</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <Link 
-            href={`/agents/chat?conversationId=new_${Date.now()}`}
-            className="flex items-center w-full justify-start gap-2 shadow-sm font-medium h-9 px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            New Chat
+    <>
+      <aside className="hidden md:flex flex-col h-screen w-64 bg-zinc-50 dark:bg-[#121314] text-zinc-700 dark:text-[#e3e3e3] border-r border-zinc-200 dark:border-white/[0.06] z-40 overflow-hidden flex-shrink-0 select-none transition-colors duration-200">
+        {/* ── Top Header: Logo + Collapse Toggle ── */}
+        <div className="flex items-center justify-between h-13 px-4 pt-3 pb-2 flex-shrink-0">
+          <Link href="/" className="flex items-center gap-2 no-underline">
+            <img
+              src="/moscot.png"
+              alt="Shothik AI"
+              width={24}
+              height={24}
+              className="object-contain"
+            />
+            <span className="font-semibold text-sm tracking-tight text-zinc-900 dark:text-white/90">Shothik</span>
           </Link>
+          <button
+            type="button"
+            className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] transition cursor-pointer"
+            title="Collapse Sidebar"
+          >
+            <PanelLeft className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* Primary Nav */}
-        <div className="space-y-1 px-3">
-          <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Workspace
-          </div>
-          <NavItem
-            icon={<MessageSquare className="h-4 w-4" />}
-            label="Chat"
-            href="/agents/chat"
-            isActive={isActive('/agents/chat') && !pathname.includes('/research')}
-          />
-          <NavItem
-            icon={<Brain className="h-4 w-4" />}
-            label="Twin"
-            href="/twin"
-            isActive={isActive('/twin')}
-          />
+        <div className="flex-1 overflow-y-auto px-3 py-2 space-y-4 custom-scrollbar">
+          {/* ── Primary Action: + New Chat ── */}
+          <button
+            type="button"
+            onClick={startNewChat}
+            className="flex items-center w-full justify-start gap-2 px-3 h-9 rounded-lg bg-zinc-200/80 hover:bg-zinc-300/80 dark:bg-white/[0.07] dark:hover:bg-white/[0.12] text-zinc-900 dark:text-white text-xs font-medium transition-all active:scale-[0.99] cursor-pointer shadow-xs"
+          >
+            <Plus className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
+            <span>New Chat</span>
+          </button>
 
-          <div className="space-y-1 mt-1">
-            <button 
-              onClick={() => setIsWritingSuiteOpen(!isWritingSuiteOpen)}
+          {/* ── Core Navigation: Twin, Writing Suite, Connectors, Files, Saved Reports ── */}
+          <div className="space-y-0.5">
+            {/* 1. Twin AI Cofounder */}
+            <Link
+              href="/twin"
               className={cn(
-                "w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                isWritingSuiteOpen || pathname.includes('paraphrase') || pathname.includes('ai-detector') || pathname.includes('humanize') || pathname.includes('plagiarism') || pathname.includes('summarize') || pathname.includes('grammar') || pathname.includes('translator') || pathname.includes('writing-studio') ? "text-foreground" : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline",
+                isActive('/twin')
+                  ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200"
               )}
             >
-              <div className="flex items-center gap-3">
-                <PenTool className="h-4 w-4" />
-                <span>Writing Suite</span>
-              </div>
-              {isWritingSuiteOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              <Brain className="h-4 w-4 shrink-0 text-purple-500 dark:text-purple-400" />
+              <span>Twin AI</span>
+            </Link>
+
+            {/* 2. Writing Suite (Collapsible Dropdown) */}
+            <div className="space-y-0.5">
+              <button
+                type="button"
+                onClick={() => setIsWritingSuiteOpen(!isWritingSuiteOpen)}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer",
+                  isWritingSuiteOpen || pathname.includes('/writing-studio') || pathname.includes('/paraphrase')
+                    ? "text-zinc-900 dark:text-zinc-200 bg-zinc-200/60 dark:bg-white/[0.03]"
+                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200"
+                )}
+              >
+                <div className="flex items-center gap-2.5">
+                  <PenTool className="h-4 w-4 shrink-0 text-emerald-500 dark:text-emerald-400" />
+                  <span>Writing Suite</span>
+                </div>
+                {isWritingSuiteOpen ? <ChevronDown className="h-3.5 w-3.5 text-zinc-400" /> : <ChevronRight className="h-3.5 w-3.5 text-zinc-400" />}
+              </button>
+
+              {isWritingSuiteOpen && (
+                <div className="pl-6 space-y-0.5 mt-0.5 border-l border-zinc-200 dark:border-white/[0.08] ml-4.5">
+                  <Link
+                    href="/writing-studio"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/writing-studio') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>Writing Studio</span>
+                  </Link>
+                  <Link
+                    href="/paraphrase"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/paraphrase') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>Paraphrasing</span>
+                  </Link>
+                  <Link
+                    href="/ai-detector"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/ai-detector') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>AI Detector</span>
+                  </Link>
+                  <Link
+                    href="/humanize-gpt"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/humanize-gpt') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>Humanize GPT</span>
+                  </Link>
+                  <Link
+                    href="/plagiarism-checker"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/plagiarism-checker') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>Plagiarism Check</span>
+                  </Link>
+                  <Link
+                    href="/summarize"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/summarize') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>Summarizer</span>
+                  </Link>
+                  <Link
+                    href="/grammar-checker"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/grammar-checker') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>Grammar Fix</span>
+                  </Link>
+                  <Link
+                    href="/translator"
+                    className={cn(
+                      "flex items-center gap-2 px-2.5 py-1.5 rounded-md text-[11px] font-medium transition-colors no-underline",
+                      isActive('/translator') ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/40 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <span>Translator</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* 3. Connectors */}
+            <Link
+              href="/connectors"
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline",
+                isActive('/connectors')
+                  ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200"
+              )}
+            >
+              <Link2 className="h-4 w-4 shrink-0 text-teal-500 dark:text-teal-400" />
+              <span>Connectors</span>
+            </Link>
+
+            {/* 4. Files */}
+            <Link
+              href="/files"
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline",
+                isActive('/files')
+                  ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200"
+              )}
+            >
+              <FolderOpen className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-400" />
+              <span>Files</span>
+            </Link>
+
+            {/* 5. Saved Reports */}
+            <Link
+              href="/saved-reports"
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline",
+                isActive('/saved-reports')
+                  ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200"
+              )}
+            >
+              <FileText className="h-4 w-4 shrink-0 text-blue-500 dark:text-blue-400" />
+              <span>Saved Reports</span>
+            </Link>
+          </div>
+
+          {/* ── Projects Section (with Create Project Modal) ── */}
+          <div className="space-y-2 pt-1 border-t border-zinc-200 dark:border-white/[0.06]">
+            <button
+              type="button"
+              onClick={() => setIsProjectsOpen(!isProjectsOpen)}
+              className="flex items-center justify-between w-full px-2 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition cursor-pointer"
+            >
+              <span>Projects</span>
+              {isProjectsOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
             </button>
-            
-            {isWritingSuiteOpen && (
-              <div className="pl-9 pr-0 space-y-0.5 mt-1 border-l-2 border-muted ml-5">
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="Paraphrasing" href="/paraphrase" isActive={isActive('/paraphrase')} />
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="AI Detector" href="/ai-detector" isActive={isActive('/ai-detector')} />
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="Humanize GPT" href="/humanize-gpt" isActive={isActive('/humanize-gpt')} />
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="Plagiarism Check" href="/plagiarism-checker" isActive={isActive('/plagiarism-checker')} />
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="Summarizer" href="/summarize" isActive={isActive('/summarize')} />
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="Grammar Fix" href="/grammar-checker" isActive={isActive('/grammar-checker')} />
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="Translator" href="/translator" isActive={isActive('/translator')} />
-                <NavItem icon={<div className="w-1.5 h-1.5 rounded-full bg-current" />} label="Citations" href="/writing-studio" isActive={isActive('/writing-studio')} />
+
+            {isProjectsOpen && (
+              <div className="rounded-xl border border-zinc-200 dark:border-white/[0.06] bg-zinc-100/70 dark:bg-white/[0.02] p-3 space-y-2 text-left">
+                <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Organize and share your work</p>
+                <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                  Keep files, memory, and context together across sessions.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsCreateProjectOpen(true)}
+                  className="flex items-center justify-center gap-1.5 w-full py-1.5 px-3 rounded-lg border border-zinc-300 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] text-zinc-800 dark:text-zinc-200 text-xs font-medium transition text-center cursor-pointer shadow-xs"
+                >
+                  <FolderPlus className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
+                  <span>Create project</span>
+                </button>
               </div>
             )}
           </div>
 
-          <NavItem
-            icon={<FolderOpen className="h-4 w-4" />}
-            label="Files"
-            href="/files"
-            isActive={isActive('/files')}
-          />
-          <NavItem
-            icon={<Link2 className="h-4 w-4" />}
-            label="Connectors"
-            href="/connectors"
-            isActive={isActive('/connectors')}
-          />
-          <NavItem
-            icon={<FileText className="h-4 w-4" />}
-            label="Saved Reports"
-            href="/saved-reports"
-            isActive={isActive('/saved-reports')}
-          />
+          {/* ── Sessions Section ── */}
+          <div className="space-y-1 pt-1 border-t border-zinc-200 dark:border-white/[0.06]">
+            <button
+              type="button"
+              onClick={() => setIsSessionsOpen(!isSessionsOpen)}
+              className="flex items-center justify-between w-full px-2 text-[11px] font-medium text-zinc-500 dark:text-zinc-400 hover:text-zinc-800 dark:hover:text-zinc-200 transition cursor-pointer"
+            >
+              <span>Sessions</span>
+              {isSessionsOpen ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
+            </button>
+
+            {isSessionsOpen && (
+              <div className="space-y-0.5 pt-1">
+                {sessions.map((chat) => (
+                  <div
+                    key={chat.id}
+                    onClick={() => router.push(`/agents/chat?conversationId=${chat.id}`)}
+                    className={cn(
+                      "group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer select-none",
+                      currentConvId === chat.id
+                        ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-900 dark:text-white font-medium"
+                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      {chat.pinned && <Pin className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400 shrink-0 rotate-45" />}
+                      <span className="truncate">{chat.title}</span>
+                    </div>
+
+                    <div className="hidden group-hover:flex items-center gap-1 shrink-0 pl-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          pinChatSession(chat.id, !chat.pinned);
+                        }}
+                        className="p-1 text-zinc-400 hover:text-amber-500 rounded transition"
+                        title={chat.pinned ? "Unpin" : "Pin"}
+                      >
+                        <Pin className="w-3 h-3" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteChatSession(chat.id);
+                        }}
+                        className="p-1 text-zinc-400 hover:text-rose-500 rounded transition"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* ── Community & Settings ── */}
+          <div className="space-y-0.5 pt-1 border-t border-zinc-200 dark:border-white/[0.06]">
+            <Link
+              href="/community"
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline",
+                isActive('/community')
+                  ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200"
+              )}
+            >
+              <Users className="h-4 w-4 shrink-0 text-indigo-500 dark:text-indigo-400" />
+              <span>Community</span>
+            </Link>
+
+            <Link
+              href="/settings"
+              className={cn(
+                "flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors no-underline",
+                isActive('/settings')
+                  ? "bg-zinc-200 dark:bg-white/[0.1] text-zinc-900 dark:text-white font-semibold"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200"
+              )}
+            >
+              <Settings className="h-4 w-4 shrink-0 text-zinc-500 dark:text-zinc-400" />
+              <span>Settings</span>
+            </Link>
+          </div>
         </div>
 
-        {/* Recents */}
-        {conversations && conversations.length > 0 && (
-          <div className="space-y-1 px-3">
-            <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Recents
-            </div>
-            {conversations.map((chat) => (
+        {/* ── Bottom Profile Section ── */}
+        <div className="p-3 border-t border-zinc-200 dark:border-white/[0.06] mt-auto space-y-2">
+          <div className="flex items-center justify-between">
+            <Link href="/account" className="flex items-center gap-2.5 min-w-0 flex-1 no-underline group cursor-pointer">
+              <div className="w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-white/[0.1] flex items-center justify-center text-xs font-semibold text-zinc-700 dark:text-zinc-300 group-hover:border-zinc-500 dark:group-hover:border-white/30 transition">
+                {user?.name?.[0]?.toUpperCase() || "A"}
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-xs font-medium text-zinc-800 dark:text-zinc-200 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition">
+                  {user?.email ? user.email.split("@")[0] : "ahsan91927374"}
+                </span>
+                <span className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono truncate">
+                  {user?.package ? `${user.package.toUpperCase()} PRO` : "Enterprise Pro"}
+                </span>
+              </div>
+            </Link>
+
+            {masterId ? (
+              <NotificationBell masterId={masterId} />
+            ) : (
               <button
-                key={chat._id}
-                onClick={() => router.push(`/agents/chat?conversationId=${chat._id}`)}
-                className="w-full flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-colors text-left"
+                type="button"
+                className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white rounded-md hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] transition"
+                title="Notifications"
               >
-                <div className="w-1.5 h-1.5 rounded-full bg-brand/50 shrink-0" />
-                <span className="truncate">{chat.title || "Untitled Chat"}</span>
+                <Bell className="h-3.5 w-3.5" />
               </button>
-            ))}
+            )}
           </div>
-        )}
 
-        {/* Knowledge & Organization */}
-        <div className="space-y-1 px-3">
-          <div className="px-2 mb-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Community & Settings
+          {/* Sub-account info / Add Teammates */}
+          <div className="pt-1.5 border-t border-zinc-200 dark:border-white/[0.04] flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium truncate">
+                {user?.name || "ahsan habib"}
+              </span>
+            </div>
+            <Link
+              href="/settings"
+              className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition no-underline"
+            >
+              <UserPlus className="h-3 w-3" />
+              <span>Add teammates</span>
+            </Link>
           </div>
-          <NavItem
-            icon={<Users className="h-4 w-4" />}
-            label="Community"
-            href="/community"
-            isActive={isActive('/community')}
-          />
-          <NavItem
-            icon={<Settings className="h-4 w-4" />}
-            label="Settings"
-            href="/settings"
-            isActive={isActive('/settings')}
-          />
         </div>
+      </aside>
 
-      </div>
-
-      {/* Footer / Account */}
-      <div className="p-4 border-t border-sidebar-border mt-auto flex items-center gap-3">
-        {masterId && (
-          <div className="flex-shrink-0">
-            <NotificationBell masterId={masterId} />
-          </div>
-        )}
-        <div className="flex-1 min-w-0">
-          <Link href="/account" className="flex flex-col min-w-0 group cursor-pointer no-underline">
-            <span className="text-sm font-medium text-foreground truncate group-hover:text-brand transition-colors">
-              {user?.name || "Account"}
-            </span>
-            <span className="text-xs text-muted-foreground truncate">
-              {user?.email || "Manage profile"}
-            </span>
-          </Link>
-        </div>
-      </div>
-    </aside>
+      {/* ── Create Project Modal ── */}
+      {isCreateProjectOpen && (
+        <CreateProjectModal
+          onClose={() => setIsCreateProjectOpen(false)}
+          onProjectCreated={(project: any) => {
+            setIsCreateProjectOpen(false);
+            if (project?.id) {
+              router.push(`/writing-studio?projectId=${project.id}`);
+            }
+          }}
+          onStartAgentFlow={(_type: any) => {
+            setIsCreateProjectOpen(false);
+            router.push('/agents/chat');
+          }}
+        />
+      )}
+    </>
   );
 }
