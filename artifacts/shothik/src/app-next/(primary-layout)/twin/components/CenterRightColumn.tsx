@@ -37,6 +37,7 @@ import {
   FileCode,
   ShieldCheck,
   Cpu,
+  Layout,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -46,6 +47,7 @@ import { cn } from "@/lib/utils";
 import { SectionLabel, PanelCard } from "./shared";
 import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
 import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
+import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
 import {
   MOCK_TWITTER_CHANNEL,
   MOCK_EMAIL_CHANNEL,
@@ -72,6 +74,7 @@ export function GrowthChannels() {
   const [showAdsModal, setShowAdsModal] = useState(false);
   const [showDomainModal, setShowDomainModal] = useState(false);
   const [showVersionsModal, setShowVersionsModal] = useState(false);
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
   const [showLogsModal, setShowLogsModal] = useState(false);
   const [showSecretsModal, setShowSecretsModal] = useState(false);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
@@ -101,6 +104,16 @@ export function GrowthChannels() {
           </div>
 
           <div className="relative flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-indigo-500/40 text-indigo-300 hover:bg-indigo-500/10 font-mono gap-1"
+              onClick={() => setShowBuilderModal(true)}
+              data-testid="button-open-visual-builder"
+            >
+              <Layout className="h-3 w-3" />
+              <span>Builder</span>
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -466,6 +479,14 @@ export function GrowthChannels() {
         onOpenChange={setShowVersionsModal}
         subdomain={website.subdomain}
         companyName="VerifiQ AI"
+      />
+
+      {/* Visual No-Code Storefront & Landing Page Builder Modal */}
+      <VisualStorefrontBuilderModal
+        open={showBuilderModal}
+        onOpenChange={setShowBuilderModal}
+        companyName="VerifiQ AI"
+        subdomain={website.subdomain}
       />
     </div>
   );
