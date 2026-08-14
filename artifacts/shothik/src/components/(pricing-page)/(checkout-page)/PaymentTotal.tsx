@@ -11,12 +11,13 @@ export const PaymentTotal: React.FC<PaymentTotalProps> = ({
   selectedMethod,
   selectedPlan,
 }) => {
-  if (!selectedMethod || !selectedPlan) return null;
+  if (!selectedMethod || !selectedPlan || !selectedPlan.price) return null;
 
+  const currencyCode = (selectedMethod.currency || (selectedMethod.code === "stripe" ? "USD" : "BDT")).toUpperCase();
   const amount =
-    selectedMethod.currency === "USD"
-      ? selectedPlan.price.USD
-      : selectedPlan.price.BDT;
+    currencyCode === "USD"
+      ? selectedPlan.price.USD ?? 0.85
+      : selectedPlan.price.BDT ?? 100;
 
   return (
     <div className="border-t pt-4">
@@ -26,7 +27,7 @@ export const PaymentTotal: React.FC<PaymentTotalProps> = ({
           <span>
             {new Intl.NumberFormat("en-US", {
               style: "currency",
-              currency: selectedMethod.currency,
+              currency: currencyCode === "USD" ? "USD" : "BDT",
             }).format(amount)}
           </span>
         </div>

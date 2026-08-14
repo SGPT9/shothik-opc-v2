@@ -12,26 +12,43 @@ export const filterPaymentMethodsByLocation = (
   isBangladesh: boolean | null,
   locationLoading: boolean,
 ): TPaymentMethod[] => {
+  if (!allMethods || allMethods.length === 0) return [];
+
   if (locationLoading || isBangladesh === null) {
-    // Location not determined yet, show all methods
     return allMethods;
   }
 
   if (isBangladesh) {
-    // Bangladesh: Show only SSL Commerz (BDT currency)
-    return allMethods.filter(
-      (method: TPaymentMethod) =>
-        method.currency === "BDT" &&
-        (method.value?.toLowerCase() === "sslcommerz" ||
-          method.name.toLowerCase().includes("ssl") || method.name.toLowerCase() === "bkash"),
-    );
+    // Bangladesh: Show bKash, Nagad, SSLCommerz, and BDT methods
+    const bdMethods = allMethods.filter((method: any) => {
+      const name = (method.name || "").toLowerCase();
+      const code = (method.code || method.value || "").toLowerCase();
+      const currency = method.currency;
+      return (
+        method.is_bangladesh ||
+        currency === "BDT" ||
+        code.includes("bkash") ||
+        code.includes("nagad") ||
+        code.includes("ssl") ||
+        name.includes("bkash") ||
+        name.includes("nagad") ||
+        name.includes("ssl")
+      );
+    });
+    return bdMethods.length > 0 ? bdMethods : allMethods;
   } else {
-    // Other countries: Show only Stripe (USD currency)
-    return allMethods.filter(
-      (method: TPaymentMethod) =>
-        method.currency === "USD" &&
-        (method.value?.toLowerCase() === "stripe" ||
-          method.name.toLowerCase().includes("stripe")),
-    );
+    // Other countries: Show Stripe and USD methods
+    const intlMethods = allMethods.filter((method: any) => {
+      const name = (method.name || "").toLowerCase();
+      const code = (method.code || method.value || "").toLowerCase();
+      const currency = method.currency;
+      return (
+        currency === "USD" ||
+        code.includes("stripe") ||
+        name.includes("stripe") ||
+        name.includes("card")
+      );
+    });
+    return intlMethods.length > 0 ? intlMethods : allMethods;
   }
 };

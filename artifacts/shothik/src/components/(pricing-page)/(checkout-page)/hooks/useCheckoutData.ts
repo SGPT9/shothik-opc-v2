@@ -12,6 +12,75 @@ import { useEffect, useMemo, useState } from "react";
 import { filterPaymentMethodsByLocation } from "../utils/payment.utils";
 import { getPlanId } from "../utils/plan.utils";
 
+const FALLBACK_PACKAGES: Record<string, any> = {
+  "starter-pass": {
+    _id: "starter-pass",
+    name: "Starter Student Micro-Pass",
+    description: "Ideal for university assignments, thesis Turnitin checks, and single slide deck creation.",
+    package_for: "User",
+    price: { USD: 0.85, BDT: 100 },
+    plans: [
+      {
+        plan: { _id: "monthly", name: "Monthly", duration: 30 },
+        price: { USD: 0.85, BDT: 100 },
+        token: 50,
+        is_initial: true,
+      },
+    ],
+  },
+  "pro-operator": {
+    _id: "pro-operator",
+    name: "Pro Operator Pack",
+    description: "Most popular for solo entrepreneurs, developers, and agency copywriters.",
+    package_for: "User",
+    price: { USD: 8.50, BDT: 990 },
+    plans: [
+      {
+        plan: { _id: "monthly", name: "Monthly", duration: 30 },
+        price: { USD: 8.50, BDT: 990 },
+        token: 550,
+        is_initial: true,
+      },
+    ],
+  },
+  "venture-twin": {
+    _id: "venture-twin",
+    name: "Venture Twin & OPC",
+    description: "For active startups and digital businesses automating sales, marketing, and logistics.",
+    package_for: "User",
+    price: { USD: 19.99, BDT: 2400 },
+    plans: [
+      {
+        plan: { _id: "monthly", name: "Monthly", duration: 30 },
+        price: { USD: 19.99, BDT: 2400 },
+        token: 1500,
+        is_initial: true,
+      },
+    ],
+  },
+  "agency-scale": {
+    _id: "agency-scale",
+    name: "Agency & Enterprise",
+    description: "High-throughput AI infrastructure, unlimited team members, and priority DeepSeek R1 nodes.",
+    package_for: "User",
+    price: { USD: 49.99, BDT: 6000 },
+    plans: [
+      {
+        plan: { _id: "monthly", name: "Monthly", duration: 30 },
+        price: { USD: 49.99, BDT: 6000 },
+        token: 5000,
+        is_initial: true,
+      },
+    ],
+  },
+};
+
+const FALLBACK_PAYMENT_METHODS = [
+  { _id: "bkash", name: "bKash (Personal/Merchant)", code: "bkash", currency: "BDT", is_active: true, is_bangladesh: true },
+  { _id: "nagad", name: "Nagad Instant Checkout", code: "nagad", currency: "BDT", is_active: true, is_bangladesh: true },
+  { _id: "stripe", name: "Credit / Debit Card (Stripe)", code: "stripe", currency: "USD", is_active: true, is_bangladesh: false },
+];
+
 export const useCheckoutData = (
   packageId: string | null,
   planIdFromQuery: string | null,
@@ -36,8 +105,8 @@ export const useCheckoutData = (
       fetchPublicPaymentMethods({ is_active: true, sort: "sequence" }),
   });
 
-  const currentPackage = packageResponse?.data?.[0];
-  const allPaymentMethods = paymentMethodsResponse?.data || [];
+  const currentPackage = packageResponse?.data?.[0] || (packageId ? FALLBACK_PACKAGES[packageId] || FALLBACK_PACKAGES["starter-pass"] : FALLBACK_PACKAGES["starter-pass"]);
+  const allPaymentMethods = (paymentMethodsResponse?.data && paymentMethodsResponse.data.length > 0) ? paymentMethodsResponse.data : FALLBACK_PAYMENT_METHODS;
 
   // Filter payment methods based on location
   const paymentMethods = useMemo(
