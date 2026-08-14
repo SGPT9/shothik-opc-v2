@@ -24,8 +24,9 @@ import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
 import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
 import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
 import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
+import { CompetitorAdSpyModal } from "@/components/twin/CompetitorAdSpyModal";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, CheckCircle } from "lucide-react";
+import { Brain, CheckCircle, Crosshair } from "lucide-react";
 import {
   Sparkles,
   Plus,
@@ -1611,10 +1612,12 @@ function PlatformTopBar({
   onOpenAccountDrawer,
   onConnectWebsite,
   onOpenVoiceCommander,
+  onOpenAdSpy,
 }: {
   onOpenAccountDrawer: () => void;
   onConnectWebsite?: () => void;
   onOpenVoiceCommander?: () => void;
+  onOpenAdSpy?: () => void;
 }) {
   const [activeCompany, setActiveCompany] = useState('VerifiQ AI (Active)');
   return (
@@ -1650,6 +1653,16 @@ function PlatformTopBar({
         >
           <Globe className="h-3.5 w-3.5" />
           <span>Connect Website</span>
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onOpenAdSpy}
+          className="hidden lg:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-amber-500/30 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10"
+          data-testid="button-open-ad-spy"
+        >
+          <Crosshair className="h-3.5 w-3.5" />
+          <span>Ad Spy</span>
         </Button>
         <Button
           size="sm"
@@ -1699,6 +1712,7 @@ function TwinDashboardPage() {
   const [showVoiceCommander, setShowVoiceCommander] = useState(false);
   const [showVisualBuilder, setShowVisualBuilder] = useState(false);
   const [showLeadCrm, setShowLeadCrm] = useState(false);
+  const [showAdSpy, setShowAdSpy] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
   const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
 
@@ -1790,6 +1804,7 @@ function TwinDashboardPage() {
         onOpenAccountDrawer={() => setShowAccountDrawer(true)}
         onConnectWebsite={() => setShowConnectCompany(true)}
         onOpenVoiceCommander={() => setShowVoiceCommander(true)}
+        onOpenAdSpy={() => setShowAdSpy(true)}
       />
       <AccountDrawerModal open={showAccountDrawer} onOpenChange={setShowAccountDrawer} />
 
@@ -1812,6 +1827,7 @@ function TwinDashboardPage() {
       <VoiceCommanderModal open={showVoiceCommander} onOpenChange={setShowVoiceCommander} />
       <VisualStorefrontBuilderModal open={showVisualBuilder} onOpenChange={setShowVisualBuilder} />
       <LeadCrmDrawer open={showLeadCrm} onOpenChange={setShowLeadCrm} />
+      <CompetitorAdSpyModal open={showAdSpy} onOpenChange={setShowAdSpy} />
       <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
       <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
         <DialogContent
