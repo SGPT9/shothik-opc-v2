@@ -7,7 +7,7 @@ describe("Daily CEO Briefing Modal (DailyDigestModal.tsx)", () => {
     render(<DailyDigestModal open={true} onOpenChange={() => {}} companyName="VerifiQ AI" />);
 
     expect(screen.getByText("Daily CEO Morning Email Briefing")).toBeInTheDocument();
-    expect(screen.getByText("POLSIA OPC · DAILY CEO BRIEFING")).toBeInTheDocument();
+    expect(screen.getByText("SHOTHIK TWIN · DAILY CEO BRIEFING")).toBeInTheDocument();
     expect(screen.getByText("Send Test Email Now")).toBeInTheDocument();
 
     const sendBtn = screen.getByTestId("button-send-test-digest");

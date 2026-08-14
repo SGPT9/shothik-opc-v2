@@ -88,7 +88,7 @@ export function StartupBuildsModal({
   const [isDeploying, setIsDeploying] = useState(false);
   const [deploySuccess, setDeploySuccess] = useState(false);
 
-  const previewUrl = `https://${subdomain}.polsia.app`;
+  const previewUrl = `https://${subdomain}.shothikgpt.com`;
 
   const handleTriggerRedeploy = async () => {
     setIsDeploying(true);

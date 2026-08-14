@@ -358,7 +358,7 @@ function AgentStatusWidget({ autoMode }: { autoMode: boolean }) {
           <Radio className="h-3 w-3 animate-pulse text-indigo-400" /> Watch Live Feed
         </a>
         <a
-          href="https://verifiq.polsia.app"
+          href="https://verifiq.shothikgpt.com"
           target="_blank"
           rel="noreferrer"
           className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"

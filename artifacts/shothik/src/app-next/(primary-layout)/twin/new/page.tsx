@@ -192,7 +192,7 @@ export default function NewCompanyWizardPage() {
     const prdContent = `# ${companyName || "Autonomous Company"} — Product Requirements Document (PRD)
 
 ## 1. Executive Summary
-- **Subdomain:** \`https://${slug}.polsia.app\`
+- **Subdomain:** \`https://${slug}.shothikgpt.com\`
 - **Industry:** ${industry}
 - **Monetization:** ${businessModel}
 
@@ -329,7 +329,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
               <div className="flex items-center rounded-xl border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground font-mono">
                 <Globe className="mr-2 h-4 w-4 text-indigo-400 shrink-0" />
                 <span className="text-foreground font-bold">{subdomain || "your-subdomain"}</span>
-                <span className="text-muted-foreground">.polsia.app</span>
+                <span className="text-muted-foreground">.shothikgpt.com</span>
               </div>
             </div>
 
@@ -450,7 +450,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                 </h2>
               </div>
               <p className="text-xs text-muted-foreground font-mono">
-                Ingress: <span className="text-emerald-400 font-bold">https://{subdomain}.polsia.app</span> · Dokploy PaaS Container Ready (&lt;88MB)
+                Ingress: <span className="text-emerald-400 font-bold">https://{subdomain}.shothikgpt.com</span> · Dokploy PaaS Container Ready (&lt;88MB)
               </p>
             </div>
 

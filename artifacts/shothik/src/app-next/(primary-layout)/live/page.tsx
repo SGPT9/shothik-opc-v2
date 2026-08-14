@@ -56,7 +56,7 @@ const MOCK_EVENTS: StreamEvent[] = [
     agent: "cloud-deployer",
     taskTitle: "Compiling standalone Docker container & provisioning SSL certs",
     category: "DEPLOY",
-    telemetry: "DOKPLOY ROLLOUT ➔ acme.polsia.app",
+    telemetry: "DOKPLOY ROLLOUT ➔ acme.shothikgpt.com",
     status: "completed",
   },
   {

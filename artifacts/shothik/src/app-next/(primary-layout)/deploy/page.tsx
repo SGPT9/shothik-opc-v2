@@ -32,7 +32,7 @@ interface DokployLogEntry {
 const MOCK_LOGS: DokployLogEntry[] = [
   { id: "l-1", time: "17:04:12", level: "info", message: "[dokploy-agent] Container started: verifiq_prod_container_3301" },
   { id: "l-2", time: "17:04:13", level: "info", message: "[next-standalone] Ready in 412ms on http://0.0.0.0:3000" },
-  { id: "l-3", time: "17:04:15", level: "deploy", message: "[traefik-proxy] Acquired Let's Encrypt SSL certificate for verifiq.polsia.app" },
+  { id: "l-3", time: "17:04:15", level: "deploy", message: "[traefik-proxy] Acquired Let's Encrypt SSL certificate for verifiq.shothikgpt.com" },
   { id: "l-4", time: "17:04:20", level: "info", message: "[insforge-baas] Connected to PostgreSQL BaaS pool (wss://ers8j28a.ap-southeast.insforge.app/realtime)" },
   { id: "l-5", time: "17:04:22", level: "info", message: "[healthcheck] HTTP 200 OK — RAM: 28.4MB / 88MB budget — CPU: 2.1%" },
 ];
@@ -61,7 +61,7 @@ export default function DokployDeployPage() {
           id: `l-${Date.now()}`,
           time: new Date().toLocaleTimeString(),
           level: "info",
-          message: `[dokploy-deployer] Rolling update successful: Container healthy on ${activeCompany.toLowerCase().replace(/\s+/g, "")}.polsia.app`,
+          message: `[dokploy-deployer] Rolling update successful: Container healthy on ${activeCompany.toLowerCase().replace(/\s+/g, "")}.shothikgpt.com`,
         },
       ]);
     }, 1200);
@@ -172,7 +172,7 @@ export default function DokployDeployPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl border border-border/60 bg-muted/20">
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-foreground font-semibold">https://verifiq.polsia.app</span>
+              <span className="text-foreground font-semibold">https://verifiq.shothikgpt.com</span>
               <Badge variant="outline" className="border-indigo-500/30 text-indigo-400 text-[9px]">
                 Primary Subdomain
               </Badge>
@@ -180,7 +180,7 @@ export default function DokployDeployPage() {
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-emerald-400 font-semibold">● Traefik SSL Live</span>
               <a
-                href="https://verifiq.polsia.app"
+                href="https://verifiq.shothikgpt.com"
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs text-muted-foreground hover:text-foreground inline-flex items-center gap-1"

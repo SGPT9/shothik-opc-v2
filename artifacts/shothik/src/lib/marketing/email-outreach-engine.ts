@@ -58,7 +58,7 @@ export class EmailOutreachEngine {
       stepNumber: 3,
       subject: "Should I close this loop for {{company}}?",
       delayDays: 6,
-      body: `Hi {{name}},\n\nI understand you're busy growing {{company}}. If automated payment verification isn't a priority right now, no problem at all.\n\nFeel free to book a time here if things change: https://polsia.app/demo\n\nCheers,\nAutonomous Co-Founder`,
+      body: `Hi {{name}},\n\nI understand you're busy growing {{company}}. If automated payment verification isn't a priority right now, no problem at all.\n\nFeel free to book a time here if things change: https://shothikgpt.com/demo\n\nCheers,\nAutonomous Co-Founder`,
     },
   ];
 

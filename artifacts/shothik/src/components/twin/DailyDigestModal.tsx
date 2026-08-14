@@ -37,7 +37,7 @@ export function DailyDigestModal({
   onOpenChange,
   companyName = "VerifiQ AI",
 }: DailyDigestModalProps) {
-  const [recipientEmail, setRecipientEmail] = useState("founder@polsia.app");
+  const [recipientEmail, setRecipientEmail] = useState("founder@shothikgpt.com");
   const [deliveryTime, setDeliveryTime] = useState("08:00 AM");
   const [isSendingTest, setIsSendingTest] = useState(false);
   const [testSentSuccess, setTestSentSuccess] = useState(false);
@@ -133,7 +133,7 @@ export function DailyDigestModal({
             <div className="rounded-xl border border-slate-800 bg-slate-950 p-6 overflow-hidden shadow-2xl space-y-5 text-slate-200">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <span className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider font-mono">
-                  POLSIA OPC · DAILY CEO BRIEFING
+                  SHOTHIK TWIN · DAILY CEO BRIEFING
                 </span>
                 <span className="text-xs text-slate-400 font-mono">{digestSummary.date}</span>
               </div>
