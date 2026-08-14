@@ -987,26 +987,13 @@ const DOC_ICONS: Record<TwinDocMock["kind"], React.ElementType> = {
 function DocumentsLibrary({
   docs,
   onOpenVersions,
-  onOpenDbSchema,
 }: {
   docs: TwinDocMock[];
   onOpenVersions: (doc: TwinDocMock) => void;
-  onOpenDbSchema?: () => void;
 }) {
   return (
     <PanelCard>
-      <div className="flex items-center justify-between">
-        <SectionLabel>Documents</SectionLabel>
-        <button
-          type="button"
-          onClick={onOpenDbSchema}
-          className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition"
-          data-testid="button-open-db-schema"
-        >
-          <Database className="h-3 w-3" />
-          <span>Postgres Schema</span>
-        </button>
-      </div>
+      <SectionLabel>Documents & Deliverables</SectionLabel>
       <div className="mt-3 space-y-1.5">
         {docs.map((doc) => {
           const Icon = DOC_ICONS[doc.kind];
@@ -1552,6 +1539,7 @@ function seedToDoc(seed: SavedSeed): TwinDocMock {
 }
 
 const ACCOUNT_DRAWER_ITEMS = [
+  { label: 'Telegram & Voice Bot', icon: Bot, badge: 'Daily Drop', action: 'telegram' },
   { label: 'My Portfolio', icon: Layers, href: '/portfolio', badge: '3 Companies' },
   { label: 'New Company', icon: Building2, href: '/twin/new', badge: '$15/mo' },
   { label: 'Credits & Usage', icon: Zap, href: '/billing/credits', badge: '500 Left' },
@@ -1569,14 +1557,22 @@ const ACCOUNT_DRAWER_ITEMS = [
   { label: 'Logout', icon: LogOut, href: '/auth/logout' },
 ];
 
-function AccountDrawerModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function AccountDrawerModal({
+  open,
+  onOpenChange,
+  onOpenTelegramBriefing,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  onOpenTelegramBriefing?: () => void;
+}) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-[#0b101b] border-slate-800 text-slate-200">
         <DialogTitle className="flex items-center justify-between text-base text-slate-100">
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-indigo-400" />
-            <span>Account & Doctrine (15 Items)</span>
+            <span>Account & Doctrine (16 Items)</span>
           </div>
           <Badge variant="outline" className="text-[10px] border-indigo-500/40 text-indigo-400">
             500 Credits Active
@@ -1589,6 +1585,30 @@ function AccountDrawerModal({ open, onOpenChange }: { open: boolean; onOpenChang
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2 max-h-[60vh] overflow-y-auto pr-1">
           {ACCOUNT_DRAWER_ITEMS.map((item) => {
             const Icon = item.icon;
+            if (item.action === 'telegram') {
+              return (
+                <button
+                  key={item.label}
+                  type="button"
+                  onClick={() => {
+                    onOpenChange(false);
+                    onOpenTelegramBriefing?.();
+                  }}
+                  className="flex items-center justify-between p-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition text-xs text-left"
+                  data-testid="button-open-telegram-briefing"
+                >
+                  <div className="flex items-center gap-2">
+                    <Icon className="w-3.5 h-3.5 text-cyan-400" />
+                    <span className="text-cyan-200 font-medium">{item.label}</span>
+                  </div>
+                  {item.badge && (
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            }
             return (
               <a
                 key={item.label}
@@ -1617,20 +1637,10 @@ function PlatformTopBar({
   onOpenAccountDrawer,
   onConnectWebsite,
   onOpenVoiceCommander,
-  onOpenAdSpy,
-  onOpenSteadfast,
-  onOpenTelegramBriefing,
-  onOpenCroTuner,
-  onOpenMicroContainers,
 }: {
   onOpenAccountDrawer: () => void;
   onConnectWebsite?: () => void;
   onOpenVoiceCommander?: () => void;
-  onOpenAdSpy?: () => void;
-  onOpenSteadfast?: () => void;
-  onOpenTelegramBriefing?: () => void;
-  onOpenCroTuner?: () => void;
-  onOpenMicroContainers?: () => void;
 }) {
   const [activeCompany, setActiveCompany] = useState('VerifiQ AI (Active)');
   return (
@@ -1670,56 +1680,6 @@ function PlatformTopBar({
         <Button
           size="sm"
           variant="outline"
-          onClick={onOpenAdSpy}
-          className="hidden lg:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-amber-500/30 text-amber-400 bg-amber-500/5 hover:bg-amber-500/10"
-          data-testid="button-open-ad-spy"
-        >
-          <Crosshair className="h-3.5 w-3.5" />
-          <span>Ad Spy</span>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpenCroTuner}
-          className="hidden lg:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-emerald-500/30 text-emerald-400 bg-emerald-500/5 hover:bg-emerald-500/10"
-          data-testid="button-open-cro-tuner"
-        >
-          <Split className="h-3.5 w-3.5" />
-          <span>CRO A/B</span>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpenSteadfast}
-          className="hidden xl:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-orange-500/30 text-orange-400 bg-orange-500/5 hover:bg-orange-500/10"
-          data-testid="button-open-steadfast"
-        >
-          <Truck className="h-3.5 w-3.5" />
-          <span>Courier COD</span>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpenTelegramBriefing}
-          className="hidden xl:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-cyan-500/30 text-cyan-400 bg-cyan-500/5 hover:bg-cyan-500/10"
-          data-testid="button-open-telegram-briefing"
-        >
-          <Bot className="h-3.5 w-3.5" />
-          <span>Telegram Voice</span>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpenMicroContainers}
-          className="hidden xl:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-indigo-500/30 text-indigo-400 bg-indigo-500/5 hover:bg-indigo-500/10"
-          data-testid="button-open-micro-containers"
-        >
-          <Server className="h-3.5 w-3.5" />
-          <span>Containers</span>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
           onClick={onOpenVoiceCommander}
           className="h-8 rounded-xl text-xs gap-1.5 font-semibold border-violet-500/30 text-violet-400 bg-violet-500/5 hover:bg-violet-500/10"
           data-testid="button-open-voice-commander"
@@ -1740,7 +1700,7 @@ function PlatformTopBar({
         </Button>
         <Button size="sm" variant="outline" onClick={onOpenAccountDrawer} className="h-8 rounded-xl text-xs gap-1.5">
           <Menu className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Account (15)</span>
+          <span className="hidden sm:inline">Account (16)</span>
         </Button>
       </div>
     </div>
@@ -1862,13 +1822,12 @@ function TwinDashboardPage() {
         onOpenAccountDrawer={() => setShowAccountDrawer(true)}
         onConnectWebsite={() => setShowConnectCompany(true)}
         onOpenVoiceCommander={() => setShowVoiceCommander(true)}
-        onOpenAdSpy={() => setShowAdSpy(true)}
-        onOpenSteadfast={() => setShowSteadfast(true)}
-        onOpenTelegramBriefing={() => setShowTelegramBriefing(true)}
-        onOpenCroTuner={() => setShowCroTuner(true)}
-        onOpenMicroContainers={() => setShowMicroContainers(true)}
       />
-      <AccountDrawerModal open={showAccountDrawer} onOpenChange={setShowAccountDrawer} />
+      <AccountDrawerModal
+        open={showAccountDrawer}
+        onOpenChange={setShowAccountDrawer}
+        onOpenTelegramBriefing={() => setShowTelegramBriefing(true)}
+      />
 
       <NewTaskModal
         open={showNewTask}

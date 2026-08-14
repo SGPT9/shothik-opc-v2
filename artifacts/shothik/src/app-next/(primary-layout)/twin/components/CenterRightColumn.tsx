@@ -1,19 +1,6 @@
 /**
  * Polsia Column 3 — Growth / Distribution Channels & Coolify/Dokploy PaaS Deployment Engine.
- * Agent-run marketing & automated cloud deployments.
- *
- * Controls per spec & infrastructure (coolify-deployer.ts):
- *  - Coolify / Dokploy / Hostinger VPS PaaS Engine:
- *    • One-click deployment provider selector (Coolify, Dokploy, Hostinger VPS)
- *    • Auto-injected Stripe/OKX monetization toggle
- *    • Auto-generated OpenAPI 3.0 Swagger docs (/docs)
- *    • Auto SSL (Let's Encrypt / ACM Live status)
- *    • Live deployment stdout/stderr container logs modal
- *    • Environment secrets manager (KEY=VALUE)
- *  - Twitter (Connect X Account OAuth, Tweet manual, Auto-Tweet recurring)
- *  - Email (Cold Outreach manual, Auto Cold Outreach frequency-based: Daily/Weekdays/Weekly, ~N sends/mo, 1 credit per run)
- *  - Ads (Run Ads: Meta Ads with a daily budget slider $10–$1000/day, split between ad spend and platform fee)
- *  - Website (Auto-assigned Polsia subdomain {company-slug}.polsia.app, Edit URL, Custom Domain with CNAME/ALIAS & ACM SSL-validation status "Live", Versions deployment history, "..." menu with Secrets & Redeploy)
+ * Agent-run marketing, automated cloud deployments & commerce logistics.
  */
 import { useState } from "react";
 import {
@@ -39,6 +26,12 @@ import {
   Cpu,
   Layout,
   Users,
+  Crosshair,
+  Split,
+  Truck,
+  CreditCard,
+  BookOpen,
+  Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -50,6 +43,13 @@ import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
 import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
 import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
 import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
+import { CompetitorAdSpyModal } from "@/components/twin/CompetitorAdSpyModal";
+import { CroTunerModal } from "@/components/twin/CroTunerModal";
+import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
+import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
+import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefrontModal";
+import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
+import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
 import {
   MOCK_TWITTER_CHANNEL,
   MOCK_EMAIL_CHANNEL,
@@ -64,10 +64,8 @@ export function GrowthChannels() {
   const [ads, setAds] = useState(MOCK_META_ADS);
   const [website, setWebsite] = useState(MOCK_WEBSITE_DOMAIN);
 
-  /* PaaS Deployment Provider State (Coolify / Dokploy / Hostinger) */
-  const [provider, setProvider] = useState<"coolify" | "dokploy" | "hostinger">("coolify");
-  const [enableMonetization, setEnableMonetization] = useState(true);
-  const [enableOpenApiDocs, setEnableOpenApiDocs] = useState(true);
+  /* PaaS Deployment Provider State */
+  const [provider, setProvider] = useState<"coolify" | "dokploy" | "hostinger">("dokploy");
 
   /* Modal States */
   const [showConnectXModal, setShowConnectXModal] = useState(false);
@@ -82,11 +80,20 @@ export function GrowthChannels() {
   const [showSecretsModal, setShowSecretsModal] = useState(false);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
 
+  /* Domain Modal States */
+  const [showAdSpy, setShowAdSpy] = useState(false);
+  const [showCroTuner, setShowCroTuner] = useState(false);
+  const [showSteadfast, setShowSteadfast] = useState(false);
+  const [showMfsGateway, setShowMfsGateway] = useState(false);
+  const [showBookReader, setShowBookReader] = useState(false);
+  const [showMicroContainers, setShowMicroContainers] = useState(false);
+  const [showDbSchema, setShowDbSchema] = useState(false);
+
   return (
     <div className="space-y-3">
-      <SectionLabel>Growth & Deployment Channels</SectionLabel>
+      <SectionLabel>Growth & Cloud Infrastructure</SectionLabel>
 
-      {/* 1. Coolify / Dokploy PaaS Website Deployment Engine */}
+      {/* 1. Dokploy / Coolify PaaS Cloud Deployment & Container Cluster */}
       <PanelCard className="p-3.5 border-emerald-500/30 bg-emerald-500/5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 min-w-0">
@@ -143,9 +150,29 @@ export function GrowthChannels() {
               <MoreVertical className="h-3.5 w-3.5 text-muted-foreground" />
             </Button>
 
-            {/* "..." Options Menu (Logs, Secrets, Redeploy) */}
+            {/* "..." Options Menu */}
             {showMenuPopover && (
-              <div className="absolute right-0 top-full mt-2 w-48 rounded-xl border border-border bg-card p-1.5 shadow-xl z-50 animate-in fade-in">
+              <div className="absolute right-0 top-full mt-2 w-52 rounded-xl border border-border bg-card p-1.5 shadow-xl z-50 animate-in fade-in font-mono">
+                <button
+                  onClick={() => {
+                    setShowMenuPopover(false);
+                    setShowMicroContainers(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground hover:bg-muted/60"
+                  data-testid="menu-item-containers"
+                >
+                  <Server className="h-3.5 w-3.5 text-indigo-400" /> Containers & RAM
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenuPopover(false);
+                    setShowDbSchema(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground hover:bg-muted/60"
+                  data-testid="menu-item-database"
+                >
+                  <Database className="h-3.5 w-3.5 text-cyan-400" /> Postgres DDL Schema
+                </button>
                 <button
                   onClick={() => {
                     setShowMenuPopover(false);
@@ -154,15 +181,6 @@ export function GrowthChannels() {
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground hover:bg-muted/60"
                 >
                   <Terminal className="h-3.5 w-3.5 text-emerald-400" /> Container Logs
-                </button>
-                <button
-                  onClick={() => {
-                    setShowMenuPopover(false);
-                    setShowVersionsModal(true);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs text-foreground hover:bg-muted/60"
-                >
-                  <History className="h-3.5 w-3.5 text-indigo-400" /> Versions History
                 </button>
                 <button
                   onClick={() => {
@@ -193,12 +211,164 @@ export function GrowthChannels() {
             <FileCode className="h-3 w-3" /> OpenAPI /docs
           </span>
           <span className="flex items-center gap-1 text-amber-300">
-            <Zap className="h-3 w-3" /> Stripe/OKX Injected
+            <Zap className="h-3 w-3" /> 1-Tap bKash Live
           </span>
         </div>
       </PanelCard>
 
-      {/* 2. Twitter / X Channel */}
+      {/* 2. Commerce & Logistics Channel (bKash/Nagad PGW + Steadfast COD Courier) */}
+      <PanelCard className="p-3.5 border-orange-500/30 bg-orange-500/5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400">
+              <Truck className="h-4 w-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-bold text-foreground truncate">Commerce & Logistics</p>
+              <p className="text-[10px] text-muted-foreground font-mono">
+                1-Tap bKash · Steadfast COD (64 Dist.)
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 font-mono gap-1"
+              onClick={() => setShowMfsGateway(true)}
+              data-testid="button-open-mfs-gateway"
+            >
+              <CreditCard className="h-3 w-3" />
+              <span>bKash PGW</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-orange-500/40 text-orange-300 hover:bg-orange-500/10 font-mono gap-1"
+              onClick={() => setShowSteadfast(true)}
+              data-testid="button-open-steadfast"
+            >
+              <Truck className="h-3 w-3" />
+              <span>Courier</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-pink-500/40 text-pink-300 hover:bg-pink-500/10 font-mono gap-1"
+              onClick={() => setShowBookReader(true)}
+              data-testid="button-open-book-reader"
+            >
+              <BookOpen className="h-3 w-3" />
+              <span>Store</span>
+            </Button>
+          </div>
+        </div>
+      </PanelCard>
+
+      {/* 3. Outbound Email & Prospecting CRM */}
+      <PanelCard className="p-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
+              <Mail className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-foreground">Cold Email & Leads</p>
+              <p className="text-[10px] text-indigo-400 font-mono underline truncate max-w-[130px]">
+                {email.emailAddress}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 font-mono gap-1"
+              onClick={() => setShowCrmDrawer(true)}
+              data-testid="button-open-leads-crm"
+            >
+              <Users className="h-3 w-3" />
+              <span>CRM</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-medium"
+              onClick={() => setShowEmailModal(true)}
+            >
+              Outreach
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between">
+          <div className="min-w-0">
+            <p className="text-[11px] font-medium text-foreground">Auto Cold Outreach</p>
+            <p className="text-[9px] text-muted-foreground font-mono">
+              {email.frequency} · ~{email.sendsPerMonth} sends/mo (1 credit/run)
+            </p>
+          </div>
+          <Switch
+            checked={email.autoOutreach}
+            onCheckedChange={(val) => setEmail((prev) => ({ ...prev, autoOutreach: val }))}
+            aria-label="Toggle Auto Cold Outreach"
+          />
+        </div>
+      </PanelCard>
+
+      {/* 4. Meta Ads & Competitor Ad Spy */}
+      <PanelCard className="p-3.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
+              <Zap className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-foreground">Meta Ads & CRO</p>
+              <p className="text-[10px] font-mono text-amber-400 font-semibold">
+                ${ads.dailyBudget}/day budget
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 font-mono gap-1"
+              onClick={() => setShowAdSpy(true)}
+              data-testid="button-open-ad-spy"
+            >
+              <Crosshair className="h-3 w-3" />
+              <span>Ad Spy</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 font-mono gap-1"
+              onClick={() => setShowCroTuner(true)}
+              data-testid="button-open-cro-tuner"
+            >
+              <Split className="h-3 w-3" />
+              <span>CRO A/B</span>
+            </Button>
+            <Button
+              size="sm"
+              className="h-7 rounded-lg text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-black px-2.5"
+              onClick={() => setShowAdsModal(true)}
+              data-testid="polsia-run-ads-btn"
+            >
+              Run Ads
+            </Button>
+          </div>
+        </div>
+
+        <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+          <span>Ad Spend: {ads.adSpendPercent}%</span>
+          <span>Platform Fee: {ads.platformFeePercent}%</span>
+        </div>
+      </PanelCard>
+
+      {/* 5. Twitter / X Channel */}
       <PanelCard className="p-3.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -243,87 +413,6 @@ export function GrowthChannels() {
         </div>
       </PanelCard>
 
-      {/* 3. Email Outreach Channel */}
-      <PanelCard className="p-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400">
-              <Mail className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-foreground">Cold Email</p>
-              <p className="text-[10px] text-indigo-400 font-mono underline truncate max-w-[130px]">
-                {email.emailAddress}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-1">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 font-mono gap-1"
-              onClick={() => setShowCrmDrawer(true)}
-              data-testid="button-open-leads-crm"
-            >
-              <Users className="h-3 w-3" />
-              <span>CRM</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-7 rounded-lg text-[11px] font-medium"
-              onClick={() => setShowEmailModal(true)}
-            >
-              Outreach
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between">
-          <div className="min-w-0">
-            <p className="text-[11px] font-medium text-foreground">Auto Cold Outreach</p>
-            <p className="text-[9px] text-muted-foreground font-mono">
-              {email.frequency} · ~{email.sendsPerMonth} sends/mo (1 credit/run)
-            </p>
-          </div>
-          <Switch
-            checked={email.autoOutreach}
-            onCheckedChange={(val) => setEmail((prev) => ({ ...prev, autoOutreach: val }))}
-            aria-label="Toggle Auto Cold Outreach"
-          />
-        </div>
-      </PanelCard>
-
-      {/* 4. Meta Ads Channel */}
-      <PanelCard className="p-3.5">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/10 text-amber-400">
-              <Zap className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-foreground">Meta Ads</p>
-              <p className="text-[10px] font-mono text-amber-400 font-semibold">
-                ${ads.dailyBudget}/day budget
-              </p>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            className="h-7 rounded-lg text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-black"
-            onClick={() => setShowAdsModal(true)}
-            data-testid="polsia-run-ads-btn"
-          >
-            Run Ads
-          </Button>
-        </div>
-
-        <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
-          <span>Ad Spend: {ads.adSpendPercent}%</span>
-          <span>Platform Fee: {ads.platformFeePercent}%</span>
-        </div>
-      </PanelCard>
-
       {/* Coolify / Dokploy Container Logs Modal */}
       <Dialog open={showLogsModal} onOpenChange={setShowLogsModal}>
         <DialogContent className="sm:max-w-xl">
@@ -334,12 +423,12 @@ export function GrowthChannels() {
             Live stdout/stderr stream from {provider.toUpperCase()} runner container.
           </DialogDescription>
           <div className="mt-2 rounded-xl border border-border/80 bg-black/90 p-3 font-mono text-[11px] text-emerald-400 space-y-1 max-h-64 overflow-y-auto">
-            <p>[coolify-deployer] Initializing build context for {website.subdomain}...</p>
-            <p>[coolify-deployer] Pulling base image node:20-alpine...</p>
-            <p>[coolify-deployer] Auto-injecting Stripe / OKX monetization routes (/api/checkout)...</p>
-            <p>[coolify-deployer] Auto-generating OpenAPI 3.0 Swagger docs at /docs...</p>
-            <p>[coolify-deployer] Issuing Let's Encrypt SSL certificate via Traefik reverse proxy...</p>
-            <p className="text-emerald-300 font-bold">[coolify-deployer] Container deployed successfully! Status: 200 OK (3.4s)</p>
+            <p>[dokploy-runner] Initializing build context for {website.subdomain}...</p>
+            <p>[dokploy-runner] Pulling base image node:20-alpine (48MB)...</p>
+            <p>[dokploy-runner] Auto-injecting 1-Tap bKash / Nagad payment routes (/api/checkout)...</p>
+            <p>[dokploy-runner] Auto-generating OpenAPI 3.0 Swagger docs at /docs...</p>
+            <p>[dokploy-runner] Issuing Let's Encrypt SSL certificate via Traefik reverse proxy...</p>
+            <p className="text-emerald-300 font-bold">[dokploy-runner] Container deployed successfully! Status: 200 OK (2.8s)</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -355,22 +444,22 @@ export function GrowthChannels() {
           </DialogDescription>
           <div className="space-y-2 mt-2 font-mono text-xs">
             <div className="rounded-xl border border-border bg-muted/40 p-2 flex justify-between">
-              <span className="text-indigo-400">STRIPE_SECRET_KEY</span>
-              <span className="text-muted-foreground">sk_live_••••••••</span>
+              <span className="text-indigo-400">BKASH_APP_KEY</span>
+              <span className="text-muted-foreground">bkash_live_••••••••</span>
             </div>
             <div className="rounded-xl border border-border bg-muted/40 p-2 flex justify-between">
               <span className="text-indigo-400">POSTGRES_URL</span>
               <span className="text-muted-foreground">postgres://insforge:••••</span>
             </div>
             <div className="rounded-xl border border-border bg-muted/40 p-2 flex justify-between">
-              <span className="text-indigo-400">OPENROUTER_API_KEY</span>
-              <span className="text-muted-foreground">sk-or-••••••••</span>
+              <span className="text-indigo-400">STEADFAST_API_KEY</span>
+              <span className="text-muted-foreground">sf_live_••••••••</span>
             </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Meta Ads Budget Slider Modal ($10 - $1000/day) */}
+      {/* Meta Ads Budget Slider Modal */}
       <Dialog open={showAdsModal} onOpenChange={setShowAdsModal}>
         <DialogContent className="sm:max-w-md">
           <DialogTitle className="flex items-center gap-2">
@@ -426,13 +515,13 @@ export function GrowthChannels() {
             <Globe className="h-5 w-5 text-emerald-400" /> Manage Domain & PaaS Deployment Provider
           </DialogTitle>
           <DialogDescription className="text-xs text-muted-foreground">
-            Select PaaS deployment provider (Coolify / Dokploy / Hostinger) and custom domain DNS.
+            Select PaaS deployment provider (Dokploy / Coolify / Hostinger) and custom domain DNS.
           </DialogDescription>
           <div className="space-y-3 mt-2">
             <div>
               <label className="text-xs font-semibold text-foreground block mb-1">PaaS Deployment Provider</label>
               <div className="grid grid-cols-3 gap-2">
-                {(["coolify", "dokploy", "hostinger"] as const).map((p) => (
+                {(["dokploy", "coolify", "hostinger"] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => setProvider(p)}
@@ -508,6 +597,54 @@ export function GrowthChannels() {
       <LeadCrmDrawer
         open={showCrmDrawer}
         onOpenChange={setShowCrmDrawer}
+        companyName="VerifiQ AI"
+      />
+
+      {/* Competitor Ad Spy Modal */}
+      <CompetitorAdSpyModal
+        open={showAdSpy}
+        onOpenChange={setShowAdSpy}
+        companyName="VerifiQ AI"
+      />
+
+      {/* Self-Healing CRO Auto-Tuner Modal */}
+      <CroTunerModal
+        open={showCroTuner}
+        onOpenChange={setShowCroTuner}
+        companyName="VerifiQ AI"
+      />
+
+      {/* Steadfast Courier COD Modal */}
+      <SteadfastCourierModal
+        open={showSteadfast}
+        onOpenChange={setShowSteadfast}
+        companyName="VerifiQ AI"
+      />
+
+      {/* 1-Tap bKash / Nagad MFS Gateway Modal */}
+      <MfsGatewayModal
+        open={showMfsGateway}
+        onOpenChange={setShowMfsGateway}
+        companyName="VerifiQ AI"
+      />
+
+      {/* Public Book Reader Storefront Modal */}
+      <BookReaderStorefrontModal
+        open={showBookReader}
+        onOpenChange={setShowBookReader}
+      />
+
+      {/* Dokploy Micro-Containers Modal */}
+      <DokployMicroContainersModal
+        open={showMicroContainers}
+        onOpenChange={setShowMicroContainers}
+        companyName="VerifiQ AI"
+      />
+
+      {/* PostgreSQL DDL Schema Modal */}
+      <DatabaseSchemaModal
+        open={showDbSchema}
+        onOpenChange={setShowDbSchema}
         companyName="VerifiQ AI"
       />
     </div>
