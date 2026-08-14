@@ -1,9 +1,25 @@
-import React from "react";
-import { FileText, Table, Network, Presentation, Globe, ExternalLink, ShieldCheck, Sparkles, Download, Printer } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  FileText,
+  Table,
+  Network,
+  Presentation,
+  Globe,
+  ExternalLink,
+  ShieldCheck,
+  Sparkles,
+  Download,
+  Printer,
+  ChevronLeft,
+  ChevronRight,
+  Mic,
+  Video,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
 import { PrintPreflightModal } from "./PrintPreflightModal";
+import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
 import { exportManuscriptToMarkdown, exportManuscriptToHTML } from "../utils/epubPdfExporter";
 
 export type CanvasTab = "editor" | "sheet" | "mindmap" | "slides" | "web_preview";
@@ -23,10 +39,60 @@ export function BookCenterCanvas({
   onEditorTextChange,
   livePreviewUrl = "https://yourbusiness.com",
 }: BookCenterCanvasProps) {
-  const [isInspectorActive, setIsInspectorActive] = React.useState(false);
-  const [selectedElementInfo, setSelectedElementInfo] = React.useState<{ tagName: string; textContent: string } | null>(null);
-  const [isScenarioLabOpen, setIsScenarioLabOpen] = React.useState(false);
-  const [isPreflightOpen, setIsPreflightOpen] = React.useState(false);
+  const [isInspectorActive, setIsInspectorActive] = useState(false);
+  const [selectedElementInfo, setSelectedElementInfo] = useState<{ tagName: string; textContent: string } | null>(null);
+  const [isScenarioLabOpen, setIsScenarioLabOpen] = useState(false);
+  const [isPreflightOpen, setIsPreflightOpen] = useState(false);
+  const [isVTuberOpen, setIsVTuberOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  const SLIDES_DECK = [
+    {
+      title: "1. Problem: Zero Autonomy for Solopreneurs",
+      points: [
+        "Founders spend 80% of their time on mundane operations instead of core product.",
+        "Emerging market founders lack affordable access to senior engineering & marketing teams.",
+        "Manual payment reconciliation & logistics tracking leads to high drop-offs.",
+      ],
+      notes: "Explain how single-operator companies struggle with fragmented tooling in South Asia.",
+    },
+    {
+      title: "2. Solution: Operator-Powered Company (OPC)",
+      points: [
+        "10 Autonomous Polsia Agent Personas working on 100% continuous autopilot.",
+        "Automated Wayfinder ticket-to-code execution in isolated Docker containers.",
+        "1-Click bKash MFS & Steadfast Courier integration out of the box.",
+      ],
+      notes: "Highlight the 100% autonomous delivery loop with zero human code turns.",
+    },
+    {
+      title: "3. Market Opportunity & Sizing (TAM/SAM/SOM)",
+      points: [
+        "$10.0B Total Addressable Market for AI-first autonomous commerce.",
+        "$1.5B Serviceable Addressable Market across South Asia & MENA.",
+        "$150M Initial SOM targeted for 2026-2027 adoption.",
+      ],
+      notes: "Walk through the high TAM and low customer acquisition costs.",
+    },
+    {
+      title: "4. Unit Economics & Cash Flow P&L",
+      points: [
+        "65.2% Net Margin with Dokploy PaaS running <88MB RAM containers ($0.50/day).",
+        "Exact 1.85% bKash transaction fee reconciliation.",
+        "4.1 Month CAC payback with automated Meta Ads & Twitter/X growth channels.",
+      ],
+      notes: "Demonstrate five-nines availability and low cloud hosting costs.",
+    },
+    {
+      title: "5. Milestones & The Ask",
+      points: [
+        "14 Live Polsia Companies launched across Bangladesh & Emerging Markets.",
+        "43 Vitest suites passing with 100% test coverage.",
+        "Raising $500K Seed to scale Autonomous Delivery Loops & VTuber Avatar Studio.",
+      ],
+      notes: "Conclude with the clear investment ask and roadmap milestones.",
+    },
+  ];
 
 
   // December Adaptation: Keyboard shortcut Cmd + \ to toggle split preview
@@ -191,12 +257,75 @@ export function BookCenterCanvas({
         )}
 
         {activeTab === "slides" && (
-          <div className="rounded-xl border border-border/80 bg-card p-6 space-y-4 text-center">
-            <Presentation className="h-10 w-10 text-indigo-400 mx-auto" />
-            <h3 className="text-base font-bold text-foreground">Investor Pitch Deck (10 Slides)</h3>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
-              Integrated Marp markdown slides with VTuber Papermark presenter automation.
-            </p>
+          <div className="flex h-full flex-col rounded-xl border border-border/80 bg-card overflow-hidden">
+            {/* Slide Header Toolbar */}
+            <div className="flex items-center justify-between border-b border-border bg-muted/40 px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <Presentation className="h-4 w-4 text-indigo-400" />
+                <span className="text-xs font-semibold text-foreground">
+                  Slide {currentSlide + 1} of {SLIDES_DECK.length}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="h-7 text-xs gap-1.5 border-purple-500/40 text-purple-400 bg-purple-500/10 hover:bg-purple-500/20"
+                  onClick={() => setIsVTuberOpen(true)}
+                  data-testid="button-present-vtuber"
+                >
+                  <Video className="h-3.5 w-3.5" /> Present with VTuber Avatar
+                </Button>
+                <div className="flex items-center gap-1 border-l border-border pl-2">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0"
+                    disabled={currentSlide === 0}
+                    onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-7 w-7 p-0"
+                    disabled={currentSlide === SLIDES_DECK.length - 1}
+                    onClick={() => setCurrentSlide((prev) => Math.min(SLIDES_DECK.length - 1, prev + 1))}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Slide Body */}
+            <div className="flex-1 flex flex-col justify-between p-8 bg-gradient-to-br from-background to-muted/20">
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold tracking-tight text-foreground">
+                  {SLIDES_DECK[currentSlide].title}
+                </h2>
+                <ul className="space-y-3">
+                  {SLIDES_DECK[currentSlide].points.map((pt, i) => (
+                    <li key={i} className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed">
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-500/10 text-[10px] font-bold text-indigo-400 border border-indigo-500/20">
+                        {i + 1}
+                      </span>
+                      <span>{pt}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Speaker Notes */}
+              <div className="rounded-xl border border-border/70 bg-muted/30 p-3.5 text-xs text-muted-foreground space-y-1">
+                <div className="flex items-center gap-1.5 text-purple-400 font-semibold text-[11px]">
+                  <Mic className="h-3.5 w-3.5" />
+                  <span>Presenter Notes (Silero VAD Lip-Sync Synchronized):</span>
+                </div>
+                <p>{SLIDES_DECK[currentSlide].notes}</p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -260,6 +389,14 @@ export function BookCenterCanvas({
         title="Shothik Book Manuscript"
         pageCount={Math.max(24, Math.ceil(editorText.split(/\s+/).filter(Boolean).length / 250))}
       />
+
+      {isVTuberOpen && (
+        <VTuberVoiceAvatarOverlay
+          isActive={isVTuberOpen}
+          avatarName="Shothik Slide Presenter"
+          onClose={() => setIsVTuberOpen(false)}
+        />
+      )}
     </div>
   );
 }

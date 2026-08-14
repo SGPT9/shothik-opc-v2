@@ -175,6 +175,7 @@ export function ChatAgentPage() {
           onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
           sidebarOpen={sidebarOpen}
           onPaywallClick={() => setIsPaywallOpen(true)}
+          onVTuberClick={() => setVoiceActive((prev) => !prev)}
         />
 
         {/* Content: Chat + Artifact (Draggable Splitter Handle when artifact is open) */}

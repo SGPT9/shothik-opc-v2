@@ -11,6 +11,7 @@ export interface ChatHeaderProps {
   onToggleSidebar?: () => void;
   sidebarOpen?: boolean;
   onPaywallClick?: () => void;
+  onVTuberClick?: () => void;
 }
 
 export function ChatHeader({
@@ -21,6 +22,7 @@ export function ChatHeader({
   onToggleSidebar,
   sidebarOpen = false,
   onPaywallClick,
+  onVTuberClick,
 }: ChatHeaderProps) {
   const [isDark, setIsDark] = useState(true);
 
@@ -66,6 +68,20 @@ export function ChatHeader({
 
       {/* Right: Actions + Theme Toggle */}
       <div className="flex items-center gap-1.5">
+        {/* 🎙️ 3D VTuber Presenter Button */}
+        {onVTuberClick && (
+          <button
+            type="button"
+            onClick={onVTuberClick}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 text-[11px] font-semibold transition"
+            title="Launch 3D VTuber Avatar Presenter"
+            data-testid="button-header-vtuber"
+          >
+            <span>🎙️</span>
+            <span className="hidden md:inline">VTuber</span>
+          </button>
+        )}
+
         {/* ⚡ Credit Badge */}
         {onPaywallClick && (
           <button
