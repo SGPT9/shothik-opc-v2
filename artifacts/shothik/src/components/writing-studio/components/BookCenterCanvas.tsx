@@ -14,11 +14,13 @@ import {
   ChevronRight,
   Mic,
   Video,
+  Rocket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
 import { PrintPreflightModal } from "./PrintPreflightModal";
+import { CommercializeBookModal } from "./CommercializeBookModal";
 import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
 import { exportManuscriptToMarkdown, exportManuscriptToHTML } from "../utils/epubPdfExporter";
 
@@ -44,6 +46,7 @@ export function BookCenterCanvas({
   const [isScenarioLabOpen, setIsScenarioLabOpen] = useState(false);
   const [isPreflightOpen, setIsPreflightOpen] = useState(false);
   const [isVTuberOpen, setIsVTuberOpen] = useState(false);
+  const [isCommercializeOpen, setIsCommercializeOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const SLIDES_DECK = [
@@ -183,6 +186,16 @@ export function BookCenterCanvas({
           >
             <Printer className="h-3 w-3" />
             Print Preflight
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={() => setIsCommercializeOpen(true)}
+            className="h-7 px-2.5 text-[10px] font-semibold bg-purple-600 hover:bg-purple-500 text-white gap-1 shadow-sm"
+            data-testid="button-sell-in-twin"
+          >
+            <Rocket className="h-3 w-3" />
+            Sell in Twin
           </Button>
         </div>
       </div>
@@ -388,6 +401,13 @@ export function BookCenterCanvas({
         onClose={() => setIsPreflightOpen(false)}
         title="Shothik Book Manuscript"
         pageCount={Math.max(24, Math.ceil(editorText.split(/\s+/).filter(Boolean).length / 250))}
+      />
+
+      <CommercializeBookModal
+        open={isCommercializeOpen}
+        onOpenChange={setIsCommercializeOpen}
+        manuscriptTitle="Echoes of the River"
+        wordCount={editorText.split(/\s+/).filter(Boolean).length || 45200}
       />
 
       {isVTuberOpen && (

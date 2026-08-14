@@ -18,6 +18,7 @@ import { useTwinData, type TwinTask, type TwinDoc, type TwinFeedEntry } from "@/
 import { saveOfflineTask, listOfflineTasks } from "@/lib/offline/offline-storage";
 import { AutonomousDeliveryLoop } from "@/lib/autonomous/autonomous-delivery-loop";
 import { DailyDigestModal } from "@/components/twin/DailyDigestModal";
+import { ConnectExistingCompanyModal } from "@/components/twin/ConnectExistingCompanyModal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, CheckCircle } from "lucide-react";
 import {
@@ -1574,7 +1575,13 @@ function AccountDrawerModal({ open, onOpenChange }: { open: boolean; onOpenChang
   );
 }
 
-function PlatformTopBar({ onOpenAccountDrawer }: { onOpenAccountDrawer: () => void }) {
+function PlatformTopBar({
+  onOpenAccountDrawer,
+  onConnectWebsite,
+}: {
+  onOpenAccountDrawer: () => void;
+  onConnectWebsite?: () => void;
+}) {
   const [activeCompany, setActiveCompany] = useState('VerifiQ AI (Active)');
   return (
     <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/80 px-1">
@@ -1586,6 +1593,8 @@ function PlatformTopBar({ onOpenAccountDrawer }: { onOpenAccountDrawer: () => vo
               if (typeof window !== "undefined") {
                 window.location.href = "/twin/new";
               }
+            } else if (e.target.value === "+ Connect Website") {
+              onConnectWebsite?.();
             } else {
               setActiveCompany(e.target.value);
             }
@@ -1595,9 +1604,20 @@ function PlatformTopBar({ onOpenAccountDrawer }: { onOpenAccountDrawer: () => vo
           <option value="VerifiQ AI (Active)">🏢 VerifiQ AI (Active)</option>
           <option value="Acme SaaS">🏢 Acme SaaS</option>
           <option value="BookStudio">🏢 BookStudio</option>
-          <option value="+ New Company">+ New Company Slot ($15/mo)</option>
+          <option value="+ Connect Website">🌐 + Connect Existing Website (BYOW)</option>
+          <option value="+ New Company">✨ + New Company Slot ($15/mo)</option>
         </select>
-        <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onConnectWebsite}
+          className="hidden md:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-cyan-500/30 text-cyan-400 bg-cyan-500/5 hover:bg-cyan-500/10"
+          data-testid="button-connect-existing-website"
+        >
+          <Globe className="h-3.5 w-3.5" />
+          <span>Connect Website</span>
+        </Button>
+        <span className="hidden lg:inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
           <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           Autonomous Co-Founder Online
         </span>
@@ -1629,6 +1649,7 @@ function TwinDashboardPage() {
   const [showInvite, setShowInvite] = useState(false);
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
   const [showDailyDigest, setShowDailyDigest] = useState(false);
+  const [showConnectCompany, setShowConnectCompany] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
   const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
 
@@ -1716,7 +1737,10 @@ function TwinDashboardPage() {
 
   return (
     <div className="mx-auto h-full max-w-[1600px] px-4 py-5 lg:h-[calc(100dvh-4rem)]">
-      <PlatformTopBar onOpenAccountDrawer={() => setShowAccountDrawer(true)} />
+      <PlatformTopBar
+        onOpenAccountDrawer={() => setShowAccountDrawer(true)}
+        onConnectWebsite={() => setShowConnectCompany(true)}
+      />
       <AccountDrawerModal open={showAccountDrawer} onOpenChange={setShowAccountDrawer} />
 
       <NewTaskModal
@@ -1732,6 +1756,7 @@ function TwinDashboardPage() {
       />
       <InviteModal open={showInvite} onOpenChange={setShowInvite} />
       <DailyDigestModal open={showDailyDigest} onOpenChange={setShowDailyDigest} />
+      <ConnectExistingCompanyModal open={showConnectCompany} onOpenChange={setShowConnectCompany} />
       <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
       <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
         <DialogContent

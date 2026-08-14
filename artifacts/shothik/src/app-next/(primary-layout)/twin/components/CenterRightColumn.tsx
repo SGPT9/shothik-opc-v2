@@ -45,6 +45,7 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/compone
 import { cn } from "@/lib/utils";
 import { SectionLabel, PanelCard } from "./shared";
 import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
+import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
 import {
   MOCK_TWITTER_CHANNEL,
   MOCK_EMAIL_CHANNEL,
@@ -104,9 +105,18 @@ export function GrowthChannels() {
               size="sm"
               variant="outline"
               className="h-7 rounded-lg text-[11px] font-medium px-2 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
+              onClick={() => setShowVersionsModal(true)}
+              data-testid="button-view-builds"
+            >
+              Builds
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-medium px-2 border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10"
               onClick={() => setShowDomainModal(true)}
             >
-              Manage Domain
+              Domain
             </Button>
             <Button
               size="sm"
@@ -449,6 +459,14 @@ export function GrowthChannels() {
 
       {/* Cold Email Outreach Sequence Modal */}
       <EmailOutreachModal open={showEmailModal} onOpenChange={setShowEmailModal} />
+
+      {/* Startup Container Builds & Releases Modal */}
+      <StartupBuildsModal
+        open={showVersionsModal}
+        onOpenChange={setShowVersionsModal}
+        subdomain={website.subdomain}
+        companyName="VerifiQ AI"
+      />
     </div>
   );
 }
