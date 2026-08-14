@@ -18,11 +18,15 @@ import {
   Cpu,
   Loader2,
   Check,
+  CreditCard,
+  Database,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { saveOfflineTask, saveOfflineManuscript } from "@/lib/offline/offline-storage";
+import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
+import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
 import Link from "next/link";
 
 interface WayfinderTicketTemplate {
@@ -39,6 +43,8 @@ export default function NewCompanyWizardPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const [synthesisStep, setSynthesisStep] = useState(0);
+  const [showMfsModal, setShowMfsModal] = useState(false);
+  const [showDbModal, setShowDbModal] = useState(false);
 
   // Form State
   const [companyName, setCompanyName] = useState("");
@@ -454,13 +460,33 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
               </p>
             </div>
 
-            <Button
-              onClick={handleLaunchCompany}
-              className="rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold shrink-0 shadow-lg shadow-emerald-900/30"
-              data-testid="button-launch-company"
-            >
-              <Rocket className="h-4 w-4" /> Launch in Autonomous Twin
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowMfsModal(true)}
+                className="rounded-xl border-pink-500/40 text-pink-400 hover:bg-pink-500/10 text-xs font-semibold gap-1.5 h-9 font-mono"
+                data-testid="button-step3-mfs-gateway"
+              >
+                <CreditCard className="h-3.5 w-3.5" /> bKash Gateway
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowDbModal(true)}
+                className="rounded-xl border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 text-xs font-semibold gap-1.5 h-9 font-mono"
+                data-testid="button-step3-db-schema"
+              >
+                <Database className="h-3.5 w-3.5" /> Postgres Schema
+              </Button>
+              <Button
+                onClick={handleLaunchCompany}
+                className="rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold shrink-0 shadow-lg shadow-emerald-900/30 h-9"
+                data-testid="button-launch-company"
+              >
+                <Rocket className="h-4 w-4" /> Launch in Autonomous Twin
+              </Button>
+            </div>
           </div>
 
           {/* First 10 Wayfinder Tickets Preview */}
@@ -503,6 +529,18 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
           </div>
         </div>
       )}
+
+      {/* Solo Founder Modals */}
+      <MfsGatewayModal
+        open={showMfsModal}
+        onOpenChange={setShowMfsModal}
+        companyName={companyName || "New Startup"}
+      />
+      <DatabaseSchemaModal
+        open={showDbModal}
+        onOpenChange={setShowDbModal}
+        companyName={companyName || "New Startup"}
+      />
     </div>
   );
 }
