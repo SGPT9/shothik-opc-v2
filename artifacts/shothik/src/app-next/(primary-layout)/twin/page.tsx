@@ -31,7 +31,7 @@ import { TelegramVoiceBriefingModal } from "@/components/twin/TelegramVoiceBrief
 import { CroTunerModal } from "@/components/twin/CroTunerModal";
 import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, CheckCircle, Crosshair, Truck, Split, Server, Bot } from "lucide-react";
+import { Brain, CheckCircle, Crosshair, Truck, Split, Server, Bot, Database } from "lucide-react";
 import {
   Sparkles,
   Plus,
