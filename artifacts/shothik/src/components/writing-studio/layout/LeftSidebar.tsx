@@ -55,6 +55,7 @@ interface LeftSidebarProps {
   activeSectionId?: string;
   onSectionClick?: (sectionId: string) => void;
   onChaptersChange?: (chapters: Chapter[]) => void;
+  onImportClick?: () => void;
   researchNotes?: ResearchNotes | null;
   activeView?: SidebarView;
   projectType?: ProjectType;
@@ -267,16 +268,28 @@ export function LeftSidebar({
             <h3 className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
               Structure
             </h3>
-            <button
-              onClick={() => {
-                setAddingChapter(true);
-                setTimeout(() => newChapterInputRef.current?.focus(), 50);
-              }}
-              className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors"
-              title="Add chapter"
-            >
-              <Plus className="w-4 h-4 text-zinc-400" />
-            </button>
+            <div className="flex items-center gap-1">
+              {onImportClick && (
+                <button
+                  onClick={onImportClick}
+                  className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400 hover:text-indigo-400 cursor-pointer"
+                  title="Import Manuscript (.docx, .txt, .pdf, Bijoy)"
+                >
+                  <Plus className="w-0 h-0 hidden" />
+                  <Folder className="w-3.5 h-3.5" />
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  setAddingChapter(true);
+                  setTimeout(() => newChapterInputRef.current?.focus(), 50);
+                }}
+                className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded transition-colors text-zinc-400 hover:text-foreground cursor-pointer"
+                title="Add chapter"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           {/* New Chapter Input */}

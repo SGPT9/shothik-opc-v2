@@ -34,6 +34,7 @@ import { ComponentErrorBoundary } from "@/components/agents/components/ChatError
 import { useWritingEditor } from "./hooks/useWritingEditor";
 import { useWritingHistory } from "./hooks/useWritingHistory";
 import { ReplitBookWorkspace } from "./ReplitBookWorkspace";
+import { ManuscriptImportModal } from "./ManuscriptImportModal";
 import { Button } from "@/components/ui/button";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -58,6 +59,7 @@ export function PolishedWriteView({
   const [mode, setMode] = useState<Mode>("write");
   const [is3FoldMode, setIs3FoldMode] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -146,6 +148,36 @@ export function PolishedWriteView({
     [chapters]
   );
 
+  const handleImportManuscript = useCallback(
+    (imported: {
+      title: string;
+      chapters: Array<{
+        id: string;
+        title: string;
+        synopsis: string;
+        content: string;
+        wordCount: number;
+      }>;
+    }) => {
+      if (!imported.chapters.length) return;
+      const formattedChapters = imported.chapters.map((ch, idx) => ({
+        id: ch.id || `ch-${idx + 1}`,
+        title: ch.title,
+        synopsis: ch.synopsis,
+        status: (idx === 0 ? "in-progress" : "draft") as "in-progress" | "draft" | "complete",
+        sections: [{ id: `sec-${idx + 1}-1`, title: "Imported Draft", isActive: idx === 0 }],
+        wordCount: ch.wordCount,
+        wordTarget: 3500,
+      }));
+
+      setChapters(formattedChapters);
+      setActiveChapterId(formattedChapters[0].id);
+      setActiveSectionId(formattedChapters[0].sections[0].id);
+      setContent(imported.chapters[0].content || `<p><em>${imported.chapters[0].synopsis}</em></p>`);
+    },
+    [setContent]
+  );
+
   // If user switches to full 3-Fold 5-Mode Workspace
   if (is3FoldMode) {
     return (
@@ -174,6 +206,17 @@ export function PolishedWriteView({
             onBack={onBack}
           />
           <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsImportOpen(true)}
+              className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-border text-muted-foreground hover:text-foreground cursor-pointer"
+              title="Import Word, PDF, Text, or Bijoy Manuscript"
+            >
+              <FileDown className="h-3.5 w-3.5 text-indigo-400" />
+              <span>Import Manuscript</span>
+            </Button>
+
             <Button
               size="sm"
               variant="outline"
@@ -213,6 +256,7 @@ export function PolishedWriteView({
               activeSectionId={activeSectionId}
               onSectionClick={handleSectionClick}
               onChaptersChange={setChapters}
+              onImportClick={() => setIsImportOpen(true)}
               projectType={projectType}
               researchNotes={project?.researchNotes}
             />
@@ -324,6 +368,13 @@ export function PolishedWriteView({
 
       {/* Status Bar Footer */}
       <StatusBar wordCount={wordCount} isSaving={isSaving} lastSaved={lastSaved} />
+
+      {/* Manuscript Import Modal */}
+      <ManuscriptImportModal
+        isOpen={isImportOpen}
+        onClose={() => setIsImportOpen(false)}
+        onImport={handleImportManuscript}
+      />
     </div>
   );
 }

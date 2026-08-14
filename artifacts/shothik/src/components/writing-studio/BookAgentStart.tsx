@@ -21,6 +21,7 @@ import {
   X,
   Copy,
   Check,
+  FileUp,
 } from 'lucide-react';
 import { Link } from 'wouter';
 import SvgColor from '@/components/common/SvgColor';
@@ -30,6 +31,7 @@ import { cn } from '@/lib/utils';
 import { debugLog } from '@/lib/debug-log';
 import { SourceIntake, type ProjectSource } from './SourceIntake';
 import { convertBijoyToUnicode, convertUnicodeToBijoy } from '@/lib/BijoyConverter';
+import { ManuscriptImportModal } from './ManuscriptImportModal';
 
 const TOOL_TILES = [
   { label: 'Paraphrase', icon: 'paraphrase', href: '/paraphrase' },
@@ -197,10 +199,51 @@ export function BookAgentStart({
   const [bijoyInput, setBijoyInput] = useState('');
   const [unicodeOutput, setUnicodeOutput] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showImportModal, setShowImportModal] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const chapterRevealRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const reducedMotion = useReducedMotion();
   const { t } = useTranslation();
+
+  const handleImportManuscript = useCallback(
+    (imported: {
+      title: string;
+      chapters: Array<{
+        id: string;
+        title: string;
+        synopsis: string;
+        content: string;
+        wordCount: number;
+      }>;
+    }) => {
+      const project = createProject({
+        title: imported.title,
+        type: projectType,
+        template: null,
+        description: `Imported manuscript (${imported.chapters.length} chapters)`,
+        settings: {
+          agentGenerated: false,
+          genre: 'General',
+          logline: imported.chapters[0]?.synopsis || '',
+        },
+        researchNotes: {
+          comparables: [],
+          themes: [],
+          settingNotes: '',
+          characterArchetypes: [],
+          keyConflicts: [],
+        },
+        agentChapters: imported.chapters.map((c) => ({
+          id: c.id,
+          title: c.title,
+          synopsis: c.synopsis,
+        })),
+        content: imported.chapters[0]?.content || '',
+      });
+      onProjectCreated(project);
+    },
+    [projectType, onProjectCreated]
+  );
 
   const handleConvertBijoy = () => {
     const converted = convertBijoyToUnicode(bijoyInput);
@@ -621,12 +664,22 @@ export function BookAgentStart({
                   whileTap={{ scale: 0.98 }}
                   onClick={handleStart}
                   disabled={!description.trim()}
-                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand hover:bg-brand/90 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-brand/20"
+                  className="w-full flex items-center justify-center gap-2 py-3.5 bg-brand hover:bg-brand/90 disabled:opacity-30 disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-colors text-sm shadow-lg shadow-brand/20 cursor-pointer"
                 >
                   <Sparkles className="w-4 h-4" />
                   Generate plan
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
+
+                {/* Import Existing Manuscript Option */}
+                <button
+                  type="button"
+                  onClick={() => setShowImportModal(true)}
+                  className="w-full flex items-center justify-center gap-2 py-2.5 mt-2 rounded-xl border border-dashed border-border hover:border-indigo-500/50 hover:bg-muted text-xs font-semibold text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                >
+                  <FileUp className="w-4 h-4 text-indigo-400" />
+                  <span>Or Import Existing Manuscript (.docx, .pdf, .txt, Bijoy)</span>
+                </button>
               </motion.div>
             </div>
           </motion.div>
@@ -883,6 +936,13 @@ export function BookAgentStart({
           </div>
         </div>
       )}
+
+      {/* Smart Manuscript Importer Modal */}
+      <ManuscriptImportModal
+        isOpen={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onImport={handleImportManuscript}
+      />
     </div>
   );
 }
