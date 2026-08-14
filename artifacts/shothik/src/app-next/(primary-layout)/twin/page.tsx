@@ -19,6 +19,8 @@ import { saveOfflineTask, listOfflineTasks } from "@/lib/offline/offline-storage
 import { AutonomousDeliveryLoop } from "@/lib/autonomous/autonomous-delivery-loop";
 import { DailyDigestModal } from "@/components/twin/DailyDigestModal";
 import { ConnectExistingCompanyModal } from "@/components/twin/ConnectExistingCompanyModal";
+import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
+import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, CheckCircle } from "lucide-react";
 import {
@@ -583,7 +585,13 @@ function SubscriptionCard() {
   );
 }
 
-function CashFlowPnlCard({ onOpenDailyDigest }: { onOpenDailyDigest?: () => void }) {
+function CashFlowPnlCard({
+  onOpenDailyDigest,
+  onOpenMfsGateway,
+}: {
+  onOpenDailyDigest?: () => void;
+  onOpenMfsGateway?: () => void;
+}) {
   return (
     <PanelCard className="border-emerald-500/30 bg-gradient-to-br from-background to-emerald-950/20">
       <div className="flex items-center justify-between">
@@ -631,9 +639,17 @@ function CashFlowPnlCard({ onOpenDailyDigest }: { onOpenDailyDigest?: () => void
             data-testid="button-open-daily-digest"
           >
             <Mail className="h-3 w-3" />
-            <span>Daily CEO Briefing (08:00 AM)</span>
+            <span>Daily Briefing</span>
           </button>
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          <button
+            type="button"
+            onClick={onOpenMfsGateway}
+            className="flex items-center gap-1 text-[10px] font-semibold text-pink-400 hover:text-pink-300 transition font-mono"
+            data-testid="button-open-mfs-gateway"
+          >
+            <CreditCard className="h-3 w-3" />
+            <span>bKash Gateway</span>
+          </button>
         </div>
       </div>
     </PanelCard>
@@ -962,13 +978,26 @@ const DOC_ICONS: Record<TwinDocMock["kind"], React.ElementType> = {
 function DocumentsLibrary({
   docs,
   onOpenVersions,
+  onOpenDbSchema,
 }: {
   docs: TwinDocMock[];
   onOpenVersions: (doc: TwinDocMock) => void;
+  onOpenDbSchema?: () => void;
 }) {
   return (
     <PanelCard>
-      <SectionLabel>Documents</SectionLabel>
+      <div className="flex items-center justify-between">
+        <SectionLabel>Documents</SectionLabel>
+        <button
+          type="button"
+          onClick={onOpenDbSchema}
+          className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 flex items-center gap-1 font-semibold transition"
+          data-testid="button-open-db-schema"
+        >
+          <Database className="h-3 w-3" />
+          <span>Postgres Schema</span>
+        </button>
+      </div>
       <div className="mt-3 space-y-1.5">
         {docs.map((doc) => {
           const Icon = DOC_ICONS[doc.kind];
@@ -1650,6 +1679,8 @@ function TwinDashboardPage() {
   const [showAccountDrawer, setShowAccountDrawer] = useState(false);
   const [showDailyDigest, setShowDailyDigest] = useState(false);
   const [showConnectCompany, setShowConnectCompany] = useState(false);
+  const [showMfsGateway, setShowMfsGateway] = useState(false);
+  const [showDbSchema, setShowDbSchema] = useState(false);
   const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
   const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
 
@@ -1727,7 +1758,7 @@ function TwinDashboardPage() {
       {
         id: `feed-${Date.now()}`,
         time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-        text: `🚀 Polsia Co-Founder executed "${taskToRun.title}". Sandbox Vitest passed (100%), rolling container deployed in 420ms.`,
+        text: `🚀 Shothik Co-Founder executed "${taskToRun.title}". Sandbox Vitest passed (100%), rolling container deployed in 420ms.`,
         fromUser: false,
       },
     ]);
@@ -1757,6 +1788,8 @@ function TwinDashboardPage() {
       <InviteModal open={showInvite} onOpenChange={setShowInvite} />
       <DailyDigestModal open={showDailyDigest} onOpenChange={setShowDailyDigest} />
       <ConnectExistingCompanyModal open={showConnectCompany} onOpenChange={setShowConnectCompany} />
+      <MfsGatewayModal open={showMfsGateway} onOpenChange={setShowMfsGateway} />
+      <DatabaseSchemaModal open={showDbSchema} onOpenChange={setShowDbSchema} />
       <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
       <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
         <DialogContent
@@ -1778,7 +1811,10 @@ function TwinDashboardPage() {
         <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
           <AgentStatusWidget autoMode={autoMode} />
           <AutoModeCard autoMode={autoMode} onToggle={setAutoMode} />
-          <CashFlowPnlCard onOpenDailyDigest={() => setShowDailyDigest(true)} />
+          <CashFlowPnlCard
+            onOpenDailyDigest={() => setShowDailyDigest(true)}
+            onOpenMfsGateway={() => setShowMfsGateway(true)}
+          />
           <ProgressStatsCard />
           <TeamCard onInvite={() => setShowInvite(true)} />
           <SubscriptionCard />
@@ -1795,6 +1831,7 @@ function TwinDashboardPage() {
           <DocumentsLibrary
             docs={docs}
             onOpenVersions={(doc) => (doc.content ? setContentDoc(doc) : setVersionDoc(doc))}
+            onOpenDbSchema={() => setShowDbSchema(true)}
           />
         </div>
 
