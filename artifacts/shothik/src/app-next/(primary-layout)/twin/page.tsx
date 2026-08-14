@@ -58,6 +58,7 @@ import {
   Building2,
   ExternalLink,
   ShieldCheck,
+  Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -312,11 +313,12 @@ function PanelCard({
 /* ------------------------------------------------------------------ */
 
 function AgentStatusWidget({ autoMode }: { autoMode: boolean }) {
+  const [activeTaskLabel] = useState("Shipping v2.5.0 auth & billing engine to Dokploy…");
   return (
-    <PanelCard>
+    <PanelCard className="border-indigo-500/30 bg-gradient-to-br from-background to-indigo-950/20">
       <div className="flex items-center gap-3">
-        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/10">
-          <Sparkles className="h-5 w-5 text-indigo-500" />
+        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400">
+          <Sparkles className="h-5 w-5" />
           <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
             <span
               className={cn(
@@ -332,19 +334,34 @@ function AgentStatusWidget({ autoMode }: { autoMode: boolean }) {
             />
           </span>
         </div>
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-foreground">Your Twin</p>
-          <p className="truncate text-xs text-muted-foreground" data-testid="text-twin-status">
-            {autoMode ? "Drafting Chapter 3, second pass…" : "Standing by — ask me anything."}
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-foreground">Polsia AI Co-Founder</p>
+            <Badge variant="outline" className={cn("text-[9px] font-mono px-1.5 py-0", autoMode ? "border-emerald-500/40 text-emerald-400" : "text-muted-foreground")}>
+              {autoMode ? "Online · 24/7" : "Idle"}
+            </Badge>
+          </div>
+          <p className="truncate text-xs text-muted-foreground mt-0.5" data-testid="text-twin-status">
+            {autoMode ? activeTaskLabel : "Standing by — prompt me to code, fix, or grow."}
           </p>
         </div>
       </div>
-      <a
-        href="/writing-studio"
-        className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-indigo-500/20 bg-indigo-500/10 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 transition-colors hover:bg-indigo-500/20"
-      >
-        <BookOpen className="h-3.5 w-3.5" /> Launch Writing Studio
-      </a>
+      <div className="mt-3 grid grid-cols-2 gap-1.5">
+        <a
+          href="/live"
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 py-1.5 text-xs font-semibold text-indigo-400 transition-colors hover:bg-indigo-500/20"
+        >
+          <Radio className="h-3 w-3 animate-pulse text-indigo-400" /> Watch Live Feed
+        </a>
+        <a
+          href="https://verifiq.polsia.app"
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+        >
+          <Globe className="h-3 w-3 text-emerald-400" /> Open App
+        </a>
+      </div>
     </PanelCard>
   );
 }
@@ -356,18 +373,21 @@ function AutoModeCard({
   autoMode: boolean;
   onToggle: (v: boolean) => void;
 }) {
+  const [duration, setDuration] = useState<"1h" | "6h" | "24h" | "7d">("24h");
+  const [nightshift, setNightshift] = useState(true);
+
   return (
-    <PanelCard>
+    <PanelCard className="border-border/80">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
-            <Zap className="h-3.5 w-3.5 text-indigo-500" />
-            <p className="text-sm font-medium text-foreground">Auto Mode</p>
+            <Zap className="h-3.5 w-3.5 text-amber-400" />
+            <p className="text-xs font-semibold text-foreground">God Mode Autonomy</p>
           </div>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+          <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
             {autoMode
-              ? "I'll keep working overnight and leave you a briefing."
-              : "I'll only act when you ask."}
+              ? `Uninterrupted autonomous delivery for ${duration}.`
+              : "Pauses when founder is offline."}
           </p>
         </div>
         <Switch
@@ -377,22 +397,66 @@ function AutoModeCard({
           data-testid="switch-auto-mode"
         />
       </div>
+
+      {autoMode && (
+        <div className="mt-3 space-y-2.5 pt-2.5 border-t border-border/60">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-muted-foreground">Autonomy Duration:</span>
+            <div className="flex gap-1">
+              {(["1h", "6h", "24h", "7d"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDuration(d)}
+                  className={cn(
+                    "px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold transition",
+                    duration === d
+                      ? "bg-indigo-600 text-white"
+                      : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] pt-1">
+            <span className="text-muted-foreground">🌙 Nightshift Worker:</span>
+            <button
+              onClick={() => setNightshift(!nightshift)}
+              className={cn(
+                "text-[10px] font-mono px-2 py-0.5 rounded border transition",
+                nightshift
+                  ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
+                  : "border-border text-muted-foreground bg-muted/40"
+              )}
+            >
+              {nightshift ? "Execute 1 Task / Night" : "Reporting Only"}
+            </button>
+          </div>
+        </div>
+      )}
     </PanelCard>
   );
 }
 
-const PROGRESS_STATS = [
-  { label: "Words written", value: "18,430" },
-  { label: "Sources verified", value: "47" },
-  { label: "Chapters drafted", value: "3" },
+const STARTUP_TRACTION_STATS = [
+  { label: "Tasks Shipped", value: "42" },
+  { label: "Live Visitors", value: "1,420" },
+  { label: "System Uptime", value: "99.98%" },
 ];
 
 function ProgressStatsCard() {
   return (
     <PanelCard>
-      <SectionLabel>Progress</SectionLabel>
+      <div className="flex items-center justify-between">
+        <SectionLabel>Startup Traction</SectionLabel>
+        <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
+        </span>
+      </div>
       <div className="mt-3 grid grid-cols-3 gap-2">
-        {PROGRESS_STATS.map((s) => (
+        {STARTUP_TRACTION_STATS.map((s) => (
           <div key={s.label} className="min-w-0">
             <p className="text-base font-semibold tabular-nums text-foreground">{s.value}</p>
             <p className="text-[11px] leading-tight text-muted-foreground">{s.label}</p>
@@ -400,7 +464,7 @@ function ProgressStatsCard() {
         ))}
       </div>
       <p className="mt-3 flex items-center gap-1 text-[11px] text-muted-foreground">
-        <Clock className="h-3 w-3" /> Updated 4m ago
+        <Clock className="h-3 w-3" /> Updated 2m ago via Dokploy PaaS
       </p>
     </PanelCard>
   );
@@ -1100,14 +1164,15 @@ function OutputChannels() {
 function NarrativeFeed({ feed = MOCK_FEED }: { feed?: FeedEntry[] }) {
   const [entries, setEntries] = useState<FeedEntry[]>(feed);
   const [draft, setDraft] = useState("");
+  const [isRecording, setIsRecording] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setEntries(feed);
   }, [feed]);
 
-  const send = () => {
-    const text = draft.trim();
+  const send = (overrideText?: string) => {
+    const text = (overrideText ?? draft).trim();
     if (!text) return;
     const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
     setEntries((prev) => [
@@ -1116,35 +1181,53 @@ function NarrativeFeed({ feed = MOCK_FEED }: { feed?: FeedEntry[] }) {
       {
         id: `a-${Date.now()}`,
         time,
-        text: "Noted — I've folded that into tonight's plan. I'll flag anything that changes before I act on it.",
+        text: `Acknowledged: "${text}". Running AST resolution & testing sandbox in background…`,
       },
     ]);
-    setDraft("");
+    if (!overrideText) setDraft("");
     requestAnimationFrame(() => {
       scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
     });
   };
 
+  const QUICK_PROMPTS = [
+    "🚀 Deploy latest build",
+    "🛡️ Run SRE self-heal",
+    "📊 Audit P&L & Meta Ads",
+    "🐦 Draft product tweet",
+  ];
+
   return (
     <div className="flex h-full min-h-0 flex-col rounded-2xl border border-border/80 bg-card">
       <div className="flex items-center justify-between border-b border-border/80 px-4 py-3">
-        <SectionLabel>Twin · Live</SectionLabel>
-        <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-500">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" /> working
+        <div className="flex items-center gap-2">
+          <SectionLabel>Polsia Live Stream</SectionLabel>
+          <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-400">
+            v2.5.0 OPC
+          </span>
+        </div>
+        <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Autopilot Working
         </span>
       </div>
-      <div ref={scrollRef} className="min-h-0 flex-1 space-y-4 overflow-y-auto px-4 py-4">
+
+      <div ref={scrollRef} className="min-h-0 flex-1 space-y-3.5 overflow-y-auto px-4 py-4">
         {entries.map((e) => (
           <div key={e.id} className={cn("flex flex-col gap-1", e.fromUser && "items-end")}>
-            <span className="font-mono text-[10px] text-muted-foreground">
-              {e.fromUser ? "You" : "Twin"} · {e.time}
-            </span>
+            <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
+              <span>{e.fromUser ? "Founder" : "Polsia Co-Founder"} · {e.time}</span>
+              {!e.fromUser && (
+                <span className="px-1.5 py-0.2 rounded bg-muted/60 text-[9px] text-emerald-400/90 font-mono">
+                  THOUGHT 1.8s
+                </span>
+              )}
+            </div>
             <p
               className={cn(
-                "max-w-[92%] rounded-2xl px-3 py-2 text-[13px] leading-relaxed",
+                "max-w-[92%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
                 e.fromUser
-                  ? "rounded-br-md bg-primary text-primary-foreground"
-                  : "rounded-bl-md bg-muted/60 text-foreground"
+                  ? "rounded-br-md bg-indigo-600 text-white font-medium shadow-sm"
+                  : "rounded-bl-md bg-muted/50 border border-border/50 text-foreground"
               )}
             >
               {e.text}
@@ -1152,8 +1235,22 @@ function NarrativeFeed({ feed = MOCK_FEED }: { feed?: FeedEntry[] }) {
           </div>
         ))}
       </div>
-      <div className="border-t border-border/80 p-3">
-        <div className="flex items-end gap-2 rounded-3xl border border-border/80 bg-muted/10 px-3 py-2 focus-within:ring-2 focus-within:ring-primary/40">
+
+      <div className="border-t border-border/80 p-3 space-y-2">
+        {/* Quick action prompt pills */}
+        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {QUICK_PROMPTS.map((prompt) => (
+            <button
+              key={prompt}
+              onClick={() => send(prompt)}
+              className="shrink-0 text-[10px] font-medium px-2.5 py-1 rounded-full border border-border bg-background hover:bg-muted/80 text-muted-foreground hover:text-foreground transition"
+            >
+              {prompt}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-end gap-2 rounded-2xl border border-border/80 bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-indigo-500/40">
           <textarea
             value={draft}
             onChange={(e) => setDraft(e.target.value)}
@@ -1164,21 +1261,25 @@ function NarrativeFeed({ feed = MOCK_FEED }: { feed?: FeedEntry[] }) {
               }
             }}
             rows={1}
-            placeholder="Interrupt or redirect Twin…"
+            placeholder="Instruct or redirect Polsia Co-Founder…"
             className="max-h-28 min-h-[24px] flex-1 resize-none bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
             data-testid="input-twin-composer"
           />
           <button
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted/60"
+            onClick={() => setIsRecording(!isRecording)}
+            className={cn(
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors",
+              isRecording ? "bg-rose-500 text-white animate-pulse" : "text-muted-foreground hover:bg-muted"
+            )}
             aria-label="Voice input"
             data-testid="button-twin-voice"
           >
             <Mic className="h-4 w-4" />
           </button>
           <button
-            onClick={send}
+            onClick={() => send()}
             disabled={!draft.trim()}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition-opacity disabled:opacity-40 hover:bg-indigo-500"
             aria-label="Send"
             data-testid="button-twin-send"
           >
