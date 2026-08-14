@@ -38,6 +38,7 @@ import {
   ShieldCheck,
   Cpu,
   Layout,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -48,6 +49,7 @@ import { SectionLabel, PanelCard } from "./shared";
 import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
 import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
 import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
+import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
 import {
   MOCK_TWITTER_CHANNEL,
   MOCK_EMAIL_CHANNEL,
@@ -75,6 +77,7 @@ export function GrowthChannels() {
   const [showDomainModal, setShowDomainModal] = useState(false);
   const [showVersionsModal, setShowVersionsModal] = useState(false);
   const [showBuilderModal, setShowBuilderModal] = useState(false);
+  const [showCrmDrawer, setShowCrmDrawer] = useState(false);
   const [showLogsModal, setShowLogsModal] = useState(false);
   const [showSecretsModal, setShowSecretsModal] = useState(false);
   const [showMenuPopover, setShowMenuPopover] = useState(false);
@@ -254,14 +257,26 @@ export function GrowthChannels() {
               </p>
             </div>
           </div>
-          <Button
-            size="sm"
-            variant="outline"
-            className="h-7 rounded-lg text-[11px] font-medium"
-            onClick={() => setShowEmailModal(true)}
-          >
-            Outreach
-          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-semibold px-2 border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 font-mono gap-1"
+              onClick={() => setShowCrmDrawer(true)}
+              data-testid="button-open-leads-crm"
+            >
+              <Users className="h-3 w-3" />
+              <span>CRM</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7 rounded-lg text-[11px] font-medium"
+              onClick={() => setShowEmailModal(true)}
+            >
+              Outreach
+            </Button>
+          </div>
         </div>
 
         <div className="mt-3 pt-2.5 border-t border-border/60 flex items-center justify-between">
@@ -487,6 +502,13 @@ export function GrowthChannels() {
         onOpenChange={setShowBuilderModal}
         companyName="VerifiQ AI"
         subdomain={website.subdomain}
+      />
+
+      {/* Unified Customer Prospecting & Inbound Lead CRM Drawer */}
+      <LeadCrmDrawer
+        open={showCrmDrawer}
+        onOpenChange={setShowCrmDrawer}
+        companyName="VerifiQ AI"
       />
     </div>
   );
