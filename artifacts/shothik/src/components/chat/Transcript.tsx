@@ -1,4 +1,4 @@
-import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks } from "lucide-react";
+import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
@@ -15,6 +15,7 @@ import { ReplitAgentActivityBar } from "./ReplitAgentActivityBar";
 import { ProactiveNextActions } from "./ProactiveNextActions";
 import { PerplexitySourcesGrid } from "@/components/perplexity/PerplexitySourcesGrid";
 import { PerplexityRelatedQueries } from "@/components/perplexity/PerplexityRelatedQueries";
+import { TrajectoryReceiptModal } from "./TrajectoryReceiptModal";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState } from "react";
@@ -122,6 +123,8 @@ export function Transcript({
   const bottomRef = useRef<HTMLDivElement>(null);
   const lowRamConfig = LowRamStylexOptimizerService.detectDeviceCapabilities();
   const [visibleLimit, setVisibleLimit] = useState(lowRamConfig.virtualizationBatchSize);
+  const [trajectoryOpen, setTrajectoryOpen] = useState(false);
+  const [trajectoryModel, setTrajectoryModel] = useState("DeepSeek V4 Flash");
 
   // Dynamic DOM node virtualization for budget devices (Ticket #1)
   const slicedMessages = lowRamConfig.isLowEndDevice ? messages.slice(-visibleLimit) : messages;
@@ -450,6 +453,19 @@ export function Transcript({
                         <Copy className="h-3.5 w-3.5" />
                       </button>
 
+                      {/* 🧾 View Trajectory & Audit Receipt Trail */}
+                      <button
+                        onClick={() => {
+                          setTrajectoryModel((message.metadata?.model as string) || "DeepSeek V4 Flash");
+                          setTrajectoryOpen(true);
+                        }}
+                        className="flex items-center gap-1 h-7 px-2 rounded-md text-[10px] font-mono text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition cursor-pointer"
+                        title="View Replayable Execution Trajectory & Audit Receipt Trail"
+                      >
+                        <Receipt className="h-3 w-3" />
+                        <span>1.8¢ Receipt</span>
+                      </button>
+
                       {/* Regenerate */}
                       {canRegenerate && (
                         <button
@@ -522,6 +538,15 @@ export function Transcript({
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
+
+      {/* 🧾 Replayable Trajectory & Audit Receipt Trail Modal */}
+      {trajectoryOpen && (
+        <TrajectoryReceiptModal
+          open={trajectoryOpen}
+          onOpenChange={setTrajectoryOpen}
+          modelUsed={trajectoryModel}
+        />
+      )}
     </>
   );
 }

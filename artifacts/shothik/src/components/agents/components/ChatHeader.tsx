@@ -63,7 +63,7 @@ export function ChatHeader({
             data-testid="button-header-vtuber"
           >
             <span>🎙️</span>
-            <span className="hidden md:inline">VTuber</span>
+            <span className="hidden md:inline">Advanced Voice</span>
           </button>
         )}
 
