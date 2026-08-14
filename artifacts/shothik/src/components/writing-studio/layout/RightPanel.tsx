@@ -117,10 +117,11 @@ export function RightPanel({
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isValidProjectId = projectId && projectId !== 'default';
+  // Only query Convex if projectId is a genuine Convex Id (skip local 'proj_' or non-Convex IDs)
+  const isConvexId = Boolean(projectId && projectId !== 'default' && !projectId.startsWith('proj_') && projectId.length >= 24);
   const convexVersions = useQuery(
     api.projects.getVersions,
-    isValidProjectId ? { projectId: projectId as Id<"projects"> } : "skip"
+    isConvexId ? { projectId: projectId as Id<"projects"> } : "skip"
   );
 
   const versions: Version[] = (convexVersions ?? []).map((v) => ({

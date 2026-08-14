@@ -1,14 +1,15 @@
 /**
- * FAANG-Grade Refactored PolishedWriteView Orchestrator.
+ * FAANG-Grade PolishedWriteView Orchestrator.
  *
- * Responsibilities deconstructed into clean modular hooks & discrete error boundaries:
- *  - `useWritingEditor`: Content state, title, citation style, memoized word count & readiness metrics.
- *  - `useWritingHistory`: Debounced undo/redo history stack management.
- *  - `ComponentErrorBoundary`: Discrete React Error Boundaries for Navigation, Left Sidebar, Center Editor, and Right Panel.
+ * Fully wired for:
+ *  - Chapter tree sync (agentChapters -> LeftSidebar)
+ *  - TipTap CenterEditor bidirectional binding (onChange + formatting)
+ *  - RightPanel AI insights + Co-writer
+ *  - 3-Fold 5-Mode Book Workspace toggle
  */
-import { useState, useCallback, useEffect, lazy, Suspense } from "react";
+import React, { useState, useCallback, useEffect, lazy, Suspense, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, FileDown, BookOpen, Edit3, Sparkles, X, Check, SplitSquareHorizontal } from "lucide-react";
+import { Download, FileDown, BookOpen, Edit3, Sparkles, X, Check, SplitSquareHorizontal, Columns3 } from "lucide-react";
 import { ModeSwitcherHeader } from "./navigation/ModeSwitcherHeader";
 import { LeftSidebar } from "./layout/LeftSidebar";
 import { ActivityBar } from "./layout/ActivityBar";
@@ -20,11 +21,10 @@ import { LiveDocumentPreview } from "./layout/LiveDocumentPreview";
 import { ComponentErrorBoundary } from "@/components/agents/components/ChatErrorBoundaries";
 import { useWritingEditor } from "./hooks/useWritingEditor";
 import { useWritingHistory } from "./hooks/useWritingHistory";
-import { DeerFlowStatusBanner } from "./ux/DeerFlowStatusBanner";
+import { ReplitBookWorkspace } from "./ReplitBookWorkspace";
+import { Button } from "@/components/ui/button";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
-const PolishedWriteOnboarding = lazy(() => import("./PolishedWriteOnboarding") as any);
-const WebMCPWidget = lazy(() => import("./WebMCPWidget") as any);
 
 type Mode = "write" | "format" | "publish";
 type ProjectType = "book" | "research" | "assignment";
@@ -44,6 +44,57 @@ export function PolishedWriteView({
 }: PolishedWriteViewProps) {
   const projectType: ProjectType = projectTypeProp || project?.type || "book";
   const [mode, setMode] = useState<Mode>("write");
+  const [is3FoldMode, setIs3FoldMode] = useState(false);
+
+  // Initialize chapter manuscript structure from agent generation
+  const initialChapters = useMemo(() => {
+    const rawChapters = project?.agentChapters || project?.chapters || [];
+    if (Array.isArray(rawChapters) && rawChapters.length > 0) {
+      return rawChapters.map((ch: any, idx: number) => ({
+        id: ch.id || `ch-${idx + 1}`,
+        title: ch.title || `Chapter ${idx + 1}`,
+        synopsis: ch.synopsis || "",
+        status: (idx === 0 ? "in-progress" : "draft") as "in-progress" | "draft" | "complete",
+        sections: [
+          {
+            id: `sec-${idx + 1}-1`,
+            title: "Draft Manuscript",
+            isActive: idx === 0,
+          },
+        ],
+        wordCount: ch.wordCount || 0,
+        wordTarget: ch.wordTarget || 3500,
+      }));
+    }
+    return [
+      {
+        id: "ch-1",
+        title: "Chapter 1: The Beginning",
+        synopsis: "Introduction to the central story premise.",
+        status: "in-progress" as const,
+        sections: [{ id: "sec-1-1", title: "Opening Scene", isActive: true }],
+        wordCount: 0,
+        wordTarget: 3500,
+      },
+    ];
+  }, [project]);
+
+  const [chapters, setChapters] = useState(initialChapters);
+  const [activeChapterId, setActiveChapterId] = useState(initialChapters[0]?.id || "ch-1");
+  const [activeSectionId, setActiveSectionId] = useState(initialChapters[0]?.sections[0]?.id || "sec-1-1");
+
+  const activeChapter = useMemo(
+    () => chapters.find((c) => c.id === activeChapterId) || chapters[0],
+    [chapters, activeChapterId]
+  );
+
+  const initialContent = useMemo(() => {
+    if (project?.content && project.content.trim()) return project.content;
+    if (activeChapter?.synopsis) {
+      return `<p><em>${activeChapter.synopsis}</em></p><p><br></p><p>Start writing chapter manuscript here in Bengali or English…</p>`;
+    }
+    return "<p>Start writing your masterpiece…</p>";
+  }, [project, activeChapter]);
 
   const {
     content,
@@ -59,12 +110,9 @@ export function PolishedWriteView({
     setCitationStyle,
     setIsSaving,
     setLastSaved,
-  } = useWritingEditor(project?.content || "", project?.title || bookTitle);
+  } = useWritingEditor(initialContent, project?.title || bookTitle);
 
-  const { pushHistory, undo, redo, canUndo, canRedo } = useWritingHistory(project?.content || "");
-
-  const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [showPreview, setShowPreview] = useState(false);
+  const { pushHistory, undo, redo, canUndo, canRedo } = useWritingHistory(initialContent);
 
   const handleContentChange = useCallback(
     (newText: string) => {
@@ -74,43 +122,81 @@ export function PolishedWriteView({
     [pushHistory, setContent]
   );
 
+  const handleSectionClick = useCallback((sectionId: string) => {
+    setActiveSectionId(sectionId);
+    const parentCh = chapters.find((c) => c.sections.some((s) => s.id === sectionId));
+    if (parentCh) {
+      setActiveChapterId(parentCh.id);
+    }
+  }, [chapters]);
+
+  // If user switches to full 3-Fold 5-Mode Workspace
+  if (is3FoldMode) {
+    return (
+      <ReplitBookWorkspace
+        initialTitle={title}
+        initialChapters={chapters.map((c) => ({
+          id: c.id,
+          title: c.title,
+          synopsis: c.synopsis || "",
+          wordCount: c.wordCount || 0,
+        }))}
+        onBack={() => setIs3FoldMode(false)}
+      />
+    );
+  }
+
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
       {/* Top Header Mode Switcher */}
       <ComponentErrorBoundary title="Header Navigation Error">
-        <ModeSwitcherHeader
-          title={title}
-          mode={mode}
-          onModeChange={setMode}
-          onBack={onBack}
-        />
+        <div className="flex items-center justify-between border-b border-border bg-background px-4 py-2">
+          <ModeSwitcherHeader
+            title={title}
+            mode={mode}
+            onModeChange={setMode}
+            onBack={onBack}
+          />
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIs3FoldMode(true)}
+              className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              title="Open 3-Fold IDE with Fortune Sheet, Mindmap, and Slide Pitch"
+            >
+              <Columns3 className="h-3.5 w-3.5" />
+              <span>3-Fold IDE Canvas</span>
+            </Button>
+          </div>
+        </div>
       </ComponentErrorBoundary>
 
       {/* Main Workspace Layout */}
       <div className="flex flex-1 min-h-0 w-full overflow-hidden">
-        {/* Left Sidebar */}
+        {/* Left Sidebar Chapter Tree */}
         <ComponentErrorBoundary title="Left Sidebar Error">
           <LeftSidebar
-            content={content}
-            wordCount={wordCount}
-            citationCount={citationCount}
-            readinessScore={readinessScore}
+            chapters={chapters}
+            activeSectionId={activeSectionId}
+            onSectionClick={handleSectionClick}
+            onChaptersChange={setChapters}
+            projectType={projectType}
+            researchNotes={project?.researchNotes}
           />
         </ComponentErrorBoundary>
 
         {/* Center Editor / Publishing View */}
         <div className="flex flex-1 flex-col min-w-0 h-full">
-          <ComponentErrorBoundary title="DeerFlow Banner Error">
-            <DeerFlowStatusBanner />
-          </ComponentErrorBoundary>
-
           {mode === "write" && (
             <ComponentErrorBoundary title="Editor Workspace Error">
               <CenterEditor
                 content={content}
-                onContentChange={handleContentChange}
+                onChange={handleContentChange}
+                chapterTitle={activeChapter?.title || title}
                 canUndo={canUndo}
                 canRedo={canRedo}
+                citationStyle={citationStyle as any}
                 onUndo={() => {
                   const prev = undo();
                   if (prev !== null) setContent(prev);
@@ -130,13 +216,13 @@ export function PolishedWriteView({
           )}
         </div>
 
-        {/* Right Panel Auditor */}
+        {/* Right Panel AI Auditor & Co-writer */}
         <ComponentErrorBoundary title="Auditor Panel Error">
           <RightPanel
             content={content}
-            citationStyle={citationStyle}
-            onCitationStyleChange={setCitationStyle}
-            referenceList={referenceList}
+            projectId={project?._id || "default"}
+            projectTitle={title}
+            projectType={projectType}
           />
         </ComponentErrorBoundary>
       </div>
