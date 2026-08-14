@@ -72,3 +72,10 @@ convex-jwt-private-key.pem
 .windsurf
 .vercel
 .env*
+
+# Reference clones & deployment archives
+inkos-clone/
+inkos-repo/
+ponytail/
+*.tar.gz
+
