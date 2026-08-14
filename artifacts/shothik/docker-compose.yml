@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  shothik-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shothik-ai
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - INSFORGE_URL=${INSFORGE_URL:-https://ers8j28a.ap-southeast.insforge.app}
+      - INSFORGE_ANON_KEY=${INSFORGE_ANON_KEY}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.shothik.rule=Host(`${DOMAIN:-srv1808169.hstgr.cloud}`)"
+      - "traefik.http.routers.shothik.entrypoints=websecure"
+      - "traefik.http.routers.shothik.tls.certresolver=letsencrypt"
+      - "traefik.http.services.shothik.loadbalancer.server.port=3000"
+    networks:
+      - web-network
+
+networks:
+  web-network:
+    external: true
