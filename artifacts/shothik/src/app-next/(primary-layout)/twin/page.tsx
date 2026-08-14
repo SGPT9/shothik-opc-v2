@@ -1567,7 +1567,15 @@ function PlatformTopBar({ onOpenAccountDrawer }: { onOpenAccountDrawer: () => vo
       <div className="flex items-center gap-3">
         <select
           value={activeCompany}
-          onChange={(e) => setActiveCompany(e.target.value)}
+          onChange={(e) => {
+            if (e.target.value === "+ New Company") {
+              if (typeof window !== "undefined") {
+                window.location.href = "/twin/new";
+              }
+            } else {
+              setActiveCompany(e.target.value);
+            }
+          }}
           className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm outline-none"
         >
           <option value="VerifiQ AI (Active)">🏢 VerifiQ AI (Active)</option>
