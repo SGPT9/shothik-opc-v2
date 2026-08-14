@@ -6,11 +6,9 @@ import {
   Rocket,
   Table2,
   Presentation,
-  Globe,
+  Check,
+  ChevronRight,
   ArrowRight,
-  Zap,
-  TrendingUp,
-  FlaskConical,
   Code2,
 } from "lucide-react";
 import { type ChatPersona } from "@/lib/chat/types";
@@ -68,54 +66,100 @@ const STARTER_CHIPS: Array<{
 
 export function EmptyChatGreeting({ onSelectPrompt }: EmptyChatGreetingProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[65vh] px-4 py-8 text-center animate-fade-in">
+    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-6 text-center animate-fade-in space-y-7 max-w-2xl mx-auto">
       {/* ── Perplexity Hero Title ── */}
-      <div className="max-w-xl space-y-3 mb-8">
-        <div className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-1 text-xs font-semibold text-emerald-400 tracking-wide uppercase shadow-sm">
-          <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-          <span>Shothik Intelligence</span>
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
-          Where knowledge begins.
+      <div className="space-y-1.5 text-center">
+        <span className="text-xs font-mono font-medium text-zinc-500 uppercase tracking-widest">
+          Search
+        </span>
+        <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-white/95">
+          What do you want to know?
         </h1>
-        <p className="text-sm text-slate-400 leading-relaxed max-w-md mx-auto">
-          AI-powered research, financial modeling, slides, and real-world execution for South Asia.
-        </p>
       </div>
 
-      {/* ── Perplexity Glassmorphic Starter Cards ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-2xl w-full mb-6">
+      {/* ── Perplexity Starter Quick Actions ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 w-full">
         {STARTER_CHIPS.map((chip) => (
           <button
             key={chip.title}
             type="button"
             onClick={() => onSelectPrompt?.(chip.prompt, chip.mode, chip.tab)}
-            className="group relative flex items-start gap-3.5 rounded-2xl border border-slate-800 bg-slate-900/80 p-4 text-left transition-all duration-200 hover:border-emerald-500/50 hover:bg-slate-900 shadow-md backdrop-blur-md overflow-hidden"
+            className="group relative flex items-start gap-3 rounded-xl border border-white/[0.06] bg-[#161718]/80 p-3.5 text-left transition-all duration-150 hover:border-white/[0.15] hover:bg-[#1a1b1d] shadow-sm backdrop-blur-md overflow-hidden cursor-pointer"
           >
-            {/* Icon */}
-            <div className="relative shrink-0 mt-0.5 p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-emerald-400">
+            <div className="relative shrink-0 mt-0.5 p-2 rounded-lg bg-white/[0.04] border border-white/[0.06] text-zinc-300">
               <chip.icon className="h-4 w-4" />
             </div>
 
-            {/* Text */}
             <div className="relative min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <span className="text-xs font-bold text-slate-100 group-hover:text-white leading-tight">
+              <div className="flex items-start justify-between gap-1 mb-0.5">
+                <span className="text-xs font-medium text-zinc-200 group-hover:text-white leading-tight">
                   {chip.title}
                 </span>
-                <span className="shrink-0 text-[9px] font-mono font-bold uppercase text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2 py-0.5">
-                  {chip.tag}
-                </span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+              <p className="text-[11px] text-zinc-400 leading-relaxed line-clamp-1">
                 {chip.subtitle}
               </p>
             </div>
 
-            {/* Arrow */}
-            <ArrowRight className="absolute bottom-3 right-3 h-3.5 w-3.5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
+            <ArrowRight className="absolute bottom-3 right-3 h-3 w-3 text-zinc-600 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
           </button>
         ))}
+      </div>
+
+      {/* ── Set up Computer Checklist Card (Exact Perplexity Onboarding) ── */}
+      <div className="w-full rounded-xl border border-white/[0.06] bg-[#151617]/90 p-3.5 text-left shadow-md">
+        <div className="flex items-center justify-between pb-2.5 border-b border-white/[0.05]">
+          <span className="text-xs font-medium text-zinc-200">Set up Computer</span>
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-zinc-400">
+            <span>1/4</span>
+            <div className="w-2.5 h-2.5 rounded-full border border-teal-400 border-t-transparent animate-spin" />
+          </div>
+        </div>
+
+        <div className="divide-y divide-white/[0.04] text-xs">
+          <div className="flex items-center justify-between py-2 text-zinc-400">
+            <div className="flex items-center gap-2.5">
+              <Check className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+              <span className="line-through text-zinc-500">Set up org connectors</span>
+            </div>
+          </div>
+
+          <div 
+            onClick={() => onSelectPrompt?.("Help me invite team members to our workspace")}
+            className="flex items-center justify-between py-2 text-zinc-300 hover:text-white cursor-pointer group transition"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-3.5 h-3.5 rounded-full border border-zinc-600 group-hover:border-zinc-400 shrink-0" />
+              <span>Invite team members</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
+          </div>
+
+          <div 
+            onClick={() => onSelectPrompt?.("I want to add credits to my Shothik workspace")}
+            className="flex items-center justify-between py-2 text-zinc-300 hover:text-white cursor-pointer group transition"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-3.5 h-3.5 rounded-full border border-zinc-600 group-hover:border-zinc-400 shrink-0" />
+              <span>Add credits</span>
+            </div>
+            <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
+          </div>
+
+          <div 
+            onClick={() => onSelectPrompt?.("How do I tag @Computer or @Shothik in Slack and WhatsApp?")}
+            className="flex items-center justify-between py-2 text-zinc-300 hover:text-white cursor-pointer group transition"
+          >
+            <div className="flex items-center gap-2.5">
+              <div className="w-3.5 h-3.5 rounded-full border border-zinc-600 group-hover:border-zinc-400 shrink-0" />
+              <span>Tag @Computer in Slack</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] text-zinc-500 font-mono">⌘K</span>
+              <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

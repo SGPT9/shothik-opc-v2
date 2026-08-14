@@ -27,6 +27,9 @@ export function useScenarioLab(initialParams?: Partial<ScenarioInputParams>) {
     arpuDollars: initialParams?.arpuDollars || 29,
     cacDollars: initialParams?.cacDollars || 120,
     monthlyChurnPercent: initialParams?.monthlyChurnPercent || 3.5,
+    currency: initialParams?.currency || "USD",
+    codReturnRatePercent: initialParams?.codReturnRatePercent || 18.5,
+    mfsCashoutFeePercent: initialParams?.mfsCashoutFeePercent || 1.5,
   });
 
   const [isSimulating, setIsSimulating] = useState(false);
@@ -70,7 +73,7 @@ export function useScenarioLab(initialParams?: Partial<ScenarioInputParams>) {
     };
   }, [stressTestResults]);
 
-  const updateParam = useCallback((key: keyof ScenarioInputParams, value: number) => {
+  const updateParam = useCallback(<K extends keyof ScenarioInputParams>(key: K, value: ScenarioInputParams[K]) => {
     setParams((prev) => ({ ...prev, [key]: value }));
   }, []);
 
@@ -95,4 +98,3 @@ export function useScenarioLab(initialParams?: Partial<ScenarioInputParams>) {
     triggerSimulation,
   };
 }
-

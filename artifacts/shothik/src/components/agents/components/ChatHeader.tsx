@@ -8,8 +8,6 @@ export interface ChatHeaderProps {
   executionMode?: "realtime" | "colibri_async" | "airllm_frontier" | "deepthink_async";
   activeTab?: string | null;
   onTabChange?: (tab: string) => void;
-  onToggleSidebar?: () => void;
-  sidebarOpen?: boolean;
   onPaywallClick?: () => void;
   onVTuberClick?: () => void;
 }
@@ -19,8 +17,6 @@ export function ChatHeader({
   executionMode = "realtime",
   activeTab,
   onTabChange,
-  onToggleSidebar,
-  sidebarOpen = false,
   onPaywallClick,
   onVTuberClick,
 }: ChatHeaderProps) {
@@ -43,26 +39,15 @@ export function ChatHeader({
   };
 
   return (
-    <div className="flex h-12 w-full items-center justify-between border-b border-border/60 bg-background/95 px-3 backdrop-blur-xl select-none z-20 shrink-0">
+    <div className="flex h-12 w-full items-center justify-between border-b border-border/60 bg-background/95 px-4 backdrop-blur-xl select-none z-20 shrink-0">
       
-      {/* Left: Hamburger + Logo */}
+      {/* Left: Brand Identity */}
       <div className="flex items-center gap-2.5">
-        {/* Hamburger — opens/closes sidebar */}
-        {onToggleSidebar && (
-          <button
-            onClick={onToggleSidebar}
-            className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
-            aria-label={sidebarOpen ? "Close sidebar" : "Open sidebar"}
-          >
-            {sidebarOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
-          </button>
-        )}
-
         <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-brand to-brand-dark text-white shadow-sm">
           <Bot className="h-3.5 w-3.5" />
         </div>
         <div>
-          <h2 className="text-sm font-bold tracking-tight text-foreground leading-tight">Shothik</h2>
+          <h2 className="text-sm font-bold tracking-tight text-foreground leading-tight">Shothik AI</h2>
         </div>
       </div>
 

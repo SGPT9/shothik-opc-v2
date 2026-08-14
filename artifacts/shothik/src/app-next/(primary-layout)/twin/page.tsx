@@ -1,1914 +1,1310 @@
-/**
- * Twin dashboard — Polsia-adapted 4-column workspace.
- * Frontend-only with realistic mock states (Phase 2 of the Shothik blueprint).
- *
- * Columns:
- *  - Left: agent status widget, Auto Mode toggle, progress stats, Team, subscription card
- *  - Center-left: task queue (state tabs) + Documents library with version history
- *  - Center-right: output channels (Publish / Share / Distribute)
- *  - Right: persistent first-person narrative feed + always-visible composer
- */
-import { useEffect, useMemo, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import SeededWorkspace from "@/components/twin/SeededWorkspace";
-import { loadServerSeed, type SavedSeed } from "@/lib/twin/seed-client";
-import { useSearchParams } from "@/lib/navigation";
-import { useTwinData, type TwinTask, type TwinDoc, type TwinFeedEntry } from "@/hooks/useTwin";
-import { saveOfflineTask, listOfflineTasks } from "@/lib/offline/offline-storage";
-import { AutonomousDeliveryLoop } from "@/lib/autonomous/autonomous-delivery-loop";
+import React, { useState, useEffect, useRef } from "react";
+import { Link } from "wouter";
+import { AutoModeModal } from "@/components/twin/AutoModeModal";
+import { NightshiftModal } from "@/components/twin/NightshiftModal";
+import { AddCreditsModal } from "@/components/twin/AddCreditsModal";
+import { DocumentsListModal, DocumentItem } from "@/components/twin/DocumentsListModal";
+import { CompanyLimitModal } from "@/components/twin/CompanyLimitModal";
+import { CompanySettingsModal } from "@/components/twin/CompanySettingsModal";
+import { ManageDomainsModal } from "@/components/twin/ManageDomainsModal";
+import { VersionsModal, VersionCommit } from "@/components/twin/VersionsModal";
+import { WebsiteHubModal } from "@/components/twin/WebsiteHubModal";
+import { AppSecretsModal } from "@/components/twin/AppSecretsModal";
+import { RedeployModal } from "@/components/twin/RedeployModal";
+import { AutoColdOutreachModal } from "@/components/twin/AutoColdOutreachModal";
+import { LiveTerminalTicker } from "@/components/twin/LiveTerminalTicker";
 import { DailyDigestModal } from "@/components/twin/DailyDigestModal";
 import { ConnectExistingCompanyModal } from "@/components/twin/ConnectExistingCompanyModal";
 import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
-import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
 import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
-import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
-import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
-import { CompetitorAdSpyModal } from "@/components/twin/CompetitorAdSpyModal";
-import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
-import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefrontModal";
-import { TelegramVoiceBriefingModal } from "@/components/twin/TelegramVoiceBriefingModal";
-import { CroTunerModal } from "@/components/twin/CroTunerModal";
 import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
-import { Card, CardContent } from "@/components/ui/card";
-import { Brain, CheckCircle, Crosshair, Truck, Split, Server, Bot, Database } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
-  Sparkles,
-  Plus,
+  Paperclip,
   Send,
-  Search,
-  PenLine,
-  FileText,
-  BookOpen,
-  Share2,
+  Plus,
+  Zap,
   Globe,
   Mail,
+  FileText,
   Clock,
-  RefreshCcw,
-  Users,
-  ChevronRight,
-  GitBranch,
   History,
-  X,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Loader2,
-  ListChecks,
-  Zap,
   CreditCard,
-  Mic,
-  RotateCcw,
-  Compass,
-  TrendingUp,
-  Play,
-  Menu,
-  Layers,
-  Settings,
-  HelpCircle,
-  Gift,
-  User,
-  Download,
-  LogOut,
-  Building2,
-  ExternalLink,
-  ShieldCheck,
-  Radio,
+  CheckCircle2,
+  X,
+  PlusSquare,
+  LayoutGrid,
+  SendHorizontal,
+  Clock3,
+  Rocket,
+  Users,
+  MessageSquare,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { cn } from "@/lib/utils";
-import { WayfinderBoard } from "@/components/chat/WayfinderBoard";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 /* ------------------------------------------------------------------ */
-/* Mock data                                                           */
+/* Types & Mock Data                                                  */
 /* ------------------------------------------------------------------ */
 
-type TaskStatus = "todo" | "in_progress" | "completed" | "rejected" | "failed";
-type TaskCategory = "Research" | "Draft" | "Edit" | "Publish";
-
-interface TwinTaskMock {
+interface CockpitTask {
   id: string;
   title: string;
   description: string;
-  category: TaskCategory;
-  schedule?: string;
-  cost: string;
-  status: TaskStatus;
-  failureReason?: string;
+  tags: string[]; // e.g. ["FEATURE", "TONIGHT", "1 CREDIT"]
+  status: "todo" | "in_progress" | "completed";
 }
 
-const MOCK_TASKS: TwinTaskMock[] = [
-  {
-    id: "t1",
-    title: "Verify sources for Chapter 4",
-    description: "Cross-check the 9 citations flagged during last night's research pass.",
-    category: "Research",
-    schedule: "Tonight",
-    cost: "~12 credits",
-    status: "todo",
-  },
-  {
-    id: "t2",
-    title: "Outline Part II — 'The Turn'",
-    description: "Draft a 3-act outline from your margin notes and the approved synopsis.",
-    category: "Draft",
-    schedule: "Tonight",
-    cost: "~20 credits",
-    status: "todo",
-  },
-  {
-    id: "t3",
-    title: "Weekly progress report",
-    description: "Summarize what shipped this week in plain English plus the numbers.",
-    category: "Edit",
-    schedule: "Recurring · Sun",
-    cost: "~4 credits",
-    status: "todo",
-  },
-  {
-    id: "t4",
-    title: "Drafting Chapter 3 — second pass",
-    description: "Tightening dialogue in scenes 2 and 5, keeping your voice profile.",
-    category: "Draft",
-    cost: "~25 min left",
-    status: "in_progress",
-  },
-  {
-    id: "t5",
-    title: "Researching comparable titles",
-    description: "Scanning 2024–2026 releases in your genre for positioning notes.",
-    category: "Research",
-    cost: "~10 min left",
-    status: "in_progress",
-  },
-  {
-    id: "t6",
-    title: "Chapter 2 line edit",
-    description: "Fixed 41 style inconsistencies, preserved all flagged passages.",
-    category: "Edit",
-    cost: "18 credits",
-    status: "completed",
-  },
-  {
-    id: "t7",
-    title: "Source verification — Chapter 3",
-    description: "Verified 12 of 12 sources; replaced one dead link with an archived copy.",
-    category: "Research",
-    cost: "9 credits",
-    status: "completed",
-  },
-  {
-    id: "t8",
-    title: "Day 6 — Progress Report",
-    description: "What shipped: 4,120 words. The math: 2 chapters at 92% confidence.",
-    category: "Edit",
-    cost: "3 credits",
-    status: "completed",
-  },
-  {
-    id: "t9",
-    title: "Auto-post excerpt to socials",
-    description: "You rejected this — Distribute stays off until you turn it on.",
-    category: "Publish",
-    cost: "—",
-    status: "rejected",
-  },
-  {
-    id: "t10",
-    title: "Import notes from old drive folder",
-    description: "The folder link expired before I could finish syncing. Want me to retry?",
-    category: "Research",
-    cost: "0 credits charged",
-    status: "failed",
-    failureReason: "Source link expired",
-  },
-];
-
-interface TwinDocMock {
+interface CockpitDoc {
   id: string;
   title: string;
-  kind: "Research Report" | "Chapter Draft" | "Outline" | "Progress Report" | "Business Plan";
-  updated: string;
-  versions: { id: string; message: string; time: string; current?: boolean }[];
-  /** Markdown body for real (server-persisted) documents. */
+  timeAgo: string;
+  kind: string;
   content?: string;
 }
 
-const MOCK_DOCS: TwinDocMock[] = [
-  {
-    id: "d1",
-    title: "Chapter 3 — Draft",
-    kind: "Chapter Draft",
-    updated: "14m ago",
-    versions: [
-      { id: "v4", message: "Second pass: tightened dialogue in scenes 2 & 5", time: "14m ago", current: true },
-      { id: "v3", message: "Applied your margin notes from Tuesday", time: "Yesterday, 11:42 PM" },
-      { id: "v2", message: "First full draft from approved outline", time: "Aug 3, 10:15 PM" },
-      { id: "v1", message: "Initial scaffold from Chapter 3 outline", time: "Aug 2, 9:03 PM" },
-    ],
-  },
-  {
-    id: "d2",
-    title: "Comparable Titles — Research Report",
-    kind: "Research Report",
-    updated: "1h ago",
-    versions: [
-      { id: "v2", message: "Added 6 titles from 2026 releases, updated positioning notes", time: "1h ago", current: true },
-      { id: "v1", message: "First scan: 14 comparable titles with verified sales data", time: "Aug 4, 2:20 AM" },
-    ],
-  },
-  {
-    id: "d3",
-    title: "Part II Outline — Now / Next / Later",
-    kind: "Outline",
-    updated: "Yesterday",
-    versions: [
-      { id: "v3", message: "Moved the reveal from Next to Now per your note", time: "Yesterday, 8:12 PM", current: true },
-      { id: "v2", message: "Split act two into two beats", time: "Aug 3, 7:44 PM" },
-      { id: "v1", message: "Initial Now/Next/Later roadmap", time: "Aug 2, 11:58 PM" },
-    ],
-  },
-  {
-    id: "d4",
-    title: "Day 6 — Progress Report",
-    kind: "Progress Report",
-    updated: "Yesterday",
-    versions: [
-      { id: "v1", message: "What Shipped + The Math for Aug 4", time: "Yesterday, 6:00 AM", current: true },
-    ],
-  },
-];
-
-interface FeedEntry {
+interface StandupMessage {
   id: string;
   time: string;
+  dayHeader?: string;
+  isNewDivider?: boolean;
   text: string;
   fromUser?: boolean;
 }
 
-const MOCK_FEED: FeedEntry[] = [
+const INITIAL_TASKS: CockpitTask[] = [
   {
-    id: "f1",
-    time: "9:14 PM",
-    text: "Finished verifying 12 sources for Chapter 3. One link was dead, so I swapped in an archived copy — flagged it in the research report if you want to double-check.",
+    id: "task-1",
+    title: "Add /docs/identity-verification page covering NI...",
+    description:
+      "Add a static /docs/identity-verification documentation page explaining how banks integrate with POST /v1/verify/identity. Cover: required request fiel...",
+    tags: ["FEATURE", "TONIGHT", "1 CREDIT"],
+    status: "todo",
   },
   {
-    id: "f2",
-    time: "9:31 PM",
-    text: "Started the second pass on Chapter 3. I'm tightening dialogue in scenes 2 and 5 and leaving everything you marked \"keep\" untouched.",
+    id: "task-2",
+    title: "Add /docs/aml-verification page covering OpenS...",
+    description:
+      "Add a static /docs/aml-verification documentation page explaining how banks integrate with POST /v1/verify/aml. Cover: required request fields (name, ...",
+    tags: ["FEATURE", "1 CREDIT"],
+    status: "todo",
   },
   {
-    id: "f3",
-    time: "10:02 PM",
-    text: "While that runs, I scanned this year's releases in your genre. Found 6 new comparable titles — the full breakdown is in the research report.",
+    id: "task-3",
+    title: "Add /docs/otp-verification page summarising Ba...",
+    description:
+      "Add a static /docs/otp-verification documentation page that presents the Bangladesh OTP vendor shortlist findings (from the completed research task) i...",
+    tags: ["FEATURE", "1 CREDIT"],
+    status: "todo",
   },
   {
-    id: "f4",
-    time: "10:05 PM",
-    fromUser: true,
-    text: "Great — hold the outline for Part II until I send you my notes tomorrow.",
-  },
-  {
-    id: "f5",
-    time: "10:06 PM",
-    text: "Got it. I've moved the Part II outline to tonight's queue but paused it until your notes arrive. Chapter 3's second pass should be done in about 25 minutes — want me to start the line edit right after, or wait for you?",
-  },
-];
-
-const MOCK_TEAM = [
-  { name: "Nadia Rahman", role: "Editor", initials: "NR" },
-  { name: "Sam Osei", role: "Reviewer", initials: "SO" },
-];
-
-/* ------------------------------------------------------------------ */
-/* Small shared pieces                                                 */
-/* ------------------------------------------------------------------ */
-
-const CATEGORY_STYLES: Record<TaskCategory, string> = {
-  Research: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20",
-  Draft: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20",
-  Edit: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-  Publish: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-};
-
-const CATEGORY_ICONS: Record<TaskCategory, React.ElementType> = {
-  Research: Search,
-  Draft: PenLine,
-  Edit: ListChecks,
-  Publish: Globe,
-};
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-      {children}
-    </p>
-  );
-}
-
-function PanelCard({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div className={cn("rounded-2xl border border-border/80 bg-card p-4", className)}>
-      {children}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Left column                                                         */
-/* ------------------------------------------------------------------ */
-
-function AgentStatusWidget({ autoMode }: { autoMode: boolean }) {
-  const [activeTaskLabel] = useState("Shipping v2.5.0 auth & billing engine to Dokploy…");
-  return (
-    <PanelCard className="border-indigo-500/30 bg-gradient-to-br from-background to-indigo-950/20">
-      <div className="flex items-center gap-3">
-        <div className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-500/20 text-indigo-400">
-          <Sparkles className="h-5 w-5" />
-          <span className="absolute -right-0.5 -top-0.5 flex h-3 w-3">
-            <span
-              className={cn(
-                "absolute inline-flex h-full w-full rounded-full opacity-60",
-                autoMode ? "animate-ping bg-emerald-400" : "bg-muted-foreground/40"
-              )}
-            />
-            <span
-              className={cn(
-                "relative inline-flex h-3 w-3 rounded-full border-2 border-card",
-                autoMode ? "bg-emerald-500" : "bg-muted-foreground/50"
-              )}
-            />
-          </span>
-        </div>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold text-foreground">Polsia AI Co-Founder</p>
-            <Badge variant="outline" className={cn("text-[9px] font-mono px-1.5 py-0", autoMode ? "border-emerald-500/40 text-emerald-400" : "text-muted-foreground")}>
-              {autoMode ? "Online · 24/7" : "Idle"}
-            </Badge>
-          </div>
-          <p className="truncate text-xs text-muted-foreground mt-0.5" data-testid="text-twin-status">
-            {autoMode ? activeTaskLabel : "Standing by — prompt me to code, fix, or grow."}
-          </p>
-        </div>
-      </div>
-      <div className="mt-3 grid grid-cols-2 gap-1.5">
-        <a
-          href="/live"
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-indigo-500/30 bg-indigo-500/10 py-1.5 text-xs font-semibold text-indigo-400 transition-colors hover:bg-indigo-500/20"
-        >
-          <Radio className="h-3 w-3 animate-pulse text-indigo-400" /> Watch Live Feed
-        </a>
-        <a
-          href="https://verifiq.shothikgpt.com"
-          target="_blank"
-          rel="noreferrer"
-          className="flex items-center justify-center gap-1.5 rounded-xl border border-border bg-card py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
-        >
-          <Globe className="h-3 w-3 text-emerald-400" /> Open App
-        </a>
-      </div>
-    </PanelCard>
-  );
-}
-
-function AutoModeCard({
-  autoMode,
-  onToggle,
-}: {
-  autoMode: boolean;
-  onToggle: (v: boolean) => void;
-}) {
-  const [duration, setDuration] = useState<"1h" | "6h" | "24h" | "7d">("24h");
-  const [nightshift, setNightshift] = useState(true);
-
-  return (
-    <PanelCard className="border-border/80">
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <Zap className="h-3.5 w-3.5 text-amber-400" />
-            <p className="text-xs font-semibold text-foreground">God Mode Autonomy</p>
-          </div>
-          <p className="mt-0.5 text-[11px] leading-relaxed text-muted-foreground">
-            {autoMode
-              ? `Uninterrupted autonomous delivery for ${duration}.`
-              : "Pauses when founder is offline."}
-          </p>
-        </div>
-        <Switch
-          checked={autoMode}
-          onCheckedChange={onToggle}
-          aria-label="Toggle Auto Mode"
-          data-testid="switch-auto-mode"
-        />
-      </div>
-
-      {autoMode && (
-        <div className="mt-3 space-y-2.5 pt-2.5 border-t border-border/60">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-muted-foreground">Autonomy Duration:</span>
-            <div className="flex gap-1">
-              {(["1h", "6h", "24h", "7d"] as const).map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setDuration(d)}
-                  className={cn(
-                    "px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold transition",
-                    duration === d
-                      ? "bg-indigo-600 text-white"
-                      : "bg-muted/60 text-muted-foreground hover:text-foreground"
-                  )}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between text-[11px] pt-1">
-            <span className="text-muted-foreground">🌙 Nightshift Worker:</span>
-            <button
-              onClick={() => setNightshift(!nightshift)}
-              className={cn(
-                "text-[10px] font-mono px-2 py-0.5 rounded border transition",
-                nightshift
-                  ? "border-emerald-500/40 text-emerald-400 bg-emerald-500/10"
-                  : "border-border text-muted-foreground bg-muted/40"
-              )}
-            >
-              {nightshift ? "Execute 1 Task / Night" : "Reporting Only"}
-            </button>
-          </div>
-        </div>
-      )}
-    </PanelCard>
-  );
-}
-
-const STARTUP_TRACTION_STATS = [
-  { label: "Tasks Shipped", value: "42" },
-  { label: "Live Visitors", value: "1,420" },
-  { label: "System Uptime", value: "99.98%" },
-];
-
-function ProgressStatsCard() {
-  return (
-    <PanelCard>
-      <div className="flex items-center justify-between">
-        <SectionLabel>Startup Traction</SectionLabel>
-        <span className="flex items-center gap-1 text-[10px] font-mono text-emerald-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Live
-        </span>
-      </div>
-      <div className="mt-3 grid grid-cols-3 gap-2">
-        {STARTUP_TRACTION_STATS.map((s) => (
-          <div key={s.label} className="min-w-0">
-            <p className="text-base font-semibold tabular-nums text-foreground">{s.value}</p>
-            <p className="text-[11px] leading-tight text-muted-foreground">{s.label}</p>
-          </div>
-        ))}
-      </div>
-      <p className="mt-3 flex items-center gap-1 text-[11px] text-muted-foreground">
-        <Clock className="h-3 w-3" /> Updated 2m ago via Dokploy PaaS
-      </p>
-    </PanelCard>
-  );
-}
-
-function TeamCard({ onInvite }: { onInvite: () => void }) {
-  return (
-    <PanelCard>
-      <div className="flex items-center justify-between">
-        <SectionLabel>Team · This project</SectionLabel>
-        <Users className="h-3.5 w-3.5 text-muted-foreground" />
-      </div>
-      <div className="mt-3 space-y-2">
-        {MOCK_TEAM.map((m) => (
-          <div key={m.name} className="flex items-center gap-2.5">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted font-mono text-[10px] font-medium text-foreground">
-              {m.initials}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-xs font-medium text-foreground">{m.name}</p>
-              <p className="text-[11px] text-muted-foreground">{m.role}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <Button
-        variant="outline"
-        size="sm"
-        className="mt-3 w-full rounded-xl text-xs"
-        onClick={onInvite}
-        data-testid="button-add-collaborator"
-      >
-        <Plus className="mr-1 h-3.5 w-3.5" /> Add Collaborator
-      </Button>
-    </PanelCard>
-  );
-}
-
-function InviteModal({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
-  const [email, setEmail] = useState("");
-  const [sent, setSent] = useState(false);
-
-  return (
-    <Dialog
-      open={open}
-      onOpenChange={(v) => {
-        onOpenChange(v);
-        if (!v) {
-          setSent(false);
-          setEmail("");
-        }
-      }}
-    >
-      <DialogContent className="sm:max-w-sm">
-        <DialogTitle>Add Collaborator</DialogTitle>
-        <DialogDescription className="sr-only">Invite a collaborator to this project</DialogDescription>
-        {sent ? (
-          <div className="flex flex-col items-center gap-2 py-4 text-center">
-            <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-            <p className="text-sm text-foreground">Invite sent to {email}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="collaborator@email.com"
-              className="w-full rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              data-testid="input-invite-email"
-            />
-            <p className="rounded-xl bg-muted/50 p-3 text-xs leading-relaxed text-muted-foreground">
-              This invite only grants access to <span className="font-medium text-foreground">this project</span>.
-              It does not grant access to your other books or research spaces.
-            </p>
-            <Button
-              className="w-full rounded-xl"
-              disabled={!email.includes("@")}
-              onClick={() => setSent(true)}
-              data-testid="button-send-invite"
-            >
-              <Mail className="mr-1.5 h-4 w-4" /> Send Invite
-            </Button>
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function SubscriptionCard() {
-  return (
-    <PanelCard className="border-amber-500/30 bg-amber-500/5">
-      <div className="flex items-start gap-2.5">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-foreground">Your plan lapsed 2 days ago</p>
-          <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-            Everything here stays visible and your drafts are safe — but Twin has paused new work.
-          </p>
-          <div className="mt-3 space-y-1.5">
-            <Button size="sm" className="w-full rounded-xl text-xs" data-testid="button-resubscribe">
-              <CreditCard className="mr-1.5 h-3.5 w-3.5" /> Resubscribe to keep Twin working
-            </Button>
-            <Button variant="ghost" size="sm" className="w-full rounded-xl text-xs text-muted-foreground">
-              Keep drafts saved — $2/mo
-            </Button>
-          </div>
-        </div>
-      </div>
-    </PanelCard>
-  );
-}
-
-function CashFlowPnlCard({
-  onOpenDailyDigest,
-  onOpenMfsGateway,
-}: {
-  onOpenDailyDigest?: () => void;
-  onOpenMfsGateway?: () => void;
-}) {
-  return (
-    <PanelCard className="border-emerald-500/30 bg-gradient-to-br from-background to-emerald-950/20">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-500/20 text-emerald-400">
-            <TrendingUp className="h-4 w-4" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-foreground">Cash Flow & P&L</p>
-            <p className="text-[10px] font-mono text-emerald-400">65.2% Net Margin · Live</p>
-          </div>
-        </div>
-        <Badge variant="outline" className="border-emerald-500/40 text-[10px] text-emerald-400">
-          Profitable
-        </Badge>
-      </div>
-
-      <div className="mt-3 space-y-1.5 font-mono text-[11px]">
-        <div className="flex justify-between text-muted-foreground">
-          <span>Gross Revenue:</span>
-          <span className="font-bold text-foreground">৳45,000</span>
-        </div>
-        <div className="flex justify-between text-muted-foreground">
-          <span>bKash Fee (1.85%):</span>
-          <span className="text-rose-400">-৳832.50</span>
-        </div>
-        <div className="flex justify-between text-muted-foreground">
-          <span>Meta Ads ($50/day):</span>
-          <span className="text-rose-400">-৳6,000</span>
-        </div>
-        <div className="flex justify-between text-muted-foreground">
-          <span>Dokploy Hosting:</span>
-          <span className="text-rose-400">-৳120</span>
-        </div>
-        <div className="pt-1.5 border-t border-border flex justify-between font-bold text-xs">
-          <span className="text-foreground">Net Monthly Profit:</span>
-          <span className="text-emerald-400">৳38,047.50</span>
-        </div>
-
-        <div className="pt-2 border-t border-border flex items-center justify-between">
-          <button
-            type="button"
-            onClick={onOpenDailyDigest}
-            className="flex items-center gap-1.5 text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition"
-            data-testid="button-open-daily-digest"
-          >
-            <Mail className="h-3 w-3" />
-            <span>Daily Briefing</span>
-          </button>
-          <button
-            type="button"
-            onClick={onOpenMfsGateway}
-            className="flex items-center gap-1 text-[10px] font-semibold text-pink-400 hover:text-pink-300 transition font-mono"
-            data-testid="button-open-mfs-gateway"
-          >
-            <CreditCard className="h-3 w-3" />
-            <span>bKash Gateway</span>
-          </button>
-        </div>
-      </div>
-    </PanelCard>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Center-left: task queue + documents                                 */
-/* ------------------------------------------------------------------ */
-
-const STATUS_TABS: { key: TaskStatus; label: string }[] = [
-  { key: "todo", label: "To Do" },
-  { key: "in_progress", label: "In Progress" },
-  { key: "completed", label: "Completed" },
-  { key: "rejected", label: "Rejected" },
-  { key: "failed", label: "Failed" },
-];
-
-function TaskCard({ task, onRun }: { task: TwinTaskMock; onRun?: (task: TwinTaskMock) => void }) {
-  const Icon = CATEGORY_ICONS[task.category];
-  return (
-    <div
-      className="rounded-xl border border-border/80 bg-background p-3 transition-colors hover:border-muted-foreground/30"
-      data-testid={`card-task-${task.id}`}
-    >
-      <div className="flex items-start justify-between gap-2">
-        <p className="text-sm font-medium leading-snug text-foreground">{task.title}</p>
-        {task.status === "in_progress" && (
-          <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-indigo-500" />
-        )}
-        {task.status === "completed" && (
-          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
-        )}
-        {task.status === "rejected" && (
-          <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-        )}
-        {task.status === "failed" && (
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-red-500" />
-        )}
-      </div>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{task.description}</p>
-      {task.failureReason && (
-        <p className="mt-1.5 flex items-center gap-1 text-[11px] text-red-500">
-          <AlertTriangle className="h-3 w-3" /> {task.failureReason}
-        </p>
-      )}
-      <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-        <span
-          className={cn(
-            "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 font-mono text-[10px]",
-            CATEGORY_STYLES[task.category]
-          )}
-        >
-          <Icon className="h-2.5 w-2.5" /> {task.category}
-        </span>
-        {task.schedule && (
-          <span className="inline-flex items-center gap-1 rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-            {task.schedule.startsWith("Recurring") ? (
-              <RefreshCcw className="h-2.5 w-2.5" />
-            ) : (
-              <Clock className="h-2.5 w-2.5" />
-            )}
-            {task.schedule}
-          </span>
-        )}
-        <span className="inline-flex items-center rounded-md border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
-          {task.cost}
-        </span>
-        {task.status !== "completed" && (
-          <button
-            type="button"
-            onClick={() => onRun?.(task)}
-            className="ml-auto inline-flex items-center gap-1 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 px-2 py-0.5 text-[10px] font-bold hover:bg-indigo-500/20 transition"
-            data-testid={`button-run-now-${task.id}`}
-          >
-            <Zap className="h-2.5 w-2.5" /> Run Now
-          </button>
-        )}
-        {task.status === "failed" && (
-          <button className="ml-auto inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 font-mono text-[10px] text-indigo-500 hover:bg-indigo-500/10">
-            <RotateCcw className="h-2.5 w-2.5" /> Retry
-          </button>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function NewTaskModal({
-  open,
-  onOpenChange,
-  onCreate,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  onCreate: (t: TwinTaskMock) => void;
-}) {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState<TaskCategory>("Research");
-  const [tonight, setTonight] = useState(true);
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogTitle>New Task</DialogTitle>
-        <DialogDescription className="sr-only">Queue a new goal for your Twin</DialogDescription>
-        <div className="space-y-4">
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">What should Twin work on?</label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g. Research publishers for my genre"
-              className="w-full rounded-xl border border-border bg-muted/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
-              data-testid="input-new-task-title"
-            />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-foreground">Category</label>
-            <div className="grid grid-cols-4 gap-2">
-              {(Object.keys(CATEGORY_ICONS) as TaskCategory[]).map((c) => {
-                const Icon = CATEGORY_ICONS[c];
-                return (
-                  <button
-                    key={c}
-                    onClick={() => setCategory(c)}
-                    className={cn(
-                      "flex flex-col items-center gap-1 rounded-xl border p-2.5 text-xs font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
-                      category === c
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border text-muted-foreground hover:border-muted-foreground/40"
-                    )}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {c}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <label className="flex items-center justify-between rounded-xl border border-border p-3">
-            <span className="text-sm text-foreground">Run tonight</span>
-            <Switch checked={tonight} onCheckedChange={setTonight} />
-          </label>
-          <Button
-            className="w-full rounded-xl"
-            disabled={!title.trim()}
-            onClick={() => {
-              onCreate({
-                id: `t-${Date.now()}`,
-                title: title.trim(),
-                description: "Queued by you — Twin will pick this up next.",
-                category,
-                schedule: tonight ? "Tonight" : undefined,
-                cost: "~10 credits",
-                status: "todo",
-              });
-              setTitle("");
-              onOpenChange(false);
-            }}
-            data-testid="button-create-task"
-          >
-            <Plus className="mr-1.5 h-4 w-4" /> Add to queue
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function ManageTasksModal({
-  open,
-  onOpenChange,
-  tasks,
-  onRun,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  tasks: TwinTaskMock[];
-  onRun?: (task: TwinTaskMock) => void;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-2xl">
-        <DialogTitle>Manage Tasks</DialogTitle>
-        <DialogDescription className="sr-only">Full lifecycle view of all Twin tasks</DialogDescription>
-        <div className="space-y-5">
-          {STATUS_TABS.map((tab) => {
-            const group = tasks.filter((t) => t.status === tab.key);
-            if (group.length === 0) return null;
-            return (
-              <div key={tab.key}>
-                <div className="mb-2 flex items-center gap-2">
-                  <SectionLabel>{tab.label}</SectionLabel>
-                  <span className="font-mono text-[10px] text-muted-foreground">{group.length}</span>
-                </div>
-                <div className="space-y-2">
-                  {group.map((t) => (
-                    <TaskCard key={t.id} task={t} onRun={onRun} />
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function TaskQueue({
-  tasks,
-  onNewTask,
-  onManage,
-  onRun,
-}: {
-  tasks: TwinTaskMock[];
-  onNewTask: () => void;
-  onManage: () => void;
-  onRun?: (task: TwinTaskMock) => void;
-}) {
-  const [tab, setTab] = useState<TaskStatus>("in_progress");
-  const [viewMode, setViewMode] = useState<"queue" | "wayfinder">("queue");
-  const visible = tasks.filter((t) => t.status === tab);
-
-  return (
-    <PanelCard className="flex min-h-0 flex-col">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <SectionLabel>Work Queue</SectionLabel>
-          <div className="flex items-center rounded-lg border border-border/80 p-0.5 bg-muted/30">
-            <button
-              type="button"
-              onClick={() => setViewMode("queue")}
-              className={cn(
-                "px-2 py-0.5 text-[10px] font-semibold rounded transition-colors",
-                viewMode === "queue" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              List
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("wayfinder")}
-              className={cn(
-                "px-2 py-0.5 text-[10px] font-semibold rounded transition-colors flex items-center gap-1",
-                viewMode === "wayfinder" ? "bg-indigo-600 text-white" : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Compass className="w-3 h-3" />
-              <span>Wayfinder</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-7 rounded-lg px-2 text-xs" onClick={onManage} data-testid="button-manage-tasks">
-            <ListChecks className="mr-1 h-3.5 w-3.5" /> Manage
-          </Button>
-          <Button size="sm" className="h-7 rounded-lg px-2 text-xs" onClick={onNewTask} data-testid="button-new-task">
-            <Plus className="mr-1 h-3.5 w-3.5" /> New Task
-          </Button>
-        </div>
-      </div>
-
-      {viewMode === "wayfinder" ? (
-        <div className="mt-3">
-          <WayfinderBoard
-            destination="Autonomous Polsia OPC Revenue & Launch Frontier"
-            initialTickets={tasks.map((t, idx) => ({
-              id: t.id,
-              title: t.title,
-              type: t.category === "Research" ? "research" : t.category === "Publish" ? "prototype" : "task",
-              status: t.status === "completed" ? "closed" : "open",
-              resolution: t.status === "completed" ? "Executed by Nightshift" : undefined,
-              blockedBy: idx > 0 && t.status !== "completed" ? [tasks[idx - 1].title] : [],
-            }))}
-          />
-        </div>
-      ) : (
-        <>
-          <div className="mt-3 flex flex-wrap gap-1">
-            {STATUS_TABS.map((t) => {
-              const count = tasks.filter((x) => x.status === t.key).length;
-              return (
-                <button
-                  key={t.key}
-                  onClick={() => setTab(t.key)}
-                  className={cn(
-                    "rounded-lg px-2 py-1 font-mono text-[10px] transition-colors",
-                    tab === t.key
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted/60"
-                  )}
-                  data-testid={`tab-tasks-${t.key}`}
-                >
-                  {t.label} · {count}
-                </button>
-              );
-            })}
-          </div>
-          <div className="mt-3 space-y-2">
-            {visible.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
-                Nothing here right now.
-              </p>
-            ) : (
-              visible.map((t) => <TaskCard key={t.id} task={t} />)
-            )}
-          </div>
-        </>
-      )}
-    </PanelCard>
-  );
-}
-
-const DOC_ICONS: Record<TwinDocMock["kind"], React.ElementType> = {
-  "Research Report": Search,
-  "Chapter Draft": BookOpen,
-  Outline: ListChecks,
-  "Progress Report": FileText,
-  "Business Plan": FileText,
-};
-
-function DocumentsLibrary({
-  docs,
-  onOpenVersions,
-}: {
-  docs: TwinDocMock[];
-  onOpenVersions: (doc: TwinDocMock) => void;
-}) {
-  return (
-    <PanelCard>
-      <SectionLabel>Documents & Deliverables</SectionLabel>
-      <div className="mt-3 space-y-1.5">
-        {docs.map((doc) => {
-          const Icon = DOC_ICONS[doc.kind];
-          return (
-            <button
-              key={doc.id}
-              onClick={() => onOpenVersions(doc)}
-              className="flex w-full items-center gap-2.5 rounded-xl border border-border/80 bg-background p-2.5 text-left transition-colors hover:border-muted-foreground/30"
-              data-testid={`card-doc-${doc.id}`}
-            >
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted">
-                <Icon className="h-4 w-4 text-muted-foreground" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium text-foreground">{doc.title}</p>
-                <p className="font-mono text-[10px] text-muted-foreground">
-                  {doc.kind} · {doc.versions.length} version{doc.versions.length > 1 ? "s" : ""} · {doc.updated}
-                </p>
-              </div>
-              <History className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            </button>
-          );
-        })}
-      </div>
-    </PanelCard>
-  );
-}
-
-function VersionHistoryModal({
-  doc,
-  onClose,
-}: {
-  doc: TwinDocMock | null;
-  onClose: () => void;
-}) {
-  return (
-    <Dialog open={!!doc} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogTitle className="flex items-center gap-2">
-          <GitBranch className="h-4 w-4 text-muted-foreground" /> {doc?.title}
-        </DialogTitle>
-        <DialogDescription className="sr-only">Version history</DialogDescription>
-        <div className="space-y-0">
-          {doc?.versions.map((v, i) => (
-            <div key={v.id} className="relative flex gap-3 pb-4 last:pb-0">
-              {i < doc.versions.length - 1 && (
-                <span className="absolute left-[7px] top-5 h-full w-px bg-border" />
-              )}
-              <span
-                className={cn(
-                  "mt-1.5 h-[15px] w-[15px] shrink-0 rounded-full border-2",
-                  v.current ? "border-indigo-500 bg-indigo-500/20" : "border-border bg-background"
-                )}
-              />
-              <div className="min-w-0 flex-1">
-                <p className="text-sm leading-snug text-foreground">{v.message}</p>
-                <p className="mt-0.5 font-mono text-[10px] text-muted-foreground">{v.time}</p>
-              </div>
-              {v.current ? (
-                <Badge variant="secondary" className="h-5 shrink-0 rounded-md font-mono text-[10px]">
-                  Current
-                </Badge>
-              ) : (
-                <Button variant="ghost" size="sm" className="h-6 shrink-0 rounded-md px-2 font-mono text-[10px] text-muted-foreground">
-                  <RotateCcw className="mr-1 h-2.5 w-2.5" /> Revert
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Center-right: output channels                                       */
-/* ------------------------------------------------------------------ */
-
-const OUTPUT_CHANNELS = [
-  {
-    id: "publish",
-    title: "Publish",
-    icon: BookOpen,
-    accent: "text-emerald-500 bg-emerald-500/10",
-    description: "Push a finished chapter or manuscript to Books, Marketplace & PublishDrive.",
-    status: "Chapter 2 published · Aug 3",
-    action: "Open Publishing Suite",
-    href: "/writing-studio?intent=book",
-    ready: true,
-  },
-  {
-    id: "share",
-    title: "Share",
-    icon: Share2,
-    accent: "text-indigo-500 bg-indigo-500/10",
-    description: "Send the latest manuscript draft to collaborators or reviewers.",
-    status: "Draft sent to 2 reviewers · Yesterday",
-    action: "Share Draft",
-    href: "/writing-studio?projects=1",
-    ready: true,
-  },
-  {
-    id: "distribute",
-    title: "Distribute",
-    icon: Globe,
-    accent: "text-cyan-500 bg-cyan-500/10",
-    description: "Auto-post book excerpts and summaries to connected socials and community.",
-    status: "Off — turn on when you're ready",
-    action: "Turn on",
-    ready: false,
+    id: "task-4",
+    title: "Add POST /v1/verify/phone endpoint wiring Ba...",
+    description:
+      "Implement POST /v1/verify/phone that accepts a Bangladeshi mobile number, calls the top-recommended SMS OTP provider from the research shortlist (read...",
+    tags: ["FEATURE", "1 CREDIT"],
+    status: "todo",
   },
 ];
 
-function OutputChannels() {
-  const [distributeOn, setDistributeOn] = useState(false);
-  const [adDailyBudget, setAdDailyBudget] = useState(50);
-  const [adRunning, setAdRunning] = useState(false);
+const INITIAL_DOCS: CockpitDoc[] = [
+  {
+    id: "doc-roadmap",
+    title: "Product Roadmap",
+    timeAgo: "22M AGO",
+    kind: "Roadmap",
+    content: `# Product Roadmap
 
-  const adInventory = Math.round(adDailyBudget * 0.85);
-  const polsiaFee = Math.round(adDailyBudget * 0.15);
-  const estImpressions = (adDailyBudget * 280).toLocaleString();
-  const estClicks = (adDailyBudget * 8.4).toFixed(0);
+### Now
+- **Add /docs/identity-verification page** covering NID adapter usage and error codes
+- **Add /docs/aml-verification page** covering OpenSanctions screening, match fields, and error handling
+- **Add POST /v1/webhooks/:id/ping** test-ping endpoint for pre-production validation
 
-  return (
-    <div className="space-y-3">
-      <SectionLabel>Distribution & Growth Channels</SectionLabel>
+### Next
+- **Add /docs/otp-verification page** summarising the Bangladesh OTP vendor shortlist findings and recommended integration path
+- **Add POST /v1/verify/phone endpoint** wiring a Bangladesh SMS OTP provider into the standard verification result shape
+- **Add /docs/webhooks page** with curl examples for subscribe, list, ping, redeliver, and unsubscribe
 
-      {/* Meta Ads Autonomous Growth Loop Card */}
-      <PanelCard className="p-3.5 border-indigo-500/30 bg-gradient-to-br from-background to-indigo-950/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400">
-              <Zap className="h-4 w-4" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">Meta Ads Growth Loop</p>
-              <p className="text-[10px] font-mono text-indigo-400">85/15 Fee Split · Auto-Optimized</p>
-            </div>
-          </div>
-          <Badge variant={adRunning ? "default" : "outline"} className={adRunning ? "bg-emerald-600 text-white text-[10px]" : "text-[10px]"}>
-            {adRunning ? "Campaign Active" : "Standby"}
-          </Badge>
-        </div>
+### Later
+- **Live selfie/liveness check** to replace manual ID-vs-face comparison at account opening
+- **Cross-bank fraud signal sharing layer** across VerifiQ customers
+- **Native BB e-KYC adapter** so banks can hand off entire onboarding flows to a single call`,
+  },
+  {
+    id: "doc-day-43",
+    title: "Day 43 — CEO Report",
+    timeAgo: "21M AGO",
+    kind: "CEO Report",
+    content: `# Day 43 — CEO Report\n\n### Audit Export & Compliance Release\n- Successfully deployed CSV export endpoint for Bangladesh financial compliance.\n- Zero mock verification entries remaining in production table.`,
+  },
+  {
+    id: "doc-day-42",
+    title: "Day 42 — CEO Report",
+    timeAgo: "1D AGO",
+    kind: "CEO Report",
+    content: `# Day 42 — CEO Report
 
-        <div className="mt-3 space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="text-muted-foreground">Daily Ad Spend:</span>
-            <span className="font-mono font-bold text-foreground">${adDailyBudget}/day</span>
-          </div>
+### Compliance Export
+- \`GET /v1/audit/export?format=csv\` — Streams a well-formed CSV with columns \`verification_id\`, \`type\`, \`status\`, \`reason\`, \`tenant_id\`, \`created_at\`. Accepts the same \`since\` / \`until\` params as \`/v1/audit/verifications\`. Response carries \`Content-Type: text/csv\` and \`Content-Disposition: attachment\` — curl-able with an API key and ready to hand to a regulator or open in Excel.
 
-          <input
-            type="range"
-            min={10}
-            max={500}
-            step={10}
-            value={adDailyBudget}
-            onChange={(e) => setAdDailyBudget(Number(e.target.value))}
-            className="w-full h-1.5 bg-muted rounded-lg appearance-none cursor-pointer accent-indigo-500"
-          />
+### Live Data Providers (confirmed carried forward from Day 41, no regressions)
+- \`POST /v1/verify/identity\` — Surepass NID adapter live; all stubs retired. \`SUREPASS_API_KEY\` from env.
+- \`POST /v1/verify/aml\` — OpenSanctions screening live; key stored as server-side secret, not in code. Graceful degradation on rate-limit or timeout.
 
-          <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono bg-muted/40 p-2 rounded-lg border border-border/60">
-            <div>Ad Spend: <strong className="text-foreground">${adInventory}</strong></div>
-            <div>Polsia Fee: <strong className="text-foreground">${polsiaFee}</strong></div>
-            <div>Est. Impressions: <strong className="text-indigo-400">{estImpressions}</strong></div>
-            <div>Est. Clicks: <strong className="text-indigo-400">{estClicks}</strong></div>
-          </div>
+### Self-Serve Key Rotation
+- \`POST /v1/admin/customers/:id/keys/:key_id/rotate\` — Mints replacement key preserving \`vq_pr_\` / \`vq_sb_\` prefix, stamps \`rotated_at\` on old key, writes rotation event to audit log.
 
-          <Button
-            size="sm"
-            onClick={() => setAdRunning(!adRunning)}
-            className={cn(
-              "w-full text-xs font-semibold mt-1",
-              adRunning ? "bg-rose-600 hover:bg-rose-500 text-white" : "bg-indigo-600 hover:bg-indigo-500 text-white"
-            )}
-          >
-            {adRunning ? "Pause Campaign" : `Deploy $${adDailyBudget}/day Autonomous Growth`}
-          </Button>
-        </div>
-      </PanelCard>
+### Webhook Surface (complete)
+- \`POST /v1/webhooks/deliveries/:id/redeliver\` — Re-POSTs logged delivery with same HMAC path, writes new row with parent linkage, original row unchanged.
+- \`GET /v1/webhooks/deliveries\` — Tenant-scoped delivery log with \`since\` / \`until\` filtering.`,
+  },
+];
 
-      {OUTPUT_CHANNELS.map((ch) => {
-        const Icon = ch.icon;
-        const isDistribute = ch.id === "distribute";
-        return (
-          <PanelCard key={ch.id} className="p-3.5">
-            <div className="flex items-center gap-2.5">
-              <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", ch.accent)}>
-                <Icon className="h-4 w-4" />
-              </div>
-              <p className="text-sm font-semibold text-foreground">{ch.title}</p>
-              {isDistribute && (
-                <span className="ml-auto">
-                  <Switch
-                    checked={distributeOn}
-                    onCheckedChange={setDistributeOn}
-                    aria-label="Toggle Distribute"
-                    data-testid="switch-distribute"
-                  />
-                </span>
-              )}
-            </div>
-            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{ch.description}</p>
-            <p className="mt-2 flex items-center gap-1 font-mono text-[10px] text-muted-foreground">
-              {ch.ready || (isDistribute && distributeOn) ? (
-                <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              ) : (
-                <Clock className="h-3 w-3" />
-              )}
-              {isDistribute && distributeOn ? "On — Twin will ask before every post" : ch.status}
-            </p>
-            {!isDistribute && (
-              <a
-                href={ch.href}
-                className="mt-2.5 inline-flex w-full items-center justify-center rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-                data-testid={`button-channel-${ch.id}`}
-              >
-                {ch.action} <ChevronRight className="ml-1 h-3 w-3" />
-              </a>
-            )}
-          </PanelCard>
-        );
-      })}
-    </div>
-  );
-}
+const INITIAL_FEED: StandupMessage[] = [
+  {
+    id: "f-0",
+    time: "11:34 PM",
+    text: "...pick to unlock the next integration. Any closer to a decision on that?",
+  },
+  {
+    id: "f-1",
+    dayHeader: "TODAY",
+    time: "12:16 AM",
+    text: "Three things shipped today: new tenants now get a pre-seeded mix of verification rows the moment they're provisioned, so a bank's first look is a populated dashboard instead of a blank screen. The webhook delivery log is live at `/v1/webhooks/deliveries`, and the test ping endpoint lets banks confirm their subscriber URL is wired correctly before they go live. You'll get the full breakdown — including where things stand on the OTP vendor decision — by email this morning.",
+  },
+  {
+    id: "f-2",
+    isNewDivider: true,
+    time: "JUST NOW",
+    text: `OTP vendor pick still yours in the meantime — closing docs gaps so banks have the reference surface they need to integrate against the live pipeline.
+
+Next up:
+1. **Add /docs/audit-export page** covering CSV export endpoint and column reference
+2. **Add /docs/webhook-events catalog** documenting event types and payloads`,
+  },
+];
 
 /* ------------------------------------------------------------------ */
-/* Right column: narrative feed + composer                             */
+/* Main Component                                                     */
 /* ------------------------------------------------------------------ */
-
-function NarrativeFeed({ feed = MOCK_FEED }: { feed?: FeedEntry[] }) {
-  const [entries, setEntries] = useState<FeedEntry[]>(feed);
-  const [draft, setDraft] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setEntries(feed);
-  }, [feed]);
-
-  const send = (overrideText?: string) => {
-    const text = (overrideText ?? draft).trim();
-    if (!text) return;
-    const time = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-    setEntries((prev) => [
-      ...prev,
-      { id: `u-${Date.now()}`, time, text, fromUser: true },
-      {
-        id: `a-${Date.now()}`,
-        time,
-        text: `Acknowledged: "${text}". Running AST resolution & testing sandbox in background…`,
-      },
-    ]);
-    if (!overrideText) setDraft("");
-    requestAnimationFrame(() => {
-      scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-    });
-  };
-
-  const QUICK_PROMPTS = [
-    "🚀 Deploy latest build",
-    "🛡️ Run SRE self-heal",
-    "📊 Audit P&L & Meta Ads",
-    "🐦 Draft product tweet",
-  ];
-
-  return (
-    <div className="flex h-full min-h-0 flex-col rounded-2xl border border-border/80 bg-card">
-      <div className="flex items-center justify-between border-b border-border/80 px-4 py-3">
-        <div className="flex items-center gap-2">
-          <SectionLabel>Polsia Live Stream</SectionLabel>
-          <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-400">
-            v2.5.0 OPC
-          </span>
-        </div>
-        <span className="flex items-center gap-1.5 font-mono text-[10px] text-emerald-400">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" /> Autopilot Working
-        </span>
-      </div>
-
-      <div ref={scrollRef} className="min-h-0 flex-1 space-y-3.5 overflow-y-auto px-4 py-4">
-        {entries.map((e) => (
-          <div key={e.id} className={cn("flex flex-col gap-1", e.fromUser && "items-end")}>
-            <div className="flex items-center gap-2 font-mono text-[10px] text-muted-foreground">
-              <span>{e.fromUser ? "Founder" : "Polsia Co-Founder"} · {e.time}</span>
-              {!e.fromUser && (
-                <span className="px-1.5 py-0.2 rounded bg-muted/60 text-[9px] text-emerald-400/90 font-mono">
-                  THOUGHT 1.8s
-                </span>
-              )}
-            </div>
-            <p
-              className={cn(
-                "max-w-[92%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed",
-                e.fromUser
-                  ? "rounded-br-md bg-indigo-600 text-white font-medium shadow-sm"
-                  : "rounded-bl-md bg-muted/50 border border-border/50 text-foreground"
-              )}
-            >
-              {e.text}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="border-t border-border/80 p-3 space-y-2">
-        {/* Quick action prompt pills */}
-        <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-          {QUICK_PROMPTS.map((prompt) => (
-            <button
-              key={prompt}
-              onClick={() => send(prompt)}
-              className="shrink-0 text-[10px] font-medium px-2.5 py-1 rounded-full border border-border bg-background hover:bg-muted/80 text-muted-foreground hover:text-foreground transition"
-            >
-              {prompt}
-            </button>
-          ))}
-        </div>
-
-        <div className="flex items-end gap-2 rounded-2xl border border-border/80 bg-background px-3 py-2 focus-within:ring-2 focus-within:ring-indigo-500/40">
-          <textarea
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                send();
-              }
-            }}
-            rows={1}
-            placeholder="Instruct or redirect Polsia Co-Founder…"
-            className="max-h-28 min-h-[24px] flex-1 resize-none bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
-            data-testid="input-twin-composer"
-          />
-          <button
-            onClick={() => setIsRecording(!isRecording)}
-            className={cn(
-              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors",
-              isRecording ? "bg-rose-500 text-white animate-pulse" : "text-muted-foreground hover:bg-muted"
-            )}
-            aria-label="Voice input"
-            data-testid="button-twin-voice"
-          >
-            <Mic className="h-4 w-4" />
-          </button>
-          <button
-            onClick={() => send()}
-            disabled={!draft.trim()}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition-opacity disabled:opacity-40 hover:bg-indigo-500"
-            aria-label="Send"
-            data-testid="button-twin-send"
-          >
-            <Send className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/* Page                                                                */
-/* ------------------------------------------------------------------ */
-
-function TwinLandingPage({
-  onStart,
-  onSkip,
-}: {
-  onStart: () => void;
-  onSkip: () => void;
-}) {
-  return (
-    <div className="container mx-auto max-w-4xl py-12 px-4 animate-in fade-in zoom-in-95 duration-300">
-      <div className="text-center mb-12">
-        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-3xl bg-brand/10 border border-brand/20 shadow-sm">
-          <Brain className="h-12 w-12 text-brand" />
-        </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold text-foreground mb-4 tracking-tight">
-          Start your company with an AI Cofounder
-        </h1>
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed font-medium">
-          Twin turns ideas, research, and plans into a working company workspace.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 max-w-3xl mx-auto">
-        <Card className="border-border/50 bg-background shadow-sm hover:border-brand/30 transition-colors group">
-          <CardContent className="pt-6 pb-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/5 group-hover:bg-brand/10 transition-colors">
-              <FileText className="h-6 w-6 text-brand" />
-            </div>
-            <h3 className="text-base font-bold text-foreground">
-              Create your business plan
-            </h3>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-background shadow-sm hover:border-brand/30 transition-colors group">
-          <CardContent className="pt-6 pb-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/5 group-hover:bg-brand/10 transition-colors">
-              <CheckCircle className="h-6 w-6 text-brand" />
-            </div>
-            <h3 className="text-base font-bold text-foreground">
-              Get your first tasks
-            </h3>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/50 bg-background shadow-sm hover:border-brand/30 transition-colors group">
-          <CardContent className="pt-6 pb-6 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-brand/5 group-hover:bg-brand/10 transition-colors">
-              <BookOpen className="h-6 w-6 text-brand" />
-            </div>
-            <h3 className="text-base font-bold text-foreground">
-              Organize decisions and documents
-            </h3>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
-        <Button
-          size="lg"
-          className="w-full bg-brand hover:bg-brand/90 text-white font-medium text-base shadow-sm"
-          onClick={onStart}
-        >
-          <Brain className="h-5 w-5 mr-2" />
-          Start from this idea
-        </Button>
-        <Button
-          size="lg"
-          variant="outline"
-          className="w-full font-medium text-base shadow-sm"
-          onClick={() => { window.location.href = "/agents/chat"; }}
-        >
-          Import from chat
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          className="w-full text-muted-foreground hover:text-foreground mt-2 sm:mt-0 font-medium"
-          onClick={onSkip}
-        >
-          Open existing workspace
-        </Button>
-      </div>
-    </div>
-  );
-}
 
 export default function TwinPage() {
-  const searchParams = useSearchParams();
-  const fromChat = searchParams.get("fromChat");
+  const [companyName, setCompanyName] = useState("VerifiQ");
+  const [tasks, setTasks] = useState<CockpitTask[]>(INITIAL_TASKS);
+  const [docs, setDocs] = useState<CockpitDoc[]>(INITIAL_DOCS);
+  const [feed, setFeed] = useState<StandupMessage[]>(INITIAL_FEED);
+  const [chatInput, setChatInput] = useState("");
+  const [credits, setCredits] = useState<number>(15);
+  const [chatSidebarOpen, setChatSidebarOpen] = useState(true);
 
-  const [hasSeenLanding, setHasSeenLanding] = useState<boolean | null>(null);
-  const [isSeeded, setIsSeeded] = useState(false);
+  // Planning loop state
+  const [isPlanning, setIsPlanning] = useState(false);
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([
+    "> Planning next steps",
+    "> Committing and pushing the changes...",
+    "> Deploying the update...",
+    "> Verifying the deployment is healthy...",
+  ]);
 
+  // Modals state
+  const [autoModeOpen, setAutoModeOpen] = useState(false);
+  const [autoModeActive, setAutoModeActive] = useState(false);
+  const [autoModeRemaining, setAutoModeRemaining] = useState<number | null>(null);
+
+  const [nightshiftOpen, setNightshiftOpen] = useState(false);
+  const [nightshiftMode, setNightshiftMode] = useState<"reporting_only" | "work_one_task">("work_one_task");
+
+  const [addCreditsOpen, setAddCreditsOpen] = useState(false);
+  const [docsListOpen, setDocsListOpen] = useState(false);
+  const [companyLimitOpen, setCompanyLimitOpen] = useState(false);
+  const [companySettingsOpen, setCompanySettingsOpen] = useState(false);
+  const [manageDomainsOpen, setManageDomainsOpen] = useState(false);
+  const [versionsOpen, setVersionsOpen] = useState(false);
+  const [websiteHubOpen, setWebsiteHubOpen] = useState(false);
+  const [secretsOpen, setSecretsOpen] = useState(false);
+  const [redeployOpen, setRedeployOpen] = useState(false);
+  const [autoColdOutreachOpen, setAutoColdOutreachOpen] = useState(false);
+
+  const [newTaskOpen, setNewTaskOpen] = useState(false);
+  const [manageTasksOpen, setManageTasksOpen] = useState(false);
+  const [inviteModalOpen, setInviteModalOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteSent, setInviteSent] = useState(false);
+
+  const [activeDoc, setActiveDoc] = useState<CockpitDoc | null>(null);
+
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [mfsGatewayOpen, setMfsGatewayOpen] = useState(false);
+  const [connectCompanyOpen, setConnectCompanyOpen] = useState(false);
+  const [voiceCommanderOpen, setVoiceCommanderOpen] = useState(false);
+  const [dailyDigestOpen, setDailyDigestOpen] = useState(false);
+  const [dokployOpen, setDokployOpen] = useState(false);
+
+  const feedScrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto Mode timer countdown
   useEffect(() => {
-    const seen = localStorage.getItem("twin_landing_seen");
-    const seededActive = localStorage.getItem("twin_seeded_active");
-
-    if (fromChat || seededActive === "true") {
-      setIsSeeded(true);
-      setHasSeenLanding(true);
-      localStorage.setItem("twin_seeded_active", "true");
-      localStorage.setItem("twin_landing_seen", "true");
-      if (fromChat) {
-        // Remember the originating conversation, then strip the query so a
-        // later revisit doesn't force the seeded overlay again.
-        localStorage.setItem("twin_seed_from_chat", fromChat);
-        window.history.replaceState(null, "", window.location.pathname);
-      }
-    } else {
-      setHasSeenLanding(seen === "true");
-    }
-  }, [fromChat]);
-
-  if (hasSeenLanding === false && !fromChat) {
-    return (
-      <TwinLandingPage
-        onStart={() => {
-          localStorage.setItem("twin_landing_seen", "true");
-          localStorage.setItem("twin_seeded_active", "true");
-          setIsSeeded(true);
-          setHasSeenLanding(true);
-        }}
-        onSkip={() => {
-          localStorage.setItem("twin_landing_seen", "true");
-          setHasSeenLanding(true);
-        }}
-      />
-    );
-  }
-
-  if (isSeeded) {
-    return (
-      <div className="min-h-[calc(100dvh-64px)] bg-background">
-        <SeededWorkspace
-          chatConversationId={fromChat || localStorage.getItem("twin_seed_from_chat") || undefined}
-          onDismiss={() => {
-            setIsSeeded(false);
-            localStorage.removeItem("twin_seeded_active");
-          }}
-        />
-      </div>
-    );
-  }
-
-  return <TwinDashboardPage />;
-}
-
-function seedToTasks(seed: SavedSeed): TwinTaskMock[] {
-  return seed.tasks.map((t) => ({
-    id: `seed-${t.id}`,
-    title: t.title,
-    description: `Starter task for ${seed.companyName}, generated from your chat.`,
-    category: "Draft" as TaskCategory,
-    cost: "—",
-    status: t.completed ? ("completed" as TaskStatus) : ("todo" as TaskStatus),
-  }));
-}
-
-function seedToDoc(seed: SavedSeed): TwinDocMock {
-  return {
-    id: "seed-business-plan",
-    title: `${seed.companyName} — Business Plan`,
-    kind: "Business Plan",
-    updated: new Date(seed.updatedAt).toLocaleDateString([], {
-      month: "short",
-      day: "numeric",
-    }),
-    versions: [
-      {
-        id: "v1",
-        message: "Generated from your chat conversation",
-        time: new Date(seed.updatedAt).toLocaleString(),
-        current: true,
-      },
-    ],
-    content: seed.businessPlan,
-  };
-}
-
-const ACCOUNT_DRAWER_ITEMS = [
-  { label: 'Telegram & Voice Bot', icon: Bot, badge: 'Daily Drop', action: 'telegram' },
-  { label: 'My Portfolio', icon: Layers, href: '/portfolio', badge: '3 Companies' },
-  { label: 'New Company', icon: Building2, href: '/twin/new', badge: '$15/mo' },
-  { label: 'Credits & Usage', icon: Zap, href: '/billing/credits', badge: '500 Left' },
-  { label: 'Upgrade Plan', icon: TrendingUp, href: '/pricing', badge: 'Pro' },
-  { label: 'Manage Billing', icon: CreditCard, href: '/billing' },
-  { label: 'Company Settings', icon: Settings, href: '/settings/company' },
-  { label: 'Profile Settings', icon: User, href: '/settings/profile' },
-  { label: 'Email Preferences', icon: Mail, href: '/settings/email' },
-  { label: 'About Shothik', icon: Brain, href: '/about' },
-  { label: 'Giftshop', icon: Gift, href: '/giftshop' },
-  { label: 'Doctrine', icon: BookOpen, href: '/doctrine' },
-  { label: 'FAQ & Docs', icon: HelpCircle, href: '/docs' },
-  { label: 'Download Code', icon: Download, href: '/export/code', badge: 'ZIP' },
-  { label: 'Refer & Earn', icon: Share2, href: '/refer', badge: '30% RevShare' },
-  { label: 'Logout', icon: LogOut, href: '/auth/logout' },
-];
-
-function AccountDrawerModal({
-  open,
-  onOpenChange,
-  onOpenTelegramBriefing,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  onOpenTelegramBriefing?: () => void;
-}) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-[#0b101b] border-slate-800 text-slate-200">
-        <DialogTitle className="flex items-center justify-between text-base text-slate-100">
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4 text-indigo-400" />
-            <span>Account & Doctrine (16 Items)</span>
-          </div>
-          <Badge variant="outline" className="text-[10px] border-indigo-500/40 text-indigo-400">
-            500 Credits Active
-          </Badge>
-        </DialogTitle>
-        <DialogDescription className="text-xs text-slate-400">
-          Platform-wide account settings, billing, company slots, and developer doctrine.
-        </DialogDescription>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 my-2 max-h-[60vh] overflow-y-auto pr-1">
-          {ACCOUNT_DRAWER_ITEMS.map((item) => {
-            const Icon = item.icon;
-            if (item.action === 'telegram') {
-              return (
-                <button
-                  key={item.label}
-                  type="button"
-                  onClick={() => {
-                    onOpenChange(false);
-                    onOpenTelegramBriefing?.();
-                  }}
-                  className="flex items-center justify-between p-2.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 hover:border-cyan-500/50 transition text-xs text-left"
-                  data-testid="button-open-telegram-briefing"
-                >
-                  <div className="flex items-center gap-2">
-                    <Icon className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="text-cyan-200 font-medium">{item.label}</span>
-                  </div>
-                  {item.badge && (
-                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300">
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            }
-            return (
-              <a
-                key={item.label}
-                href={item.href}
-                className="flex items-center justify-between p-2.5 rounded-xl border border-slate-800 bg-slate-900/60 hover:bg-slate-800/80 hover:border-slate-700 transition text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <Icon className="w-3.5 h-3.5 text-slate-400" />
-                  <span className="text-slate-200 font-medium">{item.label}</span>
-                </div>
-                {item.badge && (
-                  <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300">
-                    {item.badge}
-                  </span>
-                )}
-              </a>
-            );
-          })}
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function PlatformTopBar({
-  onOpenAccountDrawer,
-  onConnectWebsite,
-  onOpenVoiceCommander,
-}: {
-  onOpenAccountDrawer: () => void;
-  onConnectWebsite?: () => void;
-  onOpenVoiceCommander?: () => void;
-}) {
-  const [activeCompany, setActiveCompany] = useState('VerifiQ AI (Active)');
-  return (
-    <div className="flex items-center justify-between mb-4 pb-3 border-b border-border/80 px-1">
-      <div className="flex items-center gap-3">
-        <select
-          value={activeCompany}
-          onChange={(e) => {
-            if (e.target.value === "+ New Company") {
-              if (typeof window !== "undefined") {
-                window.location.href = "/twin/new";
-              }
-            } else if (e.target.value === "+ Connect Website") {
-              onConnectWebsite?.();
-            } else {
-              setActiveCompany(e.target.value);
-            }
-          }}
-          className="rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground shadow-sm outline-none"
-        >
-          <option value="VerifiQ AI (Active)">🏢 VerifiQ AI (Active)</option>
-          <option value="Acme SaaS">🏢 Acme SaaS</option>
-          <option value="BookStudio">🏢 BookStudio</option>
-          <option value="+ Connect Website">🌐 + Connect Existing Website (BYOW)</option>
-          <option value="+ New Company">✨ + New Company Slot ($15/mo)</option>
-        </select>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onConnectWebsite}
-          className="hidden md:flex h-8 rounded-xl text-xs gap-1.5 font-semibold border-cyan-500/30 text-cyan-400 bg-cyan-500/5 hover:bg-cyan-500/10"
-          data-testid="button-connect-existing-website"
-        >
-          <Globe className="h-3.5 w-3.5" />
-          <span>Connect Website</span>
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onOpenVoiceCommander}
-          className="h-8 rounded-xl text-xs gap-1.5 font-semibold border-violet-500/30 text-violet-400 bg-violet-500/5 hover:bg-violet-500/10"
-          data-testid="button-open-voice-commander"
-        >
-          <Mic className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Voice Agent</span>
-        </Button>
-        <span className="hidden lg:inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          Autonomous Co-Founder Online
-        </span>
-      </div>
-
-      <div className="flex items-center gap-2">
-        <Button size="sm" variant="outline" className="h-8 rounded-xl text-xs gap-1.5 font-mono border-indigo-500/30 text-indigo-400 bg-indigo-500/5">
-          <Zap className="h-3.5 w-3.5" />
-          <span>500 Credits</span>
-        </Button>
-        <Button size="sm" variant="outline" onClick={onOpenAccountDrawer} className="h-8 rounded-xl text-xs gap-1.5">
-          <Menu className="h-3.5 w-3.5" />
-          <span className="hidden sm:inline">Account (16)</span>
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-function TwinDashboardPage() {
-  const [autoMode, setAutoMode] = useState(true);
-  const { tasks, docs, feed, setTasks, setDocs, setFeed } = useTwinData(
-    MOCK_TASKS as TwinTask[],
-    MOCK_DOCS as TwinDoc[],
-    MOCK_FEED as TwinFeedEntry[]
-  );
-  const [showNewTask, setShowNewTask] = useState(false);
-  const [showManage, setShowManage] = useState(false);
-  const [showInvite, setShowInvite] = useState(false);
-  const [showAccountDrawer, setShowAccountDrawer] = useState(false);
-  const [showDailyDigest, setShowDailyDigest] = useState(false);
-  const [showConnectCompany, setShowConnectCompany] = useState(false);
-  const [showMfsGateway, setShowMfsGateway] = useState(false);
-  const [showDbSchema, setShowDbSchema] = useState(false);
-  const [showVoiceCommander, setShowVoiceCommander] = useState(false);
-  const [showVisualBuilder, setShowVisualBuilder] = useState(false);
-  const [showLeadCrm, setShowLeadCrm] = useState(false);
-  const [showAdSpy, setShowAdSpy] = useState(false);
-  const [showSteadfast, setShowSteadfast] = useState(false);
-  const [showBookReader, setShowBookReader] = useState(false);
-  const [showTelegramBriefing, setShowTelegramBriefing] = useState(false);
-  const [showCroTuner, setShowCroTuner] = useState(false);
-  const [showMicroContainers, setShowMicroContainers] = useState(false);
-  const [versionDoc, setVersionDoc] = useState<TwinDocMock | null>(null);
-  const [contentDoc, setContentDoc] = useState<TwinDocMock | null>(null);
-
-  // Hydrate from Offline Storage / Server Seed
-  useEffect(() => {
-    let cancelled = false;
-    const offlineTasks = listOfflineTasks();
-    if (offlineTasks.length > 0) {
-      setTasks(
-        offlineTasks.map((t) => ({
-          id: t.id,
-          title: t.title,
-          category: (t.category || "Research") as TaskCategory,
-          status: (t.status || "todo") as TaskStatus,
-          cost: t.cost || "5 credits",
-        }))
-      );
-    } else {
-      void loadServerSeed().then((seed) => {
-        if (cancelled || !seed) return;
-        if (seed.tasks.length) setTasks(seedToTasks(seed));
-        if (seed.businessPlan) setDocs([seedToDoc(seed), ...MOCK_DOCS]);
+    if (!autoModeActive || autoModeRemaining === null) return;
+    const timer = setInterval(() => {
+      setAutoModeRemaining((prev) => {
+        if (prev === null || prev <= 1) {
+          setAutoModeActive(false);
+          return null;
+        }
+        return prev - 1;
       });
-    }
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [autoModeActive, autoModeRemaining]);
 
-  const handleCreateTask = (newTask: TwinTaskMock) => {
-    saveOfflineTask({
-      id: newTask.id,
-      title: newTask.title,
-      category: newTask.category,
-      status: newTask.status,
-      cost: newTask.cost,
-      updatedAt: Date.now(),
-    });
-    setTasks((prev) => [newTask, ...prev]);
+  const handleStartAutoMode = (hours: number) => {
+    setAutoModeActive(true);
+    setAutoModeRemaining(hours * 3600);
+    setFeed((prev) => [
+      ...prev,
+      {
+        id: `auto-${Date.now()}`,
+        time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+        text: `⚡ Auto Mode activated for ${hours} hours. Polsia will execute queued tasks and formulate next-step roadmaps autonomously.`,
+      },
+    ]);
   };
 
-  const handleRunTask = async (taskToRun: TwinTaskMock) => {
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskToRun.id ? { ...t, status: "in_progress" as TaskStatus } : t))
-    );
+  const handleTriggerPlanning = () => {
+    if (isPlanning) return;
+    setIsPlanning(true);
 
-    const deliveryResult = await AutonomousDeliveryLoop.runUnblockedTask({
-      id: taskToRun.id,
-      title: taskToRun.title,
-      dependencies: [],
-      priority: 1,
-      creditCost: 5,
-    });
+    setTerminalLogs([
+      "> Planning next steps...",
+      "> Analyzing market competitors & Bangladesh compliance benchmarks...",
+      "> Deciding the 3 highest-impact next steps...",
+    ]);
 
-    const completedTask: TwinTaskMock = {
-      ...taskToRun,
-      status: "completed" as TaskStatus,
-    };
+    setTimeout(() => {
+      setTerminalLogs([
+        "> Drafting your next 3 tasks...",
+        "> Added: Add /docs/audit-export page covering CSV export endpoint and column reference",
+        "> Added: Add /docs/webhook-events catalog documenting event types and payloads",
+        "> Added: Add /docs/errors reference page consolidating HTTP status codes and error response shapes",
+        "> Your 3 new tasks are ready — run any of them from your dashboard.",
+      ]);
 
-    saveOfflineTask({
-      id: completedTask.id,
-      title: completedTask.title,
-      category: completedTask.category,
-      status: "completed",
-      cost: completedTask.cost,
-      updatedAt: Date.now(),
-    });
+      const plannedTasks: CockpitTask[] = [
+        {
+          id: `task-p1-${Date.now()}`,
+          title: "Add /docs/audit-export page covering CSV export...",
+          description:
+            "Add a static /docs/audit-export documentation page covering GET /v1/audit/export?format=csv with parameter definitions, header requirements, and curl snippet.",
+          tags: ["FEATURE", "1 CREDIT"],
+          status: "todo",
+        },
+        {
+          id: `task-p2-${Date.now()}`,
+          title: "Add /docs/webhook-events catalog documenting...",
+          description:
+            "Create full JSON schema catalog for verification.completed, verification.flagged, and identity.mismatch webhook delivery payloads.",
+          tags: ["FEATURE", "1 CREDIT"],
+          status: "todo",
+        },
+        {
+          id: `task-p3-${Date.now()}`,
+          title: "Add /docs/errors reference page consolidating HTTP...",
+          description:
+            "Consolidate error response shapes for Surepass NID downtime, OpenSanctions rate limits, and invalid tenant keys into unified documentation.",
+          tags: ["FEATURE", "1 CREDIT"],
+          status: "todo",
+        },
+      ];
 
-    setTasks((prev) =>
-      prev.map((t) => (t.id === taskToRun.id ? completedTask : t))
-    );
+      setTasks((prev) => [...plannedTasks, ...prev]);
+      setIsPlanning(false);
+
+      setFeed((prev) => [
+        ...prev,
+        {
+          id: `plan-${Date.now()}`,
+          time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+          text: "📋 I have analyzed your product roadmap and queued 3 strategic next-step tasks ready for execution.",
+        },
+      ]);
+    }, 2800);
+  };
+
+  const handleSendMessage = () => {
+    const text = chatInput.trim();
+    if (!text) return;
+    const now = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
     setFeed((prev) => [
       ...prev,
       {
-        id: `feed-${Date.now()}`,
+        id: `u-${Date.now()}`,
+        time: now,
+        text,
+        fromUser: true,
+      },
+      {
+        id: `a-${Date.now()}`,
+        time: now,
+        text: `Understood: "${text}". I have logged this directive, verified dependencies, and scheduled execution into the next autonomous cycle.`,
+      },
+    ]);
+
+    setChatInput("");
+    setTimeout(() => {
+      feedScrollRef.current?.scrollTo({ top: feedScrollRef.current.scrollHeight, behavior: "smooth" });
+    }, 100);
+  };
+
+  const handleRevertCommit = (commit: VersionCommit) => {
+    setFeed((prev) => [
+      ...prev,
+      {
+        id: `revert-${Date.now()}`,
         time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-        text: `🚀 Shothik Co-Founder executed "${taskToRun.title}". Sandbox Vitest passed (100%), rolling container deployed in 420ms.`,
-        fromUser: false,
+        text: `🔄 Reverting live deployment to commit ${commit.hash} ("${commit.message}"). Rolling container redeployed to Dokploy VPS in 380ms.`,
       },
     ]);
   };
 
-  const orderedTasks = useMemo(() => tasks, [tasks]);
+  const formatCountdown = (totalSeconds: number) => {
+    const hrs = Math.floor(totalSeconds / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    return `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const beveledBtnClass =
+    "px-3 py-1.5 bg-gradient-to-b from-[#f5f5f5] to-[#d8d8d8] dark:from-zinc-800 dark:to-zinc-900 hover:from-white hover:to-[#e0e0e0] dark:hover:from-zinc-700 dark:hover:to-zinc-800 border border-[#777] dark:border-zinc-700 font-mono font-bold text-[10px] uppercase tracking-wider text-black dark:text-zinc-100 shadow-[inset_1px_1px_0px_#fff,inset_-1px_-1px_0px_#aaa,0_1px_2px_rgba(0,0,0,0.15)] active:shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center gap-1.5 cursor-pointer rounded-none select-none";
 
   return (
-    <div className="mx-auto h-full max-w-[1600px] px-4 py-5 lg:h-[calc(100dvh-4rem)]">
-      <PlatformTopBar
-        onOpenAccountDrawer={() => setShowAccountDrawer(true)}
-        onConnectWebsite={() => setShowConnectCompany(true)}
-        onOpenVoiceCommander={() => setShowVoiceCommander(true)}
-      />
-      <AccountDrawerModal
-        open={showAccountDrawer}
-        onOpenChange={setShowAccountDrawer}
-        onOpenTelegramBriefing={() => setShowTelegramBriefing(true)}
+    <div className="min-h-screen bg-[#fcfcfc] text-[#111] dark:bg-[#0c0d0e] dark:text-[#eee] flex flex-col font-sans select-text">
+      {/* ── Top Micro-Step Terminal Ticker ── */}
+      <LiveTerminalTicker autoModeActive={autoModeActive} activeLogs={terminalLogs} />
+
+      {/* ── Header Bar ── */}
+      <header className="border-b border-[#e5e5e5] dark:border-[#222] bg-white dark:bg-[#111] px-6 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <span className="font-serif text-2xl font-bold tracking-tight text-black dark:text-white">
+            {companyName}
+          </span>
+          <span className="text-[10px] font-mono font-semibold uppercase tracking-wider px-2 py-0.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-none">
+            AUTONOMOUS FOUNDER COCKPIT
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 font-mono text-xs">
+          <button
+            type="button"
+            onClick={() => setAddCreditsOpen(true)}
+            className={beveledBtnClass}
+          >
+            + ADD CREDITS
+          </button>
+          <button
+            type="button"
+            onClick={() => setCompanyLimitOpen(true)}
+            className={beveledBtnClass}
+          >
+            + NEW
+          </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen(!menuOpen)}
+            className={beveledBtnClass}
+          >
+            <span>MENU</span>
+            <span>-</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ── Main Layout ── */}
+      <main className={`flex-1 grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-[#e5e5e5] dark:divide-[#222] min-h-[calc(100vh-85px)]`}>
+        {/* ── Left Column: Agent Profile, Status, Business & Teams ── */}
+        <section className={`p-6 space-y-7 bg-[#fafafa] dark:bg-[#0f1011] ${chatSidebarOpen ? "md:col-span-3 lg:col-span-2.5" : "md:col-span-4 lg:col-span-3"}`}>
+          {/* Autonomous Agent Status Widget */}
+          <div className="space-y-4">
+            <h2 className="font-serif text-lg font-bold tracking-tight text-black dark:text-white">
+              Polsia
+            </h2>
+
+            <div className="flex items-start gap-4">
+              {isPlanning ? (
+                <div className="w-16 h-20 border-2 border-black dark:border-white bg-white dark:bg-black flex flex-col items-center justify-between py-1 px-1 font-mono text-[9px] leading-tight select-none shadow-sm animate-pulse">
+                  <span className="text-[7px]">▲</span>
+                  <span className="tracking-widest text-[8px]">▲ ▲ ▲</span>
+                  <div className="flex items-center justify-between w-full px-1">
+                    <span>◉</span>
+                    <span>◉</span>
+                  </div>
+                  <span>▽</span>
+                  <span className="text-[8px]">~~~~~</span>
+                  <div className="flex items-center justify-between w-full px-1 text-[8px]">
+                    <span>/ | \</span>
+                    <span className="text-emerald-500 font-bold">♫</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="w-16 h-16 border-2 border-black dark:border-white bg-white dark:bg-black flex flex-col items-center justify-between py-1.5 px-2 shadow-sm font-mono text-[10px] leading-tight select-none">
+                  <span className="tracking-widest text-[8px]">▲ ▲ ▲</span>
+                  <div className="flex items-center justify-between w-full px-1">
+                    <span>◉</span>
+                    <span>◉</span>
+                  </div>
+                  <span>▽</span>
+                  <span className="text-[8px] text-zinc-400">~~~~~</span>
+                </div>
+              )}
+
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-serif text-base font-bold text-black dark:text-white">
+                    {isPlanning ? "Planning" : "Shipped"}
+                  </span>
+                  <span className={`w-2 h-2 rounded-full ${isPlanning ? "bg-amber-500 animate-ping" : "bg-emerald-500 animate-pulse"}`} />
+                </div>
+                <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400 leading-tight">
+                  {isPlanning ? "Formulating next moves..." : "Done — your changes are live"}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-2 font-mono text-[11px]">
+              <button
+                type="button"
+                onClick={() => setAutoModeOpen(true)}
+                className={`${beveledBtnClass} ${
+                  autoModeActive
+                    ? "!bg-emerald-600 !text-white !border-emerald-700 animate-pulse"
+                    : ""
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                <span>{autoModeActive ? "AUTO ACTIVE" : "⚡ AUTO MODE"}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNightshiftOpen(true)}
+                className={beveledBtnClass}
+              >
+                NIGHTSHIFT
+              </button>
+            </div>
+
+            {isPlanning && (
+              <div className="p-3.5 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-[#141517] font-serif text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 shadow-sm animate-in fade-in">
+                Deciding the 3 highest-impact next steps to move the company forward...
+              </div>
+            )}
+
+            {autoModeActive && autoModeRemaining !== null && (
+              <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono text-xs flex items-center justify-between">
+                <span>REMAINING:</span>
+                <span className="font-bold">{formatCountdown(autoModeRemaining)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Business & Telemetry Widget */}
+          <div className="space-y-3 pt-3 border-t border-[#e5e5e5] dark:border-[#222]">
+            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+              Business
+            </h3>
+
+            <div className="space-y-1.5 font-mono text-xs text-zinc-800 dark:text-zinc-300">
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-600 dark:text-zinc-400">VISITORS:</span>
+                <span className="font-bold text-black dark:text-white">32</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-600 dark:text-zinc-400">REVENUE:</span>
+                <span className="font-bold text-black dark:text-white">$0.00</span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-zinc-500">
+                <span>UPDATED 20M AGO</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setMfsGatewayOpen(true)}
+              className={`w-full mt-2 ${beveledBtnClass}`}
+            >
+              <CreditCard className="w-3.5 h-3.5" />
+              <span>SETUP PAYMENTS</span>
+            </button>
+          </div>
+
+          {/* Teams Widget */}
+          <div className="space-y-3 pt-3 border-t border-[#e5e5e5] dark:border-[#222]">
+            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+              Teams
+            </h3>
+
+            <button
+              type="button"
+              onClick={() => setInviteModalOpen(true)}
+              className={`w-full ${beveledBtnClass}`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              <span>ADD MEMBER</span>
+            </button>
+          </div>
+        </section>
+
+        {/* ── Center-Left Column: Tasks, Documents & Website ── */}
+        <section className={`p-6 space-y-8 bg-white dark:bg-[#0c0d0e] ${chatSidebarOpen ? "md:col-span-5 lg:col-span-4.5" : "md:col-span-5 lg:col-span-5.5"}`}>
+          {/* Tasks Section */}
+          <div className="space-y-4">
+            <h2 className="font-serif text-lg font-bold tracking-tight text-black dark:text-white">
+              Tasks
+            </h2>
+
+            <div className="space-y-3">
+              {tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className="p-4 border border-zinc-300 dark:border-zinc-800 bg-[#fbfbfb] dark:bg-[#121315] hover:border-zinc-500 transition-colors space-y-2.5 shadow-sm"
+                >
+                  <h4 className="font-serif text-sm font-bold text-black dark:text-white leading-snug">
+                    {task.title}
+                  </h4>
+                  <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                    {task.description}
+                  </p>
+
+                  <div className="flex items-center gap-2 pt-1 font-mono text-[10px]">
+                    {task.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className={`px-2 py-0.5 border font-semibold tracking-wider ${
+                          tag === "TONIGHT"
+                            ? "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                            : tag === "1 CREDIT"
+                            ? "border-zinc-400 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                            : "border-zinc-300 dark:border-zinc-700 bg-zinc-200/50 dark:bg-zinc-800/50 text-zinc-800 dark:text-zinc-200"
+                        }`}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2 pt-2 font-mono text-xs">
+              <button
+                type="button"
+                onClick={handleTriggerPlanning}
+                disabled={isPlanning}
+                className={`${beveledBtnClass} ${isPlanning ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                <PlusSquare className="w-3.5 h-3.5" />
+                <span>{isPlanning ? "PLANNING..." : "NEW TASKS"}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setManageTasksOpen(true)}
+                className={beveledBtnClass}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>MANAGE TASKS</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Documents Section */}
+          <div className="space-y-4 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
+            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+              Documents
+            </h3>
+
+            <div className="space-y-2 font-serif text-xs">
+              {docs.map((doc) => (
+                <div
+                  key={doc.id}
+                  onClick={() => setActiveDoc(doc)}
+                  className="flex items-center justify-between py-2 px-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer transition-colors border-b border-zinc-100 dark:border-zinc-900 group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <FileText className="w-3.5 h-3.5 text-zinc-400 group-hover:text-black dark:group-hover:text-white shrink-0" />
+                    <span className="font-semibold text-black dark:text-white group-hover:underline">
+                      {doc.title}
+                    </span>
+                  </div>
+                  <span className="font-mono text-[10px] text-zinc-400 uppercase">
+                    {doc.timeAgo}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setDocsListOpen(true)}
+              className="font-mono text-[11px] font-bold text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white uppercase tracking-wider transition-colors pt-2 block cursor-pointer"
+            >
+              VIEW ALL (52)
+            </button>
+          </div>
+
+          {/* Website Domain Section */}
+          <div className="space-y-3 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
+            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+              Website
+            </h3>
+
+            <div className="flex items-center gap-2 font-mono text-xs">
+              <a
+                href="https://shothikaddress.com"
+                target="_blank"
+                rel="noreferrer"
+                className="text-zinc-900 dark:text-zinc-100 hover:underline flex items-center gap-1 font-semibold"
+              >
+                <span>🔗</span>
+                <span>https://shothikaddress.com</span>
+              </a>
+            </div>
+
+            <div className="flex items-center gap-2 font-mono text-[11px]">
+              <button
+                type="button"
+                onClick={() => setManageDomainsOpen(true)}
+                className={beveledBtnClass}
+              >
+                MANAGE DOMAIN
+              </button>
+              <button
+                type="button"
+                onClick={() => setVersionsOpen(true)}
+                className={beveledBtnClass}
+              >
+                VERSIONS
+              </button>
+              <button
+                type="button"
+                onClick={() => setWebsiteHubOpen(true)}
+                className={beveledBtnClass}
+              >
+                ...
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Center-Right Column: Twitter, Email, Ads ── */}
+        <section className={`p-6 space-y-8 bg-[#fafafa] dark:bg-[#0f1011] ${chatSidebarOpen ? "md:col-span-4 lg:col-span-2.5" : "md:col-span-3 lg:col-span-3.5"}`}>
+          {/* Twitter / X Engine */}
+          <div className="space-y-3">
+            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+              Twitter
+            </h3>
+
+            <div className="space-y-1.5 font-mono text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-black dark:text-white">Polsia @polsia</span>
+                <a
+                  href="https://x.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[10px] font-bold underline uppercase tracking-wider text-blue-600 dark:text-blue-400"
+                >
+                  CONNECT X ACCOUNT
+                </a>
+              </div>
+              <p className="text-[11px] text-zinc-500 font-semibold pt-1">
+                NO TWEETS POSTED YET
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 font-mono text-[11px] pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setFeed((prev) => [
+                    ...prev,
+                    {
+                      id: `tw-${Date.now()}`,
+                      time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                      text: "🐦 Generated product launch draft: 'VerifiQ KYC engine is live with 420ms verification latency across Bangladesh identity registries.' Queued for your review.",
+                    },
+                  ]);
+                }}
+                className={beveledBtnClass}
+              >
+                <SendHorizontal className="w-3.5 h-3.5" />
+                <span>TWEET</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFeed((prev) => [
+                    ...prev,
+                    {
+                      id: `tw-auto-${Date.now()}`,
+                      time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                      text: "⚡ Auto-Tweet enabled. Polsia will post verified milestone threads directly to connected social accounts.",
+                    },
+                  ]);
+                }}
+                className={beveledBtnClass}
+              >
+                <Clock3 className="w-3.5 h-3.5" />
+                <span>AUTO-TWEET</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Email / Cold Outreach Engine */}
+          <div className="space-y-3 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
+            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+              Email
+            </h3>
+
+            <div className="space-y-1.5 font-mono text-xs">
+              <p className="text-zinc-600 dark:text-zinc-400 font-semibold">
+                verifiq-3@polsia.app
+              </p>
+              <p className="text-[11px] text-zinc-500 font-semibold pt-1">
+                NO EMAILS YET
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 font-mono text-[11px] pt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setFeed((prev) => [
+                    ...prev,
+                    {
+                      id: `em-${Date.now()}`,
+                      time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                      text: "✉️ Cold Outreach campaign prepared: 25 target CTOs at Bangladesh FinTechs imported. Review draft before dispatch.",
+                    },
+                  ]);
+                }}
+                className={beveledBtnClass}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>COLD OUTREACH</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAutoColdOutreachOpen(true)}
+                className={beveledBtnClass}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                <span>AUTO COLD OUTREACH</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Ads Module */}
+          <div className="space-y-3 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
+            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+              Ads
+            </h3>
+
+            <button
+              type="button"
+              onClick={() => {
+                setFeed((prev) => [
+                  ...prev,
+                  {
+                    id: `ads-${Date.now()}`,
+                    time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                    text: "📊 Meta Ads campaign scaffolded: Targeting FinTech founders in South Asia with $50/day test budget.",
+                  },
+                ]);
+              }}
+              className={beveledBtnClass}
+            >
+              <Rocket className="w-3.5 h-3.5" />
+              <span>RUN ADS</span>
+            </button>
+          </div>
+        </section>
+
+        {/* ── Right Column: Daily Standup Timeline & Chat Sidebar (2.5 cols) ── */}
+        {chatSidebarOpen && (
+          <section className="md:col-span-12 lg:col-span-2.5 flex flex-col bg-white dark:bg-[#111] border-t md:border-t-0 border-[#e5e5e5] dark:border-[#222] min-h-[500px] relative">
+            {/* Top Close Button (Black Circular X matching screenshot) */}
+            <div className="absolute top-3 right-3 z-10">
+              <button
+                type="button"
+                onClick={() => setChatSidebarOpen(false)}
+                className="w-5 h-5 rounded-full bg-black hover:bg-zinc-800 text-white flex items-center justify-center text-[10px] transition-all cursor-pointer shadow-sm"
+                title="Collapse Sidebar"
+              >
+                <X className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* Scrollable Standup Timeline */}
+            <div
+              ref={feedScrollRef}
+              className="flex-1 p-5 pt-8 space-y-5 overflow-y-auto max-h-[calc(100vh-160px)]"
+            >
+              {feed.map((msg, index) => (
+                <div key={msg.id} className="space-y-2">
+                  {/* Centered TODAY / Date Divider */}
+                  {msg.dayHeader && (
+                    <div className="relative flex items-center py-2">
+                      <div className="flex-grow border-t border-slate-200 dark:border-zinc-800" />
+                      <span className="shrink-0 px-3 font-mono text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                        {msg.dayHeader}
+                      </span>
+                      <div className="flex-grow border-t border-slate-200 dark:border-zinc-800" />
+                    </div>
+                  )}
+
+                  {/* Red NEW Divider Line */}
+                  {msg.isNewDivider && (
+                    <div className="relative flex items-center py-1">
+                      <div className="flex-grow border-t border-red-500" />
+                      <span className="shrink-0 pl-2 font-mono text-[9px] font-bold uppercase tracking-widest text-red-600 dark:text-red-500">
+                        NEW
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="space-y-1">
+                    <div
+                      className={`font-serif text-xs leading-relaxed text-slate-800 dark:text-zinc-200 [&_code]:font-mono [&_code]:text-[11px] [&_code]:bg-slate-100 dark:[&_code]:bg-zinc-900 [&_code]:px-1 [&_code]:py-0.5 [&_code]:border [&_code]:border-slate-200 dark:[&_code]:border-zinc-800 ${
+                        msg.fromUser
+                          ? "p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-black dark:text-white"
+                          : ""
+                      }`}
+                    >
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
+                    </div>
+
+                    <div className="font-mono text-[10px] text-zinc-400">
+                      {msg.time}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Universal Bottom Input (Screenshot Parity) */}
+            <div className="p-3 border-t border-[#e5e5e5] dark:border-[#222] bg-[#fafafa] dark:bg-[#0e0f10]">
+              <div className="flex items-center gap-2 border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-1.5 shadow-sm rounded-none">
+                <button
+                  type="button"
+                  className="text-zinc-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer shrink-0"
+                >
+                  <Paperclip className="w-3.5 h-3.5" />
+                </button>
+
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  placeholder="Ask Polsia anything..."
+                  className="flex-1 bg-transparent font-serif text-xs text-black dark:text-white placeholder:text-zinc-400 outline-none min-w-0"
+                />
+
+                <button
+                  type="button"
+                  onClick={handleSendMessage}
+                  disabled={!chatInput.trim()}
+                  className="px-2.5 py-1 bg-gradient-to-b from-[#f5f5f5] to-[#d8d8d8] dark:from-zinc-800 dark:to-zinc-900 hover:from-white hover:to-[#e0e0e0] border border-[#777] dark:border-zinc-700 text-black dark:text-white font-mono font-bold text-[9px] uppercase tracking-wider disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-[inset_1px_1px_0px_#fff,inset_-1px_-1px_0px_#aaa,0_1px_2px_rgba(0,0,0,0.15)]"
+                >
+                  SEND
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+      </main>
+
+      {/* Floating Toggle Button when Sidebar is Closed */}
+      {!chatSidebarOpen && (
+        <button
+          type="button"
+          onClick={() => setChatSidebarOpen(true)}
+          className="fixed bottom-6 right-6 z-40 px-3.5 py-2 bg-black hover:bg-zinc-800 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-2xl border border-zinc-700 transition-all cursor-pointer active:scale-95"
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>OPEN STANDUP FEED</span>
+        </button>
+      )}
+
+      {/* ── Modals ── */}
+      <AutoModeModal
+        open={autoModeOpen}
+        onOpenChange={setAutoModeOpen}
+        onStartAutoMode={handleStartAutoMode}
       />
 
-      <NewTaskModal
-        open={showNewTask}
-        onOpenChange={setShowNewTask}
-        onCreate={handleCreateTask}
+      <NightshiftModal
+        open={nightshiftOpen}
+        onOpenChange={setNightshiftOpen}
+        onSave={(mode) => setNightshiftMode(mode)}
       />
-      <ManageTasksModal
-        open={showManage}
-        onOpenChange={setShowManage}
-        tasks={orderedTasks}
-        onRun={handleRunTask}
+
+      <AddCreditsModal
+        open={addCreditsOpen}
+        onOpenChange={setAddCreditsOpen}
+        onSuccess={(plan, price) => {
+          setCredits((c) => c + 15);
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `cred-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: `💳 Successfully subscribed to ${plan}. 15 Credits added to ${companyName} workspace balance.`,
+            },
+          ]);
+        }}
       />
-      <InviteModal open={showInvite} onOpenChange={setShowInvite} />
-      <DailyDigestModal open={showDailyDigest} onOpenChange={setShowDailyDigest} />
-      <ConnectExistingCompanyModal open={showConnectCompany} onOpenChange={setShowConnectCompany} />
-      <MfsGatewayModal open={showMfsGateway} onOpenChange={setShowMfsGateway} />
-      <DatabaseSchemaModal open={showDbSchema} onOpenChange={setShowDbSchema} />
-      <VoiceCommanderModal open={showVoiceCommander} onOpenChange={setShowVoiceCommander} />
-      <VisualStorefrontBuilderModal open={showVisualBuilder} onOpenChange={setShowVisualBuilder} />
-      <LeadCrmDrawer open={showLeadCrm} onOpenChange={setShowLeadCrm} />
-      <CompetitorAdSpyModal open={showAdSpy} onOpenChange={setShowAdSpy} />
-      <SteadfastCourierModal open={showSteadfast} onOpenChange={setShowSteadfast} />
-      <BookReaderStorefrontModal open={showBookReader} onOpenChange={setShowBookReader} />
-      <TelegramVoiceBriefingModal open={showTelegramBriefing} onOpenChange={setShowTelegramBriefing} />
-      <CroTunerModal open={showCroTuner} onOpenChange={setShowCroTuner} />
-      <DokployMicroContainersModal open={showMicroContainers} onOpenChange={setShowMicroContainers} />
-      <VersionHistoryModal doc={versionDoc} onClose={() => setVersionDoc(null)} />
-      <Dialog open={!!contentDoc} onOpenChange={(v) => !v && setContentDoc(null)}>
-        <DialogContent
-          className="max-h-[85vh] overflow-y-auto sm:max-w-2xl"
-          data-testid="dialog-doc-content"
-        >
-          <DialogTitle className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-indigo-500" /> {contentDoc?.title}
-          </DialogTitle>
-          <DialogDescription className="sr-only">Document content</DialogDescription>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{contentDoc?.content ?? ""}</ReactMarkdown>
+
+      <DocumentsListModal
+        open={docsListOpen}
+        onOpenChange={setDocsListOpen}
+        onSelectDoc={(doc) => {
+          setActiveDoc({
+            id: doc.id,
+            title: doc.title,
+            timeAgo: doc.timeAgo,
+            kind: doc.type === "report" ? "CEO Report" : "Document",
+            content: doc.content,
+          });
+        }}
+      />
+
+      <CompanyLimitModal
+        open={companyLimitOpen}
+        onOpenChange={setCompanyLimitOpen}
+        onAddSlot={() => {
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `slot-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: `🏢 New Company Slot provisioned (+ $20/mo). You can now launch an additional autonomous company from your account.`,
+            },
+          ]);
+        }}
+      />
+
+      <CompanySettingsModal
+        open={companySettingsOpen}
+        onOpenChange={setCompanySettingsOpen}
+        companyName={companyName}
+        onSaveCompanyName={(newName) => {
+          setCompanyName(newName);
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `rename-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: `📝 Company renamed to "${newName}". Workspace and domain metadata synchronized.`,
+            },
+          ]);
+        }}
+        onTogglePause={(paused) => {
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `pause-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: paused
+                ? `⏸️ ${companyName} daily work paused temporarily. Autonomous queue suspended.`
+                : `▶️ ${companyName} daily work resumed. Autonomous tasks restored.`,
+            },
+          ]);
+        }}
+        onDeleteCompany={() => {
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `del-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: `⚠️ ${companyName} deletion requested. Purging containers and workspace records.`,
+            },
+          ]);
+        }}
+      />
+
+      <ManageDomainsModal
+        open={manageDomainsOpen}
+        onOpenChange={setManageDomainsOpen}
+        polsiaUrl="https://verifiq-3.polsia.app"
+        customDomain="shothikaddress.com"
+        onReleaseDomain={() => {
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `rel-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: "🌐 Custom domain released. SSL certificate detached and DNS bindings purged.",
+            },
+          ]);
+        }}
+        onConnectDomain={(domain) => {
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `dom-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: `🌐 Custom domain "${domain}" attached. Generating AWS ACM SSL certificate validation CNAME records.`,
+            },
+          ]);
+        }}
+      />
+
+      <VersionsModal
+        open={versionsOpen}
+        onOpenChange={setVersionsOpen}
+        onRevertCommit={handleRevertCommit}
+      />
+
+      <WebsiteHubModal
+        open={websiteHubOpen}
+        onOpenChange={setWebsiteHubOpen}
+        onOpenManageDomains={() => setManageDomainsOpen(true)}
+        onOpenVersions={() => setVersionsOpen(true)}
+        onOpenSecrets={() => setSecretsOpen(true)}
+        onOpenRedeploy={() => setRedeployOpen(true)}
+      />
+
+      <AppSecretsModal
+        open={secretsOpen}
+        onOpenChange={setSecretsOpen}
+        onSecretChange={() => {
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `sec-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: "🔒 App Secrets updated. Trigger a redeployment for new environment variables to take effect.",
+            },
+          ]);
+        }}
+      />
+
+      <RedeployModal
+        open={redeployOpen}
+        onOpenChange={setRedeployOpen}
+        onStartRedeploy={() => {
+          setTerminalLogs([
+            "> Initializing zero-downtime container rebuild...",
+            "> Injecting updated runtime environment variables...",
+            "> Building Vite/PostgREST production bundle...",
+            "> Dokploy VPS container rolled over: https://shothikaddress.com [HTTP 200 OK]",
+          ]);
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `redep-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: "🚀 Site successfully rebuilt and redeployed from latest commit. All environment variable changes are live.",
+            },
+          ]);
+        }}
+      />
+
+      <AutoColdOutreachModal
+        open={autoColdOutreachOpen}
+        onOpenChange={setAutoColdOutreachOpen}
+        onStartOutreach={(freq) => {
+          setTerminalLogs([
+            "> Provisioning Polsia outbound SMTP proxy (verifiq-3@polsia.app)...",
+            "> Scraping South Asian FinTech executive directories...",
+            `> Schedule active: ${freq.toUpperCase()}. Auto-dispatching 10 pitches per run.`,
+          ]);
+          setFeed((prev) => [
+            ...prev,
+            {
+              id: `outreach-${Date.now()}`,
+              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+              text: `✉️ Auto Cold Outreach activated (${freq.toUpperCase()}). Polsia will send tailored pitches to target CTOs from verifiq-3@polsia.app.`,
+            },
+          ]);
+        }}
+      />
+
+      {/* Manage Tasks Modal */}
+      <Dialog open={manageTasksOpen} onOpenChange={setManageTasksOpen}>
+        <DialogContent className="sm:max-w-2xl bg-white text-slate-900 border border-slate-300 p-6 rounded-none shadow-2xl font-serif dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800 max-h-[80vh] overflow-y-auto">
+          <div className="flex items-center justify-between pb-2">
+            <DialogTitle className="text-xl font-bold font-serif text-black dark:text-white">
+              Task Lifecycle Manager
+            </DialogTitle>
+            <DialogClose asChild>
+              <button type="button" className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </DialogClose>
+          </div>
+          <DialogDescription className="text-xs text-zinc-500 font-sans">
+            Review, promote, or execute queued founder tasks.
+          </DialogDescription>
+
+          <div className="space-y-3 mt-4">
+            {tasks.map((t) => (
+              <div
+                key={t.id}
+                className="p-3.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 space-y-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="font-serif font-bold text-sm text-black dark:text-white">{t.title}</h4>
+                  <Badge variant="outline" className="font-mono text-[10px]">
+                    {t.status.toUpperCase()}
+                  </Badge>
+                </div>
+                <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400">{t.description}</p>
+              </div>
+            ))}
           </div>
         </DialogContent>
       </Dialog>
 
-      <div className="grid h-full grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-[260px_minmax(0,1fr)_280px_360px]">
-        {/* Left column */}
-        <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
-          <AgentStatusWidget autoMode={autoMode} />
-          <AutoModeCard autoMode={autoMode} onToggle={setAutoMode} />
-          <CashFlowPnlCard
-            onOpenDailyDigest={() => setShowDailyDigest(true)}
-            onOpenMfsGateway={() => setShowMfsGateway(true)}
-          />
-          <ProgressStatsCard />
-          <TeamCard onInvite={() => setShowInvite(true)} />
-          <SubscriptionCard />
-        </div>
+      {/* Add Member Invite Modal */}
+      <Dialog open={inviteModalOpen} onOpenChange={setInviteModalOpen}>
+        <DialogContent className="sm:max-w-[440px] bg-white text-slate-900 border border-slate-300 p-6 rounded-none shadow-2xl font-serif dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between pb-2">
+            <DialogTitle className="text-xl font-bold font-serif text-black dark:text-white">
+              Add Collaborator
+            </DialogTitle>
+            <DialogClose asChild>
+              <button type="button" className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </DialogClose>
+          </div>
+          <DialogDescription className="sr-only">Invite a team member to this company</DialogDescription>
 
-        {/* Center-left column */}
-        <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
-          <TaskQueue
-            tasks={orderedTasks}
-            onNewTask={() => setShowNewTask(true)}
-            onManage={() => setShowManage(true)}
-            onRun={handleRunTask}
-          />
-          <DocumentsLibrary
-            docs={docs}
-            onOpenVersions={(doc) => (doc.content ? setContentDoc(doc) : setVersionDoc(doc))}
-            onOpenDbSchema={() => setShowDbSchema(true)}
-          />
-        </div>
+          {inviteSent ? (
+            <div className="py-6 text-center space-y-2">
+              <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
+              <p className="font-serif text-sm font-semibold">Invite dispatched to {inviteEmail}</p>
+            </div>
+          ) : (
+            <div className="space-y-4 mt-4 font-sans text-xs">
+              <input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="colleague@fintech.com"
+                className="w-full p-2.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 rounded-none outline-none font-serif text-sm"
+              />
 
-        {/* Center-right column */}
-        <div className="space-y-3 xl:overflow-y-auto xl:pr-1">
-          <OutputChannels />
-        </div>
+              <p className="p-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 leading-relaxed italic">
+                *This invite only grants access to {companyName}. It does not grant access to your other companies.*
+              </p>
 
-        {/* Right column */}
-        <div className="min-h-[420px] md:col-span-2 xl:col-span-1 xl:min-h-0">
-          <NarrativeFeed feed={feed} />
-        </div>
-      </div>
+              <button
+                type="button"
+                disabled={!inviteEmail.includes("@")}
+                onClick={() => setInviteSent(true)}
+                className="w-full py-3 bg-black hover:bg-zinc-800 text-white font-mono font-bold text-xs uppercase tracking-widest disabled:opacity-40 transition-all cursor-pointer"
+              >
+                SEND INVITE
+              </button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Reader / Markdown Detail Modal */}
+      <Dialog open={!!activeDoc} onOpenChange={(v) => !v && setActiveDoc(null)}>
+        <DialogContent className="sm:max-w-2xl bg-white text-slate-900 border border-slate-300 p-8 rounded-none shadow-2xl font-serif dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800 max-h-[85vh] overflow-y-auto">
+          <div className="flex items-center justify-between pb-3 border-b border-transparent">
+            <DialogTitle className="text-2xl font-bold font-serif text-black dark:text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-zinc-500" />
+              <span>{activeDoc?.title}</span>
+            </DialogTitle>
+            <DialogClose asChild>
+              <button type="button" className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </DialogClose>
+          </div>
+          <DialogDescription className="sr-only">Document contents</DialogDescription>
+          <div className="prose prose-sm dark:prose-invert max-w-none font-serif pt-2 leading-relaxed [&_h3]:font-bold [&_h3]:text-base [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:text-xs [&_p]:text-slate-700 dark:[&_p]:text-zinc-300 [&_ul]:space-y-2 [&_li]:text-xs [&_code]:font-mono [&_code]:text-[11px] [&_code]:bg-slate-100 dark:[&_code]:bg-zinc-900 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:border [&_code]:border-slate-200 dark:[&_code]:border-zinc-800">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{activeDoc?.content ?? ""}</ReactMarkdown>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Menu / Account Drawer Modal */}
+      <Dialog open={menuOpen} onOpenChange={setMenuOpen}>
+        <DialogContent className="sm:max-w-md bg-white text-slate-900 border border-slate-300 p-6 rounded-none shadow-2xl font-mono dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between pb-2">
+            <DialogTitle className="text-lg font-bold uppercase tracking-wider text-black dark:text-white">
+              Founder System Menu
+            </DialogTitle>
+            <DialogClose asChild>
+              <button type="button" className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </DialogClose>
+          </div>
+          <DialogDescription className="text-xs text-zinc-500">
+            Access advanced platform connectors and sub-modules.
+          </DialogDescription>
+
+          <div className="grid grid-cols-2 gap-2 mt-4 text-xs">
+            <button
+              onClick={() => { setMenuOpen(false); setCompanySettingsOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer"
+            >
+              ⚙️ Company Settings
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); setVersionsOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer"
+            >
+              🔄 Version Rollbacks
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); setDailyDigestOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer"
+            >
+              📑 CEO Daily Digest
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); setVoiceCommanderOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer"
+            >
+              🎙️ Voice Commander
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); setDokployOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer"
+            >
+              🐳 Dokploy / VPS Containers
+            </button>
+            <button
+              onClick={() => { setMenuOpen(false); setMfsGatewayOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer"
+            >
+              💳 bKash / Nagad MFS
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Additional Supporting Modals */}
+      <MfsGatewayModal open={mfsGatewayOpen} onOpenChange={setMfsGatewayOpen} />
+      <ConnectExistingCompanyModal open={connectCompanyOpen} onOpenChange={setConnectCompanyOpen} />
+      <VoiceCommanderModal open={voiceCommanderOpen} onOpenChange={setVoiceCommanderOpen} />
+      <DailyDigestModal open={dailyDigestOpen} onOpenChange={setDailyDigestOpen} />
+      <DokployMicroContainersModal open={dokployOpen} onOpenChange={setDokployOpen} />
     </div>
   );
 }

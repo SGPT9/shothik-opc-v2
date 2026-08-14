@@ -1,9 +1,9 @@
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, current } from "@reduxjs/toolkit";
 
 const LOCAL_STORAGE_KEY = "settings";
 
 const defaultSetting = {
-  theme: "system",
+  theme: "dark",
   direction: "ltr",
   sidebar: "expanded",
   header: "expanded",
@@ -35,8 +35,16 @@ const defaultSetting = {
 const initialState = { ...defaultSetting, _hydrated: false };
 
 const saveState = (state) => {
-  const { _hydrated, ...rest } = state;
-  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(rest));
+  if (typeof window === "undefined") return;
+  try {
+    const rawState = current(state);
+    const { _hydrated, ...rest } = rawState;
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(rest));
+  } catch (e) {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify({ theme: state.theme }));
+    } catch (_) {}
+  }
 };
 
 const settingsSlice = createSlice({
@@ -60,9 +68,7 @@ const settingsSlice = createSlice({
       saveState(state);
     },
     toggleTheme(state) {
-      const order = ["light", "dark", "system"];
-      const nextIndex = (order.indexOf(state.theme) + 1) % order.length;
-      state.theme = order[nextIndex];
+      state.theme = state.theme === "dark" ? "light" : "dark";
       saveState(state);
     },
 
@@ -88,41 +94,42 @@ const settingsSlice = createSlice({
       state.layout = action.payload;
       saveState(state);
     },
-    toggleLayout(state) {
-      state.layout = state.layout === "vertical" ? "horizontal" : "vertical";
+    updateDirection(state, action) {
+      state.direction = action.payload;
       saveState(state);
     },
 
+    // features settings reducers
     setDemo(state, action) {
       state.demo = action.payload;
       saveState(state);
     },
-    toggleDemo(state) {
-      state.demo = !state.demo;
-      saveState(state);
-    },
-
-    // features
     toggleParaphraseOption(state, action) {
-      const key = action.payload;
-      if (state.paraphraseOptions.hasOwnProperty(key)) {
-        state.paraphraseOptions[key] = !state.paraphraseOptions[key];
+      const optionName = action.payload;
+      if (optionName in state.paraphraseOptions) {
+        state.paraphraseOptions[optionName] =
+          !state.paraphraseOptions[optionName];
         saveState(state);
       }
     },
     toggleHumanizeOption(state, action) {
-      const key = action.payload;
-      if (state.humanizeOptions.hasOwnProperty(key)) {
-        state.humanizeOptions[key] = !state.humanizeOptions[key];
+      const optionName = action.payload;
+      if (optionName in state.humanizeOptions) {
+        state.humanizeOptions[optionName] = !state.humanizeOptions[optionName];
         saveState(state);
       }
     },
     toggleInterfaceOption(state, action) {
-      const key = action.payload;
-      if (state.interfaceOptions.hasOwnProperty(key)) {
-        state.interfaceOptions[key] = !state.interfaceOptions[key];
+      const optionName = action.payload;
+      if (optionName in state.interfaceOptions) {
+        state.interfaceOptions[optionName] =
+          !state.interfaceOptions[optionName];
         saveState(state);
       }
+    },
+    resetSettings(state) {
+      Object.assign(state, defaultSetting);
+      saveState(state);
     },
   },
 });
@@ -131,17 +138,17 @@ export const {
   hydrateSettings,
   updateTheme,
   toggleTheme,
+  updateSidebar,
+  toggleSidebar,
   updateHeader,
   toggleHeader,
   updateLayout,
-  toggleLayout,
-  updateSidebar,
-  toggleSidebar,
+  updateDirection,
   setDemo,
-  toggleDemo,
   toggleParaphraseOption,
-  toggleInterfaceOption,
   toggleHumanizeOption,
+  toggleInterfaceOption,
+  resetSettings,
 } = settingsSlice.actions;
 
 export default settingsSlice.reducer;

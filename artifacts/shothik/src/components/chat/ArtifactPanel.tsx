@@ -1,18 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2 } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
 import { CodeArtifact }         from "@/components/chat/artifacts/CodeArtifact";
 import { DiagramArtifact }      from "@/components/chat/artifacts/DiagramArtifact";
 import { DocArtifact }          from "@/components/chat/artifacts/DocArtifact";
+import { PonytailSynthesizerCard } from "@/components/canvas/PonytailSynthesizerCard";
 import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "sheet" | "research" | "code" | "diagram" | "doc";
+export type ArtifactTab = "slides" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -22,12 +23,13 @@ interface TabConfig {
 }
 
 const TABS: TabConfig[] = [
-  { id: "slides",   label: "Slides",   Icon: Presentation, color: "text-indigo-400"  },
-  { id: "sheet",    label: "Sheet",    Icon: Table2,       color: "text-cyan-400"    },
-  { id: "research", label: "Research", Icon: BookOpen,   color: "text-violet-400"  },
-  { id: "code",     label: "Code",     Icon: Code2,        color: "text-emerald-400" },
-  { id: "diagram",  label: "Diagram",  Icon: Network,      color: "text-sky-400"     },
-  { id: "doc",      label: "Doc",      Icon: FileText,     color: "text-purple-400"  },
+  { id: "slides",      label: "Slides",              Icon: Presentation, color: "text-indigo-400" },
+  { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
+  { id: "sheet",       label: "Sheet",               Icon: Table2,       color: "text-cyan-400"   },
+  { id: "research",    label: "Research",            Icon: BookOpen,     color: "text-violet-400" },
+  { id: "code",        label: "Code",                Icon: Code2,        color: "text-emerald-400"},
+  { id: "diagram",     label: "Diagram",             Icon: Network,      color: "text-sky-400"    },
+  { id: "doc",         label: "Doc",                 Icon: FileText,     color: "text-amber-400"  },
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -91,51 +93,44 @@ export function ArtifactPanel({
                 type="button"
                 onClick={() => handleTabChange(id)}
                 aria-selected={isActive}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? "bg-background text-foreground shadow-sm border border-border/60"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
                 }`}
               >
                 <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? color : ""}`} />
-                {label}
+                <span>{label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* ── Pillar 5: Version History Dropdown & ChatbotX WhatsApp Broadcast ── */}
-        <div className="ml-auto flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={() => {
-              alert("📱 ChatbotX Broadcast: Pitch deck and financial sheet broadcasted to customer contacts via WhatsApp & Telegram!");
-            }}
-            className="flex items-center gap-1 bg-emerald-500/10 border border-emerald-500/30 rounded-lg px-2 py-1 text-[10px] font-bold text-emerald-400 hover:bg-emerald-500/20 transition"
-            title="Broadcast Pitch Deck & Artifact to Customers via ChatbotX WhatsApp Engine"
-          >
-            📱 WhatsApp Broadcast
-          </button>
-
-          <div className="flex items-center gap-1 bg-muted/40 border border-border/60 rounded-lg px-2 py-1 text-[10px] font-mono text-muted-foreground">
-            <History className="h-3 w-3 text-indigo-400" />
+        <div className="flex items-center gap-1 shrink-0 ml-1">
+          {/* Version dropdown */}
+          <div className="relative flex items-center">
+            <History className="h-3 w-3 text-muted-foreground absolute left-1.5 pointer-events-none" />
             <select
               value={selectedVersion}
               onChange={(e) => setSelectedVersion(e.target.value)}
-              className="bg-transparent outline-none text-[10px] font-bold text-foreground cursor-pointer"
+              aria-label="Select artifact version"
+              className="h-7 pl-5 pr-2 rounded-lg text-[10px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none"
             >
-              <option value="v3">v3 (Current Draft)</option>
-              <option value="v2">v2 (10m ago)</option>
+              <option value="v3">v3 (Current)</option>
+              <option value="v2">v2 (-15m)</option>
               <option value="v1">v1 (Initial)</option>
             </select>
           </div>
 
-          {/* Terminal Console Toggle (Pillar 3) */}
           <button
             type="button"
             onClick={() => setShowTerminal((prev) => !prev)}
-            aria-label="Toggle Replit Terminal Console"
-            className="flex items-center gap-1 h-7 px-2 rounded-lg text-[10px] font-mono font-bold bg-slate-900 text-emerald-400 border border-slate-800 hover:bg-slate-800 transition"
+            aria-label="Toggle terminal"
+            className={`hidden sm:flex shrink-0 items-center gap-1 h-7 px-2 rounded-lg text-[10px] font-bold border transition ${
+              showTerminal
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                : "bg-muted/40 text-muted-foreground border-border/40 hover:text-foreground"
+            }`}
           >
             <Terminal className="h-3 w-3 text-emerald-400" />
             <span>Terminal</span>
@@ -150,7 +145,7 @@ export function ArtifactPanel({
               }
             }}
             aria-label="Share artifact to Community"
-            className="hidden sm:flex shrink-0 items-center gap-1 h-7 px-2 rounded-lg text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition"
+            className="hidden sm:flex shrink-0 items-center gap-1 h-7 px-2 rounded-lg text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition cursor-pointer"
           >
             Share
           </button>
@@ -159,7 +154,7 @@ export function ArtifactPanel({
             type="button"
             onClick={onClose}
             aria-label="Close artifact panel"
-            className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition"
+            className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -172,6 +167,12 @@ export function ArtifactPanel({
         {mounted.has("slides") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "slides" ? "block" : "hidden"}`}>
             <SlidesArtifact initialTopic={slidesTopic} isStreaming={isStreaming} />
+          </div>
+        )}
+
+        {mounted.has("synthesizer") && (
+          <div className={`absolute inset-0 overflow-y-auto p-4 flex items-center justify-center ${activeTab === "synthesizer" ? "block" : "hidden"}`}>
+            <PonytailSynthesizerCard />
           </div>
         )}
 
