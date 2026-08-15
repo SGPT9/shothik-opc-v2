@@ -60,6 +60,9 @@ convex-jwt-private-key.pem
 .insforge
 .agent
 .agents
+!.agents/skills/
+!.agents/skills/**
+
 .augment
 .claude
 .cline
