@@ -1,4 +1,3 @@
-
 import {
   Paperclip,
   Send,
@@ -12,17 +11,15 @@ import {
   FolderOpen,
   Link,
   ChevronDown,
-  Moon,
   Globe,
-  FlaskConical,
   Zap,
-  Gauge,
   Rocket,
   Check,
   Sparkles,
-  Briefcase,
-  ShoppingBag,
-  Terminal,
+  Presentation,
+  Table2,
+  Code2,
+  Search,
 } from "lucide-react";
 import {
   forwardRef,
@@ -34,16 +31,8 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { PerplexityFocusSelector, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
-import { TrajectoryReceiptModal } from "./TrajectoryReceiptModal";
-
-
+import type { ChatPersona } from "@/lib/chat/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,100 +80,48 @@ export interface ComposerProps {
   onRemoveContextChip?: (chipId: string) => void;
   commandHint?: { name: string; description: string } | null;
   errorMessage?: string | null;
-  /** Opens artifact dual-pane canvas (slides, research, sheet, code) */
-  onOpenArtifact?: (tab: "slides" | "research" | "sheet" | "code") => void;
+  /** Opens artifact dual-pane canvas (slides, research, sheet, code, synthesizer) */
+  onOpenArtifact?: (tab: "slides" | "research" | "sheet" | "code" | "synthesizer") => void;
   /** Opens Research artifact panel (when mode = Web Search) */
   onOpenResearchPanel?: () => void;
   /** Opens ChatGPT Advanced Voice Mode Orb */
   onVoiceOrbClick?: () => void;
   /** Opens the full-screen ChatGPT-style voice overlay */
   onOpenVoice?: () => void;
+  /** Opens specialized tools */
+  onOpenTool?: (tool: "research" | "swarm" | "slides" | "sheet" | "code" | "synthesizer" | "browser" | "voice") => void;
 }
-
-// ─── Mode config ─────────────────────────────────────────────────────────────
-
-const MODES: {
-  value: ChatPersona;
-  label: string;
-  shortLabel: string;
-  Icon: React.ElementType;
-  color: string;
-  bg: string;
-  border: string;
-  description: string;
-}[] = [
-  {
-    value: "cofounder",
-    label: "Cofounder",
-    shortLabel: "Cofounder",
-    Icon: Rocket,
-    color: "text-brand",
-    bg: "bg-brand/10",
-    border: "border-brand/30",
-    description: "Strategy, TAM/SAM/SOM & Problem-Solution",
-  },
-  {
-    value: "coworker",
-    label: "ScenarioLab",
-    shortLabel: "Scenario",
-    Icon: FlaskConical,
-    color: "text-violet-400",
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/30",
-    description: "Stress-test & adversarial scenario lab",
-  },
-  {
-    value: "researcher",
-    label: "Swarm Debate",
-    shortLabel: "Swarm",
-    Icon: Zap,
-    color: "text-purple-400",
-    bg: "bg-purple-500/10",
-    border: "border-purple-500/30",
-    description: "3-agent adversarial reasoning & critique",
-  },
-];
 
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 const MODELS = [
-  { value: "deepseek-v4-flash", label: "DeepSeek V4 Flash", badge: "⚡ 1.8¢ / Fast", desc: "6x Cheaper MoE · Instant Reasoning" },
-  { value: "deepseek-v4-pro",   label: "DeepSeek V4 Pro",   badge: "🧠 Flagship 49B", desc: "1M Context MoE · Deep Reasoning" },
-  { value: "gemini-2.5-flash",  label: "Gemini 2.5 Flash",  badge: "⚡ Multimodal",   desc: "Google Flash Reasoning" },
-  { value: "gemini-2.5-pro",    label: "Gemini 2.5 Pro",    badge: "✨ Complex",      desc: "Deep Thinking Engine" },
+  { value: "deepseek-v4-flash", label: "DeepSeek V4 Flash", badge: "⚡ Fast", desc: "Ultra-low cost MoE · Instant Reasoning" },
+  { value: "deepseek-v4-pro",   label: "DeepSeek V4 Pro",   badge: "🧠 Flagship", desc: "1M Context MoE · Deep Reasoning" },
+  { value: "gemini-2.5-flash",  label: "Gemini 2.5 Flash",  badge: "⚡ Multimodal", desc: "Google Flash Reasoning" },
+  { value: "gemini-2.5-pro",    label: "Gemini 2.5 Pro",    badge: "✨ Complex", desc: "Deep Thinking Engine" },
 ];
 
 // ─── Voice languages for South Asia ──────────────────────────────────────────
 
 const VOICE_LANGS = [
   { code: "bn-BD", label: "বাংলা (BD)" },
-  { code: "en-US", label: "English" },
-  { code: "ur-PK", label: "اردو" },
-  { code: "hi-IN", label: "हिन्दी" },
+  { code: "en-US", label: "English (US)" },
 ];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
   function Composer(
     {
-      value,
-      onChange,
+      value = "",
+      onChange: onChangeProp,
       onSubmit,
       onSend,
       onStop,
-      disabled,
-      isStreaming,
-      generating,
-      placeholder,
-      modelHandle = "gemini-2.5-flash",
+      disabled = false,
+      isStreaming = false,
+      generating = false,
+      placeholder = "Ask anything, analyze a market, paste a GitHub repo, or start a project…",
+      modelHandle = "deepseek-v4-flash",
       onModelChange,
-      persona = "cofounder",
-      onPersonaChange,
-      isOvernight = false,
-      onToggleOvernight,
-      activeSkill = "general",
-      onSkillChange,
       footer,
       attachments = [],
       onAttachFiles,
@@ -194,535 +131,581 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       commandHint,
       errorMessage,
       onOpenArtifact,
-      onOpenResearchPanel,
       onVoiceOrbClick,
-      onOpenVoice,
-    }: ComposerProps,
+      onOpenTool,
+    },
     ref,
   ) {
-    const textareaRef    = useRef<HTMLTextAreaElement>(null);
-    const pdfInputRef    = useRef<HTMLInputElement>(null);
-    const imageInputRef  = useRef<HTMLInputElement>(null);
+    const internalRef = useRef<HTMLTextAreaElement>(null);
+    const textareaRef = (ref as React.RefObject<HTMLTextAreaElement>) || internalRef;
+    const [localValue, setLocalValue] = useState(value);
+    const textValue = onChangeProp ? value : localValue;
+
+    const [isListening, setIsListening] = useState(false);
+    const [voiceLang, setVoiceLang] = useState("bn-BD");
+    const [attachMenuOpen, setAttachMenuOpen] = useState(false);
+    const [modelMenuOpen, setModelMenuOpen] = useState(false);
+    const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+    const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
+
+    const recognitionRef = useRef<any>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const imageInputRef = useRef<HTMLInputElement>(null);
+    const pdfInputRef = useRef<HTMLInputElement>(null);
     const folderInputRef = useRef<HTMLInputElement>(null);
 
-    const [attachMenuOpen, setAttachMenuOpen] = useState(false);
-    const [modeMenuOpen,   setModeMenuOpen]   = useState(false);
-    const [modelMenuOpen,  setModelMenuOpen]  = useState(false);
-    const [trajectoryOpen, setTrajectoryOpen] = useState(false);
-    const [isListening,    setIsListening]    = useState(false);
-    const [voiceLang,      setVoiceLang]      = useState("bn-BD");
-    const [voiceLangOpen, setVoiceLangOpen] = useState(false);
-    const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
-    // Tier 2: Speed / Quality toggle
-    const [quality, setQuality] = useState<"speed" | "balanced" | "quality">("balanced");
+    const activeStreaming = isStreaming || generating;
 
-    // Controlled or uncontrolled internal value fallback
-    const [internalValue, setInternalValue] = useState("");
-    const textValue = value !== undefined ? value : internalValue;
+    // Auto-resize textarea
+    useEffect(() => {
+      const el = textareaRef.current;
+      if (!el) return;
+      el.style.height = "auto";
+      const maxHeight = 200;
+      el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
+    }, [textValue, textareaRef]);
 
-    const handleTextChange = (val: string) => {
-      if (onChange) {
-        onChange(val);
-      } else {
-        setInternalValue(val);
-      }
-    };
+    // Speech-to-text voice dictation setup
+    useEffect(() => {
+      if (typeof window === "undefined") return;
+      const SpeechRecognition =
+        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (!SpeechRecognition) return;
 
-    const handleTextSubmit = () => {
-      const messageToSend = textValue.trim();
-      if (!messageToSend && attachments.length === 0 && contextChips.length === 0) return;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = voiceLang;
+
+      recognition.onresult = (event: any) => {
+        let transcript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          transcript += event.results[i][0].transcript;
+        }
+        if (transcript.trim()) {
+          const updated = textValue ? `${textValue} ${transcript}` : transcript;
+          if (onChangeProp) onChangeProp(updated);
+          else setLocalValue(updated);
+        }
+      };
+
+      recognition.onerror = () => setIsListening(false);
+      recognition.onend = () => setIsListening(false);
+      recognitionRef.current = recognition;
+
+      return () => {
+        try {
+          recognition.abort();
+        } catch {}
+      };
+    }, [voiceLang, onChangeProp, textValue]);
+
+    const startListening = useCallback(() => {
+      if (!recognitionRef.current) return;
+      try {
+        recognitionRef.current.lang = voiceLang;
+        recognitionRef.current.start();
+        setIsListening(true);
+      } catch {}
+    }, [voiceLang]);
+
+    const stopListening = useCallback(() => {
+      if (!recognitionRef.current) return;
+      try {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      } catch {}
+    }, []);
+
+    const handleTextSubmit = useCallback(() => {
+      if (activeStreaming || disabled) return;
+      const trimmed = textValue.trim();
+      if (!trimmed && attachments.length === 0) return;
 
       if (onSend) {
-        onSend(messageToSend);
+        onSend(trimmed);
       } else if (onSubmit) {
         onSubmit();
       }
 
-      if (onChange) {
-        onChange("");
+      if (onChangeProp) onChangeProp("");
+      else setLocalValue("");
+
+      if (textareaRef.current) {
+        textareaRef.current.style.height = "auto";
       }
-      setInternalValue("");
-    };
+    }, [activeStreaming, disabled, textValue, attachments, onSend, onSubmit, onChangeProp, textareaRef]);
 
-    const recognitionRef = useRef<any>(null);
-    const activeStreaming = isStreaming ?? generating ?? false;
-
-    useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement, []);
-
-    // Tier 1: Auto-resize — CSS field-sizing (no scroll jank)
-    useEffect(() => {
-      const ta = textareaRef.current;
-      if (!ta) return;
-      // Modern: field-sizing: content — handled by CSS
-      // Fallback for older browsers
-      ta.style.height = "auto";
-      ta.style.height = `${Math.min(ta.scrollHeight, 200)}px`;
-    }, [textValue]);
-
-    // Tier 1: `/` shortcut — focus textarea
-    useEffect(() => {
-      const handleKeyDown = (e: KeyboardEvent) => {
-        const active = document.activeElement;
-        const isFocused =
-          active?.tagName === "INPUT" ||
-          active?.tagName === "TEXTAREA" ||
-          active?.getAttribute("contenteditable") === "true";
-        if (e.key === "/" && !isFocused) {
-          e.preventDefault();
-          textareaRef.current?.focus();
-        }
-      };
-      document.addEventListener("keydown", handleKeyDown);
-      return () => document.removeEventListener("keydown", handleKeyDown);
-    }, []);
-
-    // Close menus on outside click
-    useEffect(() => {
-      const handler = () => {
-        setAttachMenuOpen(false);
-        setModeMenuOpen(false);
-        setModelMenuOpen(false);
-        setVoiceLangOpen(false);
-      };
-      document.addEventListener("click", handler);
-      return () => document.removeEventListener("click", handler);
-    }, []);
-
-    // ── Voice dictation ──────────────────────────────────────────────────────
-
-    const startListening = useCallback(() => {
-      const SpeechRecognition =
-        (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        alert("Voice input is not supported in this browser. Try Chrome or Edge.");
-        return;
-      }
-
-      const recognition = new SpeechRecognition();
-      recognition.lang = voiceLang;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-
-      let finalTranscript = "";
-
-      recognition.onresult = (event: any) => {
-        let interim = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript + " ";
-          } else {
-            interim = transcript;
-          }
-        }
-        onChange(value + finalTranscript + interim);
-      };
-
-      recognition.onerror = () => {
-        setIsListening(false);
-      };
-
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-
-      recognition.start();
-      recognitionRef.current = recognition;
-      setIsListening(true);
-    }, [voiceLang, value, onChange]);
-
-    const stopListening = useCallback(() => {
-      recognitionRef.current?.stop();
-      setIsListening(false);
-    }, []);
-
-    // ── Mode change with panel trigger ───────────────────────────────────────
-
-    const handleModeChange = (mode: ChatPersona) => {
-      onPersonaChange?.(mode);
-      setModeMenuOpen(false);
-      if (mode === "coresearcher") {
-        onOpenResearchPanel?.();
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleTextSubmit();
       }
     };
 
-    const activeMode = MODES.find((m) => m.value === persona) ?? MODES[0];
-    const activeModel = MODELS.find((m) => m.value === modelHandle) ?? MODELS[0];
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0) {
+        onAttachFiles?.(e.target.files);
+        e.target.value = "";
+      }
+    };
+
+    const activeModel = MODELS.find((m) => m.value === modelHandle) || MODELS[0];
 
     return (
-      <div className="border-t border-zinc-200/80 dark:border-white/[0.06] bg-white/90 dark:bg-background/90 backdrop-blur-sm px-4 pt-3 pb-4 transition-colors">
-        <div className="mx-auto flex max-w-3xl flex-col gap-2">
+      <div className="w-full relative px-4 pb-4">
+        {/* Hidden file inputs */}
+        <input ref={fileInputRef} type="file" multiple className="hidden" onChange={handleFileChange} />
+        <input ref={imageInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileChange} />
+        <input ref={pdfInputRef} type="file" accept=".pdf,.doc,.docx,.txt,.md" multiple className="hidden" onChange={handleFileChange} />
+        <input ref={folderInputRef} type="file" {...({ webkitdirectory: "", directory: "" } as any)} className="hidden" onChange={handleFileChange} />
 
-          {/* ── Main input container (Perplexity rounded-3xl glassmorphic) ── */}
-          <div className="flex flex-col rounded-3xl border border-zinc-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/90 shadow-lg dark:shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-brand/50 focus-within:shadow-[0_0_20px_rgba(0,171,85,0.15)] focus-within:bg-white dark:focus-within:bg-slate-900">
+        {/* Outer Composer Container */}
+        <div className="w-full max-w-3xl mx-auto flex flex-col rounded-2xl border border-border/80 bg-card/90 shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10">
+          {/* ── Context Chips (if any) ── */}
+          {contextChips.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-1 border-b border-border/30">
+              {contextChips.map((chip) => (
+                <div
+                  key={chip.id}
+                  className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-muted text-[11px] font-medium text-foreground/80 border border-border/60"
+                >
+                  <span className="truncate max-w-[180px]">{chip.label}</span>
+                  {onRemoveContextChip && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveContextChip(chip.id)}
+                      className="hover:text-destructive transition-colors ml-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
-            {/* Hidden file inputs */}
-            <input ref={pdfInputRef} type="file" multiple className="hidden"
-              accept=".pdf,.txt,.md,.doc,.docx,application/pdf,text/plain,text/markdown"
-              onChange={(e) => { if (e.target.files?.length) onAttachFiles?.(e.target.files); e.target.value = ""; }} />
-            <input ref={imageInputRef} type="file" multiple className="hidden"
-              accept="image/*"
-              onChange={(e) => { if (e.target.files?.length) onAttachFiles?.(e.target.files); e.target.value = ""; }} />
-            <input ref={folderInputRef} type="file" multiple className="hidden"
-              {...({ webkitdirectory: "" } as any)}
-              onChange={(e) => { if (e.target.files?.length) onAttachFiles?.(e.target.files); e.target.value = ""; }} />
+          {/* ── Attachment Previews ── */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 px-3.5 pt-3 pb-1">
+              {attachments.map((att) => (
+                <div
+                  key={att.id}
+                  className="relative group flex items-center gap-2 p-1.5 pr-2 rounded-xl bg-muted/60 border border-border text-xs"
+                >
+                  {att.preview ? (
+                    <img src={att.preview} alt={att.name} className="h-8 w-8 object-cover rounded-lg" />
+                  ) : (
+                    <FileText className="h-4 w-4 text-muted-foreground ml-1" />
+                  )}
+                  <span className="max-w-[120px] truncate text-[11px] font-medium">{att.name}</span>
+                  {onRemoveAttachment && (
+                    <button
+                      type="button"
+                      onClick={() => onRemoveAttachment(att.id)}
+                      className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
-            {/* Textarea */}
+          {/* ── Textarea Input Box ── */}
+          <div className="px-3.5 pt-3 pb-2">
             <textarea
               ref={textareaRef}
               value={textValue}
-              onChange={(e) => handleTextChange(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleTextSubmit(); }
+              onChange={(e) => {
+                if (onChangeProp) onChangeProp(e.target.value);
+                else setLocalValue(e.target.value);
               }}
-              placeholder={placeholder ?? "Type @ for connectors, / for search modes"}
-              disabled={disabled}
-              className="min-h-[60px] max-h-40 w-full resize-none border-0 bg-transparent px-4 pt-3.5 pb-0 text-sm shadow-none outline-none placeholder:text-muted-foreground/50 focus:ring-0 leading-relaxed"
+              onKeyDown={handleKeyDown}
+              disabled={disabled || activeStreaming}
+              placeholder={placeholder}
+              rows={2}
+              className="w-full bg-transparent resize-none outline-none text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/60 custom-scrollbar max-h-48"
             />
+          </div>
 
-            {/* Context Chips (Qoderian Selection & Entity sync) */}
-            {contextChips.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 px-3 pt-1.5 pb-1">
-                {contextChips.map((chip) => (
-                  <div
-                    key={chip.id}
-                    className="flex max-w-[240px] items-center gap-1.5 rounded-lg border border-brand/35 bg-brand/10 px-2.5 py-1 text-[11px] text-brand shadow-xs"
-                  >
-                    <span className="text-[10px]">
-                      {chip.type === 'selection' ? '✂️' : chip.type === 'chapter' ? '📖' : chip.type === 'character' ? '👤' : '📄'}
-                    </span>
-                    <span className="truncate font-semibold">{chip.label}</span>
-                    {onRemoveContextChip && (
-                      <button
-                        type="button"
-                        onClick={() => onRemoveContextChip(chip.id)}
-                        className="ml-0.5 text-brand/70 hover:text-brand transition rounded-full p-0.5 hover:bg-brand/20"
-                        aria-label={`Remove context ${chip.label}`}
-                      >
-                        <X className="h-2.5 w-2.5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+          {/* ── Focus Mode Selector (Quiet Answer Behavior) ── */}
+          <div className="px-3 pb-1">
+            <PerplexityFocusSelector
+              currentFocus={perplexityFocus}
+              onSelectFocus={(mode) => setPerplexityFocus(mode)}
+            />
+          </div>
 
-            {/* Attachment pills */}
-            {attachments.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 mt-1 mb-2">
-                {attachments.map((att) => (
-                  <div key={att.id}
-                    className={cn(
-                      "flex max-w-[180px] items-center gap-1.5 rounded-xl border px-2.5 py-1 text-[11px] shadow-sm",
-                      att.status === "error"
-                        ? "border-destructive/40 bg-destructive/5 text-destructive"
-                        : "border-border/60 bg-background/80 text-foreground",
-                    )}>
-                    <Paperclip className="h-3 w-3 shrink-0 text-muted-foreground" />
-                    <span className="truncate font-medium">{att.name}</span>
-                    {onRemoveAttachment && (
-                      <button type="button" onClick={() => onRemoveAttachment(att.id)}
-                        className="ml-0.5 text-muted-foreground hover:text-foreground transition rounded-full p-0.5 hover:bg-muted/80"
-                        aria-label={`Remove ${att.name}`}>
-                        <X className="h-2.5 w-2.5" />
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* ── Quick Studio & Mode Chips ── */}
-            <div className="flex items-center gap-1.5 px-2 pb-1.5 overflow-x-auto no-scrollbar">
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("slides")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-indigo-500/15 hover:border-indigo-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-300 transition cursor-pointer shrink-0"
-                title="Open Slide Generation Studio"
-              >
-                <span>📽️</span>
-                <span>Slide Studio</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("synthesizer" as any)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-[11px] font-medium text-purple-600 dark:text-purple-300 transition cursor-pointer shrink-0"
-                title="Ponytail Zero-Prompt Intent Synthesizer: 1 Sentence to Full Business Infrastructure"
-              >
-                <span>🪄</span>
-                <span>Synthesize Venture</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("research")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-violet-500/15 hover:border-violet-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-violet-600 dark:hover:text-violet-300 transition cursor-pointer shrink-0"
-                title="Launch Deep Research Engine"
-              >
-                <span>🔬</span>
-                <span>Deep Research</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("sheet")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-cyan-500/15 hover:border-cyan-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-cyan-600 dark:hover:text-cyan-300 transition cursor-pointer shrink-0"
-                title="Open ScenarioLab Financial Modeling"
-              >
-                <span>📊</span>
-                <span>Financial Model</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("code")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-emerald-500/15 hover:border-emerald-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-300 transition cursor-pointer shrink-0"
-                title="Generate Full-Stack Code & DB Schema"
-              >
-                <span>💻</span>
-                <span>Code Engine</span>
-              </button>
-            </div>
-
-            {/* ── Perplexity Focus Mode Selector ── */}
-            <div className="px-2 pb-1">
-              <PerplexityFocusSelector
-                currentFocus={perplexityFocus}
-                onSelectFocus={(mode) => setPerplexityFocus(mode)}
-              />
-            </div>
-
-            {/* ── Bottom toolbar — Perplexity-clean: Attach · Mic · Mode · Model · Send + overflow ── */}
-            <div className="flex items-center gap-1.5 px-2 pt-2 pb-2.5 border-t border-border/40 mt-1">
-
-              {/* LEFT: Attach + Mic */}
-              <div className="flex items-center gap-1">
-                {/* 📎 Attach */}
-                <div className="relative" onClick={(e) => e.stopPropagation()}>
-                  <button type="button"
-                    onClick={() => { setAttachMenuOpen((o) => !o); setModeMenuOpen(false); setModelMenuOpen(false); }}
-                    disabled={disabled || activeStreaming}
-                    aria-label="Attach files"
-                    className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition">
-                    <Paperclip className="h-4 w-4" />
-                  </button>
-
-                  {attachMenuOpen && (
-                    <div className="absolute bottom-full left-0 mb-1 z-50 w-44 rounded-2xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
-                      {[
-                        { Icon: FileText, label: "PDF / Document", action: () => pdfInputRef.current?.click()   },
-                        { Icon: Image,    label: "Image / Photo",  action: () => imageInputRef.current?.click()  },
-                        { Icon: FolderOpen, label: "Folder",       action: () => folderInputRef.current?.click() },
-                        { Icon: Link,     label: "URL / Link",     action: () => {
-                            const url = window.prompt("Paste a URL:");
-                            if (url?.trim()) onChange(value + `\n${url.trim()}`);
-                          }},
-                      ].map(({ Icon, label, action }) => (
-                        <button key={label} type="button"
-                          onClick={() => { action(); setAttachMenuOpen(false); }}
-                          className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition">
-                          <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* 🎤 Dictation (Speech-to-text typing) */}
-                <button type="button"
-                  onClick={isListening ? stopListening : startListening}
-                  disabled={disabled || activeStreaming}
-                  aria-label={isListening ? "Stop voice dictation" : "Start voice dictation"}
-                  title={isListening ? "Stop dictation" : "Voice Typing (Dictation)"}
-                  className={cn(
-                    "flex items-center justify-center h-8 w-8 rounded-lg transition cursor-pointer",
-                    isListening
-                      ? "bg-rose-500/15 text-rose-400 animate-pulse"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/60",
-                  )}>
-                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                </button>
-              </div>
-
-              {/* SPACER */}
-              <div className="flex-1" />
-
-              {/* CENTER: Mode badge */}
+          {/* ── Bottom Toolbar ── */}
+          <div className="flex items-center justify-between px-3 py-2 border-t border-border/40 mt-1">
+            {/* Left Controls: Attach + Voice Input + Tools Dropdown */}
+            <div className="flex items-center gap-1.5">
+              {/* 📎 Attach Button & Dropdown */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
-                <button type="button"
-                  onClick={() => { setModeMenuOpen((o) => !o); setAttachMenuOpen(false); setModelMenuOpen(false); }}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAttachMenuOpen((o) => !o);
+                    setToolsMenuOpen(false);
+                    setModelMenuOpen(false);
+                  }}
                   disabled={disabled || activeStreaming}
-                  className={cn(
-                    "flex items-center gap-1.5 h-7 px-2.5 rounded-lg text-[11px] font-semibold transition border shadow-sm",
-                    activeMode.bg, activeMode.color, activeMode.border,
-                  )}>
-                  <activeMode.Icon className="h-3.5 w-3.5" />
-                  <span className="hidden sm:inline">{activeMode.shortLabel}</span>
-                  <ChevronDown className="h-2.5 w-2.5 opacity-60" />
+                  aria-label="Attach files"
+                  className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                >
+                  <Paperclip className="h-4 w-4" />
                 </button>
 
-                {modeMenuOpen && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-50 w-56 rounded-2xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
-                    {MODES.map((m) => (
-                      <button key={m.value} type="button"
-                        onClick={() => handleModeChange(m.value)}
-                        className={cn(
-                          "flex w-full items-start gap-3 px-3 py-2.5 text-left transition hover:bg-muted/60",
-                          persona === m.value ? "bg-muted/40" : "",
-                        )}>
-                        <div className={cn("mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg", m.bg)}>
-                          <m.Icon className={cn("h-3.5 w-3.5", m.color)} />
-                        </div>
-                        <div>
-                          <p className={cn("text-xs font-semibold", persona === m.value ? m.color : "text-foreground")}>
-                            {m.label}
-                            {persona === m.value && <Check className="inline h-3 w-3 ml-1.5 opacity-70" />}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground leading-tight">{m.description}</p>
-                        </div>
+                {attachMenuOpen && (
+                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-48 rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                    {[
+                      { Icon: FileText, label: "Document (.pdf, .docx, .md)", action: () => pdfInputRef.current?.click() },
+                      { Icon: Image, label: "Image / Screenshot", action: () => imageInputRef.current?.click() },
+                      { Icon: FolderOpen, label: "Local Project Folder", action: () => folderInputRef.current?.click() },
+                      {
+                        Icon: Link,
+                        label: "URL / GitHub Link",
+                        action: () => {
+                          const url = window.prompt("Paste a URL or GitHub repository:");
+                          if (url?.trim()) {
+                            const updated = textValue ? `${textValue}\n${url.trim()}` : url.trim();
+                            if (onChangeProp) onChangeProp(updated);
+                            else setLocalValue(updated);
+                          }
+                        },
+                      },
+                    ].map(({ Icon, label, action }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => {
+                          action();
+                          setAttachMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-foreground hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <span>{label}</span>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* RIGHT: Model + Send */}
-              <div className="flex items-center gap-1">
+              {/* 🎤 Voice Input (Dictation) */}
+              <button
+                type="button"
+                onClick={isListening ? stopListening : startListening}
+                disabled={disabled || activeStreaming}
+                aria-label={isListening ? "Stop voice dictation" : "Start voice dictation"}
+                title={isListening ? "Stop voice typing" : "Voice Input (Speech-to-Text)"}
+                className={cn(
+                  "flex items-center justify-center h-8 w-8 rounded-lg transition cursor-pointer",
+                  isListening
+                    ? "bg-rose-500 text-white animate-pulse shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                )}
+              >
+                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+              </button>
 
-                {/* Model selector */}
-                <div className="relative" onClick={(e) => e.stopPropagation()}>
-                  <button type="button"
-                    onClick={() => { setModelMenuOpen((o) => !o); setAttachMenuOpen(false); setModeMenuOpen(false); }}
-                    disabled={disabled || activeStreaming}
-                    className="flex items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer">
-                    <span className="hidden md:inline">{activeModel.label}</span>
-                    <span className="md:hidden">Model</span>
-                    <ChevronDown className="h-2.5 w-2.5 opacity-60" />
-                  </button>
-
-                  {modelMenuOpen && (
-                    <div className="absolute bottom-full right-0 mb-1 z-50 w-64 rounded-2xl border border-border/80 bg-popover shadow-xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
-                      <div className="px-3 py-1 border-b border-border/50 text-[10px] font-mono text-muted-foreground font-semibold flex items-center justify-between">
-                        <span>SELECT REASONING ENGINE</span>
-                        <span className="text-emerald-400">⚡ 1.8¢/job</span>
-                      </div>
-                      {MODELS.map((m) => (
-                        <button key={m.value} type="button"
-                          onClick={() => { onModelChange?.(m.value); setModelMenuOpen(false); }}
-                          className={cn(
-                            "flex w-full items-start justify-between px-3 py-2 text-left hover:bg-muted/60 transition cursor-pointer",
-                            modelHandle === m.value ? "bg-muted/40" : ""
-                          )}>
-                          <div>
-                            <div className="flex items-center gap-1.5">
-                              <span className="text-xs font-semibold text-foreground">{m.label}</span>
-                              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
-                                {m.badge}
-                              </span>
-                            </div>
-                            <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{m.desc}</p>
-                          </div>
-                          {modelHandle === m.value && <Check className="h-3.5 w-3.5 text-brand shrink-0 mt-0.5" />}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* 🧾 Trajectory View & Receipt Trail Modal Launcher */}
+              {/* 🧰 Tools Menu (Unified Launcher for Advanced Workflows) */}
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
-                  onClick={() => setTrajectoryOpen(true)}
-                  className="flex items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-mono font-medium text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition cursor-pointer"
-                  title="View Replayable Execution Trajectory & Audit Receipt Trail"
+                  onClick={() => {
+                    setToolsMenuOpen((o) => !o);
+                    setAttachMenuOpen(false);
+                    setModelMenuOpen(false);
+                  }}
+                  disabled={disabled || activeStreaming}
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/70 text-xs font-semibold text-foreground/90 transition cursor-pointer"
+                  title="Open advanced multi-agent workflows"
                 >
-                  <Terminal className="h-3 w-3" />
-                  <span className="hidden lg:inline">Receipt (1.8¢)</span>
+                  <Sparkles className="h-3.5 w-3.5 text-brand" />
+                  <span>Tools</span>
+                  <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
 
-                {/* ⚡ Advanced Voice Mode Button (Interactive AI Voice) */}
-                {onVoiceOrbClick && (
-                  <button
-                    type="button"
-                    onClick={onVoiceOrbClick}
-                    disabled={disabled || activeStreaming}
-                    className="flex items-center gap-1.5 h-8 px-2.5 rounded-xl bg-zinc-100 hover:bg-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.12] border border-zinc-200 dark:border-white/[0.08] text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white text-xs font-medium transition cursor-pointer active:scale-95"
-                    title="Start Advanced Voice Mode"
-                    aria-label="Start Advanced Voice Mode"
-                  >
-                    <span className="flex items-center gap-0.5 h-3 text-teal-500 dark:text-teal-400">
-                      <span className="w-0.5 h-2 bg-current rounded-full animate-pulse" />
-                      <span className="w-0.5 h-3 bg-current rounded-full animate-pulse [animation-delay:0.15s]" />
-                      <span className="w-0.5 h-1.5 bg-current rounded-full animate-pulse [animation-delay:0.3s]" />
-                    </span>
-                    <span className="hidden sm:inline">Voice</span>
-                  </button>
-                )}
+                {toolsMenuOpen && (
+                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-72 rounded-2xl border border-border/80 bg-popover shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 text-left">
+                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
+                      Advanced Workflows
+                    </div>
 
-                {/* Send / Stop */}
-                {activeStreaming ? (
-                  <Button type="button" variant="outline" size="icon"
-                    className="h-8 w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition"
-                    onClick={onStop} aria-label="Stop generating">
-                    <Square className="h-3.5 w-3.5 fill-current" />
-                  </Button>
-                ) : (
-                  <Button type="button" size="icon"
-                    className={cn(
-                      "h-8 w-8 rounded-xl transition-all duration-150",
-                      textValue.trim()
-                        ? "bg-brand text-white hover:bg-brand/90 shadow-md shadow-brand/25 scale-100 hover:scale-105"
-                        : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed",
-                    )}
-                    onClick={handleTextSubmit}
-                    disabled={disabled || !textValue.trim()}
-                    aria-label="Send message">
-                    <Send className="h-3.5 w-3.5" />
-                  </Button>
+                    {/* Research Section */}
+                    <div className="mt-1 space-y-0.5">
+                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
+                        Research
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenArtifact?.("research");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Search className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Deep Research</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Multi-source web & academic intelligence</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenTool?.("swarm");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Zap className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Swarm Debate</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">3-agent adversarial debate & critique</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Create Section */}
+                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
+                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
+                        Create
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenArtifact?.("slides");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Presentation className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Slide Studio</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Investor pitch decks & visual slides</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenArtifact?.("sheet");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Table2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Financial Model</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Spreadsheet models & scenario forecasting</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenArtifact?.("code");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Code2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Code Engine</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Full-stack React components & InsForge schema</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenArtifact?.("synthesizer");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Rocket className="w-3.5 h-3.5 text-pink-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Venture Synthesis</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">1-sentence idea to complete company stack</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Web Automation Section */}
+                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
+                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
+                        Web Automation
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onOpenTool?.("browser");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Globe className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Web Automation</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Browser navigation, forms & data collection</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Voice Mode Section */}
+                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
+                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
+                        Voice
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onVoiceOrbClick?.();
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">Conversational Voice Mode</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Fluid real-time voice chat</span>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
+            </div>
+
+            {/* Right Controls: Model Selector + Send/Stop Button */}
+            <div className="flex items-center gap-2">
+              {/* Model Selector */}
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setModelMenuOpen((o) => !o);
+                    setAttachMenuOpen(false);
+                    setToolsMenuOpen(false);
+                  }}
+                  disabled={disabled || activeStreaming}
+                  className="flex items-center gap-1 h-8 px-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                >
+                  <span className="hidden sm:inline">{activeModel.label}</span>
+                  <span className="sm:hidden">Model</span>
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </button>
+
+                {modelMenuOpen && (
+                  <div className="absolute bottom-full right-0 mb-1.5 z-50 w-64 rounded-2xl border border-border/80 bg-popover shadow-xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
+                    <div className="px-3 py-1 border-b border-border/50 text-[10px] font-mono text-muted-foreground font-semibold flex items-center justify-between">
+                      <span>REASONING ENGINE</span>
+                      <span className="text-emerald-400">⚡ 1.8¢/job</span>
+                    </div>
+                    {MODELS.map((m) => (
+                      <button
+                        key={m.value}
+                        type="button"
+                        onClick={() => {
+                          onModelChange?.(m.value);
+                          setModelMenuOpen(false);
+                        }}
+                        className={cn(
+                          "flex w-full items-start justify-between px-3 py-2 text-left hover:bg-muted/70 transition cursor-pointer",
+                          modelHandle === m.value ? "bg-muted/40" : ""
+                        )}
+                      >
+                        <div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-semibold text-foreground">{m.label}</span>
+                            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 font-bold">
+                              {m.badge}
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">{m.desc}</p>
+                        </div>
+                        {modelHandle === m.value && <Check className="h-3.5 w-3.5 text-brand shrink-0 mt-0.5" />}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Send / Stop Button */}
+              {activeStreaming ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition"
+                  onClick={onStop}
+                  aria-label="Stop generating"
+                >
+                  <Square className="h-3.5 w-3.5 fill-current" />
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  size="icon"
+                  className={cn(
+                    "h-8 w-8 rounded-xl transition-all duration-150",
+                    textValue.trim() || attachments.length > 0
+                      ? "bg-brand text-white hover:bg-brand/90 shadow-md shadow-brand/25 scale-100 hover:scale-105 cursor-pointer"
+                      : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
+                  )}
+                  onClick={handleTextSubmit}
+                  disabled={disabled || (!textValue.trim() && attachments.length === 0)}
+                  aria-label="Send message"
+                >
+                  <Send className="h-3.5 w-3.5" />
+                </Button>
+              )}
             </div>
           </div>
-
-          {/* Voice listening indicator */}
-          {isListening && (
-            <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/5 px-3 py-2 text-xs text-rose-400 animate-in fade-in slide-in-from-bottom-1 duration-200">
-              <div className="flex gap-0.5">
-                {[0, 1, 2].map((i) => (
-                  <div key={i} className="w-1 rounded-full bg-rose-400 animate-bounce"
-                    style={{ height: `${8 + i * 4}px`, animationDelay: `${i * 0.1}s` }} />
-                ))}
-              </div>
-              <span>Listening in <strong>{VOICE_LANGS.find(l => l.code === voiceLang)?.label}</strong> — speak now</span>
-            </div>
-          )}
-
-          {/* Command hint */}
-          {commandHint && (
-            <div className="flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2 text-xs text-foreground animate-in fade-in slide-in-from-bottom-1 duration-200">
-              <span className="rounded-full bg-brand/10 px-2 py-0.5 font-medium text-brand">/{commandHint.name}</span>
-              <span>{commandHint.description}</span>
-            </div>
-          )}
-
-          {/* Error */}
-          {errorMessage && (
-            <div role="alert"
-              className="rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive animate-in fade-in slide-in-from-bottom-1 duration-200">
-              {errorMessage}
-            </div>
-          )}
-
-          {footer && <p className="text-center text-[10px] text-muted-foreground/70 mt-0.5">{footer}</p>}
-
-          {/* Replayable Trajectory & Audit Receipt Trail Modal */}
-          {trajectoryOpen && (
-            <TrajectoryReceiptModal
-              open={trajectoryOpen}
-              onOpenChange={setTrajectoryOpen}
-              modelUsed={activeModel.label}
-            />
-          )}
         </div>
+
+        {/* Dictation Banner */}
+        {isListening && (
+          <div className="max-w-3xl mx-auto mt-2 flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs text-rose-400 animate-in fade-in slide-in-from-bottom-1 duration-200">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+              <span>
+                Listening in <strong>{VOICE_LANGS.find((l) => l.code === voiceLang)?.label}</strong> — speak freely…
+              </span>
+            </div>
+            <button
+              onClick={() => setVoiceLang(voiceLang === "bn-BD" ? "en-US" : "bn-BD")}
+              className="text-[10px] font-mono font-bold bg-rose-500/20 px-2 py-0.5 rounded text-rose-300 hover:bg-rose-500/30 transition cursor-pointer"
+            >
+              Switch to {voiceLang === "bn-BD" ? "English" : "বাংলা"}
+            </button>
+          </div>
+        )}
+
+        {/* Command hint */}
+        {commandHint && (
+          <div className="max-w-3xl mx-auto mt-2 flex items-center gap-2 rounded-xl border border-brand/20 bg-brand/5 px-3 py-2 text-xs text-foreground">
+            <span className="rounded-full bg-brand/10 px-2 py-0.5 font-medium text-brand">/{commandHint.name}</span>
+            <span>{commandHint.description}</span>
+          </div>
+        )}
+
+        {/* Error */}
+        {errorMessage && (
+          <div
+            role="alert"
+            className="max-w-3xl mx-auto mt-2 rounded-xl border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive"
+          >
+            {errorMessage}
+          </div>
+        )}
+
+        {footer && <p className="text-center text-[10px] text-muted-foreground/70 mt-1">{footer}</p>}
       </div>
     );
-  },
+  }
 );
+
+export default Composer;
