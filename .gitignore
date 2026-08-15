@@ -63,6 +63,9 @@ convex-jwt-private-key.pem
 .agents/*
 !.agents/skills/
 !.agents/skills/**
+!.agents/rules/
+!.agents/rules/**
+
 
 
 .augment
