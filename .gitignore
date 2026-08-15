@@ -59,9 +59,11 @@ convex-jwt-private-key.pem
 # InsForge & AI agent skills
 .insforge
 .agent
-.agents
+!.agents/
+.agents/*
 !.agents/skills/
 !.agents/skills/**
+
 
 .augment
 .claude
