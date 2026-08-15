@@ -13,7 +13,7 @@ import { AssistantSteps } from "./AssistantSteps";
 import { InlineArtifactCard } from "./InlineArtifactCard";
 import { ReplitAgentActivityBar } from "./ReplitAgentActivityBar";
 import { ProactiveNextActions } from "./ProactiveNextActions";
-import { PerplexitySourcesGrid } from "@/components/perplexity/PerplexitySourcesGrid";
+import { PerplexitySourcesGrid, type PerplexitySource } from "@/components/perplexity/PerplexitySourcesGrid";
 import { PerplexityRelatedQueries } from "@/components/perplexity/PerplexityRelatedQueries";
 import { TrajectoryReceiptModal } from "./TrajectoryReceiptModal";
 import { cn } from "@/lib/utils";
@@ -300,7 +300,9 @@ export function Transcript({
                   )}
 
                   {/* ── Sources Grid ABOVE answer (Perplexity Pattern) ── */}
-                  <PerplexitySourcesGrid />
+                  {message.metadata?.sources && message.metadata.sources.length > 0 && (
+                    <PerplexitySourcesGrid sources={message.metadata.sources} />
+                  )}
 
                   {/* Main content */}
                   <div className="relative text-sm leading-relaxed">

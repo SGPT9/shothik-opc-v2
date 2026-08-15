@@ -5,6 +5,8 @@ export type ChatSurface =
   | "research"
   | "book-agent";
 
+import type { PerplexitySource } from "@/components/perplexity/PerplexitySourcesGrid";
+
 export type ChatPersona = "cofounder" | "researcher" | "coworker" | "coresearcher" | "finance_tax" | "merchant";
 export type ConversationStatus = "active" | "archived" | "deleted";
 export type MessageRole = "system" | "user" | "assistant" | "tool";
@@ -109,6 +111,7 @@ export interface ChatMessage {
     latencyMs?: number;
     errorCode?: string;
     citations?: unknown;
+    sources?: PerplexitySource[];
     sheetMetadata?: unknown;
     researchMetadata?: unknown;
     attachments?: ChatAttachment[];
