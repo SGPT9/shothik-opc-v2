@@ -1,81 +1,84 @@
-# See https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files for more about ignoring files.
+```
+# Dependencies
+node_modules/
 
-# compiled output
-dist
-tmp
-out-tsc
-*.tsbuildinfo
-.next
-.pnpm-cache
-.pnpm-store
-.expo
-.expo-shared
+# Build artifacts
+dist/
+build/
+target/
 
-# dependencies
-node_modules
-deepseek-harness
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+.Python
+env/
+venv/
+.venv/
+.ENV
+.ENV.local
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
+# Logs
+*.log
 
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# misc
-/.sass-cache
-/connect.lock
-/coverage
-/libpeerconnection.log
-npm-debug.log
-yarn-error.log
-testem.log
-/typings
-
-# System Files
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.tmp
 
-# Replit
-.cache/
-.local/
-convex-jwt-private-key.pem
+# Environment variables
+.env
+.env.local
+*.env.*
 
-# Migration artefacts (old Next.js codebase backup — local only)
-.migration-backup/
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
 
-# InsForge & AI agent skills
-.insforge
-.agent
-.agents
-.augment
-.claude
-.cline
-.github/copilot*
-.kilocode
-.qoder
-.qwen
-.roo
-.trae
-.windsurf
-.vercel
-.env*
+# MyPy cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
-# Reference clones & deployment archives
-inkos-clone/
-inkos-repo/
-ponytail/
+# Pytest cache
+.pytest_cache/
+
+# Compressed files
+*.zip
+*.gz
+*.tar
+*.tgz
+*.bz2
+*.xz
+*.7z
+*.rar
+*.zst
+*.lz4
+*.lzh
+*.cab
+*.arj
+*.rpm
+*.deb
+*.Z
+*.lz
+*.lzo
 *.tar.gz
-
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+```

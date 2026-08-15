@@ -23,6 +23,13 @@ import {
   Briefcase,
   ShoppingBag,
   Terminal,
+  Wrench,
+  Brain,
+  Presentation,
+  Table2,
+  Code2,
+  Search,
+  MessageCircle,
 } from "lucide-react";
 import {
   forwardRef,
@@ -208,6 +215,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [attachMenuOpen, setAttachMenuOpen] = useState(false);
     const [modeMenuOpen,   setModeMenuOpen]   = useState(false);
     const [modelMenuOpen,  setModelMenuOpen]  = useState(false);
+    const [toolsMenuOpen,  setToolsMenuOpen]  = useState(false);
     const [trajectoryOpen, setTrajectoryOpen] = useState(false);
     const [isListening,    setIsListening]    = useState(false);
     const [voiceLang,      setVoiceLang]      = useState("bn-BD");
@@ -282,6 +290,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         setAttachMenuOpen(false);
         setModeMenuOpen(false);
         setModelMenuOpen(false);
+        setToolsMenuOpen(false);
         setVoiceLangOpen(false);
       };
       document.addEventListener("click", handler);
@@ -432,53 +441,148 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               </div>
             )}
 
-            {/* ── Quick Studio & Mode Chips ── */}
-            <div className="flex items-center gap-1.5 px-2 pb-1.5 overflow-x-auto no-scrollbar">
+            {/* ── Tools Menu Button (replaces Quick Studio chips) ── */}
+            <div className="flex items-center gap-1.5 px-2 pb-1.5">
               <button
                 type="button"
-                onClick={() => onOpenArtifact?.("slides")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-indigo-500/15 hover:border-indigo-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-indigo-600 dark:hover:text-indigo-300 transition cursor-pointer shrink-0"
-                title="Open Slide Generation Studio"
+                onClick={() => { setToolsMenuOpen((o) => !o); setModeMenuOpen(false); setModelMenuOpen(false); }}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-zinc-200/90 dark:hover:bg-white/[0.06] text-[11px] font-medium text-zinc-700 dark:text-zinc-300 transition cursor-pointer shrink-0"
+                title="Open advanced workflows: Research, Slides, Financial Model, Code, and more"
               >
-                <span>📽️</span>
-                <span>Slide Studio</span>
+                <Wrench className="h-3.5 w-3.5" />
+                <span>Tools</span>
+                <ChevronDown className="h-2.5 w-2.5 opacity-60" />
               </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("synthesizer" as any)}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-[11px] font-medium text-purple-600 dark:text-purple-300 transition cursor-pointer shrink-0"
-                title="Ponytail Zero-Prompt Intent Synthesizer: 1 Sentence to Full Business Infrastructure"
-              >
-                <span>🪄</span>
-                <span>Synthesize Venture</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("research")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-violet-500/15 hover:border-violet-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-violet-600 dark:hover:text-violet-300 transition cursor-pointer shrink-0"
-                title="Launch Deep Research Engine"
-              >
-                <span>🔬</span>
-                <span>Deep Research</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("sheet")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-cyan-500/15 hover:border-cyan-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-cyan-600 dark:hover:text-cyan-300 transition cursor-pointer shrink-0"
-                title="Open ScenarioLab Financial Modeling"
-              >
-                <span>📊</span>
-                <span>Financial Model</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onOpenArtifact?.("code")}
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/90 dark:bg-white/[0.03] hover:bg-emerald-500/15 hover:border-emerald-500/30 text-[11px] font-medium text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-300 transition cursor-pointer shrink-0"
-                title="Generate Full-Stack Code & DB Schema"
-              >
-                <span>💻</span>
-                <span>Code Engine</span>
-              </button>
+
+              {toolsMenuOpen && (
+                <div className="absolute bottom-full left-0 mb-1 z-50 w-72 rounded-2xl border border-border/80 bg-popover shadow-xl py-1.5 animate-in fade-in zoom-in-95 duration-150">
+                  {/* Research Group */}
+                  <div className="px-3 py-1.5 border-b border-border/50">
+                    <p className="text-[9px] font-mono text-muted-foreground font-semibold uppercase tracking-wider">Research</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { onOpenArtifact?.("research"); setToolsMenuOpen(false); }}
+                    className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition"
+                  >
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-violet-500/10">
+                      <Search className="h-3.5 w-3.5 text-violet-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Deep Research</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Comprehensive web research with sources</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { onPersonaChange?.("researcher"); setToolsMenuOpen(false); }}
+                    className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition"
+                  >
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+                      <Brain className="h-3.5 w-3.5 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Swarm Debate</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Multi-agent adversarial reasoning</p>
+                    </div>
+                  </button>
+
+                  {/* Create Group */}
+                  <div className="px-3 py-1.5 border-b border-border/50 border-t border-border/50 mt-1 pt-2">
+                    <p className="text-[9px] font-mono text-muted-foreground font-semibold uppercase tracking-wider">Create</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { onOpenArtifact?.("slides"); setToolsMenuOpen(false); }}
+                    className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition"
+                  >
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10">
+                      <Presentation className="h-3.5 w-3.5 text-indigo-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Slides</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Generate presentation decks</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { onOpenArtifact?.("sheet"); setToolsMenuOpen(false); }}
+                    className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition"
+                  >
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10">
+                      <Table2 className="h-3.5 w-3.5 text-cyan-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Financial Model</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Scenario-based financial modeling</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { onOpenArtifact?.("code"); setToolsMenuOpen(false); }}
+                    className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition"
+                  >
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-emerald-500/10">
+                      <Code2 className="h-3.5 w-3.5 text-emerald-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Code Engine</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Full-stack code generation</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { onOpenArtifact?.("synthesizer" as any); setToolsMenuOpen(false); }}
+                    className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition"
+                  >
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-purple-500/10">
+                      <Sparkles className="h-3.5 w-3.5 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Venture Synthesis</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">One sentence to full business</p>
+                    </div>
+                  </button>
+
+                  {/* Web Automation Group */}
+                  <div className="px-3 py-1.5 border-b border-border/50 border-t border-border/50 mt-1 pt-2">
+                    <p className="text-[9px] font-mono text-muted-foreground font-semibold uppercase tracking-wider">Automation</p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled
+                    className="flex w-full items-start gap-3 px-3 py-2.5 text-left opacity-50 cursor-not-allowed"
+                  >
+                    <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-zinc-500/10">
+                      <Globe className="h-3.5 w-3.5 text-zinc-400" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-foreground">Web Automation</p>
+                      <p className="text-[10px] text-muted-foreground leading-tight">Browser-driven tasks (coming soon)</p>
+                    </div>
+                  </button>
+
+                  {/* Voice Group */}
+                  <div className="px-3 py-1.5 border-b border-border/50 border-t border-border/50 mt-1 pt-2">
+                    <p className="text-[9px] font-mono text-muted-foreground font-semibold uppercase tracking-wider">Voice</p>
+                  </div>
+                  {onOpenVoice && (
+                    <button
+                      type="button"
+                      onClick={() => { onOpenVoice(); setToolsMenuOpen(false); }}
+                      className="flex w-full items-start gap-3 px-3 py-2.5 text-left hover:bg-muted/60 transition"
+                    >
+                      <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-teal-500/10">
+                        <MessageCircle className="h-3.5 w-3.5 text-teal-400" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">Voice Mode</p>
+                        <p className="text-[10px] text-muted-foreground leading-tight">Conversational voice interaction</p>
+                      </div>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* ── Perplexity Focus Mode Selector ── */}
