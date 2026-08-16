@@ -16,7 +16,12 @@ vi.mock("../MessageActions", () => ({
 }));
 
 vi.mock("../MarkdownMessage", () => ({
-  MarkdownMessage: ({ content }: { content: string }) => <div>{content}</div>,
+  MarkdownMessage: ({ content, onOpenSource }: { content: string; onOpenSource?: (key: string) => void }) => (
+    <div>
+      <span>{content}</span>
+      <button onClick={() => onOpenSource?.("doc_test_123")}>Open Source Test</button>
+    </div>
+  ),
 }));
 
 vi.mock("@/components/hermes/deerflow-visualizer", () => ({
@@ -115,5 +120,27 @@ describe("Transcript", () => {
 
     expect(screen.getByTestId("deerflow-visualizer-mock")).toBeInTheDocument();
     expect(screen.getByTestId("swarm-visualizer-mock")).toBeInTheDocument();
+  });
+
+  it("triggers onOpenSource when an interactive source citation is clicked", () => {
+    const handleOpenSource = vi.fn();
+
+    render(
+      <Transcript
+        messages={[
+          createMessage({
+            _id: "assistant-citations",
+            status: "completed",
+            content: "According to BB Circular 04/2024 [[doc:bb_2024_04]] the reserve is 15%.",
+          }),
+        ]}
+        onOpenSource={handleOpenSource}
+      />
+    );
+
+    const openSourceBtn = screen.getByText("Open Source Test");
+    openSourceBtn.click();
+
+    expect(handleOpenSource).toHaveBeenCalledWith("doc_test_123");
   });
 });

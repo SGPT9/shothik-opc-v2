@@ -51,9 +51,27 @@ export interface ComposerAttachment {
   error?: string;
 }
 
+export interface SendPromptPayload {
+  text: string;
+  attachments?: ComposerAttachment[];
+}
+
+export type ComposerAction =
+  | { type: "SEND_MESSAGE"; payload: SendPromptPayload }
+  | { type: "STOP_STREAM" }
+  | { type: "OPEN_TOOL"; tool: "research" | "swarm" | "slides" | "sheet" | "code" | "synthesizer" | "browser" | "voice" }
+  | { type: "OPEN_ARTIFACT"; tab: "slides" | "research" | "sheet" | "code" | "synthesizer" }
+  | { type: "SET_FOCUS"; focus: PerplexityFocusMode }
+  | { type: "SET_MODEL"; model: string }
+  | { type: "ATTACH_FILES"; files: FileList | File[] }
+  | { type: "REMOVE_ATTACHMENT"; attachmentId: string }
+  | { type: "REMOVE_CONTEXT_CHIP"; chipId: string };
+
 export interface ComposerProps {
   value?: string;
   onChange?: (value: string) => void;
+  /** Consolidated Deep Module Action Dispatch Seam */
+  onAction?: (action: ComposerAction) => void | Promise<void>;
   onSubmit?: () => void;
   onSend?: (text: string) => void | Promise<void>;
   onVoiceClick?: () => void;
@@ -95,10 +113,10 @@ export interface ComposerProps {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 const MODELS = [
+  { value: "gemini-3.7-flash",  label: "Gemini 3.7 Flash",  badge: "✨ Default", desc: "Frontier Hybrid Reasoning · High Speed" },
   { value: "deepseek-v4-flash", label: "DeepSeek V4 Flash", badge: "⚡ Fast", desc: "Ultra-low cost MoE · Instant Reasoning" },
   { value: "deepseek-v4-pro",   label: "DeepSeek V4 Pro",   badge: "🧠 Flagship", desc: "1M Context MoE · Deep Reasoning" },
-  { value: "gemini-2.5-flash",  label: "Gemini 2.5 Flash",  badge: "⚡ Multimodal", desc: "Google Flash Reasoning" },
-  { value: "gemini-2.5-pro",    label: "Gemini 2.5 Pro",    badge: "✨ Complex", desc: "Deep Thinking Engine" },
+  { value: "gemini-2.5-pro",    label: "Gemini 2.5 Pro",    badge: "🔬 Complex", desc: "Deep Thinking Engine" },
 ];
 
 // ─── Voice languages for South Asia ──────────────────────────────────────────
@@ -113,6 +131,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     {
       value = "",
       onChange: onChangeProp,
+      onAction,
       onSubmit,
       onSend,
       onStop,
@@ -222,7 +241,12 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       const trimmed = textValue.trim();
       if (!trimmed && attachments.length === 0) return;
 
-      if (onSend) {
+      if (onAction) {
+        onAction({
+          type: "SEND_MESSAGE",
+          payload: { text: trimmed, attachments },
+        });
+      } else if (onSend) {
         onSend(trimmed);
       } else if (onSubmit) {
         onSubmit();
@@ -234,7 +258,70 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       if (textareaRef.current) {
         textareaRef.current.style.height = "auto";
       }
-    }, [activeStreaming, disabled, textValue, attachments, onSend, onSubmit, onChangeProp, textareaRef]);
+    }, [activeStreaming, disabled, textValue, attachments, onAction, onSend, onSubmit, onChangeProp, textareaRef]);
+
+    const dispatchStop = useCallback(() => {
+      if (onAction) {
+        onAction({ type: "STOP_STREAM" });
+      } else if (onStop) {
+        onStop();
+      }
+    }, [onAction, onStop]);
+
+    const dispatchTool = useCallback((tool: "research" | "swarm" | "slides" | "sheet" | "code" | "synthesizer" | "browser" | "voice") => {
+      if (onAction) {
+        onAction({ type: "OPEN_TOOL", tool });
+      } else if (onOpenTool) {
+        onOpenTool(tool);
+      }
+    }, [onAction, onOpenTool]);
+
+    const dispatchArtifact = useCallback((tab: "slides" | "research" | "sheet" | "code" | "synthesizer") => {
+      if (onAction) {
+        onAction({ type: "OPEN_ARTIFACT", tab });
+      } else if (onOpenArtifact) {
+        onOpenArtifact(tab);
+      }
+    }, [onAction, onOpenArtifact]);
+
+    const dispatchModel = useCallback((model: string) => {
+      if (onAction) {
+        onAction({ type: "SET_MODEL", model });
+      } else if (onModelChange) {
+        onModelChange(model);
+      }
+    }, [onAction, onModelChange]);
+
+    const dispatchFocus = useCallback((focus: PerplexityFocusMode) => {
+      setPerplexityFocus(focus);
+      if (onAction) {
+        onAction({ type: "SET_FOCUS", focus });
+      }
+    }, [onAction]);
+
+    const dispatchAttachFiles = useCallback((files: FileList | File[]) => {
+      if (onAction) {
+        onAction({ type: "ATTACH_FILES", files });
+      } else if (onAttachFiles) {
+        onAttachFiles(files);
+      }
+    }, [onAction, onAttachFiles]);
+
+    const dispatchRemoveAttachment = useCallback((attachmentId: string) => {
+      if (onAction) {
+        onAction({ type: "REMOVE_ATTACHMENT", attachmentId });
+      } else if (onRemoveAttachment) {
+        onRemoveAttachment(attachmentId);
+      }
+    }, [onAction, onRemoveAttachment]);
+
+    const dispatchRemoveContextChip = useCallback((chipId: string) => {
+      if (onAction) {
+        onAction({ type: "REMOVE_CONTEXT_CHIP", chipId });
+      } else if (onRemoveContextChip) {
+        onRemoveContextChip(chipId);
+      }
+    }, [onAction, onRemoveContextChip]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -245,7 +332,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files && e.target.files.length > 0) {
-        onAttachFiles?.(e.target.files);
+        dispatchAttachFiles(e.target.files);
         e.target.value = "";
       }
     };
@@ -271,10 +358,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   className="flex items-center gap-1 px-2.5 py-0.5 rounded-md bg-muted text-[11px] font-medium text-foreground/80 border border-border/60"
                 >
                   <span className="truncate max-w-[180px]">{chip.label}</span>
-                  {onRemoveContextChip && (
+                  {(onAction || onRemoveContextChip) && (
                     <button
                       type="button"
-                      onClick={() => onRemoveContextChip(chip.id)}
+                      onClick={() => dispatchRemoveContextChip(chip.id)}
                       className="hover:text-destructive transition-colors ml-0.5"
                     >
                       <X className="w-3 h-3" />
@@ -299,10 +386,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     <FileText className="h-4 w-4 text-muted-foreground ml-1" />
                   )}
                   <span className="max-w-[120px] truncate text-[11px] font-medium">{att.name}</span>
-                  {onRemoveAttachment && (
+                  {(onAction || onRemoveAttachment) && (
                     <button
                       type="button"
-                      onClick={() => onRemoveAttachment(att.id)}
+                      onClick={() => dispatchRemoveAttachment(att.id)}
                       className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"
                     >
                       <X className="h-3 w-3" />
@@ -443,7 +530,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onOpenArtifact?.("research");
+                          dispatchArtifact("research");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -457,7 +544,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onOpenTool?.("swarm");
+                          dispatchTool("swarm");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -478,7 +565,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onOpenArtifact?.("slides");
+                          dispatchArtifact("slides");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -492,7 +579,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onOpenArtifact?.("sheet");
+                          dispatchArtifact("sheet");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -506,7 +593,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onOpenArtifact?.("code");
+                          dispatchArtifact("code");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -520,7 +607,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onOpenArtifact?.("synthesizer");
+                          dispatchArtifact("synthesizer");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -541,7 +628,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onOpenTool?.("browser");
+                          dispatchTool("browser");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -562,7 +649,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          onVoiceOrbClick?.();
+                          dispatchTool("voice");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
@@ -609,7 +696,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         key={m.value}
                         type="button"
                         onClick={() => {
-                          onModelChange?.(m.value);
+                          dispatchModel(m.value);
                           setModelMenuOpen(false);
                         }}
                         className={cn(
@@ -640,7 +727,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   variant="outline"
                   size="icon"
                   className="h-8 w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition"
-                  onClick={onStop}
+                  onClick={dispatchStop}
                   aria-label="Stop generating"
                 >
                   <Square className="h-3.5 w-3.5 fill-current" />

@@ -10,13 +10,32 @@ interface SecurityCheck {
 const accessLog: Array<{ timestamp: number; path: string; method: string; ip: string | null }> = [];
 const MAX_ACCESS_LOG = 10000;
 
+function getPathname(req: any): string {
+  if (req.nextUrl?.pathname) return req.nextUrl.pathname;
+  try {
+    return new URL(req.url, "http://localhost").pathname;
+  } catch {
+    return "";
+  }
+}
+
+function getCookie(req: any, name: string): string | undefined {
+  if (typeof req.cookies?.get === "function") {
+    const val = req.cookies.get(name);
+    return typeof val === "object" ? val?.value : val;
+  }
+  const cookieHeader = req.headers?.get?.("cookie") || "";
+  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${name}=([^;]*)`));
+  return match ? decodeURIComponent(match[1]) : undefined;
+}
+
 const securityChecks: SecurityCheck[] = [
   {
     id: "API1",
     name: "Object Level Authorization",
     severity: "critical",
     check: async (req) => {
-      const url = new URL(req.url);
+      const url = new URL(req.url, "http://localhost");
       const resourceId =
         url.searchParams.get("id") || url.pathname.split("/").pop();
 
@@ -34,12 +53,12 @@ const securityChecks: SecurityCheck[] = [
     severity: "critical",
     check: async (req) => {
       const authHeader = req.headers.get("authorization");
-      const sessionToken = req.cookies.get("__session")?.value;
-      const jwtToken = req.cookies.get("jwt_token")?.value;
-      const insforgeAccessToken = req.cookies.get("insforge_access_token")?.value;
-      const insforgeRefreshToken = req.cookies.get("insforge_refresh_token")?.value;
+      const sessionToken = getCookie(req, "__session");
+      const jwtToken = getCookie(req, "jwt_token");
+      const insforgeAccessToken = getCookie(req, "insforge_access_token");
+      const insforgeRefreshToken = getCookie(req, "insforge_refresh_token");
 
-      const pathname = req.nextUrl.pathname;
+      const pathname = getPathname(req);
       const isStripeWebhook =
         pathname.startsWith("/api/stripe/") && pathname.endsWith("/webhook");
       const isChatApi =
@@ -105,22 +124,24 @@ const securityChecks: SecurityCheck[] = [
 
         if (contentType?.includes("application/json")) {
           try {
-            const clonedReq = req.clone();
-            const body = await clonedReq.json();
+            const clonedReq = typeof req.clone === "function" ? req.clone() : req;
+            const body = await clonedReq.json().catch(() => null);
 
-            const forbiddenFields = [
-              "id",
-              "createdAt",
-              "updatedAt",
-              "role",
-              "isAdmin",
-            ];
-            const hasForbidden = forbiddenFields.some(
-              (field) => field in body
-            );
+            if (body && typeof body === "object") {
+              const forbiddenFields = [
+                "id",
+                "createdAt",
+                "updatedAt",
+                "role",
+                "isAdmin",
+              ];
+              const hasForbidden = forbiddenFields.some(
+                (field) => field in body
+              );
 
-            if (hasForbidden) {
-              return { passed: false, message: "Cannot modify protected fields" };
+              if (hasForbidden) {
+                return { passed: false, message: "Cannot modify protected fields" };
+              }
             }
           } catch {
             // Invalid JSON - will be caught by validation
@@ -166,9 +187,10 @@ const securityChecks: SecurityCheck[] = [
     severity: "critical",
     check: async (req) => {
       const adminPaths = ["/api/admin", "/api/internal"];
+      const pathname = getPathname(req);
 
       if (
-        adminPaths.some((path) => req.nextUrl.pathname.startsWith(path))
+        adminPaths.some((path) => pathname.startsWith(path))
       ) {
         return {
           passed: true,
@@ -190,10 +212,11 @@ const securityChecks: SecurityCheck[] = [
         "/api/withdraw",
         "/api/transfer",
       ];
+      const pathname = getPathname(req);
 
       if (
         sensitivePaths.some((path) =>
-          req.nextUrl.pathname.includes(path)
+          pathname.includes(path)
         )
       ) {
         const verificationHeader = req.headers.get("x-verification-token");
@@ -216,7 +239,7 @@ const securityChecks: SecurityCheck[] = [
     name: "SSRF Protection",
     severity: "high",
     check: async (req) => {
-      const url = new URL(req.url);
+      const url = new URL(req.url, "http://localhost");
       const urlParam = url.searchParams.get("url");
 
       if (urlParam) {
@@ -304,7 +327,7 @@ function isValidResourceId(id: string): boolean {
 function logApiAccess(req: NextRequest): void {
   const entry = {
     timestamp: Date.now(),
-    path: req.nextUrl.pathname,
+    path: getPathname(req),
     method: req.method,
     ip: req.headers.get("x-real-ip") || req.headers.get("x-forwarded-for"),
   };

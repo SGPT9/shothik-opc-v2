@@ -15,7 +15,8 @@ import { useAttachmentUploader } from "./hooks/useAttachmentUploader";
 import { useTwinHandoffDetector } from "./hooks/useTwinHandoffDetector";
 import { ComponentErrorBoundary } from "./components/ChatErrorBoundaries";
 
-import { Composer } from "@/components/chat/Composer";
+import { Composer, type ComposerAction } from "@/components/chat/Composer";
+import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveState";
 import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
@@ -25,6 +26,37 @@ import { ChatGPTVoiceOrbModal } from "@/components/voice/ChatGPTVoiceOrbModal";
 import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
+import { 
+  Sparkles, 
+  ShoppingBag, 
+  Truck, 
+  Scale, 
+  BookOpen, 
+  ChevronDown, 
+  Plus, 
+  PanelRight, 
+  MessageSquare,
+  LayoutTemplate
+} from "lucide-react";
+
+export interface FleetAgent {
+  id: string;
+  name: string;
+  badge: string;
+  icon: any;
+  color: string;
+  bgLight: string;
+  desc: string;
+}
+
+export const FLEET_AGENTS: FleetAgent[] = [
+  { id: "core", name: "Shothik Core", badge: "General AI", icon: Sparkles, color: "text-emerald-400", bgLight: "bg-emerald-500/10", desc: "General intelligence, deep research, web search" },
+  { id: "sales", name: "Ayesha (Sales Closer)", badge: "F-Commerce", icon: ShoppingBag, color: "text-pink-400", bgLight: "bg-pink-500/10", desc: "F-Commerce DM closer & bKash PGW verification" },
+  { id: "logistics", name: "Tareq (Steadfast Courier)", badge: "Logistics", icon: Truck, color: "text-cyan-400", bgLight: "bg-cyan-500/10", desc: "Automated Steadfast parcel booking & tracking" },
+  { id: "tax", name: "NBR Tax & VAT Advisor", badge: "Legal & Tax", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Bangladesh Income Tax Act 2023 compliance" },
+  { id: "writer", name: "Manuscript Co-Writer", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Novel writing & Boi Mela 6x9 trade book studio" },
+];
 
 export function ChatAgentPage() {
   const searchParams = useSearchParams();
@@ -37,11 +69,15 @@ export function ChatAgentPage() {
     addMessage,
     updateLastAssistantMessage,
     finalizeLastAssistantMessage,
+    updateMessageMetadata,
   } = useChatSession(initialConvId);
 
   const { streamState, startStream, stopStream } = useChatStreamEngine();
   const { attachments, addAttachment, removeAttachment, clearAttachments } = useAttachmentUploader();
   const { hasStartupIntent } = useTwinHandoffDetector(messages);
+  const { workingState, updateDraft, addChip, removeChip, recallContext, recordDecision } = useSecondMeCognitiveState({
+    sessionId: conversationId,
+  });
 
   // ── Contextual User Details / Artifact panel (hidden by default) ──
   const [artifactOpen, setArtifactOpen] = useState(false);
@@ -52,12 +88,20 @@ export function ChatAgentPage() {
   const [researchQuery, setResearchQuery] = useState<string | undefined>("Dhaka Logistics & Courier Competitor Analysis");
   const [sheetData, setSheetData] = useState<string[][] | undefined>();
   const [codeSnippet, setCodeSnippet] = useState<string | undefined>();
+  const [docTitle, setDocTitle] = useState<string | undefined>("Executive Business Briefing");
+  const [docContent, setDocContent] = useState<string | undefined>();
+  const [docPage, setDocPage] = useState<number | undefined>(1);
+  const [docBbox, setDocBbox] = useState<[number, number, number, number] | undefined>();
+  const [docSourceRef, setDocSourceRef] = useState<string | undefined>();
 
   const [voiceActive, setVoiceActive] = useState(false);
   const [isVoiceOrbOpen, setIsVoiceOrbOpen] = useState(false);
   const [isSwarmDebateOpen, setIsSwarmDebateOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [persona, setPersona] = useState<ChatPersona>("cofounder");
+  const [selectedAgentId, setSelectedAgentId] = useState<string>("core");
+  const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
+  const activeAgent = FLEET_AGENTS.find(a => a.id === selectedAgentId) || FLEET_AGENTS[0];
 
   // Listen to global VTuber trigger event
   useEffect(() => {
@@ -89,11 +133,46 @@ export function ChatAgentPage() {
       if (tab === "slides" && text) setSlidesTopic(text);
       if (tab === "research" && text) setResearchQuery(text);
       if (tab === "code" && text) setCodeSnippet(text);
+      if (tab === "doc" && text) setDocTitle(text);
       if (typeof messageOrContent === "object" && messageOrContent.metadata?.sheetData) {
         setSheetData(messageOrContent.metadata.sheetData);
       }
     }
   }, []);
+
+  // Handle clicking citation pill badges in transcript
+  const handleOpenSource = useCallback((sourceKey: string) => {
+    const cleanKey = sourceKey.replace(/^#(source|doc):/, "");
+    const parts = cleanKey.split(":");
+    const docName = parts[0] || "Document";
+    const secOrPage = parts[1] || "";
+    const isDocCitation = cleanKey.includes("p") || cleanKey.includes(".pdf") || cleanKey.includes(".docx") || parts.length >= 2;
+
+    if (isDocCitation) {
+      setDocTitle(docName);
+      setDocSourceRef(cleanKey);
+
+      if (secOrPage.startsWith("p")) {
+        const pageNum = parseInt(secOrPage.replace(/\D/g, ""), 10);
+        if (!isNaN(pageNum)) {
+          setDocPage(pageNum);
+        }
+      }
+
+      if (parts[2]?.includes(",")) {
+        const coords = parts[2].split(",").map((n) => parseFloat(n.trim()));
+        if (coords.length === 4 && coords.every((n) => !isNaN(n))) {
+          setDocBbox(coords as [number, number, number, number]);
+        }
+      }
+
+      setActiveTab("doc");
+      setArtifactOpen(true);
+    } else {
+      handleOpenArtifact("research", sourceKey);
+    }
+  }, [handleOpenArtifact]);
+
 
   // Handle explicit Tool launcher invocations from the Tools menu
   const handleOpenTool = useCallback((tool: string) => {
@@ -126,6 +205,49 @@ export function ChatAgentPage() {
         break;
     }
   }, [handleOpenArtifact]);
+
+  // Run cancellation with persistent run ID cleanup
+  const handleCancelActiveRun = useCallback(() => {
+    stopStream();
+    const lastAssistant = [...messages].reverse().find((m) => m.role === "assistant");
+    const rawRunId = (lastAssistant as any)?.metadata?.runId;
+    const activeRunId = typeof rawRunId === "string" ? rawRunId : rawRunId?.runId;
+    if (activeRunId && typeof activeRunId === "string") {
+      import("@/lib/chat/run-control").then(({ controlHermesRun }) => {
+        controlHermesRun(activeRunId, "cancel").catch(() => {});
+      });
+    }
+  }, [messages, stopStream]);
+
+  // Handle all Composer dispatches via a single, typed action seam
+  const handleComposerAction = useCallback((action: ComposerAction) => {
+    switch (action.type) {
+      case "SEND_MESSAGE":
+        handleSendMessage(action.payload.text);
+        break;
+      case "STOP_STREAM":
+        handleCancelActiveRun();
+        break;
+      case "OPEN_TOOL":
+        handleOpenTool(action.toolId);
+        break;
+      case "OPEN_ARTIFACT":
+        handleOpenArtifact(action.tab);
+        break;
+      case "ATTACH_FILES":
+        action.files.forEach((file) => addAttachment(file));
+        break;
+      case "REMOVE_ATTACHMENT":
+        removeAttachment(action.id);
+        break;
+      case "REMOVE_CONTEXT_CHIP":
+        removeChip(action.id);
+        break;
+      case "SET_FOCUS":
+      case "SET_MODEL":
+        break;
+    }
+  }, [addAttachment, handleCancelActiveRun, handleOpenArtifact, handleOpenTool, removeAttachment, removeChip]);
 
   // Intent-First Natural Language Routing Engine
   const handleSendMessage = useCallback(
@@ -162,6 +284,14 @@ export function ChatAgentPage() {
         setActiveTab("code");
         setCodeSnippet(text);
         setArtifactOpen(true);
+      }
+      // Step 6: Detect Web Automation intent
+      else if (lower.includes("login") || lower.includes("fill form") || lower.includes("navigate to") || lower.includes("scrape") || lower.includes("browser") || lower.includes("automate") || lower.includes("collect api key") || lower.includes("open website")) {
+        // Web automation — trigger browser workflow via message, no artifact panel
+      }
+      // Step 7: Detect Voice Mode intent
+      else if (lower.includes("let's talk") || lower.includes("voice chat") || lower.includes("talk to me") || lower.includes("voice mode") || lower.includes("call me")) {
+        setIsVoiceOrbOpen(true);
       }
 
       const userMsgId = `usr_${Date.now()}`;
@@ -201,10 +331,150 @@ export function ChatAgentPage() {
     [addMessage, attachments, clearAttachments, conversationId, finalizeLastAssistantMessage, startStream, updateLastAssistantMessage, persona]
   );
 
+  // Control Layer: Checkpoint & Secret Resolution Handlers
+  const handleApproveCheckpoint = useCallback(
+    (checkpointId: string, message: any) => {
+      mcpGuardrail.resolveCheckpoint(checkpointId, "approved");
+      updateMessageMetadata(message.id || message._id, {
+        checkpoint: {
+          ...(message.metadata?.checkpoint || {}),
+          status: "approved",
+          outcome: "approved",
+        },
+      });
+    },
+    [updateMessageMetadata]
+  );
+
+  const handleDenyCheckpoint = useCallback(
+    (checkpointId: string, message: any) => {
+      mcpGuardrail.resolveCheckpoint(checkpointId, "denied");
+      updateMessageMetadata(message.id || message._id, {
+        checkpoint: {
+          ...(message.metadata?.checkpoint || {}),
+          status: "denied",
+          outcome: "denied",
+        },
+      });
+    },
+    [updateMessageMetadata]
+  );
+
+  const handleSubmitSecret = useCallback(
+    (checkpointId: string, secretValue: string, message: any) => {
+      mcpGuardrail.resolveCheckpoint(checkpointId, "approved");
+      updateMessageMetadata(message.id || message._id, {
+        secretRequest: {
+          ...(message.metadata?.secretRequest || {}),
+          submitted: true,
+        },
+      });
+    },
+    [updateMessageMetadata]
+  );
+
   return (
     <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden bg-background">
       {/* Main Workspace Shell */}
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
+        {/* ── Top Workspace Bar: ChatGPT-Style Agent Switcher & Work Mode Toggle ── */}
+        <div className="h-12 border-b border-border/60 bg-background/80 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
+          <div className="flex items-center gap-3">
+            {/* Agent Fleet Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsAgentMenuOpen(!isAgentMenuOpen)}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary text-sm font-semibold text-foreground transition border border-border/40 hover:border-border cursor-pointer shadow-xs"
+              >
+                <div className={`w-5 h-5 rounded-md ${activeAgent.bgLight} ${activeAgent.color} flex items-center justify-center`}>
+                  <activeAgent.icon className="w-3.5 h-3.5" />
+                </div>
+                <span>{activeAgent.name}</span>
+                <span className="text-[10px] font-mono font-normal px-1.5 py-0.5 rounded-md bg-background/60 text-muted-foreground border border-border/30">
+                  {activeAgent.badge}
+                </span>
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-0.5" />
+              </button>
+
+              {isAgentMenuOpen && (
+                <div className="absolute left-0 top-full mt-1.5 z-50 w-72 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-2.5 py-1 text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
+                    Agent Fleet & Business Twins
+                  </div>
+                  {FLEET_AGENTS.map((agent) => {
+                    const isCurrent = agent.id === selectedAgentId;
+                    const IconComponent = agent.icon;
+                    return (
+                      <button
+                        key={agent.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedAgentId(agent.id);
+                          setIsAgentMenuOpen(false);
+                        }}
+                        className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition cursor-pointer ${
+                          isCurrent ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50 text-foreground"
+                        }`}
+                      >
+                        <div className={`w-7 h-7 rounded-lg ${agent.bgLight} ${agent.color} flex items-center justify-center shrink-0 mt-0.5`}>
+                          <IconComponent className="w-4 h-4" />
+                        </div>
+                        <div className="flex flex-col min-w-0 flex-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-semibold">{agent.name}</span>
+                            <span className="text-[9px] font-mono text-muted-foreground">{agent.badge}</span>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground line-clamp-1 leading-relaxed">
+                            {agent.desc}
+                          </span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right Mode Toggle & Actions */}
+          <div className="flex items-center gap-2">
+            {/* Dual Mode Switcher (Chat | Work Canvas) */}
+            <div className="flex items-center bg-secondary/60 p-0.5 rounded-xl border border-border/40 text-xs">
+              <button
+                type="button"
+                onClick={() => setArtifactOpen(false)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
+                  !artifactOpen ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Chat</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setArtifactOpen(true)}
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
+                  artifactOpen ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <LayoutTemplate className="w-3.5 h-3.5" />
+                <span>Work Canvas</span>
+              </button>
+            </div>
+
+            {/* New Thread (+) */}
+            <button
+              type="button"
+              onClick={createNewConversation}
+              className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer"
+              title="New Chat"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
         {/* Content: Conversation + Optional Contextual User Details Panel */}
         {artifactOpen ? (
           <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 w-full overflow-hidden">
@@ -217,12 +487,17 @@ export function ChatAgentPage() {
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
+                    onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
                       handleSendMessage(prompt);
                       if (tab) {
                         handleOpenArtifact(tab);
                       }
                     }}
+                    onApproveCheckpoint={handleApproveCheckpoint}
+                    onDenyCheckpoint={handleDenyCheckpoint}
+                    onSubmitSecret={handleSubmitSecret}
+                    onStop={handleCancelActiveRun}
                   />
 
                   {/* Twin Startup Handoff Card */}
@@ -243,9 +518,10 @@ export function ChatAgentPage() {
               {/* Composer — pinned bottom */}
               <ComponentErrorBoundary title="Composer Input Interrupted">
                 <Composer
+                  onAction={handleComposerAction}
                   onSend={handleSendMessage}
                   isStreaming={streamState.isStreaming}
-                  onStop={stopStream}
+                  onStop={handleCancelActiveRun}
                   onVoiceClick={() => setVoiceActive((prev) => !prev)}
                   onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                   persona={persona}
@@ -271,6 +547,11 @@ export function ChatAgentPage() {
                   researchQuery={researchQuery}
                   sheetData={sheetData}
                   codeSnippet={codeSnippet}
+                  docTitle={docTitle}
+                  docContent={docContent}
+                  docPage={docPage}
+                  docBbox={docBbox}
+                  docSourceRef={docSourceRef}
                 />
               </ComponentErrorBoundary>
             </ResizablePanel>
@@ -292,9 +573,10 @@ export function ChatAgentPage() {
               <div className="w-full text-left">
                 <ComponentErrorBoundary title="Composer Input Interrupted">
                   <Composer
+                    onAction={handleComposerAction}
                     onSend={handleSendMessage}
                     isStreaming={streamState.isStreaming}
-                    onStop={stopStream}
+                    onStop={handleCancelActiveRun}
                     onVoiceClick={() => setVoiceActive((prev) => !prev)}
                     onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                     persona={persona}
@@ -317,12 +599,17 @@ export function ChatAgentPage() {
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
+                    onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
                       handleSendMessage(prompt);
                       if (tab) {
                         handleOpenArtifact(tab);
                       }
                     }}
+                    onApproveCheckpoint={handleApproveCheckpoint}
+                    onDenyCheckpoint={handleDenyCheckpoint}
+                    onSubmitSecret={handleSubmitSecret}
+                    onStop={handleCancelActiveRun}
                   />
 
                   {/* Twin Startup Handoff Card */}
@@ -343,9 +630,10 @@ export function ChatAgentPage() {
               {/* Composer — pinned bottom */}
               <ComponentErrorBoundary title="Composer Input Interrupted">
                 <Composer
+                  onAction={handleComposerAction}
                   onSend={handleSendMessage}
                   isStreaming={streamState.isStreaming}
-                  onStop={stopStream}
+                  onStop={handleCancelActiveRun}
                   onVoiceClick={() => setVoiceActive((prev) => !prev)}
                   onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                   persona={persona}
@@ -375,6 +663,7 @@ export function ChatAgentPage() {
         <SwarmAdversarialDebateModal
           isOpen={isSwarmDebateOpen}
           onClose={() => setIsSwarmDebateOpen(false)}
+          onOpenSource={(sourceKey) => handleOpenArtifact("research", sourceKey)}
         />
 
         {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}

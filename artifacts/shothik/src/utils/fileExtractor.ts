@@ -87,7 +87,14 @@ function countWords(text: string): number {
 }
 
 async function extractPDF(file: File): Promise<FileExtractionResult> {
-  if (import.meta.env.VITE_EXTRACT_PDF_V2_ENABLED === "true") {
+  const isExtractPdfV2Enabled =
+    import.meta.env?.VITE_EXTRACT_PDF_V2_ENABLED === "true" ||
+    import.meta.env?.NEXT_PUBLIC_EXTRACT_PDF_V2_ENABLED === "true" ||
+    (typeof process !== "undefined" &&
+      (process.env?.VITE_EXTRACT_PDF_V2_ENABLED === "true" ||
+        process.env?.NEXT_PUBLIC_EXTRACT_PDF_V2_ENABLED === "true"));
+
+  if (isExtractPdfV2Enabled) {
     const formData = new FormData();
     formData.append("file", file);
 

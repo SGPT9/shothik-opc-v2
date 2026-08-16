@@ -25,10 +25,10 @@ class ResilientInsforgePool {
 }
 
 declare global {
-  var __shothikInsforgePool: any | undefined;
+  var __shothikInsforgePool: ResilientInsforgePool | undefined;
 }
 
-export const insforgePool =
+export const insforgePool: ResilientInsforgePool =
   globalThis.__shothikInsforgePool ?? new ResilientInsforgePool();
 
 if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
@@ -38,7 +38,7 @@ if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
 export async function insforgeQuery<T extends QueryResultRow>(
   text: string,
   params: unknown[] = []
-) {
+): Promise<{ rows: T[]; rowCount: number }> {
   return insforgePool.query<T>(text, params);
 }
 

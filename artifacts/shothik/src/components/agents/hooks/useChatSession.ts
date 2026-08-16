@@ -74,6 +74,23 @@ export function useChatSession(initialConversationId?: string) {
     });
   }, [conversationId]);
 
+  const updateMessageMetadata = useCallback((messageId: string, metadataPatch: Record<string, any>) => {
+    setMessages((prev) =>
+      prev.map((msg: any) => {
+        if (msg.id === messageId || msg._id === messageId) {
+          return {
+            ...msg,
+            metadata: {
+              ...(msg.metadata || {}),
+              ...metadataPatch,
+            },
+          };
+        }
+        return msg;
+      })
+    );
+  }, []);
+
   return {
     conversationId,
     messages,
@@ -82,6 +99,7 @@ export function useChatSession(initialConversationId?: string) {
     addMessage,
     updateLastAssistantMessage,
     finalizeLastAssistantMessage,
+    updateMessageMetadata,
     setMessages,
   };
 }

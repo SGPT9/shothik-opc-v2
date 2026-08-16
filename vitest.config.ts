@@ -5,7 +5,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: ['./test/setup.ts'],
+    setupFiles: [path.resolve(__dirname, './test/setup.ts')],
     pool: 'forks', // Prevents React 19 hook issues across files in JSDOM
     include: [
       '**/__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}',

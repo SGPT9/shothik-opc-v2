@@ -1,23 +1,24 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import React from 'react';
+import React, { Suspense } from 'react';
 import SlidePreview from '../SlidePreview';
 
-// Mock dynamic imports to render a component that triggers onSave
-vi.mock('next/dynamic', () => ({
-  default: () => {
-    return (props) => (
-      <div data-testid="dynamic-component">
-        {/* Render save button if onSave prop is present (expected for EditingToolbar) */}
-        {props.onSave && (
-          <button data-testid="save-btn" onClick={props.onSave}>
-            Save
-          </button>
-        )}
-      </div>
-    );
-  }
+// Mock editing components
+vi.mock('../editing/EditingToolbar', () => ({
+  default: (props) => (
+    <div data-testid="dynamic-component">
+      {props.onSave && (
+        <button data-testid="save-btn" onClick={props.onSave}>
+          Save
+        </button>
+      )}
+    </div>
+  ),
 }));
+
+vi.mock('../editing/AlignmentGuides', () => ({ default: () => <div /> }));
+vi.mock('../editing/GridOverlay', () => ({ default: () => <div /> }));
+vi.mock('../editing/ResizeHandles', () => ({ default: () => <div /> }));
 
 // Mock hooks
 const mockSaveSlide = vi.fn();
@@ -49,19 +50,12 @@ vi.mock('html2canvas', () => ({
   default: vi.fn(() => Promise.resolve({ toDataURL: () => 'data:image/png;base64,...' }))
 }));
 
-// Mock ResizeObserver
-global.ResizeObserver = class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-
 // Mock UI components
 vi.mock('@/components/ui/tabs', () => ({
-  Tabs: ({ children, value }) => <div>{children}</div>,
+  Tabs: ({ children }) => <div>{children}</div>,
   TabsList: ({ children }) => <div>{children}</div>,
   TabsTrigger: ({ children }) => <button>{children}</button>,
-  TabsContent: ({ children, value }) => value === 'preview' ? <div>{children}</div> : null,
+  TabsContent: ({ children }) => <div>{children}</div>,
 }));
 
 vi.mock('@/components/ui/card', () => ({
@@ -103,7 +97,7 @@ describe('SlidePreview', () => {
     vi.clearAllMocks();
   });
 
-  it('calls autoSave.saveSlide when onSave is triggered in EditingToolbar', () => {
+  it('calls autoSave.saveSlide when onSave is triggered in EditingToolbar', async () => {
     const slide = {
       id: 'slide-1',
       html_content: '<div>Slide Content</div>',
@@ -121,9 +115,8 @@ describe('SlidePreview', () => {
       />
     );
 
-    // Verify save button (from mocked dynamic component) is present
-    // This confirms that EditingToolbar is being rendered with onSave prop
-    const saveBtn = screen.getByTestId('save-btn');
+    // Verify save button is present (via findByTestId to wait for Suspense resolution)
+    const saveBtn = await screen.findByTestId('save-btn');
     expect(saveBtn).toBeDefined();
 
     // Trigger save

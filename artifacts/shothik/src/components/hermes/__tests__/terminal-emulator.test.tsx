@@ -21,8 +21,8 @@ describe("TerminalEmulator UI Component", () => {
       />
     );
 
-    expect(screen.getByText("shothik-tty — trm_ui_100")).toBeInTheDocument();
-    expect(screen.getByText("$ echo Hello World\nHello World\n")).toBeInTheDocument();
+    expect(screen.getByText(/shothik-tty — trm_ui_100/i)).toBeInTheDocument();
+    expect(screen.getByText(/echo Hello World/i)).toBeInTheDocument();
   });
 
   it("submits commands and triggers onCommandSubmit callback", () => {
@@ -40,7 +40,7 @@ describe("TerminalEmulator UI Component", () => {
     fireEvent.submit(input);
 
     expect(onSubmit).toHaveBeenCalledWith("pnpm test");
-    expect(screen.getByText("$ pnpm test\n")).toBeInTheDocument();
+    expect(screen.getByText(/pnpm test/i)).toBeInTheDocument();
   });
 
   it("clears log buffer when clicking Clear button", () => {

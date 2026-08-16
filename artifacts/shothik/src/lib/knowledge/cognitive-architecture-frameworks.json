@@ -1,0 +1,116 @@
+{
+  "documentId": "doc-shothik-cognitive-os-masterclass",
+  "title": "Agentic Operating Systems, Advanced RAG & Cognitive Architecture Blueprint",
+  "author": "Shothik Core Architecture Lab",
+  "epistemicTier": "tier_1_official",
+  "version": "2.4.0",
+  "lastUpdated": "2026-08-15T00:00:00Z",
+  "frameworks": [
+    {
+      "id": "framework-1-noetherian-momentum",
+      "heading": "1. Noetherian Momentum Invariant",
+      "formula": "M = (Intent * Verification) / Friction",
+      "summary": "Maximizes execution momentum by maximizing user intent comprehension and epistemic verification while driving UI and cognitive friction to near-zero.",
+      "chunks": [
+        {
+          "id": "chunk-1-1",
+          "section": "The Momentum Equation",
+          "content": "Momentum Invariant is M = (Intent * Verification) / Friction. Intent measures how effortlessly the natural language goal is understood without mode toggles. Verification measures verifiable provenance and trust. Friction is every latency, modal popup, and setup toggle.",
+          "tags": ["momentum", "ux", "intent", "friction", "verification"]
+        },
+        {
+          "id": "chunk-1-2",
+          "section": "Ask-First & Progressive Disclosure",
+          "content": "First paint must show only the calm heading 'What do you want to accomplish today?' and 3 outcome starter prompts (Research, Analysis, Create). Prohibits onboarding boxes, setup checklists, and launcher chip walls.",
+          "tags": ["ask-first", "empty-state", "progressive-disclosure"]
+        }
+      ]
+    },
+    {
+      "id": "framework-2-enterprise-cognitive-rag",
+      "heading": "2. 4-Way Fused Enterprise Cognitive RAG",
+      "formula": "S_fused = (w_dense * RRF_dense + w_sparse * RRF_sparse + w_graph * S_graph) * e^(-lambda * delta_t)",
+      "summary": "Replaces naive single-vector search with Magika pre-validation, parent-child chunking, dense + sparse hybrid RRF, cross-encoder reranking, and contradiction detection.",
+      "chunks": [
+        {
+          "id": "chunk-2-1",
+          "section": "Hierarchical Parent-Child Chunking",
+          "content": "Child chunks (128 tokens) are enriched with contextual prepended headers [Document: Title | Section: Header] for high-precision embedding matching, while full Parent sections (1024 tokens) are passed to the LLM for generation.",
+          "tags": ["rag", "parent-child", "chunking", "embeddings"]
+        },
+        {
+          "id": "chunk-2-2",
+          "section": "Cross-Encoder & Temporal Freshness",
+          "content": "Top-50 hybrid candidates are rescored with cross-attention token interaction, authority tier weights (official=1.0, web=0.4), and exponential temporal decay so outdated circulars do not mislead generation.",
+          "tags": ["cross-encoder", "reranker", "temporal-decay", "verification"]
+        },
+        {
+          "id": "chunk-2-3",
+          "section": "Verification & Contradiction Matrix",
+          "content": "Detects divergent claims across documents on matching topics. Automatically marks older conflicting entries as temporal_superseded and renders transparent discrepancy cards in the transcript.",
+          "tags": ["contradiction-detection", "provenance", "audit"]
+        }
+      ]
+    },
+    {
+      "id": "framework-3-sandbox-security-rings",
+      "heading": "3. Operating System Security Rings & Sandbox Isolation",
+      "formula": "Ring 3 (Read) -> Ring 2 (Draft/Wasm) -> Ring 1 (Actuation / await_checkpoint)",
+      "summary": "Decouples the AI orchestrator brain from disposable sandboxes. Enforces human approval and zero-persistence secret sharing for privileged mutations.",
+      "chunks": [
+        {
+          "id": "chunk-3-1",
+          "section": "The Agent is Not the Sandbox",
+          "content": "The AI brain orchestrates via gRPC/IPC, while tool execution and untrusted web browsing run inside disposable gVisor/Wasm sandboxes with zero access to host databases, private subnets, or master secrets.",
+          "tags": ["sandboxing", "isolation", "security-rings", "gvisor"]
+        },
+        {
+          "id": "chunk-3-2",
+          "section": "Control Layer & Ephemeral Secrets",
+          "content": "Ring 1 actions halt execution via await_checkpoint SSE events. Users resolve via ApprovalCard or SecretShareCard. Sensitive credentials remain in volatile memory and are never saved in Postgres chat history.",
+          "tags": ["await_checkpoint", "approval-card", "secret-share-card", "ephemeral-secrets"]
+        }
+      ]
+    },
+    {
+      "id": "framework-4-second-me-tri-tier-memory",
+      "heading": "4. Second Me Tri-Tier Cognitive Memory System",
+      "formula": "Memory = Working (Session/Chips) + Episodic (Decisions/Persona) + Semantic (Knowledge Graph)",
+      "summary": "Maintains persistent cognitive continuity across sessions while dynamically calibrating persona parameters and guaranteeing zero secret leaks.",
+      "chunks": [
+        {
+          "id": "chunk-4-1",
+          "section": "Working, Episodic & Semantic Memory",
+          "content": "Working memory handles composer buffer and context chips. Episodic memory stores user decisions and feedback history. Semantic memory indexes domain graphs and documents.",
+          "tags": ["working-memory", "episodic-memory", "semantic-memory", "persona"]
+        },
+        {
+          "id": "chunk-4-2",
+          "section": "Persona Calibration & Context Synthesis",
+          "content": "Dynamically calibrates conciseness (0.0-1.0), technical depth, tone (neutral/executive/creative), and language (en-US/bn-BD), synthesizing a unified cognitive prompt header before generation.",
+          "tags": ["persona-calibration", "second-me", "bilingual"]
+        }
+      ]
+    },
+    {
+      "id": "framework-5-agentic-engineering-loop",
+      "heading": "5. Agentic Engineering Loop & Pre-mortem Protocol",
+      "formula": "Pipeline = Claude Code + Conductor + GitNexus + Context7 + Postgres RLS + Premortem.md",
+      "summary": "Replaces stochastic one-shot guessing with an iterative Perceive -> Draft -> Verify (tsc/vitest) -> Reflect -> Commit closed loop.",
+      "chunks": [
+        {
+          "id": "chunk-5-1",
+          "section": "Deep Module Seam Inversion",
+          "content": "Accept dependencies, don't create them. Components and hooks expose injectable interfaces (StreamTransport, ComposerAction) enabling deterministic unit tests without monkey-patching globals.",
+          "tags": ["deep-modules", "seams", "dependency-injection", "unit-tests"]
+        },
+        {
+          "id": "chunk-5-2",
+          "section": "Pre-mortem Verification Protocol",
+          "content": "Simulates catastrophic failure modes (UX friction, runaway tool loops, database credential leaks, halluncinations, audio collisions) before committing code to production branches.",
+          "tags": ["pre-mortem", "safety", "guardrails", "mitigation"]
+        }
+      ]
+    }
+  ]
+}

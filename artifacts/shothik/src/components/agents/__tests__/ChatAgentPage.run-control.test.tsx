@@ -41,6 +41,32 @@ vi.mock("@/lib/chat/service", () => ({
   },
 }));
 
+vi.mock("@/components/agents/hooks/useChatSession", () => ({
+  useChatSession: (initialId?: string) => {
+    const [messages, setMessages] = React.useState([
+      { id: "m-user", role: "user", content: "hello", timestamp: new Date().toISOString() },
+      {
+        id: "m-assistant",
+        role: "assistant",
+        content: "working on it",
+        timestamp: new Date().toISOString(),
+        metadata: { runId: "run_persisted_123", sessionId: "session_persisted" },
+      },
+    ]);
+    return {
+      conversationId: initialId || "conv_resumed_123",
+      messages,
+      switchConversation: vi.fn(),
+      addMessage: vi.fn((msg: any) => {
+        setMessages((prev) => [...prev, msg]);
+      }),
+      updateLastAssistantMessage: vi.fn(),
+      finalizeLastAssistantMessage: vi.fn(),
+      updateMessageMetadata: vi.fn(),
+    };
+  },
+}));
+
 vi.mock("@/hooks/useChatHistory", () => ({
   useChatHistory: (...args: unknown[]) => mockUseChatHistory(...args),
 }));
@@ -51,7 +77,10 @@ vi.mock("@/i18n", () => ({
 
 vi.mock("@/components/chat/Composer", () => ({
   Composer: React.forwardRef((props: any, _ref: any) => (
-    <button onClick={props.onStop}>composer-stop</button>
+    <div>
+      <button onClick={() => props.onAction?.({ type: "STOP_STREAM" })}>composer-stop</button>
+      <button onClick={() => props.onSend?.("hello voice")}>voice-send</button>
+    </div>
   )),
 }));
 

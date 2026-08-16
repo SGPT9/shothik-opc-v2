@@ -18,12 +18,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CitationBadge } from "./CitationBadge";
 
 interface MarkdownMessageProps {
   content: string;
   artifactId?: string;
   artifactType?: "chart" | "presentation" | "document";
   className?: string;
+  onOpenSource?: (sourceKey: string) => void;
 }
 
 export function MarkdownMessage({
@@ -31,12 +33,21 @@ export function MarkdownMessage({
   artifactId,
   artifactType,
   className,
+  onOpenSource,
 }: MarkdownMessageProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const [runningCode, setRunningCode] = useState<string | null>(null);
   const [consoleLogs, setConsoleLogs] = useState<Record<string, string>>({});
   const [openConsole, setOpenConsole] = useState<Record<string, boolean>>({});
   const [activeLens, setActiveLens] = useState<"executive" | "research" | "action">("executive");
+
+  // Preprocess epistemic inline coordinate tags [[doc:key:sec]] into interactive source links
+  const processedContent = (content ?? "").replace(/\[\[doc:([^\]]+)\]\]/g, (_match, docRef) => {
+    const parts = docRef.split(":");
+    const docId = parts[0];
+    const section = parts[1] ? ` · ${parts[1]}` : "";
+    return `[📄 ${docId}${section}](#source:${docRef})`;
+  });
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
@@ -126,6 +137,16 @@ export function MarkdownMessage({
 
           // Interactive Citation Badges
           a: ({ href, children }) => {
+            if (href?.startsWith("#source:") || href?.startsWith("#doc:")) {
+              const sourceKey = href.replace(/^#(source|doc):/, "");
+              return (
+                <CitationBadge
+                  rawRef={sourceKey}
+                  onClick={(ref) => onOpenSource?.(ref)}
+                />
+              );
+            }
+
             const text = String(children);
             const isCitation = /^\[?\d+\]?$/.test(text.trim());
 
@@ -252,7 +273,7 @@ export function MarkdownMessage({
           },
         }}
       >
-        {content ?? ""}
+        {processedContent}
       </ReactMarkdown>
 
       {/* Artifact Action Cards */}

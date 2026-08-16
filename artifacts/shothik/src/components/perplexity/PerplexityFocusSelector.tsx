@@ -3,7 +3,9 @@ import React from "react";
 export type PerplexityFocusMode =
   | "all"
   | "pro_search"
-  | "academic";
+  | "academic"
+  | "finance_tax"
+  | "merchant";
 
 export interface PerplexityFocusOption {
   value: PerplexityFocusMode;
@@ -16,20 +18,32 @@ export const PERPLEXITY_FOCUS_OPTIONS: PerplexityFocusOption[] = [
   {
     value: "all",
     label: "All Web & AI",
-    icon: "🔍",
+    icon: "",
     description: "Search across full web + AI reasoning",
   },
   {
     value: "pro_search",
     label: "Pro Search",
-    icon: "🚀",
+    icon: "",
     description: "Multi-step deep research & TAM analysis",
   },
   {
     value: "academic",
     label: "Academic",
-    icon: "🎓",
-    description: "PubMed, OpenAlex & Research Papers",
+    icon: "",
+    description: "Scholarly papers, journals & BCS prep",
+  },
+  {
+    value: "finance_tax",
+    label: "Finance & Tax",
+    icon: "",
+    description: "NBR tax clearance, invoices & bKash accounting",
+  },
+  {
+    value: "merchant",
+    label: "Merchant Logistics",
+    icon: "",
+    description: "Courier tracking, inventory & storefront operations",
   },
 ];
 
@@ -51,13 +65,13 @@ export const PerplexityFocusSelector: React.FC<PerplexityFocusSelectorProps> = (
             key={opt.value}
             type="button"
             onClick={() => onSelectFocus(opt.value)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-medium transition-all cursor-pointer ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] transition-all cursor-pointer ${
               isSelected
-                ? "bg-brand/15 border border-brand/40 text-brand font-semibold shadow-xs"
-                : "bg-zinc-100 dark:bg-slate-800/80 border border-zinc-200/80 dark:border-slate-700/60 text-zinc-600 dark:text-slate-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/70 dark:hover:bg-slate-700/60 hover:border-zinc-300 dark:hover:border-slate-600"
+                ? "bg-muted/80 border border-border text-foreground font-medium"
+                : "bg-transparent border border-transparent text-muted-foreground/70 hover:text-muted-foreground hover:bg-muted/40"
             }`}
           >
-            <span>{opt.icon}</span>
+            {opt.icon && <span>{opt.icon}</span>}
             <span>{opt.label}</span>
           </button>
         );

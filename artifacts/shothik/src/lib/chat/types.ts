@@ -129,10 +129,24 @@ export interface ChatMessage {
     sync?: ChatSyncDescriptor;
     isOvernight?: boolean;
     executionMode?: string;
-    chatMode?: "cofounder" | "web-search" | "scenario-testing";
     persona?: ChatPersona;
     modelRoute?: unknown;
     clientEncrypted?: ChatEncryptedEnvelope;
+    checkpoint?: {
+      checkpointId: string;
+      actionSummary: string;
+      reason: string;
+      details?: string;
+      status: "pending" | "approved" | "denied";
+      outcome?: "approved" | "denied";
+    };
+    secretRequest?: {
+      checkpointId?: string;
+      purpose: string;
+      label: string;
+      placeholder?: string;
+      submitted?: boolean;
+    };
   };
 
   createdAt: number;

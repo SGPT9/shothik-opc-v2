@@ -19,8 +19,7 @@ describe("a11y-debugging & Chrome DevTools Comprehensive Audit", () => {
         onTabChange={() => {}}
         onToggleSidebar={() => {}}
         sidebarOpen={false}
-        onVoiceOrbClick={() => {}}
-        onSwarmDebateClick={() => {}}
+        onVTuberClick={() => {}}
         onPaywallClick={() => {}}
       />
     );
@@ -49,7 +48,7 @@ describe("a11y-debugging & Chrome DevTools Comprehensive Audit", () => {
     const heading = greetingRes.container.querySelector("h1");
 
     expect(heading).not.toBeNull();
-    expect(heading?.textContent).toBe("Where knowledge begins.");
+    expect(heading?.textContent).toBe("What do you want to accomplish today?");
   });
 
   it("verifies PerplexitySourcesGrid tap target link accessibility", () => {

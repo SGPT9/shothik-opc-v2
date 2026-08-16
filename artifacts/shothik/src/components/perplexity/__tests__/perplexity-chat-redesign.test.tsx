@@ -5,18 +5,19 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
 
-describe("Perplexity /agents/chat Hero Redesign", () => {
-  it("renders Perplexity hero title 'Where knowledge begins.'", () => {
+describe("EmptyChatGreeting — Ask-First DeepSeek-Close Shell", () => {
+  it("renders Ask-First hero title 'What do you want to accomplish today?'", () => {
     render(<EmptyChatGreeting />);
 
-    expect(screen.getByText("Where knowledge begins.")).toBeDefined();
-    expect(screen.getByText("Shothik Intelligence")).toBeDefined();
+    expect(screen.getByText("What do you want to accomplish today?")).toBeInTheDocument();
+    expect(screen.getByText(/Ask a question, research deeply/i)).toBeInTheDocument();
   });
 
-  it("renders starter prompt chips with rounded-2xl glassmorphic cards", () => {
+  it("renders 3 intent-first starter prompt cards (Research, Analysis, Create)", () => {
     render(<EmptyChatGreeting />);
 
-    expect(screen.getAllByText("Pro Search: TAM Market Sizing")[0]).toBeDefined();
-    expect(screen.getAllByText("3-Scenario Financial Model")[0]).toBeDefined();
+    expect(screen.getByText("Research")).toBeInTheDocument();
+    expect(screen.getByText("Analysis")).toBeInTheDocument();
+    expect(screen.getByText("Create")).toBeInTheDocument();
   });
 });

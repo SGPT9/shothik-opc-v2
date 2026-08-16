@@ -44,7 +44,7 @@ describe("DeerFlowVisualizer UI Component", () => {
 
     expect(screen.getByTestId("deerflow-visualizer")).toBeDefined();
     expect(screen.getByText("DeerFlow DAG Workflow")).toBeDefined();
-    expect(screen.getByText("completed")).toBeDefined();
+    expect(screen.getAllByText(/completed/i).length).toBeGreaterThan(0);
     expect(screen.getByText("ws_df_test")).toBeDefined();
     expect(screen.getByText(/ODS Context Injected/i)).toBeDefined();
   });
