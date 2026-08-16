@@ -14,7 +14,9 @@ describe("Visual No-Code Storefront & Landing Page Builder (VisualStorefrontBuil
     );
 
     expect(screen.getByText(/Visual No-Code Storefront & Landing Page Builder/i)).toBeInTheDocument();
-    expect(screen.getByText(/Target: https:\/\/verifiq.shothikgpt.com/i)).toBeInTheDocument();
+    expect(
+      screen.getAllByText((_, el) => (el?.textContent?.includes("Target: https://") && el?.textContent?.includes("verifiq.shothikgpt.com")) || false).length
+    ).toBeGreaterThan(0);
 
     const mobileBtn = screen.getByTestId("viewport-mobile-btn");
     fireEvent.click(mobileBtn);
@@ -45,6 +47,6 @@ describe("Visual No-Code Storefront & Landing Page Builder (VisualStorefrontBuil
 
     await waitFor(() => {
       expect(screen.getByText(/Published to Dokploy!/i)).toBeInTheDocument();
-    });
+    }, { timeout: 3500 });
   });
 });

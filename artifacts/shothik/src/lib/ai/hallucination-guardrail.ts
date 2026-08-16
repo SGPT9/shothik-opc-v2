@@ -337,12 +337,12 @@ export async function trackAIInteraction(
 ): Promise<void> {
   const key = `ai:interactions:${userId}:${new Date().toISOString().split("T")[0]}`;
   
-  await redis.lpush(key, JSON.stringify({
+  await (redis as any).lpush(key, JSON.stringify({
     ...interaction,
     timestamp: Date.now(),
   }));
   
-  await redis.ltrim(key, 0, 999); // Keep last 1000
+  await (redis as any).ltrim?.(key, 0, 999); // Keep last 1000
   await redis.expire(key, 86400 * 30); // 30 days
   
   // Track hallucination rate

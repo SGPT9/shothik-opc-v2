@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { ChevronDown, Terminal, CheckCircle2, Loader2, Search, Globe, FileText, Zap } from "lucide-react";
+import { ChevronDown, Terminal, CheckCircle2, Loader2, Search, Globe, FileText, Zap, Database, Scale, Brain } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface AgentStep {
   id: string;
-  type: "tool_call" | "search" | "read" | "think" | "code" | "write";
+  type: "tool_call" | "search" | "read" | "think" | "code" | "write" | "rag" | "verify" | "memory" | "mcp";
   label: string;
   detail?: string;
   status: "pending" | "running" | "done" | "error";
@@ -18,6 +18,10 @@ const STEP_ICONS: Record<AgentStep["type"], React.ElementType> = {
   think: Zap,
   code: Terminal,
   write: FileText,
+  rag: Database,
+  verify: Scale,
+  memory: Brain,
+  mcp: Globe,
 };
 
 const STEP_COLORS: Record<AgentStep["type"], string> = {
@@ -27,6 +31,10 @@ const STEP_COLORS: Record<AgentStep["type"], string> = {
   think: "text-indigo-400",
   code: "text-emerald-400",
   write: "text-rose-400",
+  rag: "text-cyan-400",
+  verify: "text-amber-300",
+  memory: "text-purple-400",
+  mcp: "text-emerald-400",
 };
 
 interface AssistantStepsProps {

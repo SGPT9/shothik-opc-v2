@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2 } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
@@ -13,7 +13,7 @@ import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer";
+export type ArtifactTab = "slides" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -30,6 +30,8 @@ const TABS: TabConfig[] = [
   { id: "code",        label: "Code",                Icon: Code2,        color: "text-emerald-400"},
   { id: "diagram",     label: "Diagram",             Icon: Network,      color: "text-sky-400"    },
   { id: "doc",         label: "Doc",                 Icon: FileText,     color: "text-amber-400"  },
+  { id: "sources",     label: "Sources",             Icon: Globe,        color: "text-blue-400"   },
+  { id: "history",     label: "History",             Icon: Clock,        color: "text-orange-400" },
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -47,6 +49,13 @@ interface ArtifactPanelProps {
   codeSnippet?: string;
   codeLanguage?: string;
   codeFilename?: string;
+
+  // Document Canvas Handoff Props
+  docTitle?: string;
+  docContent?: string;
+  docPage?: number;
+  docBbox?: [number, number, number, number];
+  docSourceRef?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -62,6 +71,11 @@ export function ArtifactPanel({
   codeSnippet,
   codeLanguage,
   codeFilename,
+  docTitle,
+  docContent,
+  docPage,
+  docBbox,
+  docSourceRef,
 }: ArtifactPanelProps) {
   // Version History State (Pillar 5)
   const [selectedVersion, setSelectedVersion] = useState<string>("v3");
@@ -79,13 +93,29 @@ export function ArtifactPanel({
 
   if (!activeTab) return null;
 
+  // Only show tabs that have content OR are the currently active tab (per DeepSeek-close spec)
+  const tabsWithContent = new Set<ArtifactTab>([activeTab]);
+  if (slidesTopic) tabsWithContent.add("slides");
+  if (sheetData) tabsWithContent.add("sheet");
+  if (researchQuery) tabsWithContent.add("research");
+  if (codeSnippet) tabsWithContent.add("code");
+  if (docTitle || docSourceRef || docPage) tabsWithContent.add("doc");
+  // Sources and History always show when panel is open — they provide contextual depth
+  tabsWithContent.add("sources");
+  tabsWithContent.add("history");
+  // Also show any previously mounted tabs
+  mounted.forEach((tab) => tabsWithContent.add(tab));
+
+  const visibleTabs = TABS.filter(({ id }) => tabsWithContent.has(id));
+
+
   return (
     <div className="flex flex-col h-full border-l border-border/60 bg-background w-full shrink-0 animate-in slide-in-from-right-4 duration-300">
 
       {/* ── Tab bar ── */}
       <div className="flex items-center shrink-0 border-b border-border/60 bg-muted/20 px-2">
         <div className="flex items-center gap-0.5 flex-1 overflow-x-auto py-1.5 no-scrollbar">
-          {TABS.map(({ id, label, Icon, color }) => {
+          {visibleTabs.map(({ id, label, Icon, color }) => {
             const isActive = activeTab === id;
             return (
               <button
@@ -207,7 +237,44 @@ export function ArtifactPanel({
 
         {mounted.has("doc") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "doc" ? "block" : "hidden"}`}>
-            <DocArtifact isStreaming={isStreaming} />
+            <DocArtifact
+              initialTitle={docTitle}
+              initialContent={docContent}
+              targetPage={docPage}
+              targetBbox={docBbox}
+              sourceRef={docSourceRef}
+              isStreaming={isStreaming}
+            />
+          </div>
+        )}
+
+        {/* Sources tab — contextual depth per spec */}
+        {activeTab === "sources" && (
+          <div className="absolute inset-0 overflow-y-auto p-6">
+            <div className="max-w-lg mx-auto space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Globe className="h-4 w-4 text-blue-400" />
+                Sources
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Sources referenced in this conversation will appear here. Send a research query to populate this tab.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* History tab — session output history per spec */}
+        {activeTab === "history" && (
+          <div className="absolute inset-0 overflow-y-auto p-6">
+            <div className="max-w-lg mx-auto space-y-4">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Clock className="h-4 w-4 text-orange-400" />
+                Session History
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Prior outputs, artifacts, and generated files from this session will appear here.
+              </p>
+            </div>
           </div>
         )}
       </div>

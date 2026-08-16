@@ -16,6 +16,8 @@ import { ProactiveNextActions } from "./ProactiveNextActions";
 import { PerplexitySourcesGrid } from "@/components/perplexity/PerplexitySourcesGrid";
 import { PerplexityRelatedQueries } from "@/components/perplexity/PerplexityRelatedQueries";
 import { TrajectoryReceiptModal } from "./TrajectoryReceiptModal";
+import { ApprovalCard } from "./ApprovalCard";
+import { SecretShareCard } from "./SecretShareCard";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState } from "react";
@@ -101,7 +103,11 @@ interface TranscriptProps {
   onStop?: (message: ChatMessage) => void;
   onActionClick?: (action: string, message: ChatMessage) => void;
   onOpenArtifact?: (type: string, message: ChatMessage) => void;
+  onOpenSource?: (sourceKey: string) => void;
   onSelectPrompt?: (prompt: string, mode?: ChatPersona, tab?: "slides" | "sheet" | "research" | "code") => void;
+  onApproveCheckpoint?: (checkpointId: string, message: ChatMessage) => void;
+  onDenyCheckpoint?: (checkpointId: string, message: ChatMessage) => void;
+  onSubmitSecret?: (checkpointId: string, secretValue: string, message: ChatMessage) => void;
   className?: string;
 }
 
@@ -117,7 +123,11 @@ export function Transcript({
   onStop,
   onActionClick,
   onOpenArtifact,
+  onOpenSource,
   onSelectPrompt,
+  onApproveCheckpoint,
+  onDenyCheckpoint,
+  onSubmitSecret,
   className,
 }: TranscriptProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -300,15 +310,72 @@ export function Transcript({
                   )}
 
                   {/* ── Sources Grid ABOVE answer (Perplexity Pattern) ── */}
-                  <PerplexitySourcesGrid />
+                  {/* Only render for research-type answers with actual sources */}
+                  {(message.metadata?.sources?.length > 0 || message.metadata?.chatMode === 'web-search') && (
+                    <PerplexitySourcesGrid />
+                  )}
 
                   {/* Main content */}
                   <div className="relative text-sm leading-relaxed">
                     <MarkdownMessage
                       content={displayContent || (message.status === "streaming" ? "" : slashCommand ? "Spec request" : "")}
+                      onOpenSource={onOpenSource}
                     />
                     {message.status === "streaming" && displayContent && <StreamingCursor />}
                   </div>
+
+                  {/* ── Control Layer: Human-in-the-Loop Approval Checkpoint ── */}
+                  {message.metadata?.checkpoint && (
+                    <div className="mt-2">
+                      <ApprovalCard
+                        checkpointId={message.metadata.checkpoint.checkpointId}
+                        actionSummary={message.metadata.checkpoint.actionSummary}
+                        reason={message.metadata.checkpoint.reason}
+                        details={message.metadata.checkpoint.details}
+                        resolved={message.metadata.checkpoint.status !== "pending"}
+                        outcome={
+                          message.metadata.checkpoint.outcome ||
+                          (message.metadata.checkpoint.status === "approved"
+                            ? "approved"
+                            : message.metadata.checkpoint.status === "denied"
+                            ? "denied"
+                            : undefined)
+                        }
+                        onApprove={() =>
+                          onApproveCheckpoint?.(message.metadata!.checkpoint!.checkpointId, message)
+                        }
+                        onDeny={() =>
+                          onDenyCheckpoint?.(message.metadata!.checkpoint!.checkpointId, message)
+                        }
+                      />
+                    </div>
+                  )}
+
+                  {/* ── Control Layer: Secure Credential Share Card ── */}
+                  {message.metadata?.secretRequest && (
+                    <div className="mt-2">
+                      <SecretShareCard
+                        checkpointId={message.metadata.secretRequest.checkpointId}
+                        purpose={message.metadata.secretRequest.purpose}
+                        label={message.metadata.secretRequest.label}
+                        placeholder={message.metadata.secretRequest.placeholder}
+                        submitted={message.metadata.secretRequest.submitted}
+                        onSubmit={(val) =>
+                          onSubmitSecret?.(
+                            message.metadata!.secretRequest!.checkpointId || message._id,
+                            val,
+                            message
+                          )
+                        }
+                        onCancel={() =>
+                          onDenyCheckpoint?.(
+                            message.metadata!.secretRequest!.checkpointId || message._id,
+                            message
+                          )
+                        }
+                      />
+                    </div>
+                  )}
 
                   {/* ── 1-Tap bKash / Nagad Mobile App Deep-Link Card (Ticket #2) ── */}
                   {message.metadata?.paymentInfo && (
@@ -453,19 +520,6 @@ export function Transcript({
                         <Copy className="h-3.5 w-3.5" />
                       </button>
 
-                      {/* 🧾 View Trajectory & Audit Receipt Trail */}
-                      <button
-                        onClick={() => {
-                          setTrajectoryModel((message.metadata?.model as string) || "DeepSeek V4 Flash");
-                          setTrajectoryOpen(true);
-                        }}
-                        className="flex items-center gap-1 h-7 px-2 rounded-md text-[10px] font-mono text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/20 transition cursor-pointer"
-                        title="View Replayable Execution Trajectory & Audit Receipt Trail"
-                      >
-                        <Receipt className="h-3 w-3" />
-                        <span>1.8¢ Receipt</span>
-                      </button>
-
                       {/* Regenerate */}
                       {canRegenerate && (
                         <button
@@ -485,27 +539,39 @@ export function Transcript({
                         >
                           <span className="text-sm font-bold leading-none">⋯</span>
                         </button>
-                        <div className="absolute bottom-full left-0 mb-1 z-50 hidden group-hover/overflow:block w-40 rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100">
+                        <div className="absolute bottom-full left-0 mb-1 z-50 hidden group-hover/overflow:block w-44 rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100">
                           <button
                             onClick={() => onActionClick?.("deep-research", message)}
                             className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition"
                           >
                             <Search className="h-3 w-3 text-brand" />
-                            Deep Research
+                            Research this further
                           </button>
                           <button
                             onClick={() => onOpenArtifact?.("slides", message)}
                             className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition"
                           >
                             <Sparkles className="h-3 w-3 text-indigo-400" />
-                            → Slides
+                            Turn into slides
                           </button>
                           <button
                             onClick={() => onOpenArtifact?.("sheet", message)}
                             className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition"
                           >
                             <Sparkles className="h-3 w-3 text-cyan-400" />
-                            → Sheet
+                            Turn into spreadsheet
+                          </button>
+                          {/* Receipt — admin audit surface, inside overflow per DeepSeek-close spec */}
+                          <button
+                            onClick={() => {
+                              setTrajectoryModel((message.metadata?.model as string) || "DeepSeek V4 Flash");
+                              setTrajectoryOpen(true);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition border-t border-border/40 mt-0.5 pt-2"
+                            title="View execution trajectory & audit receipt"
+                          >
+                            <Receipt className="h-3 w-3" />
+                            View receipt
                           </button>
                         </div>
                       </div>

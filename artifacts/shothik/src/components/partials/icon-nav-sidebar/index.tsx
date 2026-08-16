@@ -21,6 +21,8 @@ import {
   UserPlus,
   PanelLeft,
   Search,
+  Layers,
+  Zap,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useChatSession } from "@/components/agents/hooks/useChatSession";
@@ -340,17 +342,13 @@ export default function IconNavSidebar() {
               </button>
 
               {isProjectsOpen && (
-                <div className="rounded-xl border border-zinc-200 dark:border-white/[0.06] bg-zinc-100/70 dark:bg-white/[0.02] p-3 space-y-2 text-left">
-                  <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">Organize and share your work</p>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                    Keep files, memory, and context together across sessions.
-                  </p>
+                <div className="px-1 pt-1">
                   <button
                     type="button"
                     onClick={() => setIsCreateProjectOpen(true)}
-                    className="flex items-center justify-center gap-1.5 w-full py-1.5 px-3 rounded-lg border border-zinc-300 dark:border-white/[0.08] bg-white dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] text-zinc-800 dark:text-zinc-200 text-xs font-medium transition text-center cursor-pointer shadow-xs"
+                    className="flex items-center gap-1.5 w-full px-2.5 py-1.5 rounded-lg text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-900 dark:hover:text-zinc-200 text-xs font-medium transition cursor-pointer"
                   >
-                    <FolderPlus className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-300" />
+                    <FolderPlus className="h-3.5 w-3.5 shrink-0" />
                     <span>Create project</span>
                   </button>
                 </div>
@@ -453,6 +451,35 @@ export default function IconNavSidebar() {
           </div>
         </div>
 
+        {/* ── Credit Wallet & Micro-Pass ── */}
+        {!isCollapsed ? (
+          <div className="mx-3 mb-2 p-2.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-emerald-500/10 to-teal-500/10 border border-amber-500/20 dark:border-amber-400/20 flex items-center justify-between shadow-sm">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center shrink-0">
+                <Zap className="w-3.5 h-3.5 fill-amber-500/30" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 font-mono leading-tight">550 Credits</span>
+                <span className="text-[9px] text-zinc-500 dark:text-zinc-400">Micro-Pass Active</span>
+              </div>
+            </div>
+            <Link
+              href="/pricing"
+              className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 transition hover:scale-105"
+            >
+              + Top Up
+            </Link>
+          </div>
+        ) : (
+          <Link
+            href="/pricing"
+            title="Wallet: 550 Credits (+ Top Up)"
+            className="mx-auto mb-2 w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 hover:bg-amber-500/20 transition"
+          >
+            <Zap className="w-4 h-4 fill-amber-500/30" />
+          </Link>
+        )}
+
         {/* ── Bottom Profile Section ── */}
         <div className={cn("border-t border-zinc-200 dark:border-white/[0.06] mt-auto", isCollapsed ? "p-2 flex flex-col items-center gap-2" : "p-3 space-y-2")}>
           <div className={cn("flex items-center w-full", isCollapsed ? "justify-center" : "justify-between")}>
@@ -487,21 +514,16 @@ export default function IconNavSidebar() {
             )}
           </div>
 
-          {/* Sub-account info / Add Teammates */}
+          {/* Workspace Switcher Stub (DeepSeek-close: sidebar owns workspace navigation) */}
           {!isCollapsed && (
-            <div className="pt-1.5 border-t border-zinc-200 dark:border-white/[0.04] flex items-center justify-between text-xs text-zinc-500 dark:text-zinc-400">
-              <div className="flex items-center gap-1.5 truncate">
+            <div className="pt-1.5 border-t border-zinc-200 dark:border-white/[0.04] flex items-center gap-1.5 text-xs">
+              <div className="flex items-center gap-1.5 flex-1 truncate px-1 py-1 rounded-md hover:bg-zinc-100 dark:hover:bg-white/[0.04] transition cursor-pointer">
+                <Layers className="h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500 shrink-0" />
                 <span className="text-[11px] text-zinc-700 dark:text-zinc-300 font-medium truncate">
-                  {user?.name || "ahsan habib"}
+                  {user?.name || "Personal Workspace"}
                 </span>
+                <ChevronDown className="h-3 w-3 text-zinc-400 dark:text-zinc-500 shrink-0 ml-auto" />
               </div>
-              <Link
-                href="/settings"
-                className="flex items-center gap-1 text-[11px] text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition no-underline"
-              >
-                <UserPlus className="h-3 w-3" />
-                <span>Add teammates</span>
-              </Link>
             </div>
           )}
         </div>

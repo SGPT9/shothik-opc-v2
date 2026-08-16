@@ -159,19 +159,6 @@ export default function Header({ className, layout }) {
 
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
-              {/* 🎙️ Advanced Voice Mode Button */}
-              <button
-                type="button"
-                onClick={() => {
-                  window.dispatchEvent(new CustomEvent("shothik_toggle_vtuber"));
-                }}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/30 text-purple-400 hover:bg-purple-500/20 text-xs font-semibold transition cursor-pointer"
-                title="Launch Interactive Advanced Voice Mode"
-              >
-                <span>🎙️</span>
-                <span>Advanced Voice</span>
-              </button>
-
               {/* ⚡ Credit Badge */}
               <Link
                 href="/pricing"
@@ -198,13 +185,13 @@ export default function Header({ className, layout }) {
                     )}
                     {user?.package !== "unlimited" && (
                       <Link href={"/pricing?redirect=" + pathname}>
-                        <Button
-                          className={cn("h-9 px-3 text-xs md:text-sm")}
+                        <button
+                          className="flex items-center gap-1 h-8 px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground transition rounded-lg hover:bg-muted/50 cursor-pointer"
                           data-rybbit-event="clicked_upgrade_plan"
                         >
-                          <Gem className="h-4 w-4 mr-1.5" />
+                          <Gem className="h-3.5 w-3.5" />
                           {user?.email ? t("header.upgrade") : t("header.upgradePlan")}
-                        </Button>
+                        </button>
                       </Link>
                     )}
                   </>
@@ -283,13 +270,13 @@ export default function Header({ className, layout }) {
                 ) : (
                   user?.package !== "unlimited" && (
                     <Link href={"/pricing?redirect=" + pathname}>
-                      <Button
+                      <button
                         data-rybbit-event="clicked_upgrade_plan"
-                        className={cn("h-9 px-1 text-xs md:text-sm")}
+                        className="flex items-center gap-1 h-8 px-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition rounded-lg hover:bg-muted/50 cursor-pointer"
                       >
-                        <Gem className="h-5 w-5" />
+                        <Gem className="h-3.5 w-3.5" />
                         {user?.email ? t("header.upgrade") : t("header.upgradePlan")}
-                      </Button>
+                      </button>
                     </Link>
                   )
                 )}

@@ -402,7 +402,7 @@ export function buildAuthorDeps(input: BuildAuthorDepsInput): AuthorDeps {
                     index: record.index,
                     attempt: record.attempt,
                     status: record.status,
-                    gateIssues: record.gateIssues,
+                    gateIssues: record.gateIssues || [],
                     tokensUsed: record.tokensUsed,
                     modelHandle: record.model ?? input.model,
                 });

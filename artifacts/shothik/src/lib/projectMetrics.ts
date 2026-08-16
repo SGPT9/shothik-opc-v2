@@ -56,7 +56,7 @@ export function computeReadinessScore(criteria: Partial<ReadinessCriteria> = {})
       id: 'grammar',
       label: 'Grammar check passed',
       weight: 20,
-      met: criteria.grammarPassing,
+      met: Boolean(criteria.grammarPassing),
       score: criteria.grammarPassing ? 20 : 0,
       hint: criteria.grammarPassing
         ? 'No critical grammar issues detected'
@@ -66,7 +66,7 @@ export function computeReadinessScore(criteria: Partial<ReadinessCriteria> = {})
       id: 'citations',
       label: needsCitations ? 'Citations present' : 'Citations (n/a for books)',
       weight: 15,
-      met: criteria.hasCitations || !needsCitations,
+      met: Boolean(criteria.hasCitations || !needsCitations),
       score: needsCitations ? (criteria.hasCitations ? 15 : 0) : 15,
       hint: needsCitations
         ? criteria.hasCitations
@@ -78,7 +78,7 @@ export function computeReadinessScore(criteria: Partial<ReadinessCriteria> = {})
       id: 'cover',
       label: 'Cover art uploaded',
       weight: 15,
-      met: criteria.hasCoverArt,
+      met: Boolean(criteria.hasCoverArt),
       score: criteria.hasCoverArt ? 15 : 0,
       hint: criteria.hasCoverArt
         ? 'Cover image is set'
@@ -88,7 +88,7 @@ export function computeReadinessScore(criteria: Partial<ReadinessCriteria> = {})
       id: 'metadata',
       label: 'Metadata complete',
       weight: 15,
-      met: criteria.hasMetadata,
+      met: Boolean(criteria.hasMetadata),
       score: criteria.hasMetadata ? 15 : 0,
       hint: criteria.hasMetadata
         ? 'Title, description and category are set'
@@ -98,7 +98,7 @@ export function computeReadinessScore(criteria: Partial<ReadinessCriteria> = {})
       id: 'pricing',
       label: 'Pricing configured',
       weight: 10,
-      met: criteria.hasPricing,
+      met: Boolean(criteria.hasPricing),
       score: criteria.hasPricing ? 10 : 0,
       hint: criteria.hasPricing
         ? 'Price is configured'

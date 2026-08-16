@@ -1,0 +1,14 @@
+{
+  "name": "@workspace/hermes",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./contracts": "./contracts/index.ts",
+    "./contracts/*": "./contracts/*.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  }
+}

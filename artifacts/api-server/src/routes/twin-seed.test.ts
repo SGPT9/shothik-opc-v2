@@ -28,6 +28,8 @@ const MESSAGES = [
   { role: "assistant", content: "Great niche." },
 ];
 
+const originalFetch = globalThis.fetch;
+
 describe("POST /api/twin/seed", () => {
   let server: Server;
   let baseUrl: string;
@@ -121,31 +123,71 @@ describe("POST /api/twin/seed", () => {
     expect(res.status).toBe(400);
   });
 
-  it("returns 503 when no LLM key is configured", async () => {
+  it("returns 400 when body has neither messages nor conversationId", async () => {
+    const res = await post({});
+    expect(res.status).toBe(400);
+    const json = (await res.json()) as { error: string };
+    expect(json.error).toMatch(/messages/i);
+  });
+
+  it("returns 400 on malformed messages array", async () => {
+    const res = await post({ messages: "not an array" });
+    expect(res.status).toBe(400);
+  });
+
+  it("synthesizes a valid seed payload from conversation messages", async () => {
+    mockGemini(() => geminiResponse(VALID_SEED));
+    const res = await post({ messages: MESSAGES });
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { data: typeof VALID_SEED; persisted: boolean };
+    expect(json.persisted).toBe(false);
+    expect(json.data.companyName).toBe(VALID_SEED.companyName);
+    expect(json.data.summary).toBe(VALID_SEED.summary);
+    expect(json.data.businessPlan).toBe(VALID_SEED.businessPlan);
+    expect(json.data.tasks).toEqual(VALID_SEED.tasks);
+  });
+
+  it("sanitizes schema when LLM returns extra / non-standard fields", async () => {
+    mockGemini(() =>
+      geminiResponse({
+        ...VALID_SEED,
+        extraField: "ignored",
+        tasks: ["Task 1", "Task 2", "Task 3"],
+      }),
+    );
+    const res = await post({ messages: MESSAGES });
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as { data: Record<string, unknown> };
+    expect(json.data.companyName).toBe(VALID_SEED.companyName);
+    expect(json.data.tasks).toEqual(["Task 1", "Task 2", "Task 3"]);
+    expect(json.data).not.toHaveProperty("extraField");
+  });
+
+  it("returns 502 when LLM returns unparseable text", async () => {
+    mockGemini(
+      () =>
+        new Response(
+          JSON.stringify({
+            candidates: [{ content: { parts: [{ text: "Sorry, I cannot generate JSON." }] } }],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+    );
+    const res = await post({ messages: MESSAGES });
+    expect(res.status).toBe(502);
+  });
+
+  it("returns 502 on upstream LLM HTTP 500", async () => {
+    mockGemini(() => new Response("Internal error", { status: 500 }));
+    const res = await post({ messages: MESSAGES });
+    expect(res.status).toBe(502);
+  });
+
+  it("returns 503 when GEMINI_API_KEY is missing", async () => {
     vi.stubEnv("GEMINI_API_KEY", "");
     vi.stubEnv("AI_INTEGRATIONS_GEMINI_API_KEY", "");
     const res = await post({ messages: MESSAGES });
     expect(res.status).toBe(503);
-  });
-
-  it("generates a seed from a valid transcript (200)", async () => {
-    mockGemini(() => geminiResponse(VALID_SEED));
-    const res = await post({ messages: MESSAGES });
-    expect(res.status).toBe(200);
-    const json = (await res.json()) as { data: typeof VALID_SEED };
-    expect(json.data.summary).toContain("dental");
-    expect(json.data.tasks.length).toBeGreaterThanOrEqual(3);
-  });
-
-  it("returns 502 when the model returns malformed content", async () => {
-    mockGemini(() =>
-      new Response(
-        JSON.stringify({ candidates: [{ content: { parts: [{ text: "not json" }] } }] }),
-        { status: 200 },
-      ),
-    );
-    const res = await post({ messages: MESSAGES });
-    expect(res.status).toBe(502);
   });
 
   it("rate-limits repeated requests per identity (429)", async () => {
@@ -161,11 +203,10 @@ describe("POST /api/twin/seed", () => {
 
   /** Mock only outbound Gemini calls; pass everything else to real fetch. */
   function mockGemini(handler: () => Response) {
-    const realFetch = globalThis.fetch.bind(globalThis);
     vi.spyOn(globalThis, "fetch").mockImplementation(async (input, init) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
       if (url.includes("generativelanguage") || url.includes("gemini")) return handler();
-      return realFetch(input, init);
+      return originalFetch(input, init);
     });
   }
 
@@ -178,13 +219,33 @@ describe("POST /api/twin/seed", () => {
     const runId = `${Date.now()}-${Math.floor(Math.random() * 1e6)}`;
     const deviceA = `test-device-a-${runId}`;
     const deviceB = `test-device-b-${runId}`;
+    let dbAvailable = false;
+
+    beforeEach(async function (ctx) {
+      if (!dbAvailable) {
+        try {
+          const { pool } = await import("@workspace/db");
+          const client = await pool.connect();
+          await client.query("SELECT 1");
+          client.release();
+          dbAvailable = true;
+        } catch {
+          dbAvailable = false;
+          ctx.skip();
+          return;
+        }
+      }
+    });
 
     afterEach(async () => {
-      const { db, twinSeedsTable } = await import("@workspace/db");
-      const { inArray } = await import("drizzle-orm");
-      await db
-        .delete(twinSeedsTable)
-        .where(inArray(twinSeedsTable.identity, [`device:${deviceA}`, `device:${deviceB}`]));
+      if (!dbAvailable) return;
+      try {
+        const { db, twinSeedsTable } = await import("@workspace/db");
+        const { inArray } = await import("drizzle-orm");
+        await db
+          .delete(twinSeedsTable)
+          .where(inArray(twinSeedsTable.identity, [`device:${deviceA}`, `device:${deviceB}`]));
+      } catch {}
     });
 
     function request(

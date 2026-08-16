@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch, Router as WouterRouter, Redirect } from 'wouter';
 import Providers from '@/providers';
 import PrimaryLayout from '@/app-next/(primary-layout)/layout';
+import { ComponentErrorBoundary } from '@/components/agents/components/ChatErrorBoundaries';
 
 // Wraps a page component in the primary layout (left icon sidebar + content)
 function withPrimaryLayout<P extends object>(Page: ComponentType<P>) {
@@ -183,18 +184,20 @@ const NotFound = () => (
   </div>
 );
 
+function RootRedirect() {
+  return <Redirect to="/agents/chat" replace />;
+}
+
 function AppRoutes() {
   return (
     <Suspense fallback={
-      <div className="flex h-screen items-center justify-center">
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     }>
       <Switch>
-        {/* Root redirect */}
-        <Route path="/">
-          <Redirect to="/agents/chat" />
-        </Route>
+        {/* Root route exact match */}
+        <Route path="/" component={RootRedirect} />
 
         {/* Auth routes (no layout) */}
         <Route path="/auth/login" component={LoginPage} />
@@ -322,13 +325,15 @@ function AppRoutes() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-        <Providers>
-          <AppRoutes />
-        </Providers>
-      </WouterRouter>
-    </QueryClientProvider>
+    <ComponentErrorBoundary title="Application Error">
+      <QueryClientProvider client={queryClient}>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+          <Providers>
+            <AppRoutes />
+          </Providers>
+        </WouterRouter>
+      </QueryClientProvider>
+    </ComponentErrorBoundary>
   );
 }
 

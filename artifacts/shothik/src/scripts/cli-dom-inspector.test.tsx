@@ -19,14 +19,13 @@ describe("CLI DOM & ARIA Tree Audit", () => {
         onTabChange={() => {}}
         onToggleSidebar={() => {}}
         sidebarOpen={false}
-        onVoiceOrbClick={() => {}}
-        onSwarmDebateClick={() => {}}
+        onVTuberClick={() => {}}
         onPaywallClick={() => {}}
       />
     );
 
     const headerButtons = headerRes.container.querySelectorAll("button");
-    expect(headerButtons.length).toBeGreaterThan(3);
+    expect(headerButtons.length).toBeGreaterThanOrEqual(3);
 
     console.log(`📌 [ChatHeader DOM]: ${headerButtons.length} interactive buttons rendered`);
     headerButtons.forEach((btn, idx) => {

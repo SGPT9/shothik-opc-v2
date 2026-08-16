@@ -18,6 +18,51 @@ vi.mock("@/lib/insforge/rag-memory", () => ({
   },
 }));
 
+vi.mock("@/lib/hermes/infra/db", () => {
+  const mockRuns = new Map();
+  const mockDb = {
+    createRun: vi.fn().mockImplementation(async (run) => {
+      const created = { ...run, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };
+      mockRuns.set(run.id, created);
+      return created;
+    }),
+    getRun: vi.fn().mockImplementation(async (id) => mockRuns.get(id) || null),
+    updateRunStatus: vi.fn().mockImplementation(async (id, status, metadata) => {
+      const existing = mockRuns.get(id) || { id };
+      const updated = { ...existing, status, metadata: { ...existing.metadata, ...metadata } };
+      mockRuns.set(id, updated);
+      return updated;
+    }),
+    createArtifact: vi.fn().mockImplementation(async (artifact) => ({
+      id: artifact.id || "art_slides_1",
+      title: artifact.title || "Slide Deck",
+      domain: "slides",
+      content: artifact.content || {},
+      metadata: artifact.metadata || {},
+    })),
+    getArtifact: vi.fn().mockResolvedValue({
+      id: "art_slides_1",
+      title: "Slide Deck",
+      domain: "slides",
+      content: {},
+      metadata: {},
+    }),
+    updateArtifact: vi.fn().mockImplementation(async (id, content, metadata) => ({
+      id,
+      title: "Slide Deck",
+      domain: "slides",
+      content: content || {},
+      metadata: metadata || {},
+    })),
+    recordEvent: vi.fn().mockResolvedValue(true),
+  };
+  return {
+    HermesDatabase: vi.fn().mockImplementation(() => mockDb),
+    getHermesDatabase: vi.fn().mockImplementation(() => mockDb),
+    hermesDb: mockDb,
+  };
+});
+
 describe("Hermes Slides Orchestrator Engine (P1-001)", () => {
   it("initializes and generates slides run with RAG context & artifact creation", async () => {
     const orchestrator = getHermesSlidesOrchestrator();
@@ -34,6 +79,9 @@ describe("Hermes Slides Orchestrator Engine (P1-001)", () => {
     });
 
     expect(runId).toBeDefined();
+
+    // Allow monitoring callback tick to complete
+    await new Promise((r) => setTimeout(r, 50));
 
     const status = await orchestrator.getRunStatus(runId);
     expect(status.status).toBe("completed");

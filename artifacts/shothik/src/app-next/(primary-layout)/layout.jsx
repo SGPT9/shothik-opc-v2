@@ -53,7 +53,8 @@ export default function PrimaryLayout({ children }) {
       <>
         <AuthSuccessPopup />
         <AlertDialog />
-        <DebugPanel />
+        {/* DebugPanel is an admin-only surface — opt-in via VITE_SHOW_DEBUG=true */}
+        {import.meta.env.VITE_SHOW_DEBUG === 'true' && <DebugPanel />}
       </>
     </ProgressProvider>
   );
