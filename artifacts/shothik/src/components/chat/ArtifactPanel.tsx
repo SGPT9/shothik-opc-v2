@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2, Copy, Check, BatteryCharging } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
@@ -91,7 +91,35 @@ export function ArtifactPanel({
   const [selectedVersion, setSelectedVersion] = useState<string>("v3");
   const [showTerminal, setShowTerminal] = useState<boolean>(false);
   const [internalMaximized, setInternalMaximized] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
   const effectiveMaximized = onToggleMaximize ? isMaximized : internalMaximized;
+
+  // Global Escape key listener to close drawer
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  const handleCopyContent = () => {
+    let contentToCopy = "";
+    if (activeTab === "code") contentToCopy = codeSnippet || "";
+    else if (activeTab === "slides") contentToCopy = slidesTopic || "";
+    else if (activeTab === "sheet") contentToCopy = sheetData ? sheetData.map((r) => r.join("\t")).join("\n") : "";
+    else if (activeTab === "research") contentToCopy = researchQuery || "";
+    else if (activeTab === "doc") contentToCopy = docContent || docTitle || "";
+    else contentToCopy = activeTab || "";
+
+    if (contentToCopy) {
+      navigator.clipboard.writeText(contentToCopy);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   // Lazy-mount state
   const [mounted, setMounted] = useState<Set<ArtifactTab>>(() => 
@@ -119,7 +147,6 @@ export function ArtifactPanel({
   mounted.forEach((tab) => tabsWithContent.add(tab));
 
   const visibleTabs = TABS.filter(({ id }) => tabsWithContent.has(id));
-
 
   return (
     <div className="flex flex-col h-full border-l border-border/60 bg-background w-full shrink-0 animate-in slide-in-from-right-4 duration-300">
@@ -149,6 +176,21 @@ export function ArtifactPanel({
         </div>
 
         <div className="flex items-center gap-1 shrink-0 ml-1">
+          {/* 1-Click Copy Raw Content */}
+          <button
+            type="button"
+            onClick={handleCopyContent}
+            aria-label="Copy artifact content"
+            className="flex shrink-0 items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+            title={copied ? "Copied to clipboard!" : "Copy raw artifact content"}
+          >
+            {copied ? (
+              <Check className="h-3.5 w-3.5 text-emerald-400" />
+            ) : (
+              <Copy className="h-3.5 w-3.5" />
+            )}
+          </button>
+
           {/* Version dropdown */}
           <div className="relative flex items-center">
             <History className="h-3 w-3 text-muted-foreground absolute left-1.5 pointer-events-none" />
@@ -352,6 +394,17 @@ export function ArtifactPanel({
           className="m-2 shrink-0 border-t border-slate-800"
         />
       )}
+
+      {/* ── Context Token Budget & Status Footer ── */}
+      <div className="flex items-center justify-between border-t border-border/40 bg-muted/10 px-3 py-1.5 text-[10px] text-muted-foreground shrink-0 select-none">
+        <div className="flex items-center gap-1.5">
+          <BatteryCharging className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="font-mono">4.8k / 128k context (3.8% used)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[9px] font-mono opacity-50">Press Esc to close</span>
+        </div>
+      </div>
     </div>
   );
 }
