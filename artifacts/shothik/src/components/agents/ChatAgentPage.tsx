@@ -25,8 +25,10 @@ import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOv
 import { ChatGPTVoiceOrbModal } from "@/components/voice/ChatGPTVoiceOrbModal";
 import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
+import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
+import { getStoredChatSessions } from "@/lib/chat-sessions-store";
 import type { ChatPersona } from "@/lib/chat/types";
 import { 
   Sparkles, 
@@ -37,11 +39,15 @@ import {
   ChevronDown, 
   Plus, 
   PanelRight, 
-  MessageSquare,
-  LayoutTemplate,
-  Search,
-  Phone,
+  MessageSquare, 
+  LayoutTemplate, 
+  Search, 
+  Phone, 
   Download,
+  Keyboard,
+  FileJson,
+  Printer,
+  FileText as FileTextIcon,
 } from "lucide-react";
 
 export interface FleetAgent {
@@ -75,6 +81,8 @@ export function ChatAgentPage() {
     updateMessageMetadata,
   } = useChatSession(initialConvId);
 
+  const activeConversation = getStoredChatSessions().find((s) => s.id === conversationId);
+
   const { streamState, startStream, stopStream } = useChatStreamEngine();
   const { attachments, addAttachment, removeAttachment, clearAttachments } = useAttachmentUploader();
   const { hasStartupIntent } = useTwinHandoffDetector(messages);
@@ -101,6 +109,8 @@ export function ChatAgentPage() {
   const [isVoiceOrbOpen, setIsVoiceOrbOpen] = useState(false);
   const [isSwarmDebateOpen, setIsSwarmDebateOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [persona, setPersona] = useState<ChatPersona>("cofounder");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("core");
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
@@ -117,6 +127,52 @@ export function ChatAgentPage() {
     const newId = `conv_${Date.now()}`;
     switchConversation(newId);
   }, [switchConversation]);
+
+  // Multi-format session export handler (Markdown, JSON, Print/PDF)
+  const handleExportSession = useCallback((format: "md" | "json" | "print") => {
+    setIsExportMenuOpen(false);
+    const title = activeConversation?.title || "shothik-session";
+    const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+    if (format === "print") {
+      window.print();
+      return;
+    }
+
+    if (format === "json") {
+      const exportData = {
+        title,
+        conversationId,
+        exportedAt: new Date().toISOString(),
+        messages: messages.map((m) => ({
+          role: m.role,
+          content: m.content,
+          metadata: m.metadata,
+          createdAt: m.createdAt,
+        })),
+      };
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${slug}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      return;
+    }
+
+    // Markdown default
+    const md = messages
+      .map((m) => `### ${m.role === "user" ? "User" : "Shothik"}\n\n${m.content || ""}\n`)
+      .join("\n---\n\n");
+    const blob = new Blob([`# ${title}\n\n${md}`], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${slug}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [activeConversation, conversationId, messages]);
 
   const handlePersonaChange = useCallback((newPersona: ChatPersona) => {
     setPersona(newPersona);
@@ -171,9 +227,12 @@ export function ChatAgentPage() {
 
       setActiveTab("doc");
       setArtifactOpen(true);
-    } else {
-      handleOpenArtifact("research", sourceKey);
+      return;
     }
+
+    setResearchQuery(cleanKey);
+    setActiveTab("research");
+    setArtifactOpen(true);
   }, [handleOpenArtifact]);
 
 
@@ -260,17 +319,24 @@ export function ChatAgentPage() {
     }
   }, [addAttachment, handleCancelActiveRun, handleOpenArtifact, handleOpenTool, removeAttachment, removeChip]);
 
-  // Global keyboard shortcut for New Chat (Ctrl+Shift+O / Cmd+Shift+O)
+  // Global keyboard shortcuts (Ctrl+Shift+O for New Chat, ? for Shortcuts, Ctrl+Shift+E for Export)
   useEffect(() => {
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName.toLowerCase();
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "o") {
         e.preventDefault();
         createNewConversation();
+      } else if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        handleExportSession("md");
+      } else if ((e.key === "?" || ((e.ctrlKey || e.metaKey) && e.key === "/")) && activeTag !== "input" && activeTag !== "textarea") {
+        e.preventDefault();
+        setIsShortcutsOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [createNewConversation]);
+  }, [createNewConversation, handleExportSession]);
 
   // Intent-First Natural Language Routing Engine
   const handleSendMessage = useCallback(
@@ -469,30 +535,69 @@ export function ChatAgentPage() {
 
           {/* Right Mode Toggle & Actions */}
           <div className="flex items-center gap-2">
-            {/* Export Session as Markdown */}
+            {/* Multi-Format Export Menu */}
             {messages.length > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  const title = activeConversation?.title || "shothik-session";
-                  const md = messages
-                    .map((m) => `### ${m.role === "user" ? "User" : "Shothik"}\n\n${m.content || ""}\n`)
-                    .join("\n---\n\n");
-                  const blob = new Blob([`# ${title}\n\n${md}`], { type: "text/markdown" });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.md`;
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition border border-border/30 cursor-pointer"
-                title="Export session as Markdown (.md)"
-              >
-                <Download className="w-3.5 h-3.5" />
-                <span>Export</span>
-              </button>
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition border border-border/30 cursor-pointer"
+                  title="Export session (Ctrl+Shift+E)"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Export</span>
+                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                </button>
+
+                {isExportMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1.5 z-50 w-52 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/70 rounded-2xl shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
+                    <button
+                      type="button"
+                      onClick={() => handleExportSession("md")}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                    >
+                      <FileTextIcon className="w-3.5 h-3.5 text-brand shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-xs">Markdown (.md)</div>
+                        <div className="text-[10px] text-muted-foreground">Standard formatted report</div>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExportSession("json")}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                    >
+                      <FileJson className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-xs">JSON (.json)</div>
+                        <div className="text-[10px] text-muted-foreground">Full schema & metadata</div>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExportSession("print")}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer border-t border-border/40 mt-1 pt-1"
+                    >
+                      <Printer className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold text-xs">Print / PDF</div>
+                        <div className="text-[10px] text-muted-foreground">System print dialogue</div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
+
+            {/* Keyboard Shortcuts Help Button */}
+            <button
+              type="button"
+              onClick={() => setIsShortcutsOpen(true)}
+              className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer hidden md:flex"
+              title="Keyboard Shortcuts (?)"
+            >
+              <Keyboard className="w-4 h-4" />
+            </button>
 
             {/* Dual Mode Switcher (Chat | Work Canvas) - Shown in header when transcript is active or canvas open */}
             {(messages.length > 0 || artifactOpen) && (
@@ -718,6 +823,12 @@ export function ChatAgentPage() {
         <MonetizationPaywallModal
           isOpen={isPaywallOpen}
           onClose={() => setIsPaywallOpen(false)}
+        />
+
+        {/* ⌨️ Keyboard Shortcuts Cheat Sheet Modal */}
+        <KeyboardShortcutsModal
+          open={isShortcutsOpen}
+          onOpenChange={setIsShortcutsOpen}
         />
       </div>
     </div>
