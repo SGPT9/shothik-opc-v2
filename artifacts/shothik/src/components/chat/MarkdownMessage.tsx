@@ -264,7 +264,7 @@ export function MarkdownMessage({
                       type="button"
                       onClick={() => handleRunCode(codeId, text, lang)}
                       disabled={isRunning}
-                      className="flex items-center space-x-1 rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300 hover:bg-emerald-500/30 transition text-[10px] font-mono border border-emerald-500/30 cursor-pointer"
+                      className="flex items-center space-x-1 rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300 hover:bg-emerald-500/30 transition text-[10px] font-mono border border-emerald-500/30 cursor-pointer select-none disabled:opacity-50"
                     >
                       {isRunning ? (
                         <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />
@@ -277,7 +277,7 @@ export function MarkdownMessage({
                     <button
                       type="button"
                       onClick={() => handleCopy(text)}
-                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer"
+                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer select-none"
                       title="Copy code to clipboard"
                     >
                       {isCopied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
@@ -287,7 +287,7 @@ export function MarkdownMessage({
                     <button
                       type="button"
                       onClick={() => handleDownloadCode(text, lang)}
-                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer"
+                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer select-none"
                       title="Download code file"
                     >
                       <Download className="h-3 w-3 text-indigo-400" />
@@ -307,10 +307,11 @@ export function MarkdownMessage({
                 {logs && (
                   <div className="border-t border-slate-800 bg-[#05070d] font-mono text-[11px]">
                     <button
+                      type="button"
                       onClick={() =>
                         setOpenConsole((prev) => ({ ...prev, [codeId]: !prev[codeId] }))
                       }
-                      className="w-full px-3 py-1 flex items-center justify-between text-slate-400 hover:bg-slate-900/50 transition text-[10px] cursor-pointer"
+                      className="w-full px-3 py-1 flex items-center justify-between text-slate-400 hover:bg-slate-900/50 transition text-[10px] cursor-pointer select-none"
                     >
                       <div className="flex items-center space-x-1.5">
                         <Terminal className="h-3 w-3 text-amber-400" />
