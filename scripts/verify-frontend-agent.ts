@@ -41,6 +41,22 @@ export async function runFrontendVerificationAgent(customBaseUrl?: string): Prom
     });
     const page = await context.newPage();
 
+    let consoleErrors = 0;
+    page.on("pageerror", (err) => {
+      consoleErrors++;
+      console.error("🔴 [Page Error]", err.message);
+    });
+    page.on("console", (msg) => {
+      if (msg.type() === "error") {
+        const text = msg.text();
+        if (text.includes("api/auth/session") || text.includes("convex-token") || text.includes("CORS policy") || text.includes("ERR_FAILED")) {
+          return; // Ignore external OAuth probe preflights in local mock dev mode
+        }
+        consoleErrors++;
+        console.error("🔴 [Console Error]", text);
+      }
+    });
+
     // 1. Root Page Load & Status Check
     const rootRes = await page.goto(baseUrl, { waitUntil: "domcontentloaded", timeout: 10000 });
     checks.push({
@@ -78,10 +94,6 @@ export async function runFrontendVerificationAgent(customBaseUrl?: string): Prom
     });
 
     // 4. Console Errors & Unhandled Exceptions Check
-    let consoleErrors = 0;
-    page.on("console", (msg) => {
-      if (msg.type() === "error") consoleErrors++;
-    });
 
     checks.push({
       name: "Zero Critical Console Errors",
