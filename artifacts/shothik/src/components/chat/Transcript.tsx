@@ -632,6 +632,28 @@ export function Transcript({
                     </div>
                   )}
 
+                  {/* 🛡️ Human-in-the-Loop Orchestrator Approval Checkpoint */}
+                  {message.metadata?.approval && (
+                    <div className="mt-2">
+                      <ApprovalCard
+                        {...(message.metadata.approval as any)}
+                        onApprove={() => onSelectPrompt?.("Proceed with approved action.", "cofounder")}
+                        onDeny={() => onSelectPrompt?.("Cancel and abort this action.", "cofounder")}
+                      />
+                    </div>
+                  )}
+
+                  {/* 🔑 Secure In-Band Credential Sharing */}
+                  {message.metadata?.secretShare && (
+                    <div className="mt-2">
+                      <SecretShareCard
+                        {...(message.metadata.secretShare as any)}
+                        onSubmit={(val) => onSelectPrompt?.(`[SECURE CREDENTIAL RECEIVED]: ${val.slice(0, 4)}••••`, "cofounder")}
+                        onCancel={() => onSelectPrompt?.("Secret sharing cancelled.", "cofounder")}
+                      />
+                    </div>
+                  )}
+
                   {/* Citations footer removed — now rendered ABOVE answer (Perplexity pattern) */}
 
                   {/* Inline error */}
