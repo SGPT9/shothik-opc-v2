@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2 } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
@@ -47,6 +47,8 @@ interface ArtifactPanelProps {
   onTabChange: (tab: ArtifactTab) => void;
   onClose: () => void;
   isStreaming?: boolean;
+  isMaximized?: boolean;
+  onToggleMaximize?: () => void;
 
   // Handoff: pre-populate from chat context
   slidesTopic?: string;
@@ -71,6 +73,8 @@ export function ArtifactPanel({
   onTabChange,
   onClose,
   isStreaming,
+  isMaximized = false,
+  onToggleMaximize,
   slidesTopic,
   researchQuery,
   sheetData,
@@ -86,6 +90,8 @@ export function ArtifactPanel({
   // Version History State (Pillar 5)
   const [selectedVersion, setSelectedVersion] = useState<string>("v3");
   const [showTerminal, setShowTerminal] = useState<boolean>(false);
+  const [internalMaximized, setInternalMaximized] = useState<boolean>(false);
+  const effectiveMaximized = onToggleMaximize ? isMaximized : internalMaximized;
 
   // Lazy-mount state
   const [mounted, setMounted] = useState<Set<ArtifactTab>>(() => 
@@ -158,18 +164,22 @@ export function ArtifactPanel({
             </select>
           </div>
 
+          {/* Maximize / Minimize Full-Width Toggle */}
           <button
             type="button"
-            onClick={() => setShowTerminal((prev) => !prev)}
-            aria-label="Toggle terminal"
-            className={`hidden sm:flex shrink-0 items-center gap-1 h-7 px-2 rounded-lg text-[10px] font-bold border transition ${
-              showTerminal
-                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
-                : "bg-muted/40 text-muted-foreground border-border/40 hover:text-foreground"
-            }`}
+            onClick={() => {
+              if (onToggleMaximize) onToggleMaximize();
+              else setInternalMaximized((m) => !m);
+            }}
+            aria-label={effectiveMaximized ? "Minimize artifact panel" : "Maximize artifact panel"}
+            className="hidden sm:flex shrink-0 items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+            title={effectiveMaximized ? "Restore split view" : "Maximize canvas view"}
           >
-            <Terminal className="h-3 w-3 text-emerald-400" />
-            <span>Terminal</span>
+            {effectiveMaximized ? (
+              <Minimize2 className="h-3.5 w-3.5 text-brand" />
+            ) : (
+              <Maximize2 className="h-3.5 w-3.5" />
+            )}
           </button>
 
           <button
