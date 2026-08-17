@@ -20,6 +20,7 @@ import { ApprovalCard } from "./ApprovalCard";
 import { SecretShareCard } from "./SecretShareCard";
 import { WayfinderBoard } from "./WayfinderBoard";
 import { TwinCtaCard } from "./TwinCtaCard";
+import { EpistemicProvenanceBadge } from "./EpistemicProvenanceBadge";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState } from "react";
@@ -372,11 +373,21 @@ export function Transcript({
 
                 {/* Content column — Perplexity vertical rhythm (space-y-5) */}
                 <div className="flex-1 min-w-0 space-y-5">
-                  {/* Mode badge */}
-                  {modeBadge && (
-                    <div className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
-                      <modeBadge.Icon className="h-3 w-3" />
-                      {modeBadge.label}
+                  {/* Badges row: Mode badge + Epistemic Provenance */}
+                  {(modeBadge || message.metadata?.epistemicStatus || sources.length > 0) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {modeBadge && (
+                        <div className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/30 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                          <modeBadge.Icon className="h-3 w-3" />
+                          {modeBadge.label}
+                        </div>
+                      )}
+                      {(message.metadata?.epistemicStatus || sources.length > 0) && (
+                        <EpistemicProvenanceBadge
+                          status={message.metadata?.epistemicStatus || (sources.length >= 2 ? "consensus" : "supported")}
+                          provenance={message.metadata?.provenance}
+                        />
+                      )}
                     </div>
                   )}
 
