@@ -12,10 +12,26 @@ interface FrontendVerificationResult {
   timestamp: string;
 }
 
-export async function runFrontendVerificationAgent(baseUrl = "http://localhost:5000"): Promise<FrontendVerificationResult> {
+export async function runFrontendVerificationAgent(customBaseUrl?: string): Promise<FrontendVerificationResult> {
   const startTime = Date.now();
   const checks: FrontendVerificationResult["checks"] = [];
   let browser: Browser | null = null;
+
+  // Auto-detect base port (5000 or 5001)
+  let baseUrl = customBaseUrl || process.env.BASE_URL || "http://localhost:5000";
+  if (!customBaseUrl) {
+    try {
+      const probe5000 = await fetch("http://localhost:5000", { method: "HEAD", signal: AbortSignal.timeout(1000) }).catch(() => null);
+      if (!probe5000 || probe5000.status !== 200) {
+        const probe5001 = await fetch("http://localhost:5001", { method: "HEAD", signal: AbortSignal.timeout(1000) }).catch(() => null);
+        if (probe5001 && probe5001.status === 200) {
+          baseUrl = "http://localhost:5001";
+        }
+      }
+    } catch {
+      // fallback to default
+    }
+  }
 
   try {
     console.log(`🌐 [Visual QA Agent] Connecting to ${baseUrl}...`);
@@ -30,7 +46,7 @@ export async function runFrontendVerificationAgent(baseUrl = "http://localhost:5
     checks.push({
       name: "Root URL HTTP Status",
       passed: rootRes?.status() === 200,
-      details: `Status: ${rootRes?.status()}`,
+      details: `Status: ${rootRes?.status()} at ${baseUrl}`,
     });
 
     // 2. Main Chat Page Navigation (/agents/chat)

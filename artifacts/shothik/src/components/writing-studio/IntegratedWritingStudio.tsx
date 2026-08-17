@@ -209,11 +209,24 @@ function FormatView({
       {/* Center: Live 3D 6x9 BoiMela Page Flip Studio */}
       <div className="flex-1 bg-zinc-900/90 flex flex-col items-center justify-center p-4 overflow-y-auto">
         <BoiMela3DPageFlipPreview
-          title={project.title || 'অমর একুশে বই'}
-          author={project.author || 'লেখক'}
-          pages={bookPages}
-          onExportPDF={() => {
-            console.log('Exporting 6x9 CMYK PDF for', project.title);
+          book={{
+            titleBn: project.title || "অমর একুশে বই",
+            titleEn: project.titleEn || project.title || "Amar Ekushey Book",
+            authorBn: project.author || "লেখক",
+            authorEn: project.authorEn || project.author || "Author",
+            isbn: "978-984-95432-1-0",
+            chapters: [
+              {
+                id: "ch-1",
+                titleBn: project.title || "ভূমিকা ও সূচনা",
+                titleEn: "Introduction & Prelude",
+                content: [
+                  content.slice(0, 450) || "বাংলা সাহিত্যের অমর একুশে গ্রন্থমেলা প্রকাশনা সংস্করণ...",
+                  content.slice(450, 950) || "সন্ধ্যার ছায়া যখন বুড়িগঙ্গার জলে নেমে এলো...",
+                  content.slice(950, 1450) || "ক্লান্তিহীন পদধ্বনিতে রাতের নীরবতা ভেঙে যাচ্ছিল...",
+                ],
+              },
+            ],
           }}
         />
       </div>
