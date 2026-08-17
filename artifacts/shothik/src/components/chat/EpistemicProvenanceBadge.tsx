@@ -70,7 +70,7 @@ export function EpistemicProvenanceBadge({
         onClick={() => setShowDetails(!showDetails)}
         onMouseEnter={() => setShowDetails(true)}
         onMouseLeave={() => setShowDetails(false)}
-        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${cfg.bg} ${cfg.color} ${cfg.border} border transition hover:scale-105 cursor-pointer shadow-2xs`}
+        className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold uppercase tracking-wider ${cfg.bg} ${cfg.color} ${cfg.border} border transition hover:scale-105 cursor-pointer select-none shadow-2xs`}
         title="View Provenance & Truth Status"
       >
         <IconComponent className="w-3 h-3" />
