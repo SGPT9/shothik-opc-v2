@@ -56,7 +56,7 @@ export function SourcesBadge({ sources, className, variant = 'row' }: SourcesBad
                 target="_blank"
                 rel="noopener noreferrer"
                 title={src.title}
-                className="group flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-brand/40 hover:bg-brand/5 hover:text-foreground transition-all"
+                className="group flex items-center gap-1.5 rounded-lg border border-border/60 bg-muted/20 px-2.5 py-1.5 text-[11px] font-medium text-muted-foreground hover:border-brand/40 hover:bg-brand/5 hover:text-foreground transition-all cursor-pointer select-none"
               >
                 {/* Citation number */}
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-muted/60 text-[9px] font-bold text-muted-foreground group-hover:bg-brand/20 group-hover:text-brand transition-colors">
@@ -80,7 +80,7 @@ export function SourcesBadge({ sources, className, variant = 'row' }: SourcesBad
             );
           })}
           {sources.length > 6 && (
-            <span className="flex items-center rounded-lg border border-border/40 bg-muted/10 px-2.5 py-1.5 text-[11px] text-muted-foreground/60">
+            <span className="flex items-center rounded-lg border border-border/40 bg-muted/10 px-2.5 py-1.5 text-[11px] text-muted-foreground/60 select-none">
               +{sources.length - 6} more
             </span>
           )}
@@ -98,7 +98,7 @@ export function SourcesBadge({ sources, className, variant = 'row' }: SourcesBad
           href={src.url || '#'}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-muted/40 hover:bg-muted/60 border border-border/60 text-muted-foreground transition group"
+          className="flex items-center space-x-1.5 px-2.5 py-1 rounded-md bg-muted/40 hover:bg-muted/60 border border-border/60 text-muted-foreground transition group cursor-pointer select-none"
         >
           <Globe className="w-3.5 h-3.5 text-brand flex-shrink-0" />
           <span className="font-medium truncate max-w-[160px]">{src.title || src.domain || 'Source'}</span>
