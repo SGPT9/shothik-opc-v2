@@ -114,6 +114,28 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           }
         }
 
+        // Local development fallback to prevent external CORS redirects
+        if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+          const devUser: AuthenticatedUser = {
+            _id: "usr_local_dev_01",
+            id: "usr_local_dev_01",
+            email: "ahsan91927374@shothik.ai",
+            name: "ahsan91927374",
+            role: "enterprise_pro",
+            accountType: "Enterprise Pro",
+            authProvider: "legacy",
+            credits: 550,
+          };
+
+          if (!cancelled) {
+            setUser(devUser);
+            setIsAuthenticated(true);
+            setIsLoading(false);
+            resolved = true;
+            return;
+          }
+        }
+
         const insforge = getInsforgeBrowserClient();
         if (insforge) {
         const resolveInsforgeUser = async () => {

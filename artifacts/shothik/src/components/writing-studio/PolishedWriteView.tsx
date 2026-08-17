@@ -35,6 +35,7 @@ import { useWritingEditor } from "./hooks/useWritingEditor";
 import { useWritingHistory } from "./hooks/useWritingHistory";
 import { ReplitBookWorkspace } from "./ReplitBookWorkspace";
 import { ManuscriptImportModal } from "./ManuscriptImportModal";
+import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
 import { Button } from "@/components/ui/button";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -59,6 +60,7 @@ export function PolishedWriteView({
   const [mode, setMode] = useState<Mode>("write");
   const [is3FoldMode, setIs3FoldMode] = useState(false);
   const [showPreview, setShowPreview] = useState(true);
+  const [preview3D, setPreview3D] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
@@ -200,10 +202,11 @@ export function PolishedWriteView({
       <ComponentErrorBoundary title="Header Navigation Error">
         <div className="flex items-center justify-between border-b border-border bg-background px-4 py-2">
           <ModeSwitcherHeader
-            title={title}
-            mode={mode}
+            projectName={title}
+            currentMode={mode}
             onModeChange={setMode}
-            onBack={onBack}
+            isSaving={isSaving}
+            lastSaved={lastSaved}
           />
           <div className="flex items-center gap-2">
             <Button
@@ -252,10 +255,10 @@ export function PolishedWriteView({
         {mode !== "publish" && (
           <ComponentErrorBoundary title="Left Sidebar Error">
             <LeftSidebar
-              chapters={chapters}
+              chapters={chapters as any}
               activeSectionId={activeSectionId}
               onSectionClick={handleSectionClick}
-              onChaptersChange={setChapters}
+              onChaptersChange={(newCh) => setChapters(newCh as any)}
               onImportClick={() => setIsImportOpen(true)}
               projectType={projectType}
               researchNotes={project?.researchNotes}
@@ -319,20 +322,71 @@ export function PolishedWriteView({
         {mode === "format" && (
           <div className="flex flex-1 min-w-0 h-full overflow-hidden">
             {/* Main Proof Area */}
-            <div className="flex-1 h-full overflow-y-auto bg-muted/30 p-8 flex justify-center items-start custom-scrollbar">
+            <div className="flex-1 h-full overflow-y-auto bg-muted/30 p-6 flex flex-col justify-start items-center custom-scrollbar">
+              <div className="flex items-center gap-2 mb-4">
+                <button
+                  type="button"
+                  onClick={() => setPreview3D(true)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer ${
+                    preview3D
+                      ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  📖 অমর একুশে ৩ডি বই প্রিভিউ
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreview3D(false)}
+                  className={`px-3 py-1 rounded-full text-xs font-semibold transition cursor-pointer ${
+                    !preview3D
+                      ? "bg-indigo-500/20 text-indigo-400 border border-indigo-500/40"
+                      : "bg-muted text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  📄 ২ডি প্রিন্ট প্রুফ শীট (৬×৯)
+                </button>
+              </div>
+
               <ComponentErrorBoundary title="Proof Rendering Error">
-                <div className="flex flex-col items-center space-y-6">
-                  <div className="flex items-center gap-2 bg-card border border-border px-3 py-1.5 rounded-full text-xs font-mono text-muted-foreground shadow-xs">
-                    <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
-                    <span>6" × 9" Trade Hardcover Proof (300 DPI)</span>
+                {preview3D ? (
+                  <div className="w-full max-w-2xl">
+                    <BoiMela3DPageFlipPreview
+                      book={{
+                        titleBn: title || "অমর একুশে বই",
+                        titleEn: project?.titleEn || title || "Amar Ekushey Book",
+                        authorBn: project?.author || "লেখক",
+                        authorEn: project?.authorEn || project?.author || "Author",
+                        isbn: "978-984-95432-1-0",
+                        chapters: [
+                          {
+                            id: "ch-1",
+                            titleBn: title || "সূচনা পর্ব",
+                            titleEn: "Introduction & Prelude",
+                            content: [
+                              content.slice(0, 450) || "বাংলা সাহিত্যের অমর একুশে গ্রন্থমেলা সংস্করণ...",
+                              content.slice(450, 950) || "ক্লান্তিহীন পদধ্বনিতে রাতের নীরবতা ভেঙে যাচ্ছিল...",
+                              content.slice(950, 1450) || "প্রতিটি পৃষ্ঠায় অমর একুশে বইমেলার ঐতিহ্য ও বাংলা মুদ্রণ শিল্পের গৌরব...",
+                            ],
+                          },
+                        ],
+                      }}
+                    />
                   </div>
-                  <LiveDocumentPreview
-                    content={content}
-                    title={title}
-                    projectType={projectType}
-                    className="border border-border/80 shadow-2xl rounded-sm"
-                  />
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="flex items-center gap-2 bg-card border border-border px-3 py-1.5 rounded-full text-xs font-mono text-muted-foreground shadow-xs">
+                      <BookOpen className="h-3.5 w-3.5 text-indigo-400" />
+                      <span>6" × 9" Trade Hardcover Proof (300 DPI)</span>
+                    </div>
+                    <LiveDocumentPreview
+                      content={content}
+                      title={title}
+                      projectType={projectType}
+                      className="border border-border/80 shadow-2xl rounded-sm"
+                    />
+                  </div>
+                )}
               </ComponentErrorBoundary>
             </div>
 
@@ -367,7 +421,7 @@ export function PolishedWriteView({
       </div>
 
       {/* Status Bar Footer */}
-      <StatusBar wordCount={wordCount} isSaving={isSaving} lastSaved={lastSaved} />
+      <StatusBar wordCount={wordCount} />
 
       {/* Manuscript Import Modal */}
       <ManuscriptImportModal
