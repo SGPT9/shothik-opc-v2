@@ -1,0 +1,23 @@
+{
+  "name": "@workspace/swarm-orchestrator",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Autonomous multi-agent engineering swarm orchestrator for Shothik OS",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@workspace/hermes": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "typescript": "^5.5.4",
+    "vitest": "^4.1.10"
+  }
+}
