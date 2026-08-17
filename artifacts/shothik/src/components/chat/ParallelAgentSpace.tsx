@@ -140,6 +140,17 @@ export function ParallelAgentSpace({
     terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [logs, workspaceType]);
 
+  // Handle global Escape key to close space
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   // Handle document editor text selection
   const handleEditorMouseUp = () => {
     const selection = window.getSelection();
