@@ -19,6 +19,7 @@ import { TrajectoryReceiptModal } from "./TrajectoryReceiptModal";
 import { ApprovalCard } from "./ApprovalCard";
 import { SecretShareCard } from "./SecretShareCard";
 import { WayfinderBoard } from "./WayfinderBoard";
+import { TwinCtaCard } from "./TwinCtaCard";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState } from "react";
@@ -813,6 +814,11 @@ export function Transcript({
               </div>
             );
           })}
+
+          {/* 🚀 Next-Step Bridge: Turn into Twin Workspace */}
+          {messages.length >= 2 && !streamingMessage && (
+            <TwinCtaCard conversationId={conversationId || messages[0]?._id || "conv_active"} />
+          )}
 
           {/* Bottom anchor */}
           <div ref={bottomRef} />
