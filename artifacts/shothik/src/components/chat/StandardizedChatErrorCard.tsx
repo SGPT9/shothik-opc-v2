@@ -34,7 +34,7 @@ export function StandardizedChatErrorCard({
           variant="outline"
           size="sm"
           onClick={onRetry}
-          className="h-8 gap-1.5 rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 text-xs shrink-0"
+          className="h-8 gap-1.5 rounded-xl border-destructive/30 text-destructive hover:bg-destructive/10 hover:border-destructive/60 text-xs shrink-0 cursor-pointer select-none transition-all"
         >
           <RefreshCw className="h-3.5 w-3.5" />
           <span>Retry Turn</span>
