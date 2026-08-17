@@ -541,6 +541,7 @@ export function ChatAgentPage() {
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <Transcript
                     messages={messages as any}
+                    agentId={selectedAgentId}
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}

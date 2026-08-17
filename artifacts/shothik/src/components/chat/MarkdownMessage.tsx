@@ -70,14 +70,51 @@ export function MarkdownMessage({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          // Mobile-friendly responsive table container with sticky headers
-          table: ({ children }) => (
-            <div className="my-3 overflow-x-auto rounded-xl border border-border/70 bg-card/50 backdrop-blur-xs shadow-xs custom-scrollbar">
-              <table className="w-full text-left text-xs border-collapse divide-y divide-border/60">
-                {children}
-              </table>
-            </div>
-          ),
+          // Mobile-friendly responsive table container with 1-click CSV export
+          table: ({ children }) => {
+            const handleExportTableCSV = (e: React.MouseEvent) => {
+              const tableContainer = (e.currentTarget as HTMLElement).closest(".group\\/table");
+              if (!tableContainer) return;
+              const tableEl = tableContainer.querySelector("table");
+              if (!tableEl) return;
+              const rows = Array.from(tableEl.querySelectorAll("tr"));
+              const csv = rows
+                .map((r) =>
+                  Array.from(r.querySelectorAll("th, td"))
+                    .map((c) => `"${(c.textContent || "").trim().replace(/"/g, '""')}"`)
+                    .join(",")
+                )
+                .join("\n");
+              const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `shothik-table-${Date.now()}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+            };
+
+            return (
+              <div className="group/table my-3 overflow-hidden rounded-xl border border-border/70 bg-card/50 backdrop-blur-xs shadow-xs">
+                <div className="flex items-center justify-between px-3 py-1.5 bg-muted/40 border-b border-border/60 text-[10px] font-mono text-muted-foreground">
+                  <span className="font-semibold uppercase tracking-wider">Data Matrix</span>
+                  <button
+                    type="button"
+                    onClick={handleExportTableCSV}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/60 hover:bg-background text-foreground border border-border/40 text-[10px] font-medium transition cursor-pointer"
+                    title="Export table data to CSV / Excel"
+                  >
+                    <span>📊 Export CSV</span>
+                  </button>
+                </div>
+                <div className="overflow-x-auto custom-scrollbar">
+                  <table className="w-full text-left text-xs border-collapse divide-y divide-border/60">
+                    {children}
+                  </table>
+                </div>
+              </div>
+            );
+          },
           thead: ({ children }) => (
             <thead className="bg-muted/50 text-foreground font-semibold">
               {children}

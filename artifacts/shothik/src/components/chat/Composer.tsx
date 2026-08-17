@@ -280,6 +280,19 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       return () => window.removeEventListener("keydown", handleEscape);
     }, []);
 
+    // Global / key focus listener for composer
+    useEffect(() => {
+      const handleGlobalSlash = (e: KeyboardEvent) => {
+        const activeTag = document.activeElement?.tagName.toLowerCase();
+        if (e.key === "/" && activeTag !== "input" && activeTag !== "textarea") {
+          e.preventDefault();
+          textareaRef.current?.focus();
+        }
+      };
+      window.addEventListener("keydown", handleGlobalSlash);
+      return () => window.removeEventListener("keydown", handleGlobalSlash);
+    }, [textareaRef]);
+
     const dispatchStop = useCallback(() => {
       if (onAction) {
         onAction({ type: "STOP_STREAM" });
