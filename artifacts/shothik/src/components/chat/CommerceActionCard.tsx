@@ -186,7 +186,7 @@ export function CommerceActionCard({
                 <button
                   type="button"
                   onClick={handleCopyWhatsAppText}
-                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 transition cursor-pointer"
+                  className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-400 hover:text-emerald-300 transition cursor-pointer select-none"
                 >
                   {copiedLink ? <Check className="w-3 h-3" /> : <MessageSquare className="w-3 h-3" />}
                   {copiedLink ? "Copied!" : "WhatsApp Msg"}
@@ -199,7 +199,7 @@ export function CommerceActionCard({
                 type="button"
                 onClick={handleBookSteadfast}
                 disabled={isBooking}
-                className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer shadow-lg shadow-emerald-950/50 disabled:opacity-50"
+                className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer select-none shadow-lg shadow-emerald-950/50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isBooking ? (
                   <>
@@ -217,7 +217,7 @@ export function CommerceActionCard({
               <button
                 type="button"
                 onClick={handleCopyWhatsAppText}
-                className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-semibold text-slate-200 transition flex items-center gap-1 cursor-pointer"
+                className="py-2 px-3 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-xs font-semibold text-slate-200 transition flex items-center gap-1 cursor-pointer select-none"
                 title="Copy Customer Confirmation"
               >
                 {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-slate-400" />}
