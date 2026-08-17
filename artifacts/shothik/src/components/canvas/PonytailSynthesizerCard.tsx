@@ -88,8 +88,13 @@ export function PonytailSynthesizerCard() {
             type="text"
             value={ideaPrompt}
             onChange={(e) => setIdeaPrompt(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !isSynthesizing && ideaPrompt.trim()) {
+                handleSynthesize();
+              }
+            }}
             placeholder="e.g. Sell organic honey or custom hoodies in Chittagong"
-            className="flex-1 px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-purple-500"
+            className="flex-1 px-4 py-2.5 bg-muted/50 border border-border rounded-xl text-sm text-foreground focus:outline-none focus:border-purple-500 font-sans"
           />
           <button
             onClick={handleSynthesize}
