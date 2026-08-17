@@ -135,6 +135,15 @@ export function ChatAgentPage() {
     return () => window.removeEventListener("shothik_toggle_vtuber", handleToggle);
   }, []);
 
+  // Synchronize URL query params (?tab=slides / ?tab=sheet / ?tab=research) with split-pane canvas
+  useEffect(() => {
+    const tabParam = searchParams.get("tab") as ArtifactTab | null;
+    if (tabParam) {
+      setActiveTab(tabParam);
+      setArtifactOpen(true);
+    }
+  }, [searchParams]);
+
   const createNewConversation = useCallback(() => {
     const newId = `conv_${Date.now()}`;
     switchConversation(newId);
