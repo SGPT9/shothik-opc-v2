@@ -49,33 +49,46 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
             </h2>
             <p className="text-xs text-slate-400">Step 1: Cofounder TAM/SAM/SOM ➔ Step 2: Live Web Validation ➔ Step 3: ScenarioLab Stress-Test</p>
           </div>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">✕</button>
+          <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer select-none">✕</button>
         </div>
 
         {/* Input Controls */}
         <div className="grid grid-cols-2 gap-3 bg-slate-950/60 p-4 rounded-2xl border border-slate-800 text-xs">
           <div>
-            <label className="block text-slate-400 mb-1">Startup Idea / Product Vision</label>
+            <label className="block text-slate-400 mb-1 font-medium">Startup Idea / Product Vision</label>
             <input
               type="text"
               value={ideaTopic}
               onChange={(e) => setIdeaTopic(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isRunning) {
+                  e.preventDefault();
+                  handleRunValidation();
+                }
+              }}
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-emerald-500 transition"
             />
           </div>
           <div>
-            <label className="block text-slate-400 mb-1">Target Geographic Market</label>
+            <label className="block text-slate-400 mb-1 font-medium">Target Geographic Market</label>
             <input
               type="text"
               value={targetRegion}
               onChange={(e) => setTargetRegion(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !isRunning) {
+                  e.preventDefault();
+                  handleRunValidation();
+                }
+              }}
+              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-white outline-none focus:border-emerald-500 transition"
             />
           </div>
           <button
+            type="button"
             onClick={handleRunValidation}
             disabled={isRunning}
-            className="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition-colors"
+            className="col-span-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl transition-colors cursor-pointer select-none disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isRunning ? "Executing 3-Step Validation Funnel..." : "⚡ Execute Full 3-Step Validation Funnel"}
           </button>
@@ -86,8 +99,9 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
           <div className="space-y-4">
             <div className="grid grid-cols-3 gap-2 border-b border-slate-800 pb-3">
               <button
+                type="button"
                 onClick={() => setActiveStep(1)}
-                className={`p-3 rounded-2xl border text-left transition-all ${activeStep === 1 ? "bg-emerald-950/80 border-emerald-500 text-white" : "bg-slate-950 border-slate-800 text-slate-400"}`}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer select-none ${activeStep === 1 ? "bg-emerald-950/80 border-emerald-500 text-white" : "bg-slate-950 border-slate-800 text-slate-400"}`}
               >
                 <div className="text-[10px] uppercase font-bold tracking-wider text-emerald-400">Step 1</div>
                 <div className="font-bold text-xs mt-0.5">🚀 Cofounder Mode</div>
@@ -95,8 +109,9 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveStep(2)}
-                className={`p-3 rounded-2xl border text-left transition-all ${activeStep === 2 ? "bg-sky-950/80 border-sky-500 text-white" : "bg-slate-950 border-slate-800 text-slate-400"}`}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer select-none ${activeStep === 2 ? "bg-sky-950/80 border-sky-500 text-white" : "bg-slate-950 border-slate-800 text-slate-400"}`}
               >
                 <div className="text-[10px] uppercase font-bold tracking-wider text-sky-400">Step 2</div>
                 <div className="font-bold text-xs mt-0.5">🌐 Web Search Mode</div>
@@ -104,8 +119,9 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
               </button>
 
               <button
+                type="button"
                 onClick={() => setActiveStep(3)}
-                className={`p-3 rounded-2xl border text-left transition-all ${activeStep === 3 ? "bg-purple-950/80 border-purple-500 text-white" : "bg-slate-950 border-slate-800 text-slate-400"}`}
+                className={`p-3 rounded-2xl border text-left transition-all cursor-pointer select-none ${activeStep === 3 ? "bg-purple-950/80 border-purple-500 text-white" : "bg-slate-950 border-slate-800 text-slate-400"}`}
               >
                 <div className="text-[10px] uppercase font-bold tracking-wider text-purple-400">Step 3</div>
                 <div className="font-bold text-xs mt-0.5">🧪 ScenarioLab Mode</div>
