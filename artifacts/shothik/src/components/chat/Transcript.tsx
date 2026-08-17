@@ -622,6 +622,16 @@ export function Transcript({
                     </div>
                   )}
 
+                  {/* Overnight Deep Think Ticket */}
+                  {message.metadata?.overnightJob && (
+                    <div className="mt-2">
+                      <OvernightJobCard
+                        {...(message.metadata.overnightJob as any)}
+                        onOpenArtifact={(tab) => onOpenArtifact?.(tab, message)}
+                      />
+                    </div>
+                  )}
+
                   {/* Citations footer removed — now rendered ABOVE answer (Perplexity pattern) */}
 
                   {/* Inline error */}
