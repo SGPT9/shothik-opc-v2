@@ -44,6 +44,7 @@ interface AssistantStepsProps {
 
 export function AssistantSteps({ steps, collapsed = true }: AssistantStepsProps) {
   const [open, setOpen] = useState(!collapsed);
+  const [expandedStepId, setExpandedStepId] = useState<string | null>(null);
 
   if (!steps || steps.length === 0) return null;
 
@@ -56,7 +57,7 @@ export function AssistantSteps({ steps, collapsed = true }: AssistantStepsProps)
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left hover:bg-muted/20 transition"
+        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left hover:bg-muted/20 transition cursor-pointer"
       >
         {isRunning ? (
           <Loader2 className="h-3.5 w-3.5 text-brand animate-spin shrink-0" />
@@ -83,6 +84,7 @@ export function AssistantSteps({ steps, collapsed = true }: AssistantStepsProps)
           {steps.map((step, i) => {
             const Icon = STEP_ICONS[step.type] || Terminal;
             const color = STEP_COLORS[step.type] || "text-muted-foreground";
+            const isExpanded = expandedStepId === step.id;
 
             return (
               <div key={step.id} className="flex items-start gap-3 px-3.5 py-2.5">
@@ -122,9 +124,18 @@ export function AssistantSteps({ steps, collapsed = true }: AssistantStepsProps)
                     </div>
                   </div>
                   {step.detail && (
-                    <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-relaxed font-mono truncate">
+                    <div
+                      onClick={() => setExpandedStepId(isExpanded ? null : step.id)}
+                      className={cn(
+                        "text-[10px] text-muted-foreground/70 mt-0.5 leading-relaxed font-mono cursor-pointer transition select-text",
+                        isExpanded
+                          ? "whitespace-pre-wrap bg-black/30 p-2 rounded-md border border-border/30 mt-1.5 shadow-inner"
+                          : "truncate hover:text-muted-foreground"
+                      )}
+                      title="Click to expand/collapse full output"
+                    >
                       {step.detail}
-                    </p>
+                    </div>
                   )}
                 </div>
               </div>
