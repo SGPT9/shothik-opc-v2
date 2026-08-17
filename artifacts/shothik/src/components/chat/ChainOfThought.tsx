@@ -39,8 +39,9 @@ export function ChainOfThought({ steps, isStreaming, executionMode, className }:
     >
       {/* Header Bar */}
       <button
+        type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-3 py-2 bg-[#090d16] flex items-center justify-between hover:bg-slate-800/50 transition text-slate-300"
+        className="w-full px-3 py-2 bg-[#090d16] flex items-center justify-between hover:bg-slate-800/50 transition text-slate-300 cursor-pointer select-none"
       >
         <div className="flex items-center space-x-2">
           <Brain className="w-4 h-4 text-indigo-400 animate-pulse" />
