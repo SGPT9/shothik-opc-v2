@@ -22,6 +22,7 @@ interface Props {
   initialCode?: string;
   initialLanguage?: string;
   filename?: string;
+  isStreaming?: boolean;
 }
 
 const SAMPLE_CODE = `import React, { useState } from "react";

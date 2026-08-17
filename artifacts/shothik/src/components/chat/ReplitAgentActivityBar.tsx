@@ -28,7 +28,7 @@ export function ReplitAgentActivityBar({
   const [expanded, setExpanded] = useState(false);
 
   const defaultSteps: ReplitStep[] = [
-    { id: "s1", label: "Inspecting workspace files & RAG context", status: "done", type: "read" },
+    { id: "s1", label: "Inspecting workspace files & RAG context", status: "done", type: "tool" },
     { id: "s2", label: "Running Python calculation engine", status: isStreaming ? "running" : "done", type: "code" },
     { id: "s3", label: "Compiling presentation slide deck", status: isStreaming ? "pending" : "done", type: "tool" },
     { id: "s4", label: "Formatting markdown response", status: isStreaming ? "pending" : "done", type: "think" },
