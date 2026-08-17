@@ -577,16 +577,20 @@ export function Transcript({
                       <ProactiveNextActions
                         type={
                           ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (
-                            displayContent?.toLowerCase().includes("slide") ? "slides" :
-                            displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
-                            displayContent?.toLowerCase().includes("research") ? "research" : "code"
+                            displayContent?.toLowerCase().includes("slide") || displayContent?.toLowerCase().includes("pitch deck") ? "slides" :
+                            displayContent?.toLowerCase().includes("courier") || displayContent?.toLowerCase().includes("bkash") || displayContent?.toLowerCase().includes("nagad") || displayContent?.toLowerCase().includes("steadfast") || displayContent?.toLowerCase().includes("pathao") ? "commerce" :
+                            displayContent?.toLowerCase().includes("novel") || displayContent?.toLowerCase().includes("chapter") || displayContent?.toLowerCase().includes("manuscript") || displayContent?.toLowerCase().includes("boi mela") ? "writing" :
+                            displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") || displayContent?.toLowerCase().includes("revenue") || displayContent?.toLowerCase().includes("valuation") ? "sheet" :
+                            displayContent?.toLowerCase().includes("function") || displayContent?.toLowerCase().includes("const ") || displayContent?.toLowerCase().includes("```") ? "code" :
+                            displayContent?.toLowerCase().includes("research") || displayContent?.toLowerCase().includes("competitor") ? "research" : "general"
                           )) as any
                         }
                         onSelectAction={(query) => {
                           const targetTab = (
                             displayContent?.toLowerCase().includes("slide") ? "slides" :
                             displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
-                            displayContent?.toLowerCase().includes("research") ? "research" : "code"
+                            displayContent?.toLowerCase().includes("function") || displayContent?.toLowerCase().includes("```") ? "code" :
+                            displayContent?.toLowerCase().includes("research") ? "research" : undefined
                           );
                           onSelectPrompt?.(query, "cofounder", targetTab as any);
                         }}
