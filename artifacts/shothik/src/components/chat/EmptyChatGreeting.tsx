@@ -13,33 +13,42 @@ interface EmptyChatGreetingProps {
   agentId?: string;
 }
 
-const STARTER_PROMPTS = [
+interface StarterPromptItem {
+  icon: any;
+  category: string;
+  label: string;
+  prompt: string;
+  mode: ChatPersona;
+  tab?: "slides" | "sheet" | "research" | "code";
+}
+
+const STARTER_PROMPTS: StarterPromptItem[] = [
   {
     icon: Search,
     category: "Research",
     label: "Research a market and summarize findings",
     prompt: "Research the current market size, key competitors, and growth trends for e-commerce logistics in South Asia and summarize the key findings.",
-    mode: "cofounder" as ChatPersona,
-    tab: "research" as const,
+    mode: "cofounder",
+    tab: "research",
   },
   {
     icon: Scale,
     category: "Analysis",
     label: "Compare options and recommend the best choice",
     prompt: "Compare PostgreSQL with PostgREST vs MongoDB for a real-time collaborative writing app with version control, and recommend the best choice.",
-    mode: "coworker" as ChatPersona,
+    mode: "coworker",
   },
   {
     icon: FileText,
     category: "Create",
     label: "Create a report, model, or draft from my idea",
     prompt: "Create a 3-scenario revenue model and executive summary draft for a subscription SaaS tool targeting authors and creators.",
-    mode: "cofounder" as ChatPersona,
-    tab: "sheet" as const,
+    mode: "cofounder",
+    tab: "sheet",
   },
 ];
 
-const PERSONA_STARTER_MAP: Record<string, typeof STARTER_PROMPTS> = {
+const PERSONA_STARTER_MAP: Record<string, StarterPromptItem[]> = {
   core: STARTER_PROMPTS,
   analyst: [
     {

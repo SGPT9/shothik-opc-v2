@@ -151,7 +151,7 @@ export function Transcript({
   };
 
   const handleStartEdit = (msg: ChatMessage) => {
-    setEditingMsgId(msg.id || (msg as any)._id);
+    setEditingMsgId(msg._id);
     setEditingText(msg.content);
   };
 
@@ -281,7 +281,7 @@ export function Transcript({
                     )}
 
                     {/* Bubble or Inline Editor */}
-                    {editingMsgId === (message.id || message._id) ? (
+                    {editingMsgId === message._id ? (
                       <div className="w-full min-w-[320px] rounded-2xl bg-card border border-brand/40 p-3 shadow-xl space-y-2.5">
                         <textarea
                           value={editingText}
@@ -326,11 +326,11 @@ export function Transcript({
                     <div className="flex items-center gap-1 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         type="button"
-                        onClick={() => handleCopyUserPrompt(message.id || message._id, message.content)}
+                        onClick={() => handleCopyUserPrompt(message._id, message.content)}
                         className="flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
-                        title={copiedUserMsgId === (message.id || message._id) ? "Copied!" : "Copy prompt"}
+                        title={copiedUserMsgId === message._id ? "Copied!" : "Copy prompt"}
                       >
-                        {copiedUserMsgId === (message.id || message._id) ? (
+                        {copiedUserMsgId === message._id ? (
                           <Check className="h-3 w-3 text-emerald-400" />
                         ) : (
                           <Copy className="h-3 w-3" />
@@ -643,16 +643,16 @@ export function Transcript({
 
                       {/* Read Aloud (TTS) */}
                       <button
-                        onClick={() => handleSpeak(message.id, displayContent)}
+                        onClick={() => handleSpeak(message._id, displayContent)}
                         className={cn(
                           "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
-                          speakingMsgId === message.id
+                          speakingMsgId === message._id
                             ? "text-brand bg-brand/10"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
-                        title={speakingMsgId === message.id ? "Stop readout" : "Read aloud (বাংলা / English)"}
+                        title={speakingMsgId === message._id ? "Stop readout" : "Read aloud (বাংলা / English)"}
                       >
-                        {speakingMsgId === message.id ? (
+                        {speakingMsgId === message._id ? (
                           <VolumeX className="h-3.5 w-3.5 text-brand animate-pulse" />
                         ) : (
                           <Volume2 className="h-3.5 w-3.5" />
@@ -661,10 +661,10 @@ export function Transcript({
 
                       {/* Quality Feedback (Thumbs Up) */}
                       <button
-                        onClick={() => handleFeedback(message.id, "up")}
+                        onClick={() => handleFeedback(message._id, "up")}
                         className={cn(
                           "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
-                          feedbackMap[message.id] === "up"
+                          feedbackMap[message._id] === "up"
                             ? "text-emerald-400 bg-emerald-500/10 font-bold"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
@@ -675,10 +675,10 @@ export function Transcript({
 
                       {/* Quality Feedback (Thumbs Down) */}
                       <button
-                        onClick={() => handleFeedback(message.id, "down")}
+                        onClick={() => handleFeedback(message._id, "down")}
                         className={cn(
                           "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
-                          feedbackMap[message.id] === "down"
+                          feedbackMap[message._id] === "down"
                             ? "text-rose-400 bg-rose-500/10 font-bold"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
