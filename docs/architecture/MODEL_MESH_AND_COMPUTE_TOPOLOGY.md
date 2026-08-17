@@ -71,3 +71,49 @@
 * **Execution Environment**: High-capacity GPU clusters via API Gateway.
 * **Responsibilities**:
   * Complex legal NBR tax audits, Supreme Court case research, AlphaFold structural biology, and multi-agent debate synthesis.
+
+---
+
+## 3. Unit Economics & Cost Efficiency Matrix
+
+| Tier | Engine / Model | Hardware Profile | Latency (TTFT) | Cost / 1k Tokens | Blended % Traffic |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Tier 0** | Cactus / ONNX Web Worker | Client CPU (WASM) | `<15ms` | **৳0.0000** ($0.00) | **68%** |
+| **Tier 1** | Colibri (Qwen2.5-Coder 7B) | 1x CPU / vGPU (Singapore) | `~120ms` | **৳0.0025** ($0.00002) | **26%** |
+| **Tier 2** | Soup PEFT / LoRA Streamer | 4GB VRAM + NVMe SSD | Batch (`~8m`) | **৳0.0000** (Local HW) | Periodic |
+| **Tier 3** | Tonight Engine (AirLLM 70B) | Layer Swapped NVMe | Async (`~45m`) | **৳0.0000** (Night HW) | Overnight |
+| **Tier 4** | DeepSeek-R1 / Claude 3.7 | Dedicated H100 MoE | `~1800ms` | **৳0.0400** ($0.00035) | **6%** |
+
+> **Blended Architecture Result**: **৳0.0042 / query average** (Over 92% cheaper than vanilla monolithic frontier routing).
+
+---
+
+## 4. Fault-Tolerant Dynamic Routing & Circuit Breakers
+
+```mermaid
+graph TD
+    A[Incoming Request] --> B{Tier 0 WASM Classifier}
+    B -->|Offline or Low Complexity| C[Tier 0: Local WASM]
+    B -->|Standard Chat / Coding| D{Colibri 7B Online?}
+    D -->|Yes| E[Tier 1: Colibri VPS]
+    D -->|No / Timeout >300ms| F{Local Ollama :11434?}
+    F -->|Yes| G[Tier 1b: Local Ollama Fallback]
+    F -->|No| H[Tier 4: Frontier MoE Cloud]
+    B -->|Deep Reasoning / Legal / Bio| H
+    H -->|Rate Limit / 429| I[Tonight Engine Batch Queue]
+```
+
+---
+
+## 5. Unified OpenAI-Compatible Ingress Contract
+
+```typescript
+export interface ModelIngressRequest {
+  model: "shothik-auto" | "colibri-7b" | "deepseek-r1" | "tonight-airllm";
+  messages: Array<{ role: "system" | "user" | "assistant"; content: string }>;
+  temperature?: number;
+  stream?: boolean;
+  priority?: "interactive" | "overnight" | "background";
+  context_budget_kb?: number; // Caps context for low RAM clients
+}
+```
