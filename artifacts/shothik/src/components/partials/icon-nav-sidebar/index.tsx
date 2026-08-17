@@ -386,50 +386,56 @@ export default function IconNavSidebar() {
                     </div>
                   )}
 
-                  {sessions
-                    .filter((chat) => chat.title.toLowerCase().includes(sessionSearch.toLowerCase()))
-                    .map((chat) => (
-                      <div
-                        key={chat.id}
-                        onClick={() => router.push(`/agents/chat?conversationId=${chat.id}`)}
-                        className={cn(
-                          "group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer select-none",
-                          currentConvId === chat.id
-                            ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-900 dark:text-white font-medium"
-                            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-                        )}
-                      >
-                      <div className="flex items-center gap-2 min-w-0 flex-1">
-                        {chat.pinned && <Pin className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400 shrink-0 rotate-45" />}
-                        <span className="truncate">{chat.title}</span>
-                      </div>
-
-                      <div className="hidden group-hover:flex items-center gap-1 shrink-0 pl-1">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            pinChatSession(chat.id, !chat.pinned);
-                          }}
-                          className="p-1 text-zinc-400 hover:text-amber-500 rounded transition"
-                          title={chat.pinned ? "Unpin" : "Pin"}
-                        >
-                          <Pin className="w-3 h-3" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            deleteChatSession(chat.id);
-                          }}
-                          className="p-1 text-zinc-400 hover:text-rose-500 rounded transition"
-                          title="Delete"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
+                  {sessions.filter((chat) => chat.title.toLowerCase().includes(sessionSearch.toLowerCase())).length === 0 ? (
+                    <div className="px-3 py-3 text-center text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
+                      No chats matching "{sessionSearch}"
                     </div>
-                  ))}
+                  ) : (
+                    sessions
+                      .filter((chat) => chat.title.toLowerCase().includes(sessionSearch.toLowerCase()))
+                      .map((chat) => (
+                        <div
+                          key={chat.id}
+                          onClick={() => router.push(`/agents/chat?conversationId=${chat.id}`)}
+                          className={cn(
+                            "group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer select-none",
+                            currentConvId === chat.id
+                              ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-900 dark:text-white font-medium"
+                              : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                          )}
+                        >
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            {chat.pinned && <Pin className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400 shrink-0 rotate-45" />}
+                            <span className="truncate">{chat.title}</span>
+                          </div>
+
+                          <div className="hidden group-hover:flex items-center gap-1 shrink-0 pl-1">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                pinChatSession(chat.id, !chat.pinned);
+                              }}
+                              className="p-1 text-zinc-400 hover:text-amber-500 rounded transition"
+                              title={chat.pinned ? "Unpin" : "Pin"}
+                            >
+                              <Pin className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                deleteChatSession(chat.id);
+                              }}
+                              className="p-1 text-zinc-400 hover:text-rose-500 rounded transition"
+                              title="Delete"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                  )}
                 </div>
               )}
             </div>

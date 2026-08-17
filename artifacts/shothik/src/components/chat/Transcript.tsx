@@ -1,4 +1,4 @@
-import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt, ChevronDown, Volume2, VolumeX, ThumbsUp, ThumbsDown } from "lucide-react";
+import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt, ChevronDown, Volume2, VolumeX, ThumbsUp, ThumbsDown, Pencil, Check } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
@@ -138,6 +138,33 @@ export function Transcript({
   const [userScrolledUp, setUserScrolledUp] = useState(false);
   const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
   const [feedbackMap, setFeedbackMap] = useState<Record<string, "up" | "down">>({});
+  const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
+  const [editingText, setEditingText] = useState<string>("");
+  const [copiedUserMsgId, setCopiedUserMsgId] = useState<string | null>(null);
+
+  const handleCopyUserPrompt = (msgId: string, text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedUserMsgId(msgId);
+    setTimeout(() => setCopiedUserMsgId(null), 2000);
+  };
+
+  const handleStartEdit = (msg: ChatMessage) => {
+    setEditingMsgId(msg.id || (msg as any)._id);
+    setEditingText(msg.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingMsgId(null);
+    setEditingText("");
+  };
+
+  const handleSaveEdit = () => {
+    if (editingText.trim() && onSelectPrompt) {
+      onSelectPrompt(editingText.trim());
+      setEditingMsgId(null);
+      setEditingText("");
+    }
+  };
 
   const handleSpeak = (msgId: string, text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
@@ -251,27 +278,76 @@ export function Transcript({
                       </div>
                     )}
 
-                    {/* Bubble */}
-                    <div className="rounded-[20px] rounded-br-md bg-gradient-to-br from-brand to-emerald-600 px-4 py-3 text-sm text-white shadow-md shadow-brand/20">
-                      {message.metadata?.attachments?.length ? (
-                        <div className="mb-2.5 flex flex-wrap gap-1.5">
-                          {message.metadata.attachments.map((att: any) => (
-                            <div key={att.id} className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[10px]">
-                              {att.kind === "url" ? <Link2 className="h-3 w-3" /> : <Paperclip className="h-3 w-3" />}
-                              <span className="truncate max-w-[120px]">{att.name}</span>
-                            </div>
-                          ))}
+                    {/* Bubble or Inline Editor */}
+                    {editingMsgId === (message.id || message._id) ? (
+                      <div className="w-full min-w-[320px] rounded-2xl bg-card border border-brand/40 p-3 shadow-xl space-y-2.5">
+                        <textarea
+                          value={editingText}
+                          onChange={(e) => setEditingText(e.target.value)}
+                          rows={3}
+                          className="w-full bg-transparent resize-none outline-none text-xs text-foreground placeholder:text-muted-foreground/60 leading-relaxed font-sans"
+                        />
+                        <div className="flex items-center justify-end gap-2 pt-1 border-t border-border/40">
+                          <button
+                            type="button"
+                            onClick={handleCancelEdit}
+                            className="px-2.5 py-1 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSaveEdit}
+                            className="flex items-center gap-1 px-3 py-1 rounded-lg bg-brand text-white text-xs font-semibold hover:bg-brand/90 transition shadow-xs cursor-pointer"
+                          >
+                            <span>Send & Update</span>
+                          </button>
                         </div>
-                      ) : null}
-                      <p className="whitespace-pre-wrap leading-relaxed">{displayContent}</p>
-                    </div>
+                      </div>
+                    ) : (
+                      <div className="rounded-[20px] rounded-br-md bg-gradient-to-br from-brand to-emerald-600 px-4 py-3 text-sm text-white shadow-md shadow-brand/20">
+                        {message.metadata?.attachments?.length ? (
+                          <div className="mb-2.5 flex flex-wrap gap-1.5">
+                            {message.metadata.attachments.map((att: any) => (
+                              <div key={att.id} className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[10px]">
+                                {att.kind === "url" ? <Link2 className="h-3 w-3" /> : <Paperclip className="h-3 w-3" />}
+                                <span className="truncate max-w-[120px]">{att.name}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                        <p className="whitespace-pre-wrap leading-relaxed">{displayContent}</p>
+                      </div>
+                    )}
 
-                    {/* Timestamp */}
-                    <span className="text-[10px] text-muted-foreground/50 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {message.createdAt && !isNaN(new Date(message.createdAt).getTime())
-                        ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-                        : (message as any).timestamp || ""}
-                    </span>
+                    {/* Action Bar (Copy + Edit + Timestamp) */}
+                    <div className="flex items-center gap-1 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyUserPrompt(message.id || message._id, message.content)}
+                        className="flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+                        title={copiedUserMsgId === (message.id || message._id) ? "Copied!" : "Copy prompt"}
+                      >
+                        {copiedUserMsgId === (message.id || message._id) ? (
+                          <Check className="h-3 w-3 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3 w-3" />
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(message)}
+                        className="flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+                        title="Edit prompt"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                      <span className="text-[10px] text-muted-foreground/50 ml-1">
+                        {message.createdAt && !isNaN(new Date(message.createdAt).getTime())
+                          ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                          : (message as any).timestamp || ""}
+                      </span>
+                    </div>
                   </div>
 
                   {/* User avatar */}
