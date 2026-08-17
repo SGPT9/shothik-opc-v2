@@ -110,9 +110,10 @@ export function VoicePopup({
           {ROLE_OPTIONS.map((opt) => (
             <button
               key={opt.id}
+              type="button"
               onClick={() => setSelectedRole(opt.id)}
               className={cn(
-                "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer border",
+                "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer select-none border",
                 selectedRole === opt.id
                   ? "bg-white/20 border-white/40 text-white shadow-sm"
                   : "bg-white/5 border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/10"
@@ -139,9 +140,10 @@ export function VoicePopup({
         {/* Controls */}
         <div className="flex items-center justify-center gap-4">
           <Button
+            type="button"
             size="icon"
             className={cn(
-              "w-14 h-14 rounded-full transition-all duration-300 shadow-xl cursor-pointer",
+              "w-14 h-14 rounded-full transition-all duration-300 shadow-xl cursor-pointer select-none",
               isListening
                 ? "bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/40 animate-pulse"
                 : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/40"
