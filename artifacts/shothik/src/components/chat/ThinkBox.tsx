@@ -74,7 +74,7 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
               type="button"
               onClick={handleCopy}
               title={isBengali ? "যুক্তির বিবরণ কপি করুন" : "Copy reasoning trace"}
-              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-indigo-300 hover:text-white hover:bg-indigo-500/30 transition cursor-pointer"
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-indigo-300 hover:text-white hover:bg-indigo-500/30 transition cursor-pointer select-none"
             >
               {copied ? (
                 <>
