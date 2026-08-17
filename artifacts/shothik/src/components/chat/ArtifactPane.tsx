@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { FileText, Download, Presentation, Table as TableIcon, X, File, FileCode2, ChevronLeft, ChevronRight } from "lucide-react";
@@ -44,6 +44,16 @@ export function ArtifactPane({
   title = "Untitled Artifact"
 }: ArtifactPaneProps) {
   const [pdfPageIndex, setPdfPageIndex] = useState(0);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
