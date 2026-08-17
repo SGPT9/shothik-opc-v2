@@ -669,11 +669,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   className="flex items-center gap-1 h-8 px-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
                   title="Select web reasoning & research focus mode"
                 >
-                  <Globe className="h-3.5 w-3.5 text-brand" />
-                  <span className="text-[11px] font-medium hidden md:inline">
+                  <Globe className="h-3.5 w-3.5 text-brand shrink-0" />
+                  <span className="text-[11px] font-medium hidden sm:inline">
                     {PERPLEXITY_FOCUS_OPTIONS.find((f) => f.value === perplexityFocus)?.label || "Web & AI"}
                   </span>
-                  <ChevronDown className="h-3 w-3 opacity-60" />
+                  <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
                 </button>
 
                 {focusMenuOpen && (
@@ -711,7 +711,12 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             </div>
 
             {/* Right Controls: Model Selector + Send/Stop Button */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {/* Keyboard Shortcut Hint */}
+              <span className="hidden lg:inline text-[9px] font-mono text-muted-foreground/40 mr-0.5 select-none" title="Press Enter to send, Shift+Enter for new line">
+                ↵ Send
+              </span>
+
               {/* Model Selector */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
@@ -725,7 +730,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   className="flex items-center gap-1 h-8 px-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
                 >
                   <span className="hidden sm:inline">{activeModel.label}</span>
-                  <span className="sm:hidden">Model</span>
+                  <span className="sm:hidden text-xs">⚡</span>
                   <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
 

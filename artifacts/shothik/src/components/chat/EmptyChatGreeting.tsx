@@ -44,7 +44,7 @@ export function EmptyChatGreeting({
   onToggleArtifact,
 }: EmptyChatGreetingProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[42vh] px-4 py-6 text-center animate-fade-in space-y-6 max-w-2xl mx-auto">
+    <div className="flex flex-col items-center justify-center min-h-[42vh] px-4 py-6 text-center animate-fade-in space-y-6 max-w-3xl mx-auto">
       {/* ── Center Mode Switcher (Chat | Work Canvas) ── */}
       {onToggleArtifact && (
         <div className="inline-flex items-center bg-secondary/70 p-1 rounded-2xl border border-border/50 text-xs shadow-xs backdrop-blur-md">
@@ -86,7 +86,7 @@ export function EmptyChatGreeting({
       </div>
 
       {/* ── 3 Intent-First Starter Prompts ── */}
-      <div className="flex flex-col sm:flex-row items-stretch gap-2.5 w-full pt-1">
+      <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full pt-1">
         {STARTER_PROMPTS.map((item) => {
           const Icon = item.icon;
           return (
@@ -94,14 +94,14 @@ export function EmptyChatGreeting({
               key={item.label}
               type="button"
               onClick={() => onSelectPrompt?.(item.prompt, item.mode, item.tab)}
-              className="flex-1 group flex flex-col justify-between text-left p-3.5 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/70 hover:border-border transition-all duration-150 shadow-xs cursor-pointer"
+              className="flex-1 group flex flex-col justify-between text-left p-3.5 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/70 hover:border-brand/40 hover:shadow-xs transition-all duration-200 cursor-pointer"
             >
               <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                   <Icon className="w-3.5 h-3.5 text-brand" />
                   <span>{item.category}</span>
                 </div>
-                <ArrowRight className="w-3 h-3 text-muted-foreground/40 group-hover:text-brand group-hover:translate-x-0.5 transition-all" />
+                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-brand group-hover:translate-x-1 transition-transform duration-200" />
               </div>
               <p className="text-xs font-medium text-foreground/90 leading-snug group-hover:text-foreground">
                 {item.label}

@@ -67,47 +67,6 @@ export function MarkdownMessage({
 
   return (
     <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words space-y-3", className)}>
-      {/* AI Partner Response Lens Switcher */}
-      <div className="flex items-center gap-1 text-[11px] font-mono border-b border-border/40 pb-2 mb-2 not-prose overflow-x-auto no-scrollbar">
-        <span className="text-[10px] text-muted-foreground uppercase font-bold mr-1 shrink-0">View Lens:</span>
-        <button
-          type="button"
-          onClick={() => setActiveLens("executive")}
-          className={cn(
-            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0 cursor-pointer",
-            activeLens === "executive"
-              ? "bg-indigo-500/20 text-indigo-500 dark:text-indigo-400 border border-indigo-500/40 shadow-xs"
-              : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          <span>🚀 Executive</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveLens("research")}
-          className={cn(
-            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0 cursor-pointer",
-            activeLens === "research"
-              ? "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/40 shadow-xs"
-              : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          <span>🔬 Research</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveLens("action")}
-          className={cn(
-            "flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-medium transition shrink-0 cursor-pointer",
-            activeLens === "action"
-              ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/40 shadow-xs"
-              : "bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground"
-          )}
-        >
-          <span>💼 Task Action</span>
-        </button>
-      </div>
-
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
