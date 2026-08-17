@@ -144,7 +144,7 @@ export function ChatAgentPage() {
         title,
         conversationId,
         exportedAt: new Date().toISOString(),
-        messages: messages.map((m) => ({
+        messages: messages.map((m: any) => ({
           role: m.role,
           content: m.content,
           metadata: m.metadata,
