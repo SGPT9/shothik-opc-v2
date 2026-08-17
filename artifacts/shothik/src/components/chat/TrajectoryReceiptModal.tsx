@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -53,6 +53,18 @@ export function TrajectoryReceiptModal({
 }: TrajectoryReceiptModalProps) {
   const [copied, setCopied] = useState(false);
   const [activeStep, setActiveStep] = useState<number>(1);
+
+  // Global Escape key listener to dismiss modal
+  useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onOpenChange(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [open, onOpenChange]);
 
   const defaultSteps: TrajectoryStep[] = [
     {
