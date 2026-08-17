@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BookOpen,
   Globe,
@@ -60,6 +60,18 @@ export function DeepResearchArtifact({
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<"report" | "sources" | "steps">("report");
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
+  
+  // Close source drawer on Escape key
+  useEffect(() => {
+    if (!selectedSource) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedSource(null);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedSource]);
 
   const defaultSources: Source[] = [
     {
