@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { StartupValidationFunnelService, type FullStartupValidationReport } from "@/lib/infrastructure/startup-validation-funnel-service";
 
 export interface StartupValidationFunnelModalProps {
@@ -14,6 +14,16 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
   const [report, setReport] = useState<FullStartupValidationReport | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleRunValidation = () => {
@@ -24,7 +34,12 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-6 text-slate-100 max-h-[90vh] overflow-y-auto relative">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
