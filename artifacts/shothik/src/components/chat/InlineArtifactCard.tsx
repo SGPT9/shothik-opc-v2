@@ -1,5 +1,5 @@
 import React from "react";
-import { Presentation, Table2, BookOpen, Code2, ArrowUpRight, Sparkles } from "lucide-react";
+import { Presentation, Table2, BookOpen, Code2, ArrowUpRight, Sparkles, Truck, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ArtifactTab } from "./ArtifactPanel";
 
@@ -60,6 +60,56 @@ const CONFIGS: Partial<Record<ArtifactTab, {
     border: "border-emerald-500/30 hover:border-emerald-500/60",
     bg: "bg-emerald-500/5 hover:bg-emerald-500/10",
     badgeBg: "bg-emerald-500/15 text-emerald-300",
+  },
+  boimela: {
+    label: "বইমেলা 3D",
+    defaultTitle: "Amar Ekushey 6×9 Publication Studio",
+    defaultSubtitle: "Interactive 3D 6×9 page-flip preview, Bengali typography, & PDF",
+    Icon: Sparkles,
+    color: "text-rose-400",
+    border: "border-rose-500/30 hover:border-rose-500/60",
+    bg: "bg-rose-500/5 hover:bg-rose-500/10",
+    badgeBg: "bg-rose-500/15 text-rose-300",
+  },
+  commerce: {
+    label: "Commerce & MFS",
+    defaultTitle: "F-Commerce & Logistics Hub",
+    defaultSubtitle: "Liquid glass bKash TrxID verification & Steadfast booking card",
+    Icon: Truck,
+    color: "text-emerald-400",
+    border: "border-emerald-500/30 hover:border-emerald-500/60",
+    bg: "bg-emerald-500/5 hover:bg-emerald-500/10",
+    badgeBg: "bg-emerald-500/15 text-emerald-300",
+  },
+  swarm: {
+    label: "Swarm Fleet",
+    defaultTitle: "Autonomous Swarm Execution Space",
+    defaultSubtitle: "Parallel agent swarm execution space with live visual status",
+    Icon: Users,
+    color: "text-purple-400",
+    border: "border-purple-500/30 hover:border-purple-500/60",
+    bg: "bg-purple-500/5 hover:bg-purple-500/10",
+    badgeBg: "bg-purple-500/15 text-purple-300",
+  },
+  doc: {
+    label: "Document Canvas",
+    defaultTitle: "Executive Document Briefing",
+    defaultSubtitle: "Click to open interactive multi-page document viewer",
+    Icon: BookOpen,
+    color: "text-blue-400",
+    border: "border-blue-500/30 hover:border-blue-500/60",
+    bg: "bg-blue-500/5 hover:bg-blue-500/10",
+    badgeBg: "bg-blue-500/15 text-blue-300",
+  },
+  diagram: {
+    label: "Architecture Diagram",
+    defaultTitle: "System Topology & Flowchart",
+    defaultSubtitle: "Click to open vector diagram & export SVG",
+    Icon: Sparkles,
+    color: "text-amber-400",
+    border: "border-amber-500/30 hover:border-amber-500/60",
+    bg: "bg-amber-500/5 hover:bg-amber-500/10",
+    badgeBg: "bg-amber-500/15 text-amber-300",
   },
 };
 
