@@ -118,7 +118,7 @@ export function WayfinderBoard({
         <button
           type="button"
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg transition border border-slate-700"
+          className="flex items-center gap-1 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-lg transition border border-slate-700 cursor-pointer select-none"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>New Ticket</span>
@@ -132,8 +132,14 @@ export function WayfinderBoard({
             type="text"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && newTitle.trim()) {
+                e.preventDefault();
+                handleAddTicket();
+              }
+            }}
             placeholder="Decision ticket title..."
-            className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500"
+            className="w-full bg-slate-950 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200 outline-none focus:border-indigo-500 font-sans"
           />
           <div className="flex items-center justify-between">
             <div className="flex gap-1.5">
@@ -143,7 +149,7 @@ export function WayfinderBoard({
                   type="button"
                   onClick={() => setNewType(t)}
                   className={cn(
-                    'px-2 py-0.5 rounded text-[10px] font-medium transition',
+                    'px-2 py-0.5 rounded text-[10px] font-medium transition cursor-pointer select-none',
                     newType === t
                       ? 'bg-indigo-600 text-white'
                       : 'bg-slate-800 text-slate-400 hover:text-slate-200'
@@ -156,7 +162,7 @@ export function WayfinderBoard({
             <button
               type="button"
               onClick={handleAddTicket}
-              className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded"
+              className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded cursor-pointer select-none"
             >
               Add
             </button>
@@ -199,7 +205,7 @@ export function WayfinderBoard({
                         <button
                           type="button"
                           onClick={() => onLaunchGrill?.(ticket.title)}
-                          className="text-[10px] text-rose-400 hover:underline flex items-center gap-0.5"
+                          className="text-[10px] text-rose-400 hover:underline flex items-center gap-0.5 cursor-pointer select-none"
                         >
                           <MessageCircle className="w-3 h-3" />
                           <span>Grill Me</span>
@@ -214,7 +220,7 @@ export function WayfinderBoard({
                       <button
                         type="button"
                         onClick={() => handleResolveTicket(ticket.id!)}
-                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-semibold transition flex items-center gap-1"
+                        className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-[10px] font-semibold transition flex items-center gap-1 cursor-pointer select-none"
                       >
                         <CheckCircle2 className="w-3 h-3" />
                         <span>Mark Resolved</span>
