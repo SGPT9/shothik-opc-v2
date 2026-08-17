@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { Link, usePathname, useRouter } from "@/lib/navigation";
 import {
   Plus,
   Brain,
@@ -63,6 +62,7 @@ export default function IconNavSidebar() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
   const [isSessionsOpen, setIsSessionsOpen] = useState(true);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  const [sessionSearch, setSessionSearch] = useState("");
 
   useEffect(() => {
     if (isWritingRoute) {
@@ -369,18 +369,36 @@ export default function IconNavSidebar() {
               </button>
 
               {isSessionsOpen && (
-                <div className="space-y-0.5 pt-1">
-                  {sessions.map((chat) => (
-                    <div
-                      key={chat.id}
-                      onClick={() => router.push(`/agents/chat?conversationId=${chat.id}`)}
-                      className={cn(
-                        "group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer select-none",
-                        currentConvId === chat.id
-                          ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-900 dark:text-white font-medium"
-                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
-                      )}
-                    >
+                <div className="space-y-1 pt-1">
+                  {/* Quick Search Filter if > 3 sessions */}
+                  {sessions.length > 3 && (
+                    <div className="px-1 pb-1">
+                      <div className="relative">
+                        <Search className="w-3 h-3 text-zinc-400 absolute left-2 top-2 pointer-events-none" />
+                        <input
+                          type="text"
+                          value={sessionSearch}
+                          onChange={(e) => setSessionSearch(e.target.value)}
+                          placeholder="Search chats..."
+                          className="w-full h-7 pl-6 pr-2 rounded-lg bg-zinc-100 dark:bg-white/[0.04] text-[11px] text-zinc-900 dark:text-zinc-200 placeholder:text-zinc-400 border border-zinc-200 dark:border-white/[0.08] focus:outline-none focus:ring-1 focus:ring-brand/50 transition"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {sessions
+                    .filter((chat) => chat.title.toLowerCase().includes(sessionSearch.toLowerCase()))
+                    .map((chat) => (
+                      <div
+                        key={chat.id}
+                        onClick={() => router.push(`/agents/chat?conversationId=${chat.id}`)}
+                        className={cn(
+                          "group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer select-none",
+                          currentConvId === chat.id
+                            ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-900 dark:text-white font-medium"
+                            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
+                        )}
+                      >
                       <div className="flex items-center gap-2 min-w-0 flex-1">
                         {chat.pinned && <Pin className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400 shrink-0 rotate-45" />}
                         <span className="truncate">{chat.title}</span>
@@ -533,6 +551,7 @@ export default function IconNavSidebar() {
       {isCreateProjectOpen && (
         <CreateProjectModal
           onClose={() => setIsCreateProjectOpen(false)}
+          createProject={async (data: any) => data}
           onProjectCreated={(project: any) => {
             setIsCreateProjectOpen(false);
             if (project?.id) {

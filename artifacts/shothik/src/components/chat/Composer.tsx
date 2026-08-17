@@ -262,6 +262,20 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       }
     }, [activeStreaming, disabled, textValue, attachments, onAction, onSend, onSubmit, onChangeProp, textareaRef]);
 
+    // Global Escape key dismissals for open dropdown menus
+    useEffect(() => {
+      const handleEscape = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          setToolsMenuOpen(false);
+          setFocusMenuOpen(false);
+          setModelMenuOpen(false);
+          setAttachMenuOpen(false);
+        }
+      };
+      window.addEventListener("keydown", handleEscape);
+      return () => window.removeEventListener("keydown", handleEscape);
+    }, []);
+
     const dispatchStop = useCallback(() => {
       if (onAction) {
         onAction({ type: "STOP_STREAM" });
@@ -482,11 +496,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 onClick={isListening ? stopListening : startListening}
                 disabled={disabled || activeStreaming}
                 aria-label={isListening ? "Stop voice dictation" : "Start voice dictation"}
-                title={isListening ? "Stop voice typing" : "Voice Input (Speech-to-Text)"}
+                title={isListening ? "Listening... Click to stop voice typing" : "Voice Input (Speech-to-Text)"}
                 className={cn(
-                  "flex items-center justify-center h-8 w-8 rounded-lg transition cursor-pointer",
+                  "relative flex items-center justify-center h-8 w-8 rounded-lg transition cursor-pointer",
                   isListening
-                    ? "bg-rose-500 text-white animate-pulse shadow-xs"
+                    ? "bg-rose-500/20 text-rose-500 border border-rose-500/40 shadow-xs ring-2 ring-rose-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
