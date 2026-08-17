@@ -378,71 +378,74 @@ export function Transcript({
                   )}
 
                   {/* ── 1-Tap bKash / Nagad Mobile App Deep-Link Card (Ticket #2) ── */}
-                  {message.metadata?.paymentInfo && (
-                    <div className="mt-3 p-4 rounded-2xl border border-brand/20 bg-brand/5 backdrop-blur-md flex flex-col md:flex-row gap-4 items-center justify-between max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
-                      <div className="flex-1 space-y-1.5">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-bold text-foreground">
-                            {message.metadata.paymentInfo.provider === "bkash" ? "bKash 1-Tap Payment" : "Nagad 1-Tap Payment"}
-                          </span>
-                          <span className="rounded-full bg-brand/10 border border-brand/20 px-2 py-0.5 text-[9px] font-semibold text-brand">
-                            App Scheme
-                          </span>
+                  {(message.metadata as any)?.paymentInfo && (() => {
+                    const paymentInfo = (message.metadata as any).paymentInfo;
+                    return (
+                      <div className="mt-3 p-4 rounded-2xl border border-brand/20 bg-brand/5 backdrop-blur-md flex flex-col md:flex-row gap-4 items-center justify-between max-w-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-foreground">
+                              {paymentInfo.provider === "bkash" ? "bKash 1-Tap Payment" : "Nagad 1-Tap Payment"}
+                            </span>
+                            <span className="rounded-full bg-brand/10 border border-brand/20 px-2 py-0.5 text-[9px] font-semibold text-brand">
+                              App Scheme
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            Payable amount: <span className="font-bold text-foreground">৳{paymentInfo.amount} BDT</span><br/>
+                            Order ID: <span className="font-mono text-foreground font-semibold">#{paymentInfo.orderId}</span>
+                          </p>
+                          <div className="flex flex-wrap gap-2 pt-1">
+                            <a
+                              href={`${paymentInfo.provider}://pay?merchant=${paymentInfo.merchantPhone}&amount=${paymentInfo.amount}&ref=${paymentInfo.orderId}`}
+                              className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-brand-dark transition"
+                            >
+                              <span>📲</span>
+                              <span>Open in {paymentInfo.provider === "bkash" ? "bKash App" : "Nagad App"}</span>
+                            </a>
+                            <a
+                              href={`https://pay.${paymentInfo.provider}.com.bd/checkout?ref=${paymentInfo.orderId}&amount=${paymentInfo.amount}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/80 transition"
+                            >
+                              <span>🌐</span>
+                              <span>Web Checkout</span>
+                            </a>
+                          </div>
                         </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          Payable amount: <span className="font-bold text-foreground">৳{message.metadata.paymentInfo.amount} BDT</span><br/>
-                          Order ID: <span className="font-mono text-foreground font-semibold">#{message.metadata.paymentInfo.orderId}</span>
-                        </p>
-                        <div className="flex flex-wrap gap-2 pt-1">
-                          <a
-                            href={`${message.metadata.paymentInfo.provider}://pay?merchant=${message.metadata.paymentInfo.merchantPhone}&amount=${message.metadata.paymentInfo.amount}&ref=${message.metadata.paymentInfo.orderId}`}
-                            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-brand-dark transition"
-                          >
-                            <span>📲</span>
-                            <span>Open in {message.metadata.paymentInfo.provider === "bkash" ? "bKash App" : "Nagad App"}</span>
-                          </a>
-                          <a
-                            href={`https://pay.${message.metadata.paymentInfo.provider}.com.bd/checkout?ref=${message.metadata.paymentInfo.orderId}&amount=${message.metadata.paymentInfo.amount}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted/80 transition"
-                          >
-                            <span>🌐</span>
-                            <span>Web Checkout</span>
-                          </a>
+                        
+                        {/* Fallback QR Code for Desktop */}
+                        <div className="flex flex-col items-center gap-1 shrink-0 p-1.5 bg-white rounded-xl border border-border shadow-sm">
+                          <img
+                            src={`https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(
+                              `https://pay.${paymentInfo.provider}.com.bd/checkout?ref=${paymentInfo.orderId}&amount=${paymentInfo.amount}`
+                            )}`}
+                            alt="Payment QR Code"
+                            className="w-20 h-20"
+                          />
+                          <span className="text-[9px] text-slate-500 font-medium">Scan to Pay</span>
                         </div>
                       </div>
-                      
-                      {/* Fallback QR Code for Desktop */}
-                      <div className="flex flex-col items-center gap-1 shrink-0 p-1.5 bg-white rounded-xl border border-border shadow-sm">
-                        <img
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=96x96&data=${encodeURIComponent(
-                            `https://pay.${message.metadata.paymentInfo.provider}.com.bd/checkout?ref=${message.metadata.paymentInfo.orderId}&amount=${message.metadata.paymentInfo.amount}`
-                          )}`}
-                          alt="Payment QR Code"
-                          className="w-20 h-20"
-                        />
-                        <span className="text-[9px] text-slate-500 font-medium">Scan to Pay</span>
-                      </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* ── Inline Artifact Card Trigger (Replit Agent On-Demand Pattern) ── */}
-                  {(message.metadata?.artifactType || message.metadata?.tab || (message.role === "assistant" && (displayContent?.includes("```") || displayContent?.toLowerCase().includes("slide") || displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("research")))) && (
+                  {((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (message.role === "assistant" && (displayContent?.includes("```") || displayContent?.toLowerCase().includes("slide") || displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("research")))) && (
                     <>
                       <InlineArtifactCard
                         type={
-                          (message.metadata?.artifactType || message.metadata?.tab || (
+                          ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (
                             displayContent?.toLowerCase().includes("slide") ? "slides" :
                             displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
                             displayContent?.toLowerCase().includes("research") ? "research" : "code"
                           )) as any
                         }
-                        title={message.metadata?.artifactTitle}
-                        subtitle={message.metadata?.artifactSubtitle}
+                        title={(message.metadata as any)?.artifactTitle}
+                        subtitle={(message.metadata as any)?.artifactSubtitle}
                         onOpen={() => {
                           const targetTab = (
-                            message.metadata?.artifactType || message.metadata?.tab || (
+                            (message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (
                               displayContent?.toLowerCase().includes("slide") ? "slides" :
                               displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
                               displayContent?.toLowerCase().includes("research") ? "research" : "code"
@@ -455,7 +458,7 @@ export function Transcript({
                       {/* ── Proactive Agentic Next Action Chips ── */}
                       <ProactiveNextActions
                         type={
-                          (message.metadata?.artifactType || message.metadata?.tab || (
+                          ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (
                             displayContent?.toLowerCase().includes("slide") ? "slides" :
                             displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
                             displayContent?.toLowerCase().includes("research") ? "research" : "code"
@@ -467,13 +470,13 @@ export function Transcript({
                             displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
                             displayContent?.toLowerCase().includes("research") ? "research" : "code"
                           );
-                          onSelectPrompt?.(query, "general", targetTab as any);
+                          onSelectPrompt?.(query, "cofounder", targetTab as any);
                         }}
                       />
 
                       {/* ── Perplexity-Style Related Questions Pills ── */}
                       <PerplexityRelatedQueries
-                        onSelectQuery={(q) => onSelectPrompt?.(q, "general")}
+                        onSelectQuery={(q) => onSelectPrompt?.(q, "cofounder")}
                       />
                     </>
                   )}
@@ -564,7 +567,7 @@ export function Transcript({
                           {/* Receipt — admin audit surface, inside overflow per DeepSeek-close spec */}
                           <button
                             onClick={() => {
-                              setTrajectoryModel((message.metadata?.model as string) || "DeepSeek V4 Flash");
+                              setTrajectoryModel(((message.metadata as any)?.model as string) || "DeepSeek V4 Flash");
                               setTrajectoryOpen(true);
                             }}
                             className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition border-t border-border/40 mt-0.5 pt-2"

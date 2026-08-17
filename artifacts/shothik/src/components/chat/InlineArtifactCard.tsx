@@ -11,7 +11,7 @@ interface InlineArtifactCardProps {
   className?: string;
 }
 
-const CONFIGS: Record<ArtifactTab, {
+const CONFIGS: Partial<Record<ArtifactTab, {
   label: string;
   defaultTitle: string;
   defaultSubtitle: string;
@@ -20,7 +20,7 @@ const CONFIGS: Record<ArtifactTab, {
   border: string;
   bg: string;
   badgeBg: string;
-}> = {
+}>> = {
   slides: {
     label: "Interactive Slides",
     defaultTitle: "Presentation Deck",

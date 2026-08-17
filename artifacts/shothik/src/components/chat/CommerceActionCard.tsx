@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { Truck, CheckCircle2, AlertCircle, Copy, Check, MessageSquare, ExternalLink, ShieldCheck, Loader2 } from "lucide-react";
+import { LiquidGlassCard } from "./LiquidGlassCard.js";
 
 export interface CourierOrderDetails {
   invoiceNumber: string;
@@ -87,7 +88,11 @@ export function CommerceActionCard({
   };
 
   return (
-    <div className={`my-3 p-4 rounded-2xl bg-card border border-border/80 shadow-md space-y-3.5 max-w-xl text-foreground animate-in fade-in zoom-in-98 duration-200 ${className}`}>
+    <LiquidGlassCard
+      intensity="vibrant"
+      glowColor={payment?.provider === "bkash" ? "rgba(236, 72, 153, 0.2)" : "rgba(16, 185, 129, 0.2)"}
+      className={`my-3 p-4 space-y-3.5 max-w-xl text-foreground animate-in fade-in zoom-in-98 duration-200 ${className}`}
+    >
       {/* ── 1. Payment Verification Section ── */}
       {payment && (
         <div className="p-3 rounded-xl bg-secondary/40 border border-border/40 flex items-center justify-between">
@@ -211,6 +216,6 @@ export function CommerceActionCard({
           )}
         </div>
       )}
-    </div>
+    </LiquidGlassCard>
   );
 }
