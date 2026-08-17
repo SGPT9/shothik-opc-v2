@@ -137,9 +137,22 @@ export function ChatSidebar({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setSearchQuery("");
+            }}
             placeholder="Search sessions..."
             className="w-full bg-transparent text-xs text-slate-200 outline-none placeholder:text-slate-500 font-mono"
           />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="text-slate-400 hover:text-slate-200 text-xs px-1 cursor-pointer"
+              title="Clear search"
+            >
+              ✕
+            </button>
+          )}
         </div>
       </div>
 
