@@ -139,6 +139,13 @@ export function DocArtifact({
 
   const handleExport = () => {
     const fullText = `# ${initialTitle}\n\n` + pages.map((p) => `## Page ${p.pageNumber}: ${p.title || ""}\n\n${p.content}`).join("\n\n---\n\n");
+    const blob = new Blob([fullText], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${initialTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
     navigator.clipboard.writeText(fullText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -151,6 +158,22 @@ export function DocArtifact({
   const handleNextPage = () => {
     if (currentPage < pages.length) setCurrentPage((prev) => prev + 1);
   };
+
+  // Keyboard Navigation: ← and → to flip document pages
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      if (activeTag === "input" || activeTag === "textarea") return;
+
+      if (e.key === "ArrowLeft") {
+        if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+      } else if (e.key === "ArrowRight") {
+        if (currentPage < pages.length) setCurrentPage((prev) => prev + 1);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [currentPage, pages.length]);
 
   // Compute SVG highlight bounding box coordinates in normalized percentage space
   const currentBbox = activeBbox || activeDocPage?.bbox;
