@@ -20,6 +20,7 @@ import {
   Table2,
   Code2,
   Search,
+  BookOpen,
 } from "lucide-react";
 import {
   forwardRef,
@@ -599,6 +600,20 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                           <span className="text-[10px] text-muted-foreground truncate block">Fullstack engineering & sandbox runner</span>
                         </div>
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          window.location.href = "/writing-studio";
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">BoiMela 3D Studio</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">6×9 Royal Demy book formatting & 3D flip</span>
+                        </div>
+                      </button>
                     </div>
 
                     {/* Web & Voice Section */}
@@ -695,8 +710,21 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               </div>
             </div>
 
-            {/* Right Controls: Model Selector + Send/Stop Button */}
-            <div className="flex items-center gap-2">
+            {/* Right Controls: Voice Orb + Model Selector + Send/Stop Button */}
+            <div className="flex items-center gap-1.5">
+              {/* 🎙️ 3D Voice Orb Launcher */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (onVoiceOrbClick) onVoiceOrbClick();
+                  else if (onAction) onAction({ type: "OPEN_TOOL", tool: "voice" });
+                }}
+                className="flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-r from-rose-500/15 via-purple-500/15 to-indigo-500/15 hover:from-rose-500/30 hover:to-indigo-500/30 text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-500/50 transition cursor-pointer shadow-xs"
+                title="Launch 3D Conversational Voice Orb"
+              >
+                <Phone className="h-3.5 w-3.5 text-rose-400 animate-pulse" />
+              </button>
+
               {/* Model Selector */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button

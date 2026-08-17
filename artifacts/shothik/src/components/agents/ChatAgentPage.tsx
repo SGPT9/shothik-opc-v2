@@ -38,7 +38,9 @@ import {
   Plus, 
   PanelRight, 
   MessageSquare,
-  LayoutTemplate
+  LayoutTemplate,
+  Search,
+  Phone,
 } from "lucide-react";
 
 export interface FleetAgent {
@@ -52,11 +54,10 @@ export interface FleetAgent {
 }
 
 export const FLEET_AGENTS: FleetAgent[] = [
-  { id: "core", name: "Shothik Core", badge: "General AI", icon: Sparkles, color: "text-emerald-400", bgLight: "bg-emerald-500/10", desc: "General intelligence, deep research, web search" },
-  { id: "sales", name: "Ayesha (Sales Closer)", badge: "F-Commerce", icon: ShoppingBag, color: "text-pink-400", bgLight: "bg-pink-500/10", desc: "F-Commerce DM closer & bKash PGW verification" },
-  { id: "logistics", name: "Tareq (Steadfast Courier)", badge: "Logistics", icon: Truck, color: "text-cyan-400", bgLight: "bg-cyan-500/10", desc: "Automated Steadfast parcel booking & tracking" },
-  { id: "tax", name: "NBR Tax & VAT Advisor", badge: "Legal & Tax", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Bangladesh Income Tax Act 2023 compliance" },
-  { id: "writer", name: "Manuscript Co-Writer", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Novel writing & Boi Mela 6x9 trade book studio" },
+  { id: "core", name: "Shothik Core", badge: "General AI", icon: Sparkles, color: "text-emerald-400", bgLight: "bg-emerald-500/10", desc: "All-purpose intelligent assistant, reasoning & daily tasks" },
+  { id: "analyst", name: "Deep Analyst", badge: "Research & Docs", icon: Search, color: "text-violet-400", bgLight: "bg-violet-500/10", desc: "Academic research, data synthesis & market intelligence" },
+  { id: "writer", name: "Manuscript & Book Studio", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Novels, Boi Mela 3D formatting & creative writing" },
+  { id: "business", name: "Business & Pitch Partner", badge: "Ventures & Slides", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Investor decks, financial models, contracts & proposals" },
 ];
 
 export function ChatAgentPage() {
@@ -448,29 +449,42 @@ export function ChatAgentPage() {
 
           {/* Right Mode Toggle & Actions */}
           <div className="flex items-center gap-2">
-            {/* Dual Mode Switcher (Chat | Work Canvas) */}
-            <div className="flex items-center bg-secondary/60 p-0.5 rounded-xl border border-border/40 text-xs">
-              <button
-                type="button"
-                onClick={() => setArtifactOpen(false)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
-                  !artifactOpen ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Chat</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setArtifactOpen(true)}
-                className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
-                  artifactOpen ? "bg-background text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <LayoutTemplate className="w-3.5 h-3.5" />
-                <span>Work Canvas</span>
-              </button>
-            </div>
+            {/* 🎙️ 3D Voice Orb Quick Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsVoiceOrbOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/15 via-purple-500/15 to-indigo-500/15 hover:from-rose-500/30 hover:to-indigo-500/30 text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-500/50 transition cursor-pointer text-xs font-semibold shadow-xs"
+              title="Launch 3D Conversational Voice Orb"
+            >
+              <Phone className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
+              <span className="hidden sm:inline">Voice Orb</span>
+            </button>
+
+            {/* Dual Mode Switcher (Chat | Work Canvas) - Shown in header when transcript is active or canvas open */}
+            {(messages.length > 0 || artifactOpen) && (
+              <div className="flex items-center bg-secondary/60 p-0.5 rounded-xl border border-border/40 text-xs animate-fade-in">
+                <button
+                  type="button"
+                  onClick={() => setArtifactOpen(false)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
+                    !artifactOpen ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  <span>Chat</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setArtifactOpen(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
+                    artifactOpen ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <LayoutTemplate className="w-3.5 h-3.5" />
+                  <span>Work Canvas</span>
+                </button>
+              </div>
+            )}
 
             {/* New Thread (+) */}
             <button
@@ -564,6 +578,8 @@ export function ChatAgentPage() {
             <div className="w-full max-w-3xl space-y-6 text-center">
               {/* ── Empty State Greeting & Intent Starter Prompts ── */}
               <EmptyChatGreeting
+                isArtifactOpen={artifactOpen}
+                onToggleArtifact={setArtifactOpen}
                 onSelectPrompt={(prompt, mode, tab) => {
                   handleSendMessage(prompt);
                   if (tab) {

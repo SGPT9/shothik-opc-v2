@@ -1,7 +1,5 @@
-"use client";
-
 import React from "react";
-import { Search, Scale, FileText, ArrowRight } from "lucide-react";
+import { Search, Scale, FileText, ArrowRight, MessageSquare, LayoutTemplate } from "lucide-react";
 import { type ChatPersona } from "@/lib/chat/types";
 
 interface EmptyChatGreetingProps {
@@ -10,6 +8,8 @@ interface EmptyChatGreetingProps {
     mode?: ChatPersona,
     tab?: "slides" | "sheet" | "research" | "code"
   ) => void;
+  isArtifactOpen?: boolean;
+  onToggleArtifact?: (open: boolean) => void;
 }
 
 const STARTER_PROMPTS = [
@@ -38,9 +38,43 @@ const STARTER_PROMPTS = [
   },
 ];
 
-export function EmptyChatGreeting({ onSelectPrompt }: EmptyChatGreetingProps) {
+export function EmptyChatGreeting({
+  onSelectPrompt,
+  isArtifactOpen = false,
+  onToggleArtifact,
+}: EmptyChatGreetingProps) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-[42vh] px-4 py-8 text-center animate-fade-in space-y-6 max-w-2xl mx-auto">
+    <div className="flex flex-col items-center justify-center min-h-[42vh] px-4 py-6 text-center animate-fade-in space-y-6 max-w-2xl mx-auto">
+      {/* ── Center Mode Switcher (Chat | Work Canvas) ── */}
+      {onToggleArtifact && (
+        <div className="inline-flex items-center bg-secondary/70 p-1 rounded-2xl border border-border/50 text-xs shadow-xs backdrop-blur-md">
+          <button
+            type="button"
+            onClick={() => onToggleArtifact(false)}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl transition font-medium cursor-pointer ${
+              !isArtifactOpen
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Chat</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => onToggleArtifact(true)}
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl transition font-medium cursor-pointer ${
+              isArtifactOpen
+                ? "bg-background text-foreground shadow-xs font-semibold"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LayoutTemplate className="w-3.5 h-3.5" />
+            <span>Work Canvas</span>
+          </button>
+        </div>
+      )}
+
       {/* ── Heading & Subtitle ── */}
       <div className="space-y-2 text-center">
         <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-foreground">
