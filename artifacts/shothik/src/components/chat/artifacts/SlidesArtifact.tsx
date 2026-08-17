@@ -172,6 +172,22 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
     window.print();
   };
 
+  // Keyboard Navigation: ← and → arrows to flip slides
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      if (activeTag === "input" || activeTag === "textarea") return;
+
+      if (e.key === "ArrowLeft") {
+        setCurrentSlide((prev) => Math.max(0, prev - 1));
+      } else if (e.key === "ArrowRight") {
+        setCurrentSlide((prev) => Math.min(slideList.length - 1, prev + 1));
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [slideList.length]);
+
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0d0e10] text-zinc-900 dark:text-[#e3e3e3] overflow-hidden select-none transition-colors duration-200">
       {/* ── Top Suite Header Bar ── */}
