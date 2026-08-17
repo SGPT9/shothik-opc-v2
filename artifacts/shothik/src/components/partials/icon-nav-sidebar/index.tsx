@@ -22,6 +22,9 @@ import {
   Search,
   Layers,
   Zap,
+  Pencil,
+  Check,
+  X,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useChatSession } from "@/components/agents/hooks/useChatSession";
@@ -29,6 +32,7 @@ import {
   getChatSessions,
   deleteChatSession,
   pinChatSession,
+  renameChatSession,
   StoredChatSession,
   subscribeChatSessions,
 } from "@/lib/chat-sessions-store";
@@ -80,7 +84,28 @@ export default function IconNavSidebar() {
 
   // Sessions state synced across tabs
   const [sessions, setSessions] = useState<StoredChatSession[]>([]);
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+  const [editingTitle, setEditingTitle] = useState("");
   const { conversationId: currentConvId } = useChatSession();
+
+  const handleStartRename = (e: React.MouseEvent, chat: StoredChatSession) => {
+    e.stopPropagation();
+    setEditingSessionId(chat.id);
+    setEditingTitle(chat.title);
+  };
+
+  const handleSaveRename = (id: string) => {
+    if (editingTitle.trim()) {
+      renameChatSession(id, editingTitle.trim());
+    }
+    setEditingSessionId(null);
+    setEditingTitle("");
+  };
+
+  const handleCancelRename = () => {
+    setEditingSessionId(null);
+    setEditingTitle("");
+  };
 
   useEffect(() => {
     // Initial fetch
@@ -396,7 +421,12 @@ export default function IconNavSidebar() {
                       .map((chat) => (
                         <div
                           key={chat.id}
-                          onClick={() => router.push(`/agents/chat?conversationId=${chat.id}`)}
+                          onClick={() => {
+                            if (editingSessionId !== chat.id) {
+                              router.push(`/agents/chat?conversationId=${chat.id}`);
+                            }
+                          }}
+                          onDoubleClick={(e) => handleStartRename(e, chat)}
                           className={cn(
                             "group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs transition-colors cursor-pointer select-none",
                             currentConvId === chat.id
@@ -404,35 +434,77 @@ export default function IconNavSidebar() {
                               : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.04] hover:text-zinc-900 dark:hover:text-zinc-200"
                           )}
                         >
-                          <div className="flex items-center gap-2 min-w-0 flex-1">
-                            {chat.pinned && <Pin className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400 shrink-0 rotate-45" />}
-                            <span className="truncate">{chat.title}</span>
-                          </div>
+                          {editingSessionId === chat.id ? (
+                            <div className="flex items-center gap-1 w-full" onClick={(e) => e.stopPropagation()}>
+                              <input
+                                autoFocus
+                                type="text"
+                                value={editingTitle}
+                                onChange={(e) => setEditingTitle(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") handleSaveRename(chat.id);
+                                  if (e.key === "Escape") handleCancelRename();
+                                }}
+                                className="flex-1 min-w-0 bg-background text-foreground text-xs px-1.5 py-0.5 rounded border border-brand/50 focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveRename(chat.id)}
+                                className="p-1 text-emerald-500 hover:bg-emerald-500/10 rounded transition"
+                                title="Save"
+                              >
+                                <Check className="w-3 h-3" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={handleCancelRename}
+                                className="p-1 text-zinc-400 hover:bg-muted/50 rounded transition"
+                                title="Cancel"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex items-center gap-2 min-w-0 flex-1">
+                                {chat.pinned && <Pin className="w-2.5 h-2.5 text-amber-500 dark:text-amber-400 shrink-0 rotate-45" />}
+                                <span className="truncate" title={chat.title}>{chat.title}</span>
+                              </div>
 
-                          <div className="hidden group-hover:flex items-center gap-1 shrink-0 pl-1">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                pinChatSession(chat.id, !chat.pinned);
-                              }}
-                              className="p-1 text-zinc-400 hover:text-amber-500 rounded transition"
-                              title={chat.pinned ? "Unpin" : "Pin"}
-                            >
-                              <Pin className="w-3 h-3" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                deleteChatSession(chat.id);
-                              }}
-                              className="p-1 text-zinc-400 hover:text-rose-500 rounded transition"
-                              title="Delete"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
+                              <div className="hidden group-hover:flex items-center gap-1 shrink-0 pl-1">
+                                <button
+                                  type="button"
+                                  onClick={(e) => handleStartRename(e, chat)}
+                                  className="p-1 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-200 rounded transition"
+                                  title="Rename"
+                                >
+                                  <Pencil className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    pinChatSession(chat.id, !chat.pinned);
+                                  }}
+                                  className="p-1 text-zinc-400 hover:text-amber-500 rounded transition"
+                                  title={chat.pinned ? "Unpin" : "Pin"}
+                                >
+                                  <Pin className="w-3 h-3" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteChatSession(chat.id);
+                                  }}
+                                  className="p-1 text-zinc-400 hover:text-rose-500 rounded transition"
+                                  title="Delete"
+                                >
+                                  <Trash2 className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))
                   )}
