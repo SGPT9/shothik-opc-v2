@@ -3,127 +3,111 @@ name: shothik-interface-design
 description: Architectural rules, intent-first routing standards, and UI shell specifications for Shothik using the DeepSeek-close minimalist pattern (Ask-First composer, unified Tools menu, progressive disclosure, contextual user details, and privileged admin separation).
 ---
 
-# Shothik Interface Design & Architecture Standard
+# Shothik Interface Design & Architecture Standard (DeepSeek-Close Direction)
 
 ## Overview
 
-This skill defines the architectural, ergonomic, and routing standards for Shothik's main interface using the **DeepSeek-Close Minimalist Shell**. The goal is a calm, dominant, and trustworthy workspace where asking for work is the primary action on first paint, while preserving Shothik's multi-agent workflows (Deep Research, Swarm Debate, Slide Studio, Financial Models, Code Generation, and Web Automation).
+This skill provides implementation checklists, design tokens, and routing standards for developing, refactoring, and reviewing frontend components across Shothik (`artifacts/shothik/src/**/*`).
 
 ---
 
-## Core Design Principles
+## 1. 3-Part Shell Architecture Matrix
 
-1. **Ask-First**: The main interface exists for one job: *ask, read, continue*. Users are never forced to navigate complex taxonomy before typing.
-2. **Intent-First Routing**: The system infers the outcome from natural language (repo work, web automation, deep research, presentation decks, financial models, or conversational queries) rather than requiring pre-selection.
-3. **Progressive Disclosure**: The first screen displays only what is necessary to begin. Deeper technical controls and panels open only when explicitly requested or contextually relevant.
-4. **Surface Discipline**: Each major UI surface owns exactly one responsibility:
-   - **Sidebar**: Global navigation & session history.
-   - **Conversation**: Primary working surface & composer.
-   - **Tools Menu**: Controlled launcher for advanced multi-agent capabilities.
-   - **User Details Drawer**: Contextual secondary inspection (output, history, sources).
-   - **Admin Panel**: Permission-gated internal diagnostics, raw trajectory, and audit trails.
-5. **Separation of User Depth vs. System Depth**: Output previews and session histories belong in the user-facing details drawer. Raw trajectory logs, debug stacks, and execution internals belong exclusively in privileged admin views.
+| Shell Component | Primary Responsibilities | Prohibited Content |
+| :--- | :--- | :--- |
+| **`Sidebar`** | Navigation, workspace switcher, session history, saved reports. | Advanced workflow launchers, onboarding checklists, operational widgets. |
+| **`Conversation`** | Empty state, transcript, composer, inline sources, follow-up actions. | Admin diagnostics, low-level execution logs, raw error stacks. |
+| **`User Details Drawer`** | Output preview, artifact inspection, task history, source drill-down. | Raw trajectory dumps, execution debug traces, admin audits. |
+| **`Admin Panel`** | Permission-gated debug logs, trajectory inspection, failure analysis. | End-user default surfaces. |
 
 ---
 
-## The 3-Part Shell Hierarchy
+## 2. Empty State Implementation Checklist
 
-```
-┌─────────────────┬───────────────────────────────────────────┬───────────────────────────┐
-│     Sidebar     │            Conversation Column            │    User Details Drawer    │
-│  (Navigation)   │          (Primary Work Surface)           │   (Contextual / Closed)   │
-├─────────────────┼───────────────────────────────────────────┼───────────────────────────┤
-│ • Workspace     │ [Empty State]: Calm Heading + 3 Prompts   │ • Output (Preview/Export) │
-│ • History       │ [Transcript]:  Sources ➔ Answer ➔ Cards   │ • History (Prior Tasks)   │
-│ • New Chat      │ [Composer]:    Input + Dictation + Tools  │ • Sources (Citations/Docs)│
-└─────────────────┴───────────────────────────────────────────┴───────────────────────────┘
-```
+- [x] Centered `[💬 Chat | 🎴 Work Canvas]` dual-mode toggle directly above the hero greeting.
+- [x] Primary heading: `"What do you want to accomplish today?"`.
+- [x] Subtitle: `"Ask a question, research deeply, generate slides, build models, or automate workflows."`.
+- [x] 3 Outcome starter prompts:
+  1. 🔬 **Research**: `"Research a market and summarize the findings"`
+  2. ⚖️ **Analysis**: `"Compare options and recommend the best choice"`
+  3. 📝 **Create**: `"Create a report, model, or draft from my idea"`
+- [x] Zero launcher chip strips or promotional banners surrounding the composer.
 
 ---
 
-## Empty State & Starter Prompts
+## 3. Minimalist Composer & Unified `Tools` Menu
 
-The empty state must be calm and distraction-free:
-- **Heading**: `"What do you want to accomplish today?"`
-- **Supporting Line**: `"Ask a question, research deeply, generate slides, build models, or automate workflows."`
-- **3 Intent-First Starter Prompts** (Categorized by user outcome):
-  1. 🔬 **Research**: *"Research a market and summarize findings"*
-  2. ⚖️ **Analysis**: *"Compare options and recommend the best choice"*
-  3. 📝 **Create**: *"Create a report, model, or draft from my idea"*
-- **Prohibited on First Paint**: Onboarding checklists, setup wizards, launch walls, and operational widgets.
-
----
-
-## Minimalist Composer & Tools Menu
-
-### 1. Visible Composer Controls
-- Multi-line auto-resizing textarea.
+### Visible Toolbar Controls
+- Textarea auto-resize.
 - Send / Stop button.
 - 📎 Attach menu (Documents, Images, Folders, URLs).
-- 🎤 **Voice Input**: Lightweight microphone button for speech-to-text dictation (supporting `bn-BD` and `en-US`).
-- **Focus Selector**: Quiet answer-behavior switch (`All Web & AI`, `Pro Search`, `Academic`).
-- **Model Selector**: Lightweight reasoning engine picker (`DeepSeek V4 Flash`, `DeepSeek V4 Pro`, `Gemini 2.5`).
+- 🎤 **Voice Input**: Speech-to-text dictation into textarea (`bn-BD` / `en-US`).
+- 🌐 **Focus Selector**: Lightweight dropdown (`All Web & AI`, `Pro Search`, `Academic`).
+- 🎙️ **Voice Mode**: Dedicated launcher button for 3D Conversational Voice Orb.
+- **Model Selector**: Lightweight engine picker.
 
-### 2. Unified `Tools` Dropdown Menu
-All advanced capabilities are grouped into a single, clean dropdown menu:
-- 🔬 **Research**:
-  - *Deep Research* (Multi-source web & academic intelligence)
-  - *Swarm Debate* (3-agent adversarial critique)
-- 🎨 **Create**:
-  - *Slide Studio* (Pitch decks & visual slides)
-  - *Financial Model* (ScenarioLab spreadsheet modeling)
-  - *Code Engine* (Full-stack React & InsForge schema)
-  - *Venture Synthesis* (1-sentence to company roadmap)
-- 🌐 **Web Automation**:
-  - *Browser Tasks* (Form fills, logins, data collection)
-- 🎙️ **Voice Mode**:
-  - *Conversational Voice Mode* (Fluid hands-free real-time chat)
-
----
-
-## Intent-First Natural Language Routing Engine
-
-When a prompt is submitted, the system classifies the request and chooses the appropriate execution path without requiring manual mode switching:
-
-| User Input Pattern | Inferred Intent | Execution Path | Surface |
-| :--- | :--- | :--- | :--- |
-| `github.com/...`, `analyze repo`, `fix bug` | Codebase Analysis | Repo ingestion & code context | Conversation + Code Artifact |
-| `log into site`, `fill form`, `scrape data` | Web Automation | Browser execution agent | Conversation + Progress status |
-| `tam sam som`, `market size`, `competitor analysis` | Deep Research | Multi-query research agent | Conversation + Research Panel |
-| `create pitch deck`, `presentation slides` | Slide Generation | Marp / PPTX presentation studio | Conversation + Slide Studio |
-| `mrr projection`, `financial model`, `pricing` | Financial Modeling | ScenarioLab spreadsheet engine | Conversation + Sheet Canvas |
-| `approve`, `deny`, `share token` | Control Layer | Permission / Secret gate | Inline Control Card |
+### Unified `Tools` Menu Taxonomy
+```
+Tools
+├── 🔬 Research
+│   ├── Deep Research (Multi-source web & academic intelligence)
+│   └── Swarm Debate (3-agent adversarial critique)
+├── 🎨 Create
+│   ├── Slide Studio (Pitch decks & visual slides)
+│   ├── Financial Model (ScenarioLab spreadsheet modeling)
+│   ├── Code Engine (Full-stack React & InsForge schema)
+│   ├── Venture Synthesis (1-sentence to company roadmap)
+│   └── BoiMela 3D Studio (6x9 Royal Demy layout & 3D book flip)
+├── 🌐 Web Automation
+│   └── Browser Tasks (Autonomous form filling & navigation)
+└── 🎙️ Voice Mode
+    └── Conversational Voice Mode (Fluid real-time audio chat)
+```
 
 ---
 
-## Dual-Voice Ergonomics
+## 4. Intent-First Routing Engine Reference
 
-1. **Voice Input (Dictation)**:
-   - Lives directly on the composer toolbar next to the attach icon.
-   - Converts spoken words into editable text inside the input box.
-   - Supports 1-click toggling between Bengali (`bn-BD`) and English (`en-US`).
-2. **Voice Mode (Conversational)**:
-   - Fluid real-time audio interaction with interactive avatar / orb feedback.
-   - Lives inside the **`Tools`** menu on mobile and standard screens.
+```typescript
+export function classifyPromptIntent(prompt: string, context?: WorkContext): RouteDestination {
+  const normalized = prompt.toLowerCase();
+  
+  // 1. Repo / Codebase Work
+  if (normalized.includes("github.com") || normalized.startsWith("analyze repo") || context?.hasRepo) {
+    return { type: "CODE_ENGINE", surface: "CONVERSATION_PLUS_DRAWER" };
+  }
+  
+  // 2. Web Automation
+  if (normalized.includes("log into") || normalized.includes("fill form") || normalized.includes("automate web")) {
+    return { type: "WEB_AUTOMATION", surface: "CONVERSATION_INLINE_STATUS" };
+  }
+  
+  // 3. Deep Research
+  if (normalized.includes("tam sam som") || normalized.includes("market size") || normalized.includes("deep research")) {
+    return { type: "DEEP_RESEARCH", surface: "CONVERSATION_PLUS_DRAWER" };
+  }
+  
+  // 4. Slide Studio
+  if (normalized.includes("pitch deck") || normalized.includes("presentation slides")) {
+    return { type: "SLIDE_STUDIO", surface: "CONVERSATION_PLUS_DRAWER" };
+  }
+  
+  // 5. BoiMela 3D Book Studio
+  if (normalized.includes("boimela") || normalized.includes("novel") || normalized.includes("book formatting")) {
+    return { type: "WRITING_STUDIO", surface: "DEDICATED_STUDIO" };
+  }
+  
+  // Default: Conversational Response with progressive disclosure
+  return { type: "STANDARD_CHAT", surface: "CONVERSATION" };
+}
+```
 
 ---
 
-## Control Layer: Approvals & Secret Sharing
+## 5. Verification Gate
 
-1. **Approve / Deny Cards**:
-   - Distinct from chat bubbles with clear risk explanation before high-impact operations (file mutations, shell execution, external API publishing).
-   - Collapses into a clean historical audit record once approved/denied.
-2. **Secret Share Input**:
-   - Dedicated masked input modal for sensitive credentials (API keys, passwords, database tokens).
-   - Sensitive tokens are never echoed into raw transcript message strings.
-
----
-
-## Compliance Checklist for Code Reviews
-
-When reviewing or building UI components for Shothik, ensure:
-- [ ] First paint has zero launcher strip clutter around the composer.
-- [ ] Starter prompts express user outcomes rather than internal subsystem names.
-- [ ] The `Tools` menu groups features into *Research*, *Create*, *Web Automation*, and *Voice*.
-- [ ] Trajectory inspection, raw logs, and debug tools are restricted to privileged admin views.
-- [ ] Artifact cards are compact and open the contextual user details drawer on click.
+Always verify frontend changes against this rule using:
+```bash
+pnpm verify:frontend   # Runs Playwright automated visual QA & intent verification
+pnpm verify:all        # Runs monorepo typecheck + server tests + visual QA
+```
