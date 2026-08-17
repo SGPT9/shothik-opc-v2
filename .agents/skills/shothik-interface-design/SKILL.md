@@ -111,3 +111,16 @@ Always verify frontend changes against this rule using:
 pnpm verify:frontend   # Runs Playwright automated visual QA & intent verification
 pnpm verify:all        # Runs monorepo typecheck + server tests + visual QA
 ```
+
+---
+
+## 6. Part 3 Context Studio Engineering Checklist
+
+Adopted from Giant Tech best practices (Claude, ChatGPT Canvas, Cursor, Perplexity):
+
+- [ ] **Bi-Directional Context Bridge**: Text or cell selection bridges to the composer (`onCommentSelection`).
+- [ ] **Sandboxed Rendering**: Interactive code previews and SVG canvases render in isolated containers.
+- [ ] **Grounded DOI Navigation**: Citations link to coordinate bounding boxes on manuscripts (`CitationBadge` ➔ `DocArtifact`).
+- [ ] **Tactile Feedback**: 1-click controls have explicit `type="button"`, `select-none`, and `cursor-pointer`.
+- [ ] **Drawer Dismissal**: Global `Escape` key dismisses sliding drawers and resets active context.
+- [ ] **Splitter Persistence**: Width percentage stored in `localStorage` for responsive desktop multitasking.
