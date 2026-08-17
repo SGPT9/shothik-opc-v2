@@ -1,4 +1,4 @@
-import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt } from "lucide-react";
+import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt, ChevronDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
@@ -135,17 +135,23 @@ export function Transcript({
   const [visibleLimit, setVisibleLimit] = useState(lowRamConfig.virtualizationBatchSize);
   const [trajectoryOpen, setTrajectoryOpen] = useState(false);
   const [trajectoryModel, setTrajectoryModel] = useState("DeepSeek V4 Flash");
+  const [userScrolledUp, setUserScrolledUp] = useState(false);
 
   // Dynamic DOM node virtualization for budget devices (Ticket #1)
   const slicedMessages = lowRamConfig.isLowEndDevice ? messages.slice(-visibleLimit) : messages;
   const hasMoreMessages = lowRamConfig.isLowEndDevice && messages.length > visibleLimit;
 
-  // Auto-scroll to bottom on new messages / streaming
+  // Auto-scroll to bottom on new messages / streaming only if near bottom
   useEffect(() => {
-    if (bottomRef.current && typeof bottomRef.current.scrollIntoView === "function") {
-      bottomRef.current.scrollIntoView({ behavior: "smooth" });
+    if (!userScrolledUp && bottomRef.current && typeof bottomRef.current.scrollIntoView === "function") {
+      bottomRef.current.scrollIntoView({ behavior: isStreaming ? "auto" : "smooth" });
     }
-  }, [messages.length, isStreaming]);
+  }, [messages.length, isStreaming, userScrolledUp]);
+
+  const scrollToBottom = () => {
+    setUserScrolledUp(false);
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   if (!messages || messages.length === 0) {
     return <EmptyChatGreeting onSelectPrompt={onSelectPrompt} />;
@@ -158,7 +164,15 @@ export function Transcript({
         @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
       `}</style>
 
-      <ScrollArea className={cn("flex-1 h-full", className)}>
+      <div className="relative flex-1 h-full overflow-hidden">
+        <ScrollArea
+          className={cn("h-full", className)}
+          onScrollCapture={(e) => {
+            const target = e.currentTarget;
+            const dist = target.scrollHeight - target.scrollTop - target.clientHeight;
+            setUserScrolledUp(dist > 160);
+          }}
+        >
         <div
           className={STYLEX_MAP.container}
           aria-live={isStreaming ? "polite" : "off"}
@@ -607,6 +621,20 @@ export function Transcript({
           <div ref={bottomRef} />
         </div>
       </ScrollArea>
+
+      {/* Floating Scroll to Bottom Button */}
+      {userScrolledUp && (
+        <button
+          type="button"
+          onClick={scrollToBottom}
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-popover/95 backdrop-blur-md border border-border/80 shadow-xl text-xs font-medium text-foreground hover:bg-popover hover:border-brand/50 transition-all duration-150 animate-in fade-in slide-in-from-bottom-2 cursor-pointer"
+          aria-label="Scroll to bottom"
+        >
+          <span>Scroll to bottom</span>
+          <ChevronDown className="w-3.5 h-3.5 text-brand animate-bounce" />
+        </button>
+      )}
+    </div>
 
       {/* 🧾 Replayable Trajectory & Audit Receipt Trail Modal */}
       {trajectoryOpen && (
