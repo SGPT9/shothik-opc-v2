@@ -2,19 +2,24 @@
 
 ## Document Control
 
-- Product: `Shothik AI Workspace`
+- Product: `Shothik AI Autonomous Operating System`
 - Repository: `shothik-web`
-- Status: `Draft v1`
-- Last Updated: `2026-07-23`
-- Owner: Product + Platform + Web
-- Related Documents:
-  - `README.md`
-  - `docs/CODE_WIKI.md`
-  - `docs/FUTURE_WORK_ROADMAP.md`
-  - `docs/PRD_REPO_ALIGNMENT.md`
-  - `docs/HERMES_PHASE_0_TO_5_ARCHITECTURE_PLAN.md`
-  - `docs/adr/README.md`
-  - `docs/PHASE_1_CHAT_TO_SLIDES_EXECUTION_BACKLOG.md`
+- Status: `v2.6.0 Production Verified Baseline`
+- Last Updated: `2026-08-16`
+- Owner: Product + Architecture + Platform Engineering
+- Related Master Documents:
+  - `docs/GROUND_TRUTH.md`
+  - `docs/api/API_REFERENCE.md`
+  - `docs/business/UNIT_ECONOMICS_AND_MONETIZATION_MODEL.md`
+  - `docs/security/SECURITY_AND_VULNERABILITY_MANAGEMENT.md`
+  - `docs/operations/RUNBOOK_AND_DISASTER_RECOVERY.md`
+  - `docs/compliance/BANGLADESH_REGULATORY_AND_TAX_FRAMEWORK.md`
+  - `docs/architecture/MODEL_MESH_AND_COMPUTE_TOPOLOGY.md`
+  - `docs/architecture/OFFLINE_FIRST_AND_DATA_SYNC_SPEC.md`
+  - `docs/marketing/VIRAL_LOOP_AND_CAMPUS_AMBASSADOR_PLAYBOOK.md`
+  - `docs/playbooks/MERCHANT_ONBOARDING_AND_TWIN_PLAYBOOK.md`
+  - `docs/research/unified_workspace_architecture_blueprint.md`
+
 
 ## Executive Summary
 

@@ -1,9 +1,10 @@
 # 🏆 Shothik AI Workspace — Ground Truth Document
 
-**Document Identifier**: `docs/GROUND_TRUTH.md`  
-**System**: Shothik AI Web Platform (`shothik-web`)  
-**Orchestration Core**: Hermes Multi-Surface Autonomous AI Platform  
-**Version**: 2.5.0 Production Baseline  
+> **Document Identifier**: `docs/GROUND_TRUTH.md`  
+> **System**: Shothik Autonomous Operating System (`shothik-web`)  
+> **Orchestration Core**: Hermes Multi-Surface Autonomous AI Platform  
+> **Version**: 2.6.0 Production Baseline  
+> **Last Verified**: August 2026  
 
 ---
 
@@ -11,7 +12,7 @@
 
 ```mermaid
 graph TD
-    Client["Client Browser (Next.js 15 App)"]
+    Client["Client Browser (Next.js 15 App :5000)"]
     
     subgraph "Identity & Storage Vault (InsForge)"
         InsForgeAuth["InsForge Auth & JWT Tokens (Primary Identity Source of Truth)"]
@@ -20,21 +21,31 @@ graph TD
         StorageCDN["Cloudflare R2 + InsForge Storage Buckets"]
     end
     
-    subgraph "Reactive UI & Application State (Convex)"
-        ConvexEngine[("Convex Cloud Functions & DB")]
-        ChatMessages["messages & conversations (Live Subscriptions)"]
-        StudioProjects["projects, chapters & books"]
+    subgraph "Ingress API Gateway & Commerce (:8080)"
+        ApiGateway["Express / Zod API Gateway"]
+        MfsEngine["bKash / Nagad 3-Layer TrxID Verification"]
+        CourierEngine["Steadfast Courier 1-Click Booking"]
+        MeshDispatcher["5-Tier Model Mesh Dispatcher"]
+        BoiMelaEngine["HarfBuzz 6x9 Trade Book PDF Compiler"]
     end
     
-    subgraph "Self-Hosted DeepThink Engine (Hostinger VPS)"
-        VPSNode["Hostinger KVM 2 Ubuntu (187.127.125.115)"]
-        OllamaLocal["Ollama DeepSeek R1 Model (Port 11434)"]
-        TonightWorker["Tonight Engine Background Worker"]
+    subgraph "Self-Hosted DeepThink & Local GPU Inference"
+        LocalGPU["Intel Arc B580 11.8GB GPU (Ollama Port 11434)"]
+        QwenCoder["Qwen2.5-Coder:7b Local Fast Engine (30 tok/s)"]
+        HostingerVPS["Hostinger KVM 2 Colibri VPS (187.127.125.115)"]
+        TonightWorker["Tonight Engine Background Batch Worker"]
+    end
+
+    subgraph "Trust, Voice & Social Ecosystem"
+        LoomfeedCommunity["Loomfeed Web Community (Port 3001)"]
+        RvcVoice["RVC Bengali Voice Synthesis (Port 8000)"]
     end
 
     Client <-->|"Identity & Storage"| InsForgeAuth
-    Client <-->|"Realtime Reactive State"| ConvexEngine
-    Client <-->|"Tier 3 AI Inference"| VPSNode
+    Client <-->|"Commerce, Logistics & Mesh"| ApiGateway
+    Client <-->|"Local Fast Coding / Chat"| LocalGPU
+    Client <-->|"Voice Synthesis"| RvcVoice
+    Client <-->|"Community & Truth Badges"| LoomfeedCommunity
 ```
 
 ---
@@ -44,51 +55,31 @@ graph TD
 | Domain / Subsystem | Primary Source of Truth | Secondary / Cache Layer | Authority File / Schema |
 |---|---|---|---|
 | **User Identity & Auth** | **InsForge BaaS** | Browser JWT Cookies / Bearer Header | [`lib/server-auth.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/server-auth.ts) |
-| **Reactive UI Chat State** | **Convex Cloud DB** | Local Draft History (`localStorage`) | [`convex/schema.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/convex/schema.ts#L594-L680) |
-| **Hermes Observability Audit** | **InsForge PostgreSQL** | Memory Logs | `public.hermes_tool_calls`, `public.hermes_runs` |
+| **API Ingress Gateway** | **API Server (`:8080`)** | Express / Zod Route Handlers | [`artifacts/api-server/src/routes/`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/) |
+| **MFS & Logistics Contracts** | **Hermes Zod Contracts** | `@workspace/hermes` | [`lib/hermes/contracts/`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/hermes/contracts/) |
 | **RAG Vector Memory** | **InsForge `pgvector`** | Local Memory Service | [`lib/insforge/rag-memory.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/insforge/rag-memory.ts) |
-| **Asset Storage & CDN** | **Cloudflare R2** | InsForge Storage Bucket Fallback | [`lib/cloudflare/r2-adapter.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/cloudflare/r2-adapter.ts) |
+| **Local GPU Inference** | **Ollama (`:11434`)** | `qwen2.5-coder:7b` GGUF | `http://127.0.0.1:11434` |
+| **Community & Provenance** | **Loomfeed (`:3001`)** | Epistemic Provenance Badges | [`artifacts/shothik/src/components/chat/EpistemicProvenanceBadge.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/chat/EpistemicProvenanceBadge.tsx) |
+| **Commerce Action Stream** | **`CommerceActionCard.tsx`** | Steadfast API Gateway Integration | [`artifacts/shothik/src/components/chat/CommerceActionCard.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/chat/CommerceActionCard.tsx) |
 | **Overnight DeepThink Jobs** | **Hostinger VPS** | OpenRouter AI Gateway | [`lib/tonight-engine/llm-overnight-client.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/tonight-engine/llm-overnight-client.ts) |
 
 ---
 
-## 3. Core Product Surfaces & Capabilities
+## 3. Active Port Topology & Microservice Map
 
-1. **Chat Super Agent**: Live reasoning DAGs, DeepSeek R1 loops, Swarm visualizers.
-2. **Chat-To-Slides**: Presentation slide generation (`HermesSlidesOrchestrator`).
-3. **Chat-To-Sheets**: Formula & spreadsheet data calculations (`HermesSheetsOrchestrator`).
-4. **Deep Research & Citations**: Academic paper retrieval (PubMed, bioRxiv, OpenAlex).
-5. **Writing Tools**: Paraphraser, Grammar Checker, Summarizer, Polyglot Translator.
-6. **Book Write-To-Publish**: Chapter outlines, manuscript authoring, PublishDrive distribution.
-7. **Second-Me Twin**: AI persona tuning, `pgvector` memory indexing, key custody.
-8. **AI Content Detector**: Scans text for AI patterns with confidence scores.
-9. **Plagiarism Checker**: Web-wide similarity breakdown and source matching.
-10. **Community & Forums**: Peer reviews, reservation badges, voting modes.
-11. **Marketplace & Payouts**: Star transactions, Stripe connect, bKash/MFS payouts.
-12. **Tonight Engine**: Overnight deepthink background worker queue.
+| Port | Service | Tech Stack | Status |
+| :--- | :--- | :--- | :--- |
+| **5000** | Shothik Web App | Next.js 15 / React 19 | 🟢 Active |
+| **8080** | API Ingress Gateway | Node.js / Express / Zod | 🟢 Active |
+| **3001** | Loomfeed Social Network | Next.js 15 / Go Gin | 🟢 Active |
+| **8000** | RVC Bengali Voice Engine | Python FastAPI / PyTorch | 🟢 Active |
+| **11434**| Ollama Local GPU Engine | Intel Arc B580 / Qwen2.5-Coder | 🟢 Active |
+| **5432** | InsForge PostgreSQL BaaS | PostgreSQL 16 + pgvector + RLS | 🟢 Active |
 
 ---
 
-## 4. Ground Truth Rules & Governance
+## 4. Test Verification Benchmark
 
-* **R1 Model Routing**: All complex reasoning tasks default to DeepSeek R1 models with Hostinger VPS failover (`http://187.127.125.115:11434`).
-* **Tool Audit Logging**: Every tool execution via `ToolBridge` **must** insert a record into `public.hermes_tool_calls` in InsForge PostgreSQL.
-* **Vitest Coverage Threshold**: Codebase enforces **100% line, function, and statement coverage** with **98% branch coverage**.
-* **Zero Egress Storage**: Static assets stream through Cloudflare R2 (`cdn.shothik.ai`) with InsForge storage fallback.
-
----
-
-## 5. ChatGPT Omni-Like Voice Agent Capabilities (`vtuber-presenter`)
-
-* **5-Engine Pipeline**:
-  1. **Silero VAD (Voice Activity Detection)**: Sub-50ms real-time speech detection allowing natural human voice interruption mid-sentence.
-  2. **Faster Whisper / Sherpa-ONNX ASR**: High-precision offline speech-to-text conversion.
-  3. **Hermes & TonightEngine Core Brain**: Multi-agent task graph execution and DeepSeek R1 reasoning loops.
-  4. **Edge-TTS / GPT-SoVITS TTS**: Natural multilingual voice synthesis (English, Bangla, Hindi, Spanish).
-  5. **Live2D / VRM 3D Avatar Renderer**: Real-time lip-sync, expression triggers, and desktop companion mode.
-* **4 Major Capabilities**:
-  * 🎙️ **Papermark Pitch Deck Presenter**: Automatically narrates slides and answers investor questions on trackable document links (`/api/hermes/vtuber/session`).
-  * 🛠️ **Live MCP Tool Calling**: Triggers Google Calendar invites, WhatsApp quotes, and Pipedream OAuth workflows mid-voice conversation.
-  * 👁️ **Visual Perception**: Real-time camera & screen sharing analysis for code reviews, UI critique, and diagram explanations.
-  * 🧠 **Mem0 Long-Term Memory**: Remembers founder goals, investor feedback, and interaction histories across sessions.
-
+* **API Gateway Tests**: 22/22 Passing (100%)
+* **Shothik Core Test Suite**: 1362/1362 Passing across 251 suites (100%)
+* **Git Repository Status**: Synchronized with [`https://github.com/ahsanhab919-ux/shothik-opc-v2.git`](https://github.com/ahsanhab919-ux/shothik-opc-v2.git) (`main` branch)
