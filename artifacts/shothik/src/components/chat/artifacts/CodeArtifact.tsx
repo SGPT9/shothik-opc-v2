@@ -83,6 +83,7 @@ export function CodeArtifact({
   const [language, setLanguage] = useState<string>(initialLanguage);
   const [activeView, setActiveView] = useState<"code" | "preview">("code");
   const [copied, setCopied]     = useState<boolean>(false);
+  const [isInspecting, setIsInspecting] = useState<boolean>(false);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code);
@@ -155,13 +156,19 @@ export function CodeArtifact({
             variant="outline"
             size="sm"
             onClick={() => {
-              alert("👁️ OpenSearch-VL Inspector: Visual element inspection active. Click any component element in the live preview to critique layout & code!");
+              setActiveView("preview");
+              setIsInspecting((prev) => !prev);
             }}
-            className="h-7 px-2.5 rounded-lg border-indigo-500/30 bg-indigo-500/10 text-xs font-bold text-indigo-300 hover:bg-indigo-500/20"
+            className={cn(
+              "h-7 px-2.5 rounded-lg text-xs font-bold transition",
+              isInspecting
+                ? "border-indigo-400 bg-indigo-500/30 text-indigo-100 ring-1 ring-indigo-400/50"
+                : "border-indigo-500/30 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20"
+            )}
             title="Inspect UI Component & Visual Layout via OpenSearch-VL"
           >
             <Sparkles className="h-3 w-3 text-indigo-400" />
-            <span className="ml-1 text-[11px]">Inspect UI</span>
+            <span className="ml-1 text-[11px]">{isInspecting ? "Inspecting" : "Inspect UI"}</span>
           </Button>
 
           {/* Copy Button */}
@@ -210,8 +217,18 @@ export function CodeArtifact({
               <span>Rendered HTML/CSS/React Stage</span>
             </div>
             
-            <div className="flex-1 min-h-0 bg-slate-950 p-4 overflow-auto flex items-center justify-center">
-              <div className="w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900/90 p-6 space-y-4 shadow-2xl">
+            <div className="flex-1 min-h-0 bg-slate-950 p-4 overflow-auto flex flex-col items-center justify-center relative">
+              {isInspecting && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-500/40 text-indigo-300 text-[11px] font-mono shadow-lg backdrop-blur-md animate-in fade-in slide-in-from-top-2">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-400 animate-spin" />
+                  <span>OpenSearch-VL Inspector Active · Hover elements to inspect bounding box & DOM</span>
+                </div>
+              )}
+
+              <div className={cn(
+                "w-full max-w-xl rounded-2xl border bg-slate-900/90 p-6 space-y-4 shadow-2xl transition-all",
+                isInspecting ? "border-indigo-500/60 ring-2 ring-indigo-500/20" : "border-slate-800"
+              )}>
                 <div className="flex items-center gap-2">
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-500/20 text-indigo-400 border border-indigo-500/40">
                     <Sparkles className="h-4 w-4" />
