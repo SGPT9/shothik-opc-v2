@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Terminal, ChevronDown, CheckCircle, Play, Copy, X } from "lucide-react";
+import { Terminal, ChevronDown, Check, Copy, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ReplitTerminalConsoleProps {
@@ -18,6 +18,7 @@ export function ReplitTerminalConsole({
   className,
 }: ReplitTerminalConsoleProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const defaultLogs = [
     "[py] Initializing Hermes Python Calculation Sandbox…",
@@ -28,6 +29,12 @@ export function ReplitTerminalConsole({
   ];
 
   const logs = customLogs || defaultLogs;
+
+  const handleCopyLogs = () => {
+    navigator.clipboard.writeText(logs.join("\n"));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className={cn("rounded-xl border border-slate-800 bg-slate-950 font-mono text-[11px] text-slate-300 shadow-2xl overflow-hidden shrink-0", className)}>
@@ -49,8 +56,17 @@ export function ReplitTerminalConsole({
         <div className="flex items-center gap-1">
           <button
             type="button"
+            onClick={handleCopyLogs}
+            className="p-1 text-slate-400 hover:text-white transition cursor-pointer"
+            title={copied ? "Copied logs" : "Copy terminal logs"}
+          >
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
+          </button>
+          <button
+            type="button"
             onClick={() => setCollapsed((prev) => !prev)}
-            className="p-1 text-slate-400 hover:text-white transition"
+            className="p-1 text-slate-400 hover:text-white transition cursor-pointer"
+            title={collapsed ? "Expand terminal" : "Collapse terminal"}
           >
             <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", collapsed && "rotate-180")} />
           </button>
@@ -58,7 +74,8 @@ export function ReplitTerminalConsole({
             <button
               type="button"
               onClick={onClose}
-              className="p-1 text-slate-400 hover:text-white transition"
+              className="p-1 text-slate-400 hover:text-white transition cursor-pointer"
+              title="Close terminal"
             >
               <X className="h-3.5 w-3.5" />
             </button>
