@@ -73,18 +73,18 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
             <button
               type="button"
               onClick={handleCopy}
-              title="যুক্তির বিবরণ কপি করুন"
+              title={isBengali ? "যুক্তির বিবরণ কপি করুন" : "Copy reasoning trace"}
               className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-indigo-300 hover:text-white hover:bg-indigo-500/30 transition cursor-pointer"
             >
               {copied ? (
                 <>
                   <Check className="h-3 w-3 text-emerald-400" />
-                  <span className="text-emerald-400">কপি হয়েছে</span>
+                  <span className="text-emerald-400">{isBengali ? "কপি হয়েছে" : "Copied"}</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-3 w-3" />
-                  <span>কপি</span>
+                  <span>{isBengali ? "কপি" : "Copy"}</span>
                 </>
               )}
             </button>
