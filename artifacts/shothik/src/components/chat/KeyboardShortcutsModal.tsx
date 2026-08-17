@@ -25,11 +25,19 @@ const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
     ],
   },
   {
+    title: "Artifacts & Studio Stages",
+    items: [
+      { key: "← / → / Space", label: "Flip Slides & Pages", desc: "Step through slides or document pages" },
+      { key: "Home / End", label: "First / Last Page", desc: "Jump directly to the beginning or end of slides/docs" },
+      { key: "Tab / Enter / Arrows", label: "Spreadsheet Grid Navigation", desc: "Move between active cells in financial sheet" },
+    ],
+  },
+  {
     title: "Workspace & Tools",
     items: [
       { key: "Esc", label: "Dismiss Surfaces", desc: "Close details drawer, dropdowns, and modal dialogs" },
-      { key: "Ctrl + Shift + E", label: "Export Session", desc: "Download conversation as Markdown or JSON" },
-      { key: "?", label: "Keyboard Cheat Sheet", desc: "Toggle this shortcut cheatsheet from anywhere" },
+      { key: "Ctrl + Shift + E", label: "Export Session", desc: "Download conversation as Markdown, JSON, or PDF" },
+      { key: "? or Ctrl + /", label: "Keyboard Cheat Sheet", desc: "Toggle this shortcut cheatsheet from anywhere" },
     ],
   },
 ];
@@ -50,9 +58,12 @@ export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcuts
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150">
+    <div
+      onClick={() => onOpenChange(false)}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150 cursor-pointer"
+    >
       <div
-        className="relative w-full max-w-lg rounded-3xl border border-border/80 bg-popover/95 p-6 shadow-2xl backdrop-blur-2xl animate-in zoom-in-95 duration-150 space-y-5"
+        className="relative w-full max-w-lg rounded-3xl border border-border/80 bg-popover/95 p-6 shadow-2xl backdrop-blur-2xl animate-in zoom-in-95 duration-150 space-y-5 cursor-default"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
