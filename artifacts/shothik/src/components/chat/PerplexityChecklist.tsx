@@ -26,31 +26,34 @@ export function PerplexityChecklist({ onSelectPrompt }: PerplexityChecklistProps
           </div>
         </div>
 
-        <div 
+        <button 
+          type="button"
           onClick={() => onSelectPrompt?.("Help me invite team members to our workspace")}
-          className="flex items-center justify-between py-2.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer group transition"
+          className="w-full flex items-center justify-between py-2.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer select-none group transition text-left"
         >
           <div className="flex items-center gap-3">
             <div className="w-4 h-4 rounded-full border border-zinc-400 dark:border-zinc-600 group-hover:border-zinc-600 dark:group-hover:border-zinc-400 shrink-0" />
             <span>Invite team members</span>
           </div>
           <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-600 dark:group-hover:text-zinc-400" />
-        </div>
+        </button>
 
-        <div 
+        <button 
+          type="button"
           onClick={() => onSelectPrompt?.("I want to add credits to my Shothik workspace")}
-          className="flex items-center justify-between py-2.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer group transition"
+          className="w-full flex items-center justify-between py-2.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer select-none group transition text-left"
         >
           <div className="flex items-center gap-3">
             <div className="w-4 h-4 rounded-full border border-zinc-400 dark:border-zinc-600 group-hover:border-zinc-600 dark:group-hover:border-zinc-400 shrink-0" />
             <span>Add credits</span>
           </div>
           <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-600 dark:group-hover:text-zinc-400" />
-        </div>
+        </button>
 
-        <div 
+        <button 
+          type="button"
           onClick={() => onSelectPrompt?.("How do I tag @Computer or @Shothik in Slack and WhatsApp?")}
-          className="flex items-center justify-between py-2.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer group transition"
+          className="w-full flex items-center justify-between py-2.5 text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white cursor-pointer select-none group transition text-left"
         >
           <div className="flex items-center gap-3">
             <div className="w-4 h-4 rounded-full border border-zinc-400 dark:border-zinc-600 group-hover:border-zinc-600 dark:group-hover:border-zinc-400 shrink-0" />
@@ -62,7 +65,7 @@ export function PerplexityChecklist({ onSelectPrompt }: PerplexityChecklistProps
             </span>
             <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-600 dark:group-hover:text-zinc-400" />
           </div>
-        </div>
+        </button>
       </div>
     </div>
   );
