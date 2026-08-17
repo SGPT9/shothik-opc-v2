@@ -115,14 +115,16 @@ export function OvernightJobCard({
 
           <div className="grid grid-cols-2 gap-2 pt-1 font-mono">
             <button
+              type="button"
               onClick={() => onOpenArtifact ? onOpenArtifact("sheet") : window.location.href = "/agents/chat?tab=sheet"}
-              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 transition text-[11px] text-left flex items-center gap-1.5 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 transition text-[11px] text-left flex items-center gap-1.5 cursor-pointer select-none"
             >
               <span>📊 Open Data Sheet</span>
             </button>
             <button
+              type="button"
               onClick={() => onOpenArtifact ? onOpenArtifact("slides") : window.location.href = "/agents/chat?tab=slides"}
-              className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 transition text-[11px] text-left flex items-center gap-1.5 cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 transition text-[11px] text-left flex items-center gap-1.5 cursor-pointer select-none"
             >
               <span>🎴 Launch Slide Deck</span>
             </button>
