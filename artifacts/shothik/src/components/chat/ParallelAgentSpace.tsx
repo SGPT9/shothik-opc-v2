@@ -264,8 +264,9 @@ export function ParallelAgentSpace({
         </div>
 
         <button
+          type="button"
           onClick={onClose}
-          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 transition cursor-pointer select-none"
           aria-label="Close panel"
         >
           <X className="w-4 h-4" />
@@ -341,9 +342,9 @@ export function ParallelAgentSpace({
                       type="submit"
                       disabled={!usernameInput || !passwordInput}
                       className={cn(
-                        "w-full py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-lg",
+                        "w-full py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition shadow-lg select-none",
                         usernameInput && passwordInput
-                          ? "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/20"
+                          ? "bg-amber-600 hover:bg-amber-500 text-white shadow-amber-900/20 cursor-pointer"
                           : "bg-slate-800 text-slate-500 cursor-not-allowed"
                       )}
                     >
