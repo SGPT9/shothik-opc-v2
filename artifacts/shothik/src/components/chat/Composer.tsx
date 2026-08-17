@@ -168,6 +168,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
     const [focusMenuOpen, setFocusMenuOpen] = useState(false);
     const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
+    const [isDraggingOver, setIsDraggingOver] = useState(false);
+    const lastPromptRef = useRef<string>("");
 
     const recognitionRef = useRef<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -242,6 +244,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       if (activeStreaming || disabled) return;
       const trimmed = textValue.trim();
       if (!trimmed && attachments.length === 0) return;
+
+      lastPromptRef.current = trimmed;
 
       if (onAction) {
         onAction({
@@ -340,9 +344,44 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     }, [onAction, onRemoveContextChip]);
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Up-arrow prompt history recall when textarea is empty
+      if (e.key === "ArrowUp" && !textValue && lastPromptRef.current) {
+        e.preventDefault();
+        if (onChangeProp) onChangeProp(lastPromptRef.current);
+        else setLocalValue(lastPromptRef.current);
+        return;
+      }
+
       if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         handleTextSubmit();
+      }
+    };
+
+    const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+      if (e.clipboardData.files && e.clipboardData.files.length > 0) {
+        dispatchAttachFiles(e.clipboardData.files);
+      }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDraggingOver(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDraggingOver(false);
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setIsDraggingOver(false);
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        dispatchAttachFiles(e.dataTransfer.files);
       }
     };
 
@@ -352,6 +391,16 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         e.target.value = "";
       }
     };
+
+    const isSlashMenuVisible = textValue.startsWith("/") && !textValue.includes(" ");
+    const matchingSlashCommands = [
+      { cmd: "/research", label: "Deep Research", desc: "Comprehensive web & academic investigation", Icon: Search, tab: "research" as const },
+      { cmd: "/slides", label: "Slide Studio", desc: "Investor pitch decks & Marp visual slides", Icon: Presentation, tab: "slides" as const },
+      { cmd: "/sheet", label: "Financial Model", desc: "Interactive revenue forecasting & spreadsheets", Icon: Table2, tab: "sheet" as const },
+      { cmd: "/boimela", label: "BoiMela 3D", desc: "6×9 Royal Demy book formatting & 3D preview", Icon: BookOpen, action: () => { window.location.href = "/writing-studio"; } },
+      { cmd: "/code", label: "Code Engine", desc: "Fullstack code generation & sandbox runner", Icon: Code2, tab: "code" as const },
+      { cmd: "/swarm", label: "Swarm Debate", desc: "3-agent adversarial critique & fact-check", Icon: Zap, tool: "swarm" as const },
+    ].filter((c) => c.cmd.toLowerCase().startsWith(textValue.toLowerCase()));
 
     const activeModel = MODELS.find((m) => m.value === modelHandle) || MODELS[0];
 
@@ -364,7 +413,63 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         <input ref={folderInputRef} type="file" {...({ webkitdirectory: "", directory: "" } as any)} className="hidden" onChange={handleFileChange} />
 
         {/* Outer Composer Container */}
-        <div className="w-full max-w-3xl mx-auto flex flex-col rounded-2xl border border-border/80 bg-card/90 shadow-xl backdrop-blur-xl transition-all duration-200 focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10">
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={cn(
+            "relative w-full max-w-3xl mx-auto flex flex-col rounded-2xl border transition-all duration-200 bg-card/90 shadow-xl backdrop-blur-xl focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10",
+            isDraggingOver ? "border-dashed border-brand bg-brand/5 ring-2 ring-brand/30" : "border-border/80"
+          )}
+        >
+          {/* Drag and Drop Active Overlay */}
+          {isDraggingOver && (
+            <div className="absolute inset-0 z-40 flex items-center justify-center rounded-2xl bg-background/80 backdrop-blur-md text-brand font-semibold text-xs animate-in fade-in pointer-events-none">
+              <span>📂 Drop files to attach instantly</span>
+            </div>
+          )}
+
+          {/* Slash Commands Autocomplete Popup */}
+          {isSlashMenuVisible && matchingSlashCommands.length > 0 && (
+            <div className="absolute bottom-full left-4 mb-2 z-50 w-72 rounded-2xl border border-border/80 bg-popover shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-2 py-1 text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-bold">
+                Slash Workflows
+              </div>
+              <div className="space-y-0.5 mt-0.5">
+                {matchingSlashCommands.map((c) => {
+                  const Icon = c.Icon;
+                  return (
+                    <button
+                      key={c.cmd}
+                      type="button"
+                      onClick={() => {
+                        if (c.action) {
+                          c.action();
+                        } else if (c.tab) {
+                          dispatchArtifact(c.tab);
+                        } else if (c.tool) {
+                          dispatchTool(c.tool);
+                        }
+                        if (onChangeProp) onChangeProp("");
+                        else setLocalValue("");
+                      }}
+                      className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 transition cursor-pointer"
+                    >
+                      <Icon className="w-4 h-4 text-brand shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs font-bold text-foreground">{c.cmd}</span>
+                          <span className="text-[10px] text-muted-foreground">· {c.label}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate">{c.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* ── Context Chips (if any) ── */}
           {contextChips.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-1 border-b border-border/30">
@@ -426,6 +531,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 else setLocalValue(e.target.value);
               }}
               onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
               disabled={disabled || activeStreaming}
               placeholder={placeholder}
               rows={2}
@@ -726,6 +832,13 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
             {/* Right Controls: Model Selector + Send/Stop Button */}
             <div className="flex items-center gap-1.5">
+              {/* Token / Character Count for Long Documents */}
+              {textValue.length > 500 && (
+                <span className="hidden md:inline text-[9px] font-mono text-muted-foreground/60 mr-1 select-none" title="Estimated character and token length">
+                  {textValue.length.toLocaleString()} chars · ~{Math.round(textValue.length / 4)} tok
+                </span>
+              )}
+
               {/* Keyboard Shortcut Hint */}
               <span className="hidden lg:inline text-[9px] font-mono text-muted-foreground/40 mr-0.5 select-none" title="Press Enter to send, Shift+Enter for new line">
                 ↵ Send
