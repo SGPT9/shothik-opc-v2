@@ -31,7 +31,7 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { PerplexityFocusSelector, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
+import { PerplexityFocusSelector, PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
 import type { ChatPersona } from "@/lib/chat/types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -165,6 +165,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [attachMenuOpen, setAttachMenuOpen] = useState(false);
     const [modelMenuOpen, setModelMenuOpen] = useState(false);
     const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+    const [focusMenuOpen, setFocusMenuOpen] = useState(false);
     const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
 
     const recognitionRef = useRef<any>(null);
@@ -417,17 +418,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             />
           </div>
 
-          {/* ── Focus Mode Selector (Quiet Answer Behavior) ── */}
-          <div className="px-3 pb-1">
-            <PerplexityFocusSelector
-              currentFocus={perplexityFocus}
-              onSelectFocus={(mode) => setPerplexityFocus(mode)}
-            />
-          </div>
-
           {/* ── Bottom Toolbar ── */}
           <div className="flex items-center justify-between px-3 py-2 border-t border-border/40 mt-1">
-            {/* Left Controls: Attach + Voice Input + Tools Dropdown */}
+            {/* Left Controls: Attach + Voice Input + Tools Dropdown + Focus Selector */}
             <div className="flex items-center gap-1.5">
               {/* 📎 Attach Button & Dropdown */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -437,6 +430,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setAttachMenuOpen((o) => !o);
                     setToolsMenuOpen(false);
                     setModelMenuOpen(false);
+                    setFocusMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
                   aria-label="Attach files"
@@ -506,6 +500,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setToolsMenuOpen((o) => !o);
                     setAttachMenuOpen(false);
                     setModelMenuOpen(false);
+                    setFocusMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
                   className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/70 text-xs font-semibold text-foreground/90 transition cursor-pointer"
@@ -601,29 +596,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         <Code2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Code Engine</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Full-stack React components & InsForge schema</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchArtifact("synthesizer");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Rocket className="w-3.5 h-3.5 text-pink-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Venture Synthesis</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">1-sentence idea to complete company stack</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Fullstack engineering & sandbox runner</span>
                         </div>
                       </button>
                     </div>
 
-                    {/* Web Automation Section */}
+                    {/* Web & Voice Section */}
                     <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
                       <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Web Automation
+                        Automation & Perception
                       </div>
                       <button
                         type="button"
@@ -633,33 +614,81 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Globe className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                        <Globe className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Web Automation</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Browser navigation, forms & data collection</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Autonomous browser form filling & actions</span>
                         </div>
                       </button>
-                    </div>
-
-                    {/* Voice Mode Section */}
-                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
-                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Voice
-                      </div>
                       <button
                         type="button"
                         onClick={() => {
-                          dispatchTool("voice");
+                          if (onVoiceOrbClick) onVoiceOrbClick();
+                          else dispatchTool("voice");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Phone className="w-3.5 h-3.5 text-teal-400 shrink-0" />
+                        <Phone className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Conversational Voice Mode</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Fluid real-time voice chat</span>
+                          <span className="font-medium text-foreground block">Voice Mode</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Realtime conversational voice session</span>
                         </div>
                       </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 🌐 Focus Mode Selector (Clean Bottom Toolbar Dropdown) */}
+              <div className="relative" onClick={(e) => e.stopPropagation()}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFocusMenuOpen((o) => !o);
+                    setToolsMenuOpen(false);
+                    setAttachMenuOpen(false);
+                    setModelMenuOpen(false);
+                  }}
+                  disabled={disabled || activeStreaming}
+                  className="flex items-center gap-1 h-8 px-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                  title="Select web reasoning & research focus mode"
+                >
+                  <Globe className="h-3.5 w-3.5 text-brand" />
+                  <span className="text-[11px] font-medium hidden md:inline">
+                    {PERPLEXITY_FOCUS_OPTIONS.find((f) => f.value === perplexityFocus)?.label || "Web & AI"}
+                  </span>
+                  <ChevronDown className="h-3 w-3 opacity-60" />
+                </button>
+
+                {focusMenuOpen && (
+                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-64 rounded-2xl border border-border/80 bg-popover shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
+                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
+                      Reasoning Focus Mode
+                    </div>
+                    <div className="mt-1 space-y-0.5">
+                      {PERPLEXITY_FOCUS_OPTIONS.map((option) => (
+                        <button
+                          key={option.value}
+                          type="button"
+                          onClick={() => {
+                            setPerplexityFocus(option.value);
+                            setFocusMenuOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full items-start gap-2 px-2.5 py-1.5 rounded-lg text-xs transition cursor-pointer text-left",
+                            perplexityFocus === option.value
+                              ? "bg-brand/15 text-brand font-semibold"
+                              : "hover:bg-muted/70 text-foreground"
+                          )}
+                        >
+                          <div className="flex-1 min-w-0">
+                            <span className="block">{option.label}</span>
+                            <span className="text-[10px] text-muted-foreground block truncate">{option.description}</span>
+                          </div>
+                          {perplexityFocus === option.value && <Check className="h-3.5 w-3.5 text-brand shrink-0 mt-0.5" />}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
