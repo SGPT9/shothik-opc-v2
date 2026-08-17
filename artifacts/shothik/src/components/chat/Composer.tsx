@@ -21,6 +21,11 @@ import {
   Code2,
   Search,
   BookOpen,
+  Flame,
+  FileCheck,
+  Compass,
+  Truck,
+  Brain,
 } from "lucide-react";
 import {
   forwardRef,
@@ -410,9 +415,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       { cmd: "/research", label: "Deep Research", desc: "Comprehensive web & academic investigation", Icon: Search, tab: "research" as const },
       { cmd: "/slides", label: "Slide Studio", desc: "Investor pitch decks & Marp visual slides", Icon: Presentation, tab: "slides" as const },
       { cmd: "/sheet", label: "Financial Model", desc: "Interactive revenue forecasting & spreadsheets", Icon: Table2, tab: "sheet" as const },
-      { cmd: "/boimela", label: "BoiMela 3D", desc: "6×9 Royal Demy book formatting & 3D preview", Icon: BookOpen, action: () => { window.location.href = "/writing-studio"; } },
       { cmd: "/code", label: "Code Engine", desc: "Fullstack code generation & sandbox runner", Icon: Code2, tab: "code" as const },
       { cmd: "/swarm", label: "Swarm Debate", desc: "3-agent adversarial critique & fact-check", Icon: Zap, tool: "swarm" as const },
+      { cmd: "/boimela", label: "BoiMela 3D", desc: "6×9 Royal Demy book formatting & 3D preview", Icon: BookOpen, action: () => { window.location.href = "/writing-studio"; } },
+      { cmd: "/grill-me", label: "Grill Me", desc: "Relentless adversarial interview to stress-test your plan", Icon: Flame, action: () => { if (onSend) onSend("Please grill me relentlessly about my plan to find edge cases and hidden assumptions."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Please grill me relentlessly about my plan to find edge cases and hidden assumptions." } }); } },
+      { cmd: "/review", label: "Code Review", desc: "Audit code against repository standards and specs", Icon: FileCheck, action: () => { if (onSend) onSend("Please run a thorough code review against documented standards and specifications."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Please run a thorough code review against documented standards and specifications." } }); } },
+      { cmd: "/prd", label: "PRD Generator", desc: "Turn raw ideas into structured Product Requirement Documents", Icon: FileText, action: () => { if (onSend) onSend("Please convert my notes into a structured Product Requirement Document (PRD)."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Please convert my notes into a structured Product Requirement Document (PRD)." } }); } },
+      { cmd: "/browser", label: "Web Automation", desc: "Autonomous browser subagent & live web interaction", Icon: Compass, tool: "browser" as const },
+      { cmd: "/commerce", label: "Commerce & MFS", desc: "Steadfast & Pathao courier logistics and bKash/Nagad", Icon: Truck, tab: "commerce" as const },
+      { cmd: "/learn", label: "Rule Learning", desc: "Persist custom agent behavior and architectural rules", Icon: Brain, action: () => { if (onSend) onSend("Please analyze our recent work and propose a new persistent rule/skill for future sessions."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Please analyze our recent work and propose a new persistent rule/skill for future sessions." } }); } },
     ].filter((c) => c.cmd.toLowerCase().startsWith(textValue.toLowerCase()));
 
     const activeModel = MODELS.find((m) => m.value === modelHandle) || MODELS[0];
@@ -444,9 +455,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
           {/* Slash Commands Autocomplete Popup */}
           {isSlashMenuVisible && matchingSlashCommands.length > 0 && (
-            <div className="absolute bottom-full left-4 mb-2 z-50 w-72 rounded-2xl border border-border/80 bg-popover shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
-              <div className="px-2 py-1 text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-bold">
-                Slash Workflows
+            <div className="absolute bottom-full left-4 mb-2 z-50 w-80 max-h-72 overflow-y-auto custom-scrollbar rounded-2xl border border-border/80 bg-popover shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-2.5 py-1 text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-bold flex items-center justify-between">
+                <span>Slash Workflows & Skills</span>
+                <span className="text-[9px] text-brand font-normal">{matchingSlashCommands.length} skills</span>
               </div>
               <div className="space-y-0.5 mt-0.5">
                 {matchingSlashCommands.map((c) => {
@@ -472,7 +484,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
                           <span className="font-mono text-xs font-bold text-foreground">{c.cmd}</span>
-                          <span className="text-[10px] text-muted-foreground">· {c.label}</span>
+                          <span className="text-[10px] text-muted-foreground font-medium">· {c.label}</span>
                         </div>
                         <p className="text-[10px] text-muted-foreground truncate">{c.desc}</p>
                       </div>
