@@ -172,16 +172,24 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
     window.print();
   };
 
-  // Keyboard Navigation: ← and → arrows to flip slides
+  // Keyboard Navigation: ←, →, Space, PgUp/PgDn, Home/End to flip slides
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeTag = document.activeElement?.tagName.toLowerCase();
       if (activeTag === "input" || activeTag === "textarea") return;
 
-      if (e.key === "ArrowLeft") {
+      if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
         setCurrentSlide((prev) => Math.max(0, prev - 1));
-      } else if (e.key === "ArrowRight") {
+      } else if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault();
         setCurrentSlide((prev) => Math.min(slideList.length - 1, prev + 1));
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setCurrentSlide(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setCurrentSlide(slideList.length - 1);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
