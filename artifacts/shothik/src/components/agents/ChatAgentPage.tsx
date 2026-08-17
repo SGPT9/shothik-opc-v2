@@ -449,17 +449,6 @@ export function ChatAgentPage() {
 
           {/* Right Mode Toggle & Actions */}
           <div className="flex items-center gap-2">
-            {/* 🎙️ 3D Voice Orb Quick Trigger */}
-            <button
-              type="button"
-              onClick={() => setIsVoiceOrbOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/15 via-purple-500/15 to-indigo-500/15 hover:from-rose-500/30 hover:to-indigo-500/30 text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-500/50 transition cursor-pointer text-xs font-semibold shadow-xs"
-              title="Launch 3D Conversational Voice Orb"
-            >
-              <Phone className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-              <span className="hidden sm:inline">Voice Orb</span>
-            </button>
-
             {/* Dual Mode Switcher (Chat | Work Canvas) - Shown in header when transcript is active or canvas open */}
             {(messages.length > 0 || artifactOpen) && (
               <div className="flex items-center bg-secondary/60 p-0.5 rounded-xl border border-border/40 text-xs animate-fade-in">

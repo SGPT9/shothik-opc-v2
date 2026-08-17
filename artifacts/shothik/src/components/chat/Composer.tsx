@@ -896,34 +896,44 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 )}
               </div>
 
-              {/* Send / Stop Button */}
+              {/* Send / Stop / Voice Mode Orb Button (ChatGPT Pattern) */}
               {activeStreaming ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition"
+                  className="h-8 w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition cursor-pointer"
                   onClick={dispatchStop}
                   aria-label="Stop generating"
                 >
                   <Square className="h-3.5 w-3.5 fill-current" />
                 </Button>
-              ) : (
+              ) : textValue.trim() || attachments.length > 0 ? (
                 <Button
                   type="button"
                   size="icon"
-                  className={cn(
-                    "h-8 w-8 rounded-xl transition-all duration-150",
-                    textValue.trim() || attachments.length > 0
-                      ? "bg-brand text-white hover:bg-brand/90 shadow-md shadow-brand/25 scale-100 hover:scale-105 cursor-pointer"
-                      : "bg-muted/40 text-muted-foreground/40 cursor-not-allowed"
-                  )}
+                  className="h-8 w-8 rounded-xl bg-brand text-white hover:bg-brand/90 shadow-md shadow-brand/25 scale-100 hover:scale-105 transition-all duration-150 cursor-pointer animate-in zoom-in-95"
                   onClick={handleTextSubmit}
-                  disabled={disabled || (!textValue.trim() && attachments.length === 0)}
+                  disabled={disabled}
                   aria-label="Send message"
                 >
                   <Send className="h-3.5 w-3.5" />
                 </Button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onVoiceOrbClick) onVoiceOrbClick();
+                    else dispatchTool("voice");
+                  }}
+                  disabled={disabled}
+                  aria-label="Start Voice Mode"
+                  title="Start Realtime Conversational Voice Mode (ChatGPT style)"
+                  className="group relative flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-tr from-rose-500/20 via-purple-500/20 to-indigo-500/20 hover:from-rose-500/35 hover:to-indigo-500/35 border border-rose-500/30 hover:border-rose-500/60 text-rose-400 hover:text-white shadow-xs transition-all duration-200 cursor-pointer hover:scale-105"
+                >
+                  <span className="absolute inset-0 rounded-xl bg-rose-500/10 animate-ping opacity-30 pointer-events-none" />
+                  <Phone className="h-3.5 w-3.5 text-rose-400 group-hover:text-white transition-colors" />
+                </button>
               )}
             </div>
           </div>
