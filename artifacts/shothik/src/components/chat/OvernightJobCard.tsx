@@ -10,6 +10,7 @@ export interface OvernightJobCardProps {
   estimatedCompletion?: string;
   currentStep?: string;
   progressPercent?: number;
+  onOpenArtifact?: (tab: "sheet" | "slides" | "research") => void;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export function OvernightJobCard({
   estimatedCompletion = '7:30 AM (Tonight)',
   currentStep = 'Deep research in progress...',
   progressPercent = 35,
+  onOpenArtifact,
   className,
 }: OvernightJobCardProps) {
   return (
@@ -113,14 +115,14 @@ export function OvernightJobCard({
 
           <div className="grid grid-cols-2 gap-2 pt-1 font-mono">
             <button
-              onClick={() => alert("Opening interactive data sheet...")}
-              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 transition text-[11px] text-left flex items-center gap-1.5"
+              onClick={() => onOpenArtifact ? onOpenArtifact("sheet") : window.location.href = "/agents/chat?tab=sheet"}
+              className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-200 transition text-[11px] text-left flex items-center gap-1.5 cursor-pointer"
             >
               <span>📊 Open Data Sheet</span>
             </button>
             <button
-              onClick={() => alert("Launching Marp slide deck...")}
-              className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 transition text-[11px] text-left flex items-center gap-1.5"
+              onClick={() => onOpenArtifact ? onOpenArtifact("slides") : window.location.href = "/agents/chat?tab=slides"}
+              className="px-2.5 py-1.5 rounded-lg bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-200 transition text-[11px] text-left flex items-center gap-1.5 cursor-pointer"
             >
               <span>🎴 Launch Slide Deck</span>
             </button>
