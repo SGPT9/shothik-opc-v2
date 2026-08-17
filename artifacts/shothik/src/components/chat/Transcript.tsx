@@ -269,6 +269,7 @@ export function Transcript({
               : undefined;
             const statusLabel = message.metadata?.statusLabel;
             const plan = !isUser ? message.metadata?.plan : undefined;
+            const sources = message.metadata?.sources || [];
 
             // ── USER message: right-aligned bubble ─────────────────────────
             if (isUser) {
@@ -828,8 +829,8 @@ export function Transcript({
           })}
 
           {/* 🚀 Next-Step Bridge: Turn into Twin Workspace */}
-          {messages.length >= 2 && !streamingMessage && (
-            <TwinCtaCard conversationId={conversationId || messages[0]?._id || "conv_active"} />
+          {messages.length >= 2 && !isStreaming && (
+            <TwinCtaCard conversationId={messages[0]?._id || "conv_active"} />
           )}
 
           {/* Bottom anchor */}

@@ -67,7 +67,11 @@ export const FLEET_AGENTS: FleetAgent[] = [
   { id: "business", name: "Business & Pitch Partner", badge: "Ventures & Slides", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Investor decks, financial models, contracts & proposals" },
 ];
 
-export function ChatAgentPage() {
+export interface ChatAgentPageProps {
+  initialTab?: ArtifactTab;
+}
+
+export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const searchParams = useSearchParams();
   const initialConvId = searchParams.get("conversationId") || undefined;
 
@@ -91,8 +95,8 @@ export function ChatAgentPage() {
   });
 
   // ── Contextual User Details / Artifact panel (hidden by default) ──
-  const [artifactOpen, setArtifactOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<ArtifactTab>("slides");
+  const [artifactOpen, setArtifactOpen] = useState(Boolean(initialTab));
+  const [activeTab, setActiveTab] = useState<ArtifactTab>(initialTab || "slides");
 
   // ── Artifact Context Handoff Data ──
   const [slidesTopic, setSlidesTopic] = useState<string | undefined>("AI-Powered E-Commerce & Retail in Bangladesh");
@@ -672,31 +676,150 @@ export function ChatAgentPage() {
             {/* ── Left Conversation Column ── */}
             <ResizablePanel defaultSize={55} minSize={35} className="flex flex-col min-w-0 h-full overflow-hidden">
               <ComponentErrorBoundary title="Transcript Panel Interrupted">
-                <div className="flex-1 min-h-0 overflow-hidden">
-                  <Transcript
-                    messages={messages as any}
-                    agentId={selectedAgentId}
-                    isStreaming={streamState.isStreaming}
-                    statusText={streamState.statusText}
-                    onOpenArtifact={(type) => handleOpenArtifact(type)}
-                    onOpenSource={handleOpenSource}
-                    onSelectPrompt={(prompt, mode, tab) => {
-                      handleSendMessage(prompt);
-                      if (tab) {
-                        handleOpenArtifact(tab);
-                      }
-                    }}
-                    onApproveCheckpoint={handleApproveCheckpoint}
-                    onDenyCheckpoint={handleDenyCheckpoint}
-                    onSubmitSecret={handleSubmitSecret}
-                    onStop={handleCancelActiveRun}
-                  />
+                <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+                  {messages.length === 0 ? (
+                    <div className="p-6 flex flex-col justify-center min-h-full max-w-lg mx-auto space-y-4">
+                      <div className="space-y-1 text-left">
+                        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-mono font-medium">
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span className="capitalize">{activeTab} Studio Copilot</span>
+                        </div>
+                        <h2 className="text-lg font-bold text-foreground tracking-tight">
+                          {activeTab === "slides" && "What presentation should we build?"}
+                          {activeTab === "sheet" && "What model should we structure?"}
+                          {activeTab === "research" && "What topic should we research?"}
+                          {!["slides", "sheet", "research"].includes(activeTab) && "What should we create today?"}
+                        </h2>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {activeTab === "slides" && "Describe your deck or select a starter prompt to generate slides on the right canvas."}
+                          {activeTab === "sheet" && "Describe your scenario or formulas to populate the spreadsheet canvas on the right."}
+                          {activeTab === "research" && "Enter a research query or market sizing question to start multi-source synthesis."}
+                          {!["slides", "sheet", "research"].includes(activeTab) && "Type your instructions below to drive the active studio canvas."}
+                        </p>
+                      </div>
 
-                  {/* Twin Startup Handoff Card */}
-                  {hasStartupIntent && (
-                    <div className="px-4 pb-3 max-w-3xl mx-auto">
-                      <TwinCtaCard conversationId={conversationId || "conv_default"} />
+                      {/* Tailored Studio Quick Starter Prompts */}
+                      <div className="space-y-2 pt-2">
+                        {activeTab === "slides" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleSendMessage("Generate a 10-slide investor pitch deck for a South Asian SaaS startup");
+                                setSlidesTopic("10-Slide Investor Pitch Deck (South Asian SaaS)");
+                              }}
+                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
+                            >
+                              <div className="font-semibold text-brand group-hover:text-brand-light flex items-center justify-between">
+                                <span>📽️ 10-Slide Investor Pitch Deck</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">Problem, solution, market size, business model & traction.</div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleSendMessage("Create an executive presentation on Bangladesh e-commerce market opportunity");
+                                setSlidesTopic("Bangladesh E-Commerce Market Opportunity");
+                              }}
+                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
+                            >
+                              <div className="font-semibold text-indigo-400 group-hover:text-indigo-300 flex items-center justify-between">
+                                <span>📊 Market Opportunity Overview</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">Macro landscape, mobile internet penetration & digital growth.</div>
+                            </button>
+                          </>
+                        )}
+
+                        {activeTab === "sheet" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleSendMessage("Build a 3-scenario SaaS revenue & cash flow model (Base / Aggressive / Conservative)");
+                              }}
+                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
+                            >
+                              <div className="font-semibold text-cyan-400 group-hover:text-cyan-300 flex items-center justify-between">
+                                <span>📈 3-Scenario Financial Model</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">Base, aggressive, and conservative projections with formula sync.</div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleSendMessage("Generate a unit economics and customer acquisition cost (CAC) sheet with bKash/Nagad fees");
+                              }}
+                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
+                            >
+                              <div className="font-semibold text-emerald-400 group-hover:text-emerald-300 flex items-center justify-between">
+                                <span>💵 Unit Economics & MFS Payouts</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">CAC, LTV, gross margin, and local merchant gateway fee splits.</div>
+                            </button>
+                          </>
+                        )}
+
+                        {activeTab === "research" && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleSendMessage("Deep research analysis on Bangladesh Logistics & Parcel Delivery TAM/SAM/SOM");
+                                setResearchQuery("Bangladesh Logistics & Parcel Delivery TAM/SAM/SOM");
+                              }}
+                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
+                            >
+                              <div className="font-semibold text-violet-400 group-hover:text-violet-300 flex items-center justify-between">
+                                <span>🔬 Logistics Market TAM/SAM/SOM</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">Audited competitor benchmarks across Pathao, Paperfly, and RedX.</div>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleSendMessage("Compare PostgreSQL + PostgREST vs Supabase vs MongoDB for fintech");
+                                setResearchQuery("PostgreSQL + PostgREST vs Supabase vs MongoDB");
+                              }}
+                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
+                            >
+                              <div className="font-semibold text-sky-400 group-hover:text-sky-300 flex items-center justify-between">
+                                <span>⚖️ Tech Stack Comparison</span>
+                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
+                              </div>
+                              <div className="text-[11px] text-muted-foreground mt-0.5">Throughput, ACID guarantees, migration safety & RLS security.</div>
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
+                  ) : (
+                    <Transcript
+                      messages={messages as any}
+                      agentId={selectedAgentId}
+                      isStreaming={streamState.isStreaming}
+                      statusText={streamState.statusText}
+                      onOpenArtifact={(type) => handleOpenArtifact(type)}
+                      onOpenSource={handleOpenSource}
+                      onSelectPrompt={(prompt, mode, tab) => {
+                        handleSendMessage(prompt);
+                        if (tab) {
+                          handleOpenArtifact(tab);
+                        }
+                      }}
+                      onApproveCheckpoint={handleApproveCheckpoint}
+                      onDenyCheckpoint={handleDenyCheckpoint}
+                      onSubmitSecret={handleSubmitSecret}
+                      onStop={handleCancelActiveRun}
+                    />
                   )}
                 </div>
               </ComponentErrorBoundary>
