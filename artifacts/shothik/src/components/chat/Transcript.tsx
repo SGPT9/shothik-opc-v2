@@ -109,6 +109,7 @@ interface TranscriptProps {
   onDenyCheckpoint?: (checkpointId: string, message: ChatMessage) => void;
   onSubmitSecret?: (checkpointId: string, secretValue: string, message: ChatMessage) => void;
   className?: string;
+  agentId?: string;
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -129,6 +130,7 @@ export function Transcript({
   onDenyCheckpoint,
   onSubmitSecret,
   className,
+  agentId = "core",
 }: TranscriptProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const lowRamConfig = LowRamStylexOptimizerService.detectDeviceCapabilities();
@@ -207,7 +209,7 @@ export function Transcript({
   };
 
   if (!messages || messages.length === 0) {
-    return <EmptyChatGreeting onSelectPrompt={onSelectPrompt} />;
+    return <EmptyChatGreeting onSelectPrompt={onSelectPrompt} agentId={agentId} />;
   }
 
   return (
