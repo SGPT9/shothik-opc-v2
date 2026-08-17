@@ -27,6 +27,7 @@ import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialD
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
+import type { ChatPersona } from "@/lib/chat/types";
 import { 
   Sparkles, 
   ShoppingBag, 
@@ -229,19 +230,27 @@ export function ChatAgentPage() {
         handleCancelActiveRun();
         break;
       case "OPEN_TOOL":
-        handleOpenTool(action.toolId);
+        handleOpenTool(action.tool);
         break;
       case "OPEN_ARTIFACT":
         handleOpenArtifact(action.tab);
         break;
       case "ATTACH_FILES":
-        action.files.forEach((file) => addAttachment(file));
+        Array.from(action.files).forEach((file) => {
+          addAttachment({
+            id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            url: URL.createObjectURL(file),
+          });
+        });
         break;
       case "REMOVE_ATTACHMENT":
-        removeAttachment(action.id);
+        removeAttachment(action.attachmentId);
         break;
       case "REMOVE_CONTEXT_CHIP":
-        removeChip(action.id);
+        removeChip(action.chipId);
         break;
       case "SET_FOCUS":
       case "SET_MODEL":
@@ -479,7 +488,7 @@ export function ChatAgentPage() {
         {artifactOpen ? (
           <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 w-full overflow-hidden">
             {/* ── Left Conversation Column ── */}
-            <ResizablePanel defaultSize={50} minSize={30} className="flex flex-col min-w-0 h-full overflow-hidden">
+            <ResizablePanel defaultSize={55} minSize={35} className="flex flex-col min-w-0 h-full overflow-hidden">
               <ComponentErrorBoundary title="Transcript Panel Interrupted">
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <Transcript
@@ -503,13 +512,7 @@ export function ChatAgentPage() {
                   {/* Twin Startup Handoff Card */}
                   {hasStartupIntent && (
                     <div className="px-4 pb-3 max-w-3xl mx-auto">
-                      <TwinCtaCard
-                        onSeedTwin={() => {
-                          if (typeof window !== "undefined") {
-                            window.location.href = `/twin?fromChat=${conversationId}`;
-                          }
-                        }}
-                      />
+                      <TwinCtaCard conversationId={conversationId || "conv_default"} />
                     </div>
                   )}
                 </div>
@@ -536,7 +539,7 @@ export function ChatAgentPage() {
             <ResizableHandle className="w-1.5 bg-border/40 hover:bg-brand/50 transition cursor-col-resize z-30" />
 
             {/* ── Right Contextual User Details / Artifact Panel ── */}
-            <ResizablePanel defaultSize={50} minSize={30} className="h-full overflow-hidden">
+            <ResizablePanel defaultSize={45} minSize={25} maxSize={65} className="h-full overflow-hidden">
               <ComponentErrorBoundary title="Artifact Canvas Error">
                 <ArtifactPanel
                   activeTab={activeTab}
@@ -615,13 +618,7 @@ export function ChatAgentPage() {
                   {/* Twin Startup Handoff Card */}
                   {hasStartupIntent && (
                     <div className="px-4 pb-3 max-w-3xl mx-auto">
-                      <TwinCtaCard
-                        onSeedTwin={() => {
-                          if (typeof window !== "undefined") {
-                            window.location.href = `/twin?fromChat=${conversationId}`;
-                          }
-                        }}
-                      />
+                      <TwinCtaCard conversationId={conversationId || "conv_default"} />
                     </div>
                   )}
                 </div>
