@@ -57,7 +57,9 @@ export function PerplexityChecklist({ onSelectPrompt }: PerplexityChecklistProps
             <span>Tag @Computer in Slack</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">⌘K</span>
+            <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono">
+              {typeof navigator !== "undefined" && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent) ? "⌘K" : "Ctrl+K"}
+            </span>
             <ChevronRight className="w-4 h-4 text-zinc-400 dark:text-zinc-600 group-hover:text-zinc-600 dark:group-hover:text-zinc-400" />
           </div>
         </div>
