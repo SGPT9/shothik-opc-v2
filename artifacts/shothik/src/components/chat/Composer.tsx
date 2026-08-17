@@ -635,7 +635,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
-                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                {isListening ? (
+                  <>
+                    <span className="absolute inset-0 rounded-lg bg-rose-500/30 animate-ping opacity-60 pointer-events-none" />
+                    <MicOff className="h-4 w-4 text-rose-500 relative z-10" />
+                  </>
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
               </button>
 
               {/* 🧰 Tools Menu (Unified Launcher for Advanced Workflows) */}

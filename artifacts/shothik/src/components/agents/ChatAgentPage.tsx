@@ -114,7 +114,19 @@ export function ChatAgentPage() {
   const [persona, setPersona] = useState<ChatPersona>("cofounder");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("core");
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const activeAgent = FLEET_AGENTS.find(a => a.id === selectedAgentId) || FLEET_AGENTS[0];
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
 
   // Listen to global VTuber trigger event
   useEffect(() => {
@@ -529,6 +541,14 @@ export function ChatAgentPage() {
             {messages.length > 0 && activeConversation && (
               <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground/80 pl-2 border-l border-border/50 max-w-[280px] truncate font-medium">
                 <span className="truncate">{activeConversation.title || "Active Research Session"}</span>
+              </div>
+            )}
+
+            {/* Offline Status Badge */}
+            {!isOnline && (
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-medium text-amber-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span>Offline · Local GPU Mode</span>
               </div>
             )}
           </div>
