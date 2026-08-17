@@ -814,8 +814,9 @@ export function Transcript({
                   {/* Stop button (streaming) */}
                   {canStop && (
                     <button
+                      type="button"
                       onClick={() => onStop?.(message)}
-                      className="mt-1 flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 transition"
+                      className="mt-1 flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-1.5 text-xs font-medium text-destructive hover:bg-destructive/10 cursor-pointer select-none transition"
                     >
                       <Square className="h-3 w-3 fill-current" />
                       Stop generating
