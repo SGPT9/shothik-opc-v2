@@ -5,6 +5,7 @@ import {
   Play,
   Check,
   Copy,
+  Download,
   Terminal,
   Loader2,
   BarChart3,
@@ -53,6 +54,37 @@ export function MarkdownMessage({
     navigator.clipboard.writeText(text);
     setCopiedCode(text);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const handleDownloadCode = (code: string, lang: string) => {
+    const extMap: Record<string, string> = {
+      python: "py",
+      py: "py",
+      typescript: "ts",
+      ts: "ts",
+      tsx: "tsx",
+      javascript: "js",
+      js: "js",
+      jsx: "jsx",
+      sql: "sql",
+      json: "json",
+      html: "html",
+      css: "css",
+      bash: "sh",
+      sh: "sh",
+      rust: "rs",
+      go: "go",
+      markdown: "md",
+      md: "md",
+    };
+    const ext = extMap[lang.toLowerCase()] || "txt";
+    const blob = new Blob([code], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `shothik-code-${Date.now()}.${ext}`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleRunCode = (codeId: string, code: string, lang: string) => {
@@ -246,9 +278,20 @@ export function MarkdownMessage({
                       type="button"
                       onClick={() => handleCopy(text)}
                       className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer"
+                      title="Copy code to clipboard"
                     >
                       {isCopied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
                       <span>{isCopied ? "Copied" : "Copy"}</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleDownloadCode(text, lang)}
+                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer"
+                      title="Download code file"
+                    >
+                      <Download className="h-3 w-3 text-indigo-400" />
+                      <span>File</span>
                     </button>
                   </div>
                 </div>
