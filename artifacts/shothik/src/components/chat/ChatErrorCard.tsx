@@ -29,10 +29,11 @@ export function ChatErrorCard({
           <p className="text-xs text-destructive/80">{message}</p>
           {recoverable && onRetry ? (
             <Button
+              type="button"
               size="sm"
               variant="outline"
               onClick={onRetry}
-              className="h-7 gap-1.5 border-destructive/30 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className="h-7 gap-1.5 border-destructive/30 text-xs text-destructive hover:bg-destructive/10 hover:border-destructive/60 hover:text-destructive cursor-pointer select-none transition-all"
             >
               <RotateCcw className="h-3 w-3" />
               Try again
