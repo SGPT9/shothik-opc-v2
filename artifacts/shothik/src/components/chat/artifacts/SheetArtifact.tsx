@@ -73,6 +73,38 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
     URL.revokeObjectURL(url);
   };
 
+  const handleCellKeyDown = (e: React.KeyboardEvent, r: number, c: number) => {
+    if (e.key === "Enter" || e.key === "ArrowDown") {
+      if (r + 1 < grid.length) {
+        e.preventDefault();
+        setSelectedCell({ r: r + 1, c });
+        document.getElementById(`${uid}-cell-${r + 1}-${c}`)?.focus();
+      }
+    } else if (e.key === "ArrowUp") {
+      if (r > 0) {
+        e.preventDefault();
+        setSelectedCell({ r: r - 1, c });
+        document.getElementById(`${uid}-cell-${r - 1}-${c}`)?.focus();
+      }
+    } else if (e.key === "Tab" && !e.shiftKey) {
+      if (c + 1 < colCount) {
+        e.preventDefault();
+        setSelectedCell({ r, c: c + 1 });
+        document.getElementById(`${uid}-cell-${r}-${c + 1}`)?.focus();
+      } else if (r + 1 < grid.length) {
+        e.preventDefault();
+        setSelectedCell({ r: r + 1, c: 0 });
+        document.getElementById(`${uid}-cell-${r + 1}-0`)?.focus();
+      }
+    } else if (e.key === "Tab" && e.shiftKey) {
+      if (c > 0) {
+        e.preventDefault();
+        setSelectedCell({ r, c: c - 1 });
+        document.getElementById(`${uid}-cell-${r}-${c - 1}`)?.focus();
+      }
+    }
+  };
+
   const selectedVal = selectedCell
     ? grid[selectedCell.r]?.[selectedCell.c] ?? ""
     : "";
@@ -205,6 +237,7 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
                           type="text"
                           value={cell}
                           onChange={(e) => setCell(r, c, e.target.value)}
+                          onKeyDown={(e) => handleCellKeyDown(e, r, c)}
                           onFocus={() => setSelectedCell({ r, c })}
                           className="w-full h-full bg-transparent px-2 py-2 outline-none border-0 text-xs font-mono text-foreground"
                         />
