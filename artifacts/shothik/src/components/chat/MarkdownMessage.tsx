@@ -113,26 +113,44 @@ export function MarkdownMessage({
         components={{
           // Mobile-friendly responsive table container with sticky headers
           table: ({ children }) => (
-            <div className="my-3 overflow-x-auto rounded-xl border border-border bg-card shadow-xs">
-              <table className="w-full text-left text-xs border-collapse divide-y divide-border">
+            <div className="my-3 overflow-x-auto rounded-xl border border-border/70 bg-card/50 backdrop-blur-xs shadow-xs custom-scrollbar">
+              <table className="w-full text-left text-xs border-collapse divide-y divide-border/60">
                 {children}
               </table>
             </div>
           ),
           thead: ({ children }) => (
-            <thead className="bg-muted/60 text-foreground font-semibold">
+            <thead className="bg-muted/50 text-foreground font-semibold">
               {children}
             </thead>
           ),
           th: ({ children }) => (
-            <th className="px-3.5 py-2.5 text-xs font-bold text-foreground uppercase tracking-wider border-b border-border">
+            <th className="px-3.5 py-2.5 text-xs font-bold text-foreground uppercase tracking-wider border-b border-border/70">
               {children}
             </th>
           ),
           td: ({ children }) => (
-            <td className="px-3.5 py-2.5 text-xs text-muted-foreground border-b border-border/50">
+            <td className="px-3.5 py-2.5 text-xs text-muted-foreground border-b border-border/40 hover:bg-muted/20 transition-colors">
               {children}
             </td>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote className="my-3 border-l-2 border-brand/60 bg-brand/5 pl-3.5 pr-3 py-2 rounded-r-lg text-xs italic text-foreground/90 not-italic">
+              {children}
+            </blockquote>
+          ),
+          ul: ({ children }) => (
+            <ul className="my-2 space-y-1.5 list-disc pl-4 text-xs leading-relaxed text-foreground/90 marker:text-brand/70">
+              {children}
+            </ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="my-2 space-y-1.5 list-decimal pl-4 text-xs leading-relaxed text-foreground/90 marker:text-brand/80 font-medium">
+              {children}
+            </ol>
+          ),
+          hr: () => (
+            <hr className="my-4 border-0 h-px bg-gradient-to-r from-transparent via-border to-transparent" />
           ),
 
           // Interactive Citation Badges
