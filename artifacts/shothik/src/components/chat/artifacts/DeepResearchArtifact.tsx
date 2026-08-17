@@ -6,6 +6,7 @@ import {
   Globe,
   ExternalLink,
   Download,
+  Printer,
   Share2,
   CheckCircle2,
   Sparkles,
@@ -133,6 +134,10 @@ export function DeepResearchArtifact({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0d0e10] text-zinc-900 dark:text-[#e3e3e3] overflow-hidden select-none transition-colors duration-200 relative">
       {/* ── Top Header Bar ── */}
@@ -151,6 +156,14 @@ export function DeepResearchArtifact({
 
         {/* Action Controls */}
         <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={handlePrint}
+            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            title="Print / Save PDF Report"
+          >
+            <Printer className="h-3 w-3" />
+          </button>
           <button
             type="button"
             onClick={handleDownload}
