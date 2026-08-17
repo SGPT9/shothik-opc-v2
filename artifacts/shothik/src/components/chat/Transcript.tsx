@@ -18,6 +18,7 @@ import { PerplexityRelatedQueries } from "@/components/perplexity/PerplexityRela
 import { TrajectoryReceiptModal } from "./TrajectoryReceiptModal";
 import { ApprovalCard } from "./ApprovalCard";
 import { SecretShareCard } from "./SecretShareCard";
+import { WayfinderBoard } from "./WayfinderBoard";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState } from "react";
@@ -650,6 +651,16 @@ export function Transcript({
                         {...(message.metadata.secretShare as any)}
                         onSubmit={(val) => onSelectPrompt?.(`[SECURE CREDENTIAL RECEIVED]: ${val.slice(0, 4)}••••`, "cofounder")}
                         onCancel={() => onSelectPrompt?.("Secret sharing cancelled.", "cofounder")}
+                      />
+                    </div>
+                  )}
+
+                  {/* 🧭 Visual Goal Frontier & Decision DAG Board */}
+                  {message.metadata?.wayfinderBoard && (
+                    <div className="mt-2">
+                      <WayfinderBoard
+                        {...(message.metadata.wayfinderBoard as any)}
+                        onLaunchGrill={(title) => onSelectPrompt?.(`/grill-me ${title}`, "cofounder")}
                       />
                     </div>
                   )}
