@@ -74,7 +74,7 @@ export function ProactiveNextActions({
             key={act.id}
             type="button"
             onClick={() => onSelectAction?.(act.query)}
-            className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-1.5 text-xs text-foreground font-medium hover:bg-brand/10 hover:border-brand/40 hover:text-brand transition shadow-sm group"
+            className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-1.5 text-xs text-foreground font-medium hover:bg-brand/10 hover:border-brand/40 hover:text-brand transition shadow-sm cursor-pointer select-none group"
           >
             <span>{act.label}</span>
             <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-brand group-hover:translate-x-0.5 transition-transform" />
