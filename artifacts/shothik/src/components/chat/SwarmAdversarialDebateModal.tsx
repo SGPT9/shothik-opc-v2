@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { SwarmAdversarialDebateService, type SwarmDebateResult } from "@/lib/infrastructure/swarm-adversarial-debate-service";
 import { CheckCircle2, ShieldAlert, Zap, Scale, Sparkles, X, ArrowRight, MessageSquare, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +21,16 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
   const [debateResult, setDebateResult] = useState<SwarmDebateResult | null>(() =>
     SwarmAdversarialDebateService.runSwarmDebate(initialTopic)
   );
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    if (isOpen) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -56,7 +66,12 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div
+      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-5xl w-full p-6 shadow-2xl space-y-6 text-slate-100 max-h-[90vh] overflow-y-auto relative">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
