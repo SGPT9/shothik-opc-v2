@@ -48,7 +48,7 @@ export function ReplitAgentActivityBar({
       <button
         type="button"
         onClick={() => setExpanded((prev) => !prev)}
-        className="flex w-full items-center justify-between px-3.5 py-2.5 text-left hover:bg-white/5 transition"
+        className="flex w-full items-center justify-between px-3.5 py-2.5 text-left hover:bg-white/5 transition cursor-pointer select-none"
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400 border border-indigo-500/40">
