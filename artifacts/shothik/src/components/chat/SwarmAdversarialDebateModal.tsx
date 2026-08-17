@@ -85,8 +85,9 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             </p>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition"
+            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition cursor-pointer select-none"
           >
             <X className="h-4 w-4" />
           </button>
@@ -98,12 +99,19 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             type="text"
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && topic.trim()) {
+                e.preventDefault();
+                handleRunDebate();
+              }
+            }}
             placeholder="Enter business, technical, or regulatory topic to stress-test via 4-Agent Swarm..."
-            className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+            className="flex-1 bg-slate-950 border border-slate-800 rounded-2xl px-4 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 font-sans"
           />
           <button
+            type="button"
             onClick={handleRunDebate}
-            className="bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-2 shrink-0 cursor-pointer shadow-lg shadow-purple-900/30"
+            className="bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-2 shrink-0 cursor-pointer select-none shadow-lg shadow-purple-900/30"
           >
             <Sparkles className="h-3.5 w-3.5" />
             <span>Run Deliberation Graph</span>
@@ -113,9 +121,10 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
         {/* View Switcher Tabs */}
         <div className="flex items-center gap-2 border-b border-slate-800 pb-2 text-xs font-medium">
           <button
+            type="button"
             onClick={() => setActiveTab("perspectives")}
             className={cn(
-              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer",
+              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
               activeTab === "perspectives"
                 ? "bg-purple-600/20 text-purple-300 border border-purple-500/40"
                 : "text-slate-400 hover:text-slate-200"
@@ -125,9 +134,10 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             <span>Agent Perspectives</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab("timeline")}
             className={cn(
-              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer",
+              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
               activeTab === "timeline"
                 ? "bg-purple-600/20 text-purple-300 border border-purple-500/40"
                 : "text-slate-400 hover:text-slate-200"
@@ -137,9 +147,10 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             <span>Round-by-Round Graph Timeline</span>
           </button>
           <button
+            type="button"
             onClick={() => setActiveTab("checklist")}
             className={cn(
-              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer",
+              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
               activeTab === "checklist"
                 ? "bg-purple-600/20 text-purple-300 border border-purple-500/40"
                 : "text-slate-400 hover:text-slate-200"
