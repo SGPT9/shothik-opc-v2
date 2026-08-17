@@ -96,3 +96,21 @@ The core change is structural rather than cosmetic: the default user experience 
 3. **Step 3: Choose Execution Path**: Select between Normal Conversation, Repo Workflow, Web Automation, Advanced Workflow, or Control Flow.
 4. **Step 4: Choose UI Surface**: Target Conversation, Tools, User Details Drawer, or Admin Panel.
 5. **Step 5: Permission & Secret Checkpoints**: Trigger distinct Approve/Deny cards for risky actions and dedicated Secret Share modals for sensitive credentials.
+
+---
+
+## 8. Giant Tech Part 3 Artifact & Canvas Standards
+
+Adopted from industry best practices (Anthropic Claude Artifacts, OpenAI ChatGPT Canvas, Cursor IDE, and Perplexity Pro):
+
+1. **Bi-Directional Context Bridge**:
+   - Selecting text in a document or cells in a spreadsheet canvas allows targeting follow-up prompts directly at that selection (`onCommentSelection`).
+2. **Isolated Sandboxed Execution**:
+   - Previews (React UI components, Python calculations, and SVG presentations) must execute in isolated sandboxes with zero risk of blocking the main chat thread.
+3. **Grounded Coordinate Highlighting**:
+   - Citations jump directly to the exact page and highlight the coordinate bounding box on the PDF/manuscript (`CitationBadge` ➔ `DocArtifact`).
+4. **Transient State Feedback**:
+   - All 1-click actions (Run Sandbox, Copy, Export CSV, Slide Remote, File Download) must display an immediate 2-second visual confirmation state (`select-none` + `cursor-pointer`).
+5. **Draggable & Resizable Surface**:
+   - Part 3 uses `ResizablePanelGroup` with a responsive draggable handle and global `Escape` key dismissal.
+
