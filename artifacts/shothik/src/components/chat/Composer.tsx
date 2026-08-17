@@ -710,21 +710,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               </div>
             </div>
 
-            {/* Right Controls: Voice Orb + Model Selector + Send/Stop Button */}
-            <div className="flex items-center gap-1.5">
-              {/* 🎙️ 3D Voice Orb Launcher */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (onVoiceOrbClick) onVoiceOrbClick();
-                  else if (onAction) onAction({ type: "OPEN_TOOL", tool: "voice" });
-                }}
-                className="flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-r from-rose-500/15 via-purple-500/15 to-indigo-500/15 hover:from-rose-500/30 hover:to-indigo-500/30 text-rose-300 hover:text-white border border-rose-500/30 hover:border-rose-500/50 transition cursor-pointer shadow-xs"
-                title="Launch 3D Conversational Voice Orb"
-              >
-                <Phone className="h-3.5 w-3.5 text-rose-400 animate-pulse" />
-              </button>
-
+            {/* Right Controls: Model Selector + Send/Stop Button */}
+            <div className="flex items-center gap-2">
               {/* Model Selector */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
