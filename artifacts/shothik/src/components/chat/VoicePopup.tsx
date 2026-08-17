@@ -96,32 +96,13 @@ export function VoicePopup({
         </div>
 
         {/* 3D Holographic Avatar Orb with Reactive Concentric Waves */}
-        <div className="my-5">
+        <div className="my-6">
           <AvatarOrb3D
-            size={108}
+            size={120}
             isListening={isListening}
             isSpeaking={!isListening && !!transcript}
             avatarRole={selectedRole}
           />
-        </div>
-
-        {/* Persona Selector Chips */}
-        <div className="flex flex-wrap items-center justify-center gap-1.5 mb-5">
-          {ROLE_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              onClick={() => setSelectedRole(opt.id)}
-              className={cn(
-                "px-2.5 py-1 rounded-full text-[11px] font-medium transition-all cursor-pointer select-none border",
-                selectedRole === opt.id
-                  ? "bg-white/20 border-white/40 text-white shadow-sm"
-                  : "bg-white/5 border-white/10 text-slate-400 hover:text-slate-200 hover:bg-white/10"
-              )}
-            >
-              {opt.label}
-            </button>
-          ))}
         </div>
 
         {/* Transcript Box */}
