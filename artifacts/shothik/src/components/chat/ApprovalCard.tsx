@@ -93,7 +93,7 @@ export function ApprovalCard({
           <button
             type="button"
             onClick={() => setExpanded((prev) => !prev)}
-            className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition"
+            className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition cursor-pointer select-none"
           >
             {expanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
             {expanded ? "Hide details" : "Show details"}
@@ -111,7 +111,7 @@ export function ApprovalCard({
         <button
           type="button"
           onClick={onApprove}
-          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition cursor-pointer"
+          className="flex items-center gap-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-4 py-2 text-xs font-semibold text-white shadow-sm transition cursor-pointer select-none"
         >
           <Check className="h-3.5 w-3.5" />
           Approve
@@ -119,7 +119,7 @@ export function ApprovalCard({
         <button
           type="button"
           onClick={onDeny}
-          className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 hover:bg-muted/80 px-4 py-2 text-xs font-semibold text-foreground transition cursor-pointer"
+          className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 hover:bg-muted/80 px-4 py-2 text-xs font-semibold text-foreground transition cursor-pointer select-none"
         >
           <X className="h-3.5 w-3.5" />
           Deny
