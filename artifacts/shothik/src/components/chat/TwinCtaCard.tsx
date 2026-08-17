@@ -36,11 +36,11 @@ export function TwinCtaCard({ conversationId }: { conversationId: string }) {
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <Link href={`/twin?fromChat=${conversationId}`}>
-              <Button size="sm" className="bg-brand text-white hover:bg-brand/90 font-medium">
+              <Button size="sm" className="bg-brand text-white hover:bg-brand/90 font-medium cursor-pointer select-none">
                 Start in Twin <ArrowRight className="ml-1.5 h-4 w-4" />
               </Button>
             </Link>
-            <Button size="sm" variant="ghost" onClick={handleDismiss} className="font-medium">
+            <Button size="sm" variant="ghost" onClick={handleDismiss} className="font-medium cursor-pointer select-none">
               Keep chatting
             </Button>
           </div>
