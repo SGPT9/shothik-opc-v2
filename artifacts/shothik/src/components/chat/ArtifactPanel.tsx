@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
@@ -10,10 +10,13 @@ import { DiagramArtifact }      from "@/components/chat/artifacts/DiagramArtifac
 import { DocArtifact }          from "@/components/chat/artifacts/DocArtifact";
 import { PonytailSynthesizerCard } from "@/components/canvas/PonytailSynthesizerCard";
 import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
+import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
+import { CommerceActionCard } from "@/components/chat/CommerceActionCard";
+import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer" | "sources" | "history";
+export type ArtifactTab = "slides" | "boimela" | "commerce" | "swarm" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -24,6 +27,9 @@ interface TabConfig {
 
 const TABS: TabConfig[] = [
   { id: "slides",      label: "Slides",              Icon: Presentation, color: "text-indigo-400" },
+  { id: "boimela",     label: "বইমেলা 3D",           Icon: Sparkles,     color: "text-rose-400"   },
+  { id: "commerce",    label: "Commerce & MFS",      Icon: Truck,        color: "text-emerald-400"},
+  { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
   { id: "sheet",       label: "Sheet",               Icon: Table2,       color: "text-cyan-400"   },
   { id: "research",    label: "Research",            Icon: BookOpen,     color: "text-violet-400" },
@@ -197,6 +203,43 @@ export function ArtifactPanel({
         {mounted.has("slides") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "slides" ? "block" : "hidden"}`}>
             <SlidesArtifact initialTopic={slidesTopic} isStreaming={isStreaming} />
+          </div>
+        )}
+
+        {mounted.has("boimela") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "boimela" ? "block" : "hidden"}`}>
+            <BoiMela3DPageFlipPreview />
+          </div>
+        )}
+
+        {mounted.has("commerce") && (
+          <div className={`absolute inset-0 overflow-y-auto p-4 flex flex-col items-center justify-start ${activeTab === "commerce" ? "block" : "hidden"}`}>
+            <div className="w-full max-w-lg space-y-4">
+              <h3 className="text-sm font-bold text-foreground">F-Commerce & Logistics Hub</h3>
+              <CommerceActionCard
+                order={{
+                  invoiceNumber: "INV-2026-8891",
+                  recipientName: "তানভীর আহমেদ",
+                  recipientPhone: "01711000000",
+                  recipientAddress: "House 12, Road 4, Dhanmondi, Dhaka",
+                  codAmount: 1850,
+                  deliveryCharge: 60,
+                }}
+                payment={{
+                  trxId: "BK99281726X",
+                  amount: 1850,
+                  provider: "bkash",
+                  senderPhone: "01711000000",
+                  status: "verified",
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {mounted.has("swarm") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "swarm" ? "block" : "hidden"}`}>
+            <ParallelAgentSpace />
           </div>
         )}
 
