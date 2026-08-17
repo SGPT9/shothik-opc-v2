@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronDown, Brain, Copy, Check, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -10,6 +10,12 @@ interface ThinkBoxProps {
 export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
   const [open, setOpen] = useState(!thinkingEnded);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (thinkingEnded) {
+      setOpen(false);
+    }
+  }, [thinkingEnded]);
 
   const isBengali = /[\u0980-\u09FF]/.test(content);
   const wordCount = content ? content.trim().split(/\s+/).filter(Boolean).length : 0;

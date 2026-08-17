@@ -430,7 +430,7 @@ export function Transcript({
                   {/* ── Sources Grid ABOVE answer (Perplexity Pattern) ── */}
                   {/* Only render for research-type answers with actual sources */}
                   {(message.metadata?.sources?.length > 0 || message.metadata?.chatMode === 'web-search') && (
-                    <PerplexitySourcesGrid />
+                    <PerplexitySourcesGrid sources={message.metadata?.sources} />
                   )}
 
                   {/* Main content */}

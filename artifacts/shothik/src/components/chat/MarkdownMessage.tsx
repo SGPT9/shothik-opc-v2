@@ -131,7 +131,7 @@ export function MarkdownMessage({
             </td>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="my-3 border-l-2 border-brand/60 bg-brand/5 pl-3.5 pr-3 py-2 rounded-r-lg text-xs italic text-foreground/90 not-italic">
+            <blockquote className="my-3 border-l-2 border-brand/60 bg-brand/5 pl-3.5 pr-3 py-2 rounded-r-lg text-xs italic text-foreground/90 leading-relaxed">
               {children}
             </blockquote>
           ),
