@@ -98,6 +98,8 @@ export function IntegratedWritingStudio({ projectId }: IntegratedWritingStudioPr
   );
 }
 
+import { BoiMela3DPageFlipPreview } from '@/components/books/BoiMela3DPageFlipPreview';
+
 // Format View Component
 function FormatView({ 
   project, 
@@ -105,7 +107,7 @@ function FormatView({
   onPublish 
 }: { 
   project: any; 
-  content: string;
+  content: string; 
   onPublish: () => void;
 }) {
   const [accessibilityReport, setAccessibilityReport] = useState<AccessibilityReport | null>(null);
@@ -126,45 +128,64 @@ function FormatView({
     }
   };
 
+  // Split content into 6x9 book pages for 3D flip preview
+  const bookPages = [
+    {
+      pageNumber: 1,
+      title: project.title || 'ভূমিকা',
+      content: content.slice(0, 450) || 'বাংলা সাহিত্যের অমর একুশে গ্রন্থমেলা প্রকাশনা সংস্করণ...',
+    },
+    {
+      pageNumber: 2,
+      title: 'অধ্যায় ১: সূচনা',
+      content: content.slice(450, 950) || 'সন্ধ্যার ছায়া যখন বুড়িগঙ্গার জলে নেমে এলো, তখন পুরান ঢাকার অলিগলিতে নিয়ন বাতিগুলো একে একে জ্বলে উঠল...',
+    },
+    {
+      pageNumber: 3,
+      title: 'অধ্যায় ১ (ধারাবাহিক)',
+      content: content.slice(950, 1450) || 'ক্লান্তিহীন পদধ্বনিতে রাতের নীরবতা ভেঙে যাচ্ছিল। প্রতিটি পৃষ্ঠায় অমর একুশে বইমেলার ঐতিহ্য ও বাংলা মুদ্রণ শিল্পের গৌরব ফুটে উঠেছে।',
+    },
+  ];
+
   return (
-    <div className="h-full flex">
+    <div className="h-full flex overflow-hidden">
       {/* Left: Format Settings */}
-      <div className="w-[380px] border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-brand-surface overflow-y-auto">
-        <div className="p-6 space-y-6">
+      <div className="w-[340px] border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-brand-surface overflow-y-auto">
+        <div className="p-5 space-y-6">
           <div>
-            <h1 className="text-lg font-bold mb-2">Format Settings</h1>
-            <p className="text-sm text-zinc-500">Configure for digital or print distribution.</p>
+            <h1 className="text-base font-bold mb-1">ফরম্যাট ও প্রিন্ট সেটিংস</h1>
+            <p className="text-xs text-zinc-500">অমর একুশে গ্রন্থমেলা ৬×৯ ইঞ্চি প্রকাশনা মানদণ্ড।</p>
           </div>
 
           {/* Typography */}
-          <section className="space-y-4">
-            <h3 className="text-sm font-bold text-brand uppercase tracking-wider">Typography</h3>
+          <section className="space-y-3">
+            <h3 className="text-xs font-bold text-brand uppercase tracking-wider">মুদ্রণ টাইপোগ্রাফি</h3>
             <div className="grid grid-cols-2 gap-2">
-              <button className="p-3 rounded-xl border-2 border-brand bg-brand/5 text-brand">
-                <div className="text-2xl font-serif">Aa</div>
-                <div className="text-xs font-medium mt-1">Serif</div>
+              <button className="p-3 rounded-xl border-2 border-brand bg-brand/5 text-brand text-left">
+                <div className="text-lg font-serif">সোলায়মানলিপি</div>
+                <div className="text-[10px] font-medium text-zinc-500 mt-0.5">রয়্যাল ডেমি ৬×৯</div>
               </button>
-              <button className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                <div className="text-2xl font-sans">Aa</div>
-                <div className="text-xs font-medium mt-1">Sans</div>
+              <button className="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 text-left hover:border-zinc-400 transition-colors">
+                <div className="text-lg font-sans">কালপুরুষ</div>
+                <div className="text-[10px] font-medium text-zinc-500 mt-0.5">মডার্ন ক্ল্যাসিক</div>
               </button>
             </div>
           </section>
 
-          {/* Accessibility Check */}
-          <section className="space-y-4">
-            <h3 className="text-sm font-bold text-zinc-400 uppercase tracking-wider">Accessibility</h3>
+          {/* Accessibility & Nilkhet Print Check */}
+          <section className="space-y-3">
+            <h3 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">কোয়ালিটি ও স্ট্যান্ডার্ড</h3>
             
             <button
               onClick={validateAccessibility}
               disabled={isValidating}
-              className="w-full p-3 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+              className="w-full p-2.5 bg-zinc-100 dark:bg-zinc-800 rounded-lg text-xs font-medium hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors"
             >
-              {isValidating ? 'Validating...' : 'Validate ePub 3.3 + WCAG 2.2'}
+              {isValidating ? 'যাচাই করা হচ্ছে...' : 'ইপাব ৩.৩ + ডব্লিউসিএজি ২.২ ভ্যালিডেশন'}
             </button>
 
             {accessibilityReport && (
-              <div className="mt-4">
+              <div className="mt-2">
                 <AccessibilityReportPanel 
                   report={accessibilityReport}
                   onRevalidate={validateAccessibility}
@@ -174,46 +195,27 @@ function FormatView({
           </section>
 
           {/* Export */}
-          <div className="mt-auto pt-6 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="pt-4 border-t border-zinc-200 dark:border-zinc-800">
             <button 
               onClick={onPublish}
-              className="w-full bg-brand text-white py-3 rounded-lg font-bold shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all"
+              className="w-full bg-brand text-white py-2.5 rounded-lg text-xs font-bold shadow-lg shadow-brand/20 hover:bg-brand/90 transition-all"
             >
-              🚀 Continue to Publish
+              🚀 প্রকাশনা প্যানেলে যান
             </button>
           </div>
         </div>
       </div>
 
-      {/* Center: Preview */}
-      <div className="flex-1 bg-zinc-100 dark:bg-brand-canvas/50 flex items-center justify-center p-8">
-        <div className="flex gap-4">
-          <div className="w-[420px] aspect-[2/3] bg-white p-12 shadow-2xl font-serif">
-            <div className="text-center text-zinc-400 text-xs uppercase tracking-widest mb-16">
-              {project.title}
-            </div>
-            <div className="text-[15px] leading-[1.6] text-justify">
-              {content.substring(0, 500)}...
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right: Format Assistant */}
-      <div className="w-[320px] border-l border-zinc-200 dark:border-zinc-800 bg-white dark:bg-brand-surface">
-        <div className="p-4 border-b border-zinc-200 dark:border-zinc-800">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold">Format Assistant</span>
-          </div>
-        </div>
-        <div className="p-4">
-          <div className="space-y-3">
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/10 rounded-lg border border-blue-200 dark:border-blue-800">
-              <div className="text-xs font-bold text-blue-600 mb-1">💡 Recommendation</div>
-              <p className="text-xs text-zinc-600">For Sci-Fi, try 1.3 line height with Caslon font.</p>
-            </div>
-          </div>
-        </div>
+      {/* Center: Live 3D 6x9 BoiMela Page Flip Studio */}
+      <div className="flex-1 bg-zinc-900/90 flex flex-col items-center justify-center p-4 overflow-y-auto">
+        <BoiMela3DPageFlipPreview
+          title={project.title || 'অমর একুশে বই'}
+          author={project.author || 'লেখক'}
+          pages={bookPages}
+          onExportPDF={() => {
+            console.log('Exporting 6x9 CMYK PDF for', project.title);
+          }}
+        />
       </div>
     </div>
   );

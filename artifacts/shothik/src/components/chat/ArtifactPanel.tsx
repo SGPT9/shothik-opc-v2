@@ -207,8 +207,20 @@ export function ArtifactPanel({
         )}
 
         {mounted.has("boimela") && (
-          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "boimela" ? "block" : "hidden"}`}>
-            <BoiMela3DPageFlipPreview />
+          <div className={`absolute inset-0 overflow-y-auto flex flex-col ${activeTab === "boimela" ? "block" : "hidden"}`}>
+            <div className="p-3 bg-rose-500/10 border-b border-rose-500/20 flex items-center justify-between px-4">
+              <span className="text-xs font-semibold text-rose-400">📖 অমর একুশে ৩ডি বই প্রিভিউ</span>
+              <a
+                href="/writing-studio"
+                className="text-[11px] font-bold text-rose-300 hover:text-rose-200 bg-rose-500/20 hover:bg-rose-500/30 px-2.5 py-1 rounded-md transition flex items-center gap-1"
+              >
+                <span>রাইটিং স্টুডিওতে খুলুন</span>
+                <span>➔</span>
+              </a>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <BoiMela3DPageFlipPreview />
+            </div>
           </div>
         )}
 
@@ -239,7 +251,7 @@ export function ArtifactPanel({
 
         {mounted.has("swarm") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "swarm" ? "block" : "hidden"}`}>
-            <ParallelAgentSpace />
+            <ParallelAgentSpace isOpen={true} onClose={onClose} />
           </div>
         )}
 
