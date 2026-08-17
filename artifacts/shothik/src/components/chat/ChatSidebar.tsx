@@ -109,8 +109,9 @@ export function ChatSidebar({
       {/* Header & New Chat Button */}
       <div className="p-3 border-b border-slate-800 space-y-2">
         <button
+          type="button"
           onClick={handleNewChat}
-          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-md shadow-emerald-950/50 transition group"
+          className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-medium text-xs shadow-md shadow-emerald-950/50 transition group cursor-pointer select-none"
         >
           <span className="flex items-center gap-2">
             <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
@@ -122,7 +123,7 @@ export function ChatSidebar({
         {/* Twin AI Cofounder Direct Link */}
         <a
           href="/twin"
-          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-brand/10 hover:bg-brand/20 border border-brand/30 text-brand text-xs font-semibold transition no-underline shadow-sm"
+          className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-brand/10 hover:bg-brand/20 border border-brand/30 text-brand text-xs font-semibold transition no-underline shadow-sm cursor-pointer select-none"
         >
           <span className="flex items-center gap-2">
             <span>🏢 Twin AI Cofounder</span>
@@ -147,7 +148,7 @@ export function ChatSidebar({
             <button
               type="button"
               onClick={() => setSearchQuery("")}
-              className="text-slate-400 hover:text-slate-200 text-xs px-1 cursor-pointer"
+              className="text-slate-400 hover:text-slate-200 text-xs px-1 cursor-pointer select-none"
               title="Clear search"
             >
               ✕
@@ -174,12 +175,13 @@ export function ChatSidebar({
 
       {/* Quick Agentic Workspace Shortcuts Footer */}
       <div className="p-3 border-t border-slate-800/80 bg-slate-900/60 space-y-1 text-xs">
-        <span className="text-[10px] font-mono text-slate-500 uppercase px-2 font-semibold">Agent Workspaces</span>
+        <span className="text-[10px] font-mono text-slate-500 uppercase px-2 font-semibold select-none">Agent Workspaces</span>
 
         {onOpenParallelSpace && (
           <button
+            type="button"
             onClick={onOpenParallelSpace}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition cursor-pointer select-none"
           >
             <span className="flex items-center gap-2">
               <Globe className="w-3.5 h-3.5 text-emerald-400" />
@@ -191,8 +193,9 @@ export function ChatSidebar({
 
         {onOpenDataSheet && (
           <button
+            type="button"
             onClick={onOpenDataSheet}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition cursor-pointer select-none"
           >
             <span className="flex items-center gap-2">
               <Table className="w-3.5 h-3.5 text-indigo-400" />
@@ -204,8 +207,9 @@ export function ChatSidebar({
 
         {onOpenSlideDeck && (
           <button
+            type="button"
             onClick={onOpenSlideDeck}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition cursor-pointer select-none"
           >
             <span className="flex items-center gap-2">
               <Presentation className="w-3.5 h-3.5 text-rose-400" />
@@ -218,8 +222,9 @@ export function ChatSidebar({
         {/* Collapsible Writing Suite (8 Tools) */}
         <div className="space-y-1">
           <button
+            type="button"
             onClick={() => setIsWritingSuiteOpen(!isWritingSuiteOpen)}
-            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition cursor-pointer"
+            className="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/60 transition cursor-pointer select-none"
           >
             <span className="flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 text-cyan-400" />
@@ -249,7 +254,7 @@ export function ChatSidebar({
     if (list.length === 0) return null;
     return (
       <div className="space-y-1">
-        <div className="px-2 text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider">
+        <div className="px-2 text-[10px] font-mono font-semibold text-slate-500 uppercase tracking-wider select-none">
           {title} ({list.length})
         </div>
         <div className="space-y-0.5">
@@ -265,8 +270,9 @@ export function ChatSidebar({
                 className="relative group"
               >
                 <button
+                  type="button"
                   onClick={() => handleSelectConversation(String(chat._id))}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-left transition ${
+                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-left transition cursor-pointer select-none ${
                     isActive
                       ? "bg-slate-800/90 text-white font-medium shadow-sm border border-slate-700/60"
                       : "text-slate-300 hover:bg-slate-900 hover:text-slate-100"
