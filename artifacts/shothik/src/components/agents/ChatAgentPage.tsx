@@ -41,6 +41,7 @@ import {
   LayoutTemplate,
   Search,
   Phone,
+  Download,
 } from "lucide-react";
 
 export interface FleetAgent {
@@ -259,6 +260,18 @@ export function ChatAgentPage() {
     }
   }, [addAttachment, handleCancelActiveRun, handleOpenArtifact, handleOpenTool, removeAttachment, removeChip]);
 
+  // Global keyboard shortcut for New Chat (Ctrl+Shift+O / Cmd+Shift+O)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        createNewConversation();
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [createNewConversation]);
+
   // Intent-First Natural Language Routing Engine
   const handleSendMessage = useCallback(
     async (text: string) => {
@@ -445,10 +458,42 @@ export function ChatAgentPage() {
                 </div>
               )}
             </div>
+
+            {/* Active Conversation Title */}
+            {messages.length > 0 && activeConversation && (
+              <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground/80 pl-2 border-l border-border/50 max-w-[280px] truncate font-medium">
+                <span className="truncate">{activeConversation.title || "Active Research Session"}</span>
+              </div>
+            )}
           </div>
 
           {/* Right Mode Toggle & Actions */}
           <div className="flex items-center gap-2">
+            {/* Export Session as Markdown */}
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => {
+                  const title = activeConversation?.title || "shothik-session";
+                  const md = messages
+                    .map((m) => `### ${m.role === "user" ? "User" : "Shothik"}\n\n${m.content || ""}\n`)
+                    .join("\n---\n\n");
+                  const blob = new Blob([`# ${title}\n\n${md}`], { type: "text/markdown" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.md`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+                className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition border border-border/30 cursor-pointer"
+                title="Export session as Markdown (.md)"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export</span>
+              </button>
+            )}
+
             {/* Dual Mode Switcher (Chat | Work Canvas) - Shown in header when transcript is active or canvas open */}
             {(messages.length > 0 || artifactOpen) && (
               <div className="flex items-center bg-secondary/60 p-0.5 rounded-xl border border-border/40 text-xs animate-fade-in">
@@ -480,7 +525,7 @@ export function ChatAgentPage() {
               type="button"
               onClick={createNewConversation}
               className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer"
-              title="New Chat"
+              title="New Chat (Ctrl+Shift+O)"
             >
               <Plus className="w-4 h-4" />
             </button>

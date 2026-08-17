@@ -1,4 +1,4 @@
-import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt, ChevronDown } from "lucide-react";
+import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt, ChevronDown, Volume2, VolumeX, ThumbsUp, ThumbsDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
@@ -136,6 +136,32 @@ export function Transcript({
   const [trajectoryOpen, setTrajectoryOpen] = useState(false);
   const [trajectoryModel, setTrajectoryModel] = useState("DeepSeek V4 Flash");
   const [userScrolledUp, setUserScrolledUp] = useState(false);
+  const [speakingMsgId, setSpeakingMsgId] = useState<string | null>(null);
+  const [feedbackMap, setFeedbackMap] = useState<Record<string, "up" | "down">>({});
+
+  const handleSpeak = (msgId: string, text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (speakingMsgId === msgId) {
+      window.speechSynthesis.cancel();
+      setSpeakingMsgId(null);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    const isBengali = /[\u0980-\u09FF]/.test(text);
+    utterance.lang = isBengali ? "bn-BD" : "en-US";
+    utterance.onend = () => setSpeakingMsgId(null);
+    utterance.onerror = () => setSpeakingMsgId(null);
+    setSpeakingMsgId(msgId);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleFeedback = (msgId: string, type: "up" | "down") => {
+    setFeedbackMap((prev) => ({
+      ...prev,
+      [msgId]: prev[msgId] === type ? undefined! : type,
+    }));
+  };
 
   // Dynamic DOM node virtualization for budget devices (Ticket #1)
   const slicedMessages = lowRamConfig.isLowEndDevice ? messages.slice(-visibleLimit) : messages;
@@ -537,11 +563,57 @@ export function Transcript({
                         <Copy className="h-3.5 w-3.5" />
                       </button>
 
+                      {/* Read Aloud (TTS) */}
+                      <button
+                        onClick={() => handleSpeak(message.id, displayContent)}
+                        className={cn(
+                          "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
+                          speakingMsgId === message.id
+                            ? "text-brand bg-brand/10"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        )}
+                        title={speakingMsgId === message.id ? "Stop readout" : "Read aloud (বাংলা / English)"}
+                      >
+                        {speakingMsgId === message.id ? (
+                          <VolumeX className="h-3.5 w-3.5 text-brand animate-pulse" />
+                        ) : (
+                          <Volume2 className="h-3.5 w-3.5" />
+                        )}
+                      </button>
+
+                      {/* Quality Feedback (Thumbs Up) */}
+                      <button
+                        onClick={() => handleFeedback(message.id, "up")}
+                        className={cn(
+                          "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
+                          feedbackMap[message.id] === "up"
+                            ? "text-emerald-400 bg-emerald-500/10 font-bold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        )}
+                        title="Good response"
+                      >
+                        <ThumbsUp className="h-3.5 w-3.5" />
+                      </button>
+
+                      {/* Quality Feedback (Thumbs Down) */}
+                      <button
+                        onClick={() => handleFeedback(message.id, "down")}
+                        className={cn(
+                          "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
+                          feedbackMap[message.id] === "down"
+                            ? "text-rose-400 bg-rose-500/10 font-bold"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        )}
+                        title="Poor response"
+                      >
+                        <ThumbsDown className="h-3.5 w-3.5" />
+                      </button>
+
                       {/* Regenerate */}
                       {canRegenerate && (
                         <button
                           onClick={() => onRegenerate?.(message)}
-                          className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition"
+                          className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
                           title="Regenerate"
                         >
                           <RefreshCw className="h-3.5 w-3.5" />
@@ -551,7 +623,7 @@ export function Transcript({
                       {/* ⋯ Overflow — Deep Research, Slides */}
                       <div className="relative group/overflow">
                         <button
-                          className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition"
+                          className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
                           title="More actions"
                         >
                           <span className="text-sm font-bold leading-none">⋯</span>

@@ -11,8 +11,17 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
   const [open, setOpen] = useState(!thinkingEnded);
   const [copied, setCopied] = useState(false);
 
+  const isBengali = /[\u0980-\u09FF]/.test(content);
   const wordCount = content ? content.trim().split(/\s+/).filter(Boolean).length : 0;
   const estimatedSeconds = Math.max(1, Math.round(wordCount / 35));
+
+  const title = thinkingEnded
+    ? isBengali
+      ? "চিন্তন ও যুক্তি বিশ্লেষণ সম্পন্ন"
+      : "Reasoning Process Complete"
+    : isBengali
+      ? "যুক্তি বিশ্লেষণ চলছে…"
+      : "Analyzing & Reasoning…";
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -46,7 +55,7 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
 
         <div className="flex flex-1 items-center gap-2 min-w-0">
           <span className="text-xs font-semibold text-indigo-200">
-            {thinkingEnded ? "চিন্তন ও যুক্তি বিশ্লেষণ সম্পূর্ণ" : "যুক্তি বিশ্লেষণ চলছে…"}
+            {title}
           </span>
           <span className="text-[10px] font-mono text-indigo-400/60 bg-indigo-500/10 px-1.5 py-0.5 rounded">
             {thinkingEnded ? `${wordCount} words • ~${estimatedSeconds}s` : "stream"}
