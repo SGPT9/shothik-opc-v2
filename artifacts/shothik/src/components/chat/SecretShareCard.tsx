@@ -81,6 +81,12 @@ export function SecretShareCard({
               type={revealed ? "text" : "password"}
               value={value}
               onChange={(e) => setValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && value.trim()) {
+                  e.preventDefault();
+                  onSubmit?.(value.trim());
+                }
+              }}
               placeholder={placeholder}
               autoComplete="off"
               spellCheck={false}
@@ -89,7 +95,7 @@ export function SecretShareCard({
             <button
               type="button"
               onClick={() => setRevealed((prev) => !prev)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition cursor-pointer select-none"
               title={revealed ? "Hide" : "Reveal"}
             >
               {revealed ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
@@ -106,7 +112,7 @@ export function SecretShareCard({
             if (value.trim()) onSubmit?.(value.trim());
           }}
           disabled={!value.trim()}
-          className="flex items-center gap-1.5 rounded-lg bg-brand hover:bg-brand/90 px-4 py-2 text-xs font-semibold text-white shadow-sm transition cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+          className="flex items-center gap-1.5 rounded-lg bg-brand hover:bg-brand/90 px-4 py-2 text-xs font-semibold text-white shadow-sm transition cursor-pointer select-none disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <Send className="h-3.5 w-3.5" />
           Share securely
@@ -114,7 +120,7 @@ export function SecretShareCard({
         <button
           type="button"
           onClick={onCancel}
-          className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 hover:bg-muted/80 px-4 py-2 text-xs font-semibold text-foreground transition cursor-pointer"
+          className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/40 hover:bg-muted/80 px-4 py-2 text-xs font-semibold text-foreground transition cursor-pointer select-none"
         >
           <X className="h-3.5 w-3.5" />
           Cancel
