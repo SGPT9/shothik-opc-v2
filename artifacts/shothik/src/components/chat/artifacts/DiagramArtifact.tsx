@@ -31,6 +31,27 @@ export function DiagramArtifact({
     { id: "n5", label: "Vector RAG Context Memory Store", type: "storage", status: "ready" },
   ];
 
+  const handleExportSVG = () => {
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" style="background:#020617;font-family:sans-serif;">
+  <rect width="800" height="600" fill="#020617"/>
+  <text x="40" y="50" fill="#38bdf8" font-size="18" font-weight="bold">${initialTitle}</text>
+  ${nodes.map((node, i) => `
+    <g transform="translate(100, ${100 + i * 90})">
+      <rect width="600" height="60" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+      <text x="30" y="36" fill="#ffffff" font-size="14" font-weight="bold">${node.label}</text>
+      <text x="500" y="36" fill="#38bdf8" font-size="12" font-family="monospace">${node.status}</text>
+    </g>
+  `).join("")}
+</svg>`;
+    const blob = new Blob([svgContent], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `shothik-diagram-${Date.now()}.svg`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="flex flex-col h-full bg-slate-950 text-slate-100 font-sans overflow-hidden">
       {/* Header Toolbar */}
@@ -65,10 +86,11 @@ export function DiagramArtifact({
           <Button
             size="sm"
             variant="outline"
-            className="h-7 px-2.5 text-[11px] font-semibold border-slate-800 text-slate-300 hover:bg-slate-800 gap-1"
+            onClick={handleExportSVG}
+            className="h-7 px-2.5 text-[11px] font-semibold border-slate-800 text-slate-300 hover:bg-slate-800 gap-1 cursor-pointer"
           >
             <Download className="h-3 w-3 text-cyan-400" />
-            SVG Export
+            <span>SVG Export</span>
           </Button>
         </div>
       </div>
