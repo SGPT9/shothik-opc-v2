@@ -410,7 +410,7 @@ export function ChatAgentPage() {
               {isAgentMenuOpen && (
                 <div className="absolute left-0 top-full mt-1.5 z-50 w-72 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl space-y-1 animate-in fade-in zoom-in-95 duration-150">
                   <div className="px-2.5 py-1 text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
-                    Agent Fleet & Business Twins
+                    AI Personas & Workflows
                   </div>
                   {FLEET_AGENTS.map((agent) => {
                     const isCurrent = agent.id === selectedAgentId;
