@@ -159,16 +159,24 @@ export function DocArtifact({
     if (currentPage < pages.length) setCurrentPage((prev) => prev + 1);
   };
 
-  // Keyboard Navigation: ← and → to flip document pages
+  // Keyboard Navigation: ←, →, Space, PgUp/PgDn, Home/End to flip document pages
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeTag = document.activeElement?.tagName.toLowerCase();
       if (activeTag === "input" || activeTag === "textarea") return;
 
-      if (e.key === "ArrowLeft") {
+      if (e.key === "ArrowLeft" || e.key === "PageUp") {
+        e.preventDefault();
         if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-      } else if (e.key === "ArrowRight") {
+      } else if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
+        e.preventDefault();
         if (currentPage < pages.length) setCurrentPage((prev) => prev + 1);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        setCurrentPage(1);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        setCurrentPage(pages.length);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
