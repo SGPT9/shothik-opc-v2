@@ -78,11 +78,29 @@ export function VatTaxArtifact() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleCopyMushak}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted/60 hover:bg-muted text-foreground text-xs font-semibold border border-border shadow-xs transition cursor-pointer"
+            onClick={() => window.print()}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-muted/40 transition cursor-pointer select-none"
           >
-            {isCopied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-            <span>{isCopied ? "Copied" : "Copy Mushak-6.3"}</span>
+            <Download className="w-3.5 h-3.5 text-primary" />
+            <span>Print / PDF</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCopyMushak}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition cursor-pointer select-none"
+          >
+            {isCopied ? (
+              <>
+                <Check className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Mushak-6.3</span>
+              </>
+            )}
           </button>
         </div>
       </div>
