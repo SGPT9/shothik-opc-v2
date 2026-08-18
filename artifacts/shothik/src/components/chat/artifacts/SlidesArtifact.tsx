@@ -539,6 +539,28 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
     window.print();
   };
 
+  const [slideTouchStart, setSlideTouchStart] = useState<{ x: number; y: number } | null>(null);
+
+  const handleSlideTouchStart = (e: React.TouchEvent) => {
+    setSlideTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+  };
+
+  const handleSlideTouchEnd = (e: React.TouchEvent) => {
+    if (!slideTouchStart) return;
+    const deltaX = e.changedTouches[0].clientX - slideTouchStart.x;
+    const deltaY = e.changedTouches[0].clientY - slideTouchStart.y;
+    if (Math.abs(deltaX) > 45 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) {
+        // Swiped Left ➔ Next Slide
+        setCurrentSlide((prev) => Math.min(slideList.length - 1, prev + 1));
+      } else {
+        // Swiped Right ➔ Previous Slide
+        setCurrentSlide((prev) => Math.max(0, prev - 1));
+      }
+    }
+    setSlideTouchStart(null);
+  };
+
   // Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -709,8 +731,10 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
         )}
 
         <div
+          onTouchStart={handleSlideTouchStart}
+          onTouchEnd={handleSlideTouchEnd}
           className={cn(
-            "relative w-full max-w-2xl aspect-[16/9] rounded-2xl border shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden bg-gradient-to-br transition-all duration-300 shrink-0",
+            "relative w-full max-w-2xl aspect-[16/9] rounded-2xl border shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden bg-gradient-to-br transition-all duration-300 shrink-0 select-none",
             isFullscreen && "max-w-4xl text-base shadow-indigo-500/10",
             currentTemplate.themeClass,
             currentTemplate.border
