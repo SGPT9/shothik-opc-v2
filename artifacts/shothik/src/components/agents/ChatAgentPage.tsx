@@ -1029,6 +1029,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   { id: "twin", label: "Twin Founder", icon: "🤖" },
                   { id: "leads", label: "B2B Leads", icon: "🎯" },
                   { id: "seo", label: "SEO & SERP", icon: "🌐" },
+                  { id: "flows", label: "Chatbot Flows", icon: "⚡" },
                 ].map((t) => (
                   <button
                     key={t.id}
