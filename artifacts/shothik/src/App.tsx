@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Route, Switch, Router as WouterRouter, Redirect } from 'wouter';
 import Providers from '@/providers';
 import PrimaryLayout from '@/app-next/(primary-layout)/layout';
+import SecondaryLayout from '@/app-next/(secondary-layout)/layout';
 import { ComponentErrorBoundary } from '@/components/agents/components/ChatErrorBoundaries';
 
 // Wraps a page component in the primary layout (left icon sidebar + content)
@@ -12,6 +13,17 @@ function withPrimaryLayout<P extends object>(Page: ComponentType<P>) {
       <PrimaryLayout>
         <Page {...props} />
       </PrimaryLayout>
+    );
+  };
+}
+
+// Wraps a page component in the secondary layout (top public header + main content + footer)
+function withSecondaryLayout<P extends object>(Page: ComponentType<P>) {
+  return function WrappedPage(props: P) {
+    return (
+      <SecondaryLayout>
+        <Page {...props} />
+      </SecondaryLayout>
     );
   };
 }
@@ -167,6 +179,28 @@ const SavedReportsPageWithLayout = withPrimaryLayout(SavedReportsPage);
 const DeepResearchPageWithLayout = withPrimaryLayout(DeepResearchPage);
 const SettingsWorkspacePageWithLayout = withPrimaryLayout(SettingsWorkspacePage);
 
+// Secondary layout pages wrapped
+const PricingPageWithLayout = withSecondaryLayout(PricingPage);
+const PricingCheckoutPageWithLayout = withSecondaryLayout(PricingCheckoutPage);
+const PricingCheckoutSuccessPageWithLayout = withSecondaryLayout(PricingCheckoutSuccessPage);
+const PricingCheckoutCancelPageWithLayout = withSecondaryLayout(PricingCheckoutCancelPage);
+const AboutUsPageWithLayout = withSecondaryLayout(AboutUsPage);
+const B2BPageWithLayout = withSecondaryLayout(B2BPage);
+const B2BServicesPageWithLayout = withSecondaryLayout(B2BServicesPage);
+const BlogsPageWithLayout = withSecondaryLayout(BlogsPage);
+const BlogDetailPageWithLayout = withSecondaryLayout(BlogDetailPage);
+const CareerPageWithLayout = withSecondaryLayout(CareerPage);
+const ContactUsPageWithLayout = withSecondaryLayout(ContactUsPage);
+const DeletionPageWithLayout = withSecondaryLayout(DeletionPage);
+const FAQsPageWithLayout = withSecondaryLayout(FAQsPage);
+const FeaturesPageWithLayout = withSecondaryLayout(FeaturesPage);
+const MagnaCartaPageWithLayout = withSecondaryLayout(MagnaCartaPage);
+const TeamPageWithLayout = withSecondaryLayout(TeamPage);
+const TermsPageWithLayout = withSecondaryLayout(TermsPage);
+const PrivacyPageWithLayout = withSecondaryLayout(PrivacyPage);
+const TutorialsPageWithLayout = withSecondaryLayout(TutorialsPage);
+const ResellerPanelPageWithLayout = withSecondaryLayout(ResellerPanelPage);
+
 // Stub page for unimplemented routes
 function PlaceholderPage({ name }: { name: string }) {
   return (
@@ -231,26 +265,26 @@ function AppRoutes() {
         </Route>
 
         {/* Secondary layout routes */}
-        <Route path="/pricing" component={PricingPage} />
-        <Route path="/pricing/checkout" component={PricingCheckoutPage} />
-        <Route path="/pricing/checkout/success" component={PricingCheckoutSuccessPage} />
-        <Route path="/pricing/checkout/cancel" component={PricingCheckoutCancelPage} />
-        <Route path="/about-us" component={AboutUsPage} />
-        <Route path="/b2b" component={B2BPage} />
-        <Route path="/b2b/services" component={B2BServicesPage} />
-        <Route path="/blogs" component={BlogsPage} />
-        <Route path="/blogs/:slug" component={BlogDetailPage} />
-        <Route path="/career" component={CareerPage} />
-        <Route path="/contact-us" component={ContactUsPage} />
-        <Route path="/deletion" component={DeletionPage} />
-        <Route path="/faqs" component={FAQsPage} />
-        <Route path="/features" component={FeaturesPage} />
-        <Route path="/magna-carta" component={MagnaCartaPage} />
-        <Route path="/team" component={TeamPage} />
-        <Route path="/terms" component={TermsPage} />
-        <Route path="/privacy" component={PrivacyPage} />
-        <Route path="/tutorials" component={TutorialsPage} />
-        <Route path="/reseller-panel" component={ResellerPanelPage} />
+        <Route path="/pricing" component={PricingPageWithLayout} />
+        <Route path="/pricing/checkout" component={PricingCheckoutPageWithLayout} />
+        <Route path="/pricing/checkout/success" component={PricingCheckoutSuccessPageWithLayout} />
+        <Route path="/pricing/checkout/cancel" component={PricingCheckoutCancelPageWithLayout} />
+        <Route path="/about-us" component={AboutUsPageWithLayout} />
+        <Route path="/b2b" component={B2BPageWithLayout} />
+        <Route path="/b2b/services" component={B2BServicesPageWithLayout} />
+        <Route path="/blogs" component={BlogsPageWithLayout} />
+        <Route path="/blogs/:slug" component={BlogDetailPageWithLayout} />
+        <Route path="/career" component={CareerPageWithLayout} />
+        <Route path="/contact-us" component={ContactUsPageWithLayout} />
+        <Route path="/deletion" component={DeletionPageWithLayout} />
+        <Route path="/faqs" component={FAQsPageWithLayout} />
+        <Route path="/features" component={FeaturesPageWithLayout} />
+        <Route path="/magna-carta" component={MagnaCartaPageWithLayout} />
+        <Route path="/team" component={TeamPageWithLayout} />
+        <Route path="/terms" component={TermsPageWithLayout} />
+        <Route path="/privacy" component={PrivacyPageWithLayout} />
+        <Route path="/tutorials" component={TutorialsPageWithLayout} />
+        <Route path="/reseller-panel" component={ResellerPanelPageWithLayout} />
         <Route path="/payment/bkash">
           <PlaceholderPage name="BKash Payment" />
         </Route>

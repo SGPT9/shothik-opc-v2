@@ -13,7 +13,7 @@ export const PaymentTotal: React.FC<PaymentTotalProps> = ({
 }) => {
   if (!selectedMethod || !selectedPlan || !selectedPlan.price) return null;
 
-  const currencyCode = (selectedMethod.currency || (selectedMethod.code === "stripe" ? "USD" : "BDT")).toUpperCase();
+  const currencyCode = (selectedMethod.currency || ((selectedMethod as any).code === "stripe" ? "USD" : "BDT")).toUpperCase();
   const amount =
     currencyCode === "USD"
       ? selectedPlan.price.USD ?? 0.85

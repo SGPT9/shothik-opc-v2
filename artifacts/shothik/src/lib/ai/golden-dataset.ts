@@ -45,7 +45,10 @@ export async function addToGoldenDataset(
   
   const goldenEntry: GoldenEntry = {
     id: `golden_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    ...validated,
+    question: validated.question,
+    context: validated.context,
+    expectedAnswer: validated.expectedAnswer,
+    tags: validated.tags || [],
     createdAt: Date.now(),
   };
   
@@ -54,7 +57,7 @@ export async function addToGoldenDataset(
   });
   
   // Add to tag index
-  for (const tag of entry.tags) {
+  for (const tag of goldenEntry.tags) {
     await redis.sadd(`ai:golden:tags:${tag}`, goldenEntry.id);
   }
   
@@ -85,7 +88,7 @@ export async function getGoldenDataset(
   const parsed = Object.values(entries)
     .map(e => {
       try {
-        return JSON.parse(e) as GoldenEntry;
+        return JSON.parse(String(e)) as GoldenEntry;
       } catch {
         return null;
       }

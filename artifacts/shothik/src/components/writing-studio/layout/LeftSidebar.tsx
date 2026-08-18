@@ -145,6 +145,7 @@ export function LeftSidebar({
   activeSectionId,
   onSectionClick,
   onChaptersChange,
+  onImportClick,
   researchNotes,
   activeView = 'chapters',
   projectType = 'book',

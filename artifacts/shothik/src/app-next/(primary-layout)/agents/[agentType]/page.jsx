@@ -60,22 +60,11 @@ export default function SpecificAgentPage() {
       case "chat":
         return <ChatAgentPage />;
       case "presentation":
-        return (
-          // <PresentationAgentPage
-          //   specificAgent={agentType}
-          //   presentationId={id}
-          // /> // working version previously
-          <PresentationAgentPageV2 presentationId={id} />
-        );
+        return <ChatAgentPage initialTab="slides" />;
       case "sheets":
-        return <SheetAgentPage specificAgent={agentType} sheetId={id} />;
+        return <ChatAgentPage initialTab="sheet" />;
       case "research":
-        return (
-          <ResearchAgentPage
-            loadingResearchHistory={loadingResearchHistory}
-            setLoadingResearchHistory={setLoadingResearchHistory}
-          />
-        );
+        return <ChatAgentPage initialTab="research" />;
       case "browse":
         return (
           <div className="flex flex-col items-center justify-center py-24 px-4 text-center">

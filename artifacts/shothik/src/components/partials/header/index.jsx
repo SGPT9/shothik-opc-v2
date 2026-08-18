@@ -162,10 +162,10 @@ export default function Header({ className, layout }) {
               {/* ⚡ Credit Badge */}
               <Link
                 href="/pricing"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-slate-800/80 border border-zinc-200 dark:border-slate-700 text-brand hover:border-brand/50 font-mono text-xs font-semibold transition no-underline"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-black/60 border border-zinc-300 dark:border-white/[0.12] text-zinc-950 dark:text-zinc-100 hover:border-emerald-500/50 font-mono text-xs font-bold transition no-underline shadow-2xs backdrop-blur-xl"
                 title="Workspace Credit Balance (Click to top-up)"
               >
-                <span>⚡</span>
+                <span className="text-amber-500">⚡</span>
                 <span>550 Credits</span>
               </Link>
 
@@ -186,10 +186,10 @@ export default function Header({ className, layout }) {
                     {user?.package !== "unlimited" && (
                       <Link href={"/pricing?redirect=" + pathname}>
                         <button
-                          className="flex items-center gap-1 h-8 px-2 text-[11px] font-medium text-muted-foreground hover:text-foreground transition rounded-lg hover:bg-muted/50 cursor-pointer"
+                          className="flex items-center gap-1.5 h-8 px-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white bg-zinc-100 dark:bg-black/60 border border-zinc-200 dark:border-white/[0.12] transition rounded-lg hover:bg-zinc-200/70 dark:hover:bg-white/[0.06] cursor-pointer shadow-2xs backdrop-blur-xl"
                           data-rybbit-event="clicked_upgrade_plan"
                         >
-                          <Gem className="h-3.5 w-3.5" />
+                          <Gem className="h-3.5 w-3.5 text-indigo-400" />
                           {user?.email ? t("header.upgrade") : t("header.upgradePlan")}
                         </button>
                       </Link>
@@ -206,7 +206,8 @@ export default function Header({ className, layout }) {
             <Button
               variant="ghost"
               size="icon"
-              className="text-foreground lg:hidden"
+              aria-label="Open navigation menu"
+              className="text-zinc-800 dark:text-zinc-200 lg:hidden"
               onClick={() => setMobileMenuOpen(true)}
               data-testid="button-mobile-menu"
             >
@@ -247,7 +248,7 @@ export default function Header({ className, layout }) {
                   key={link.label}
                   variant="ghost"
                   asChild
-                  className="text-muted-foreground hover:text-primary hover:bg-muted/50 px-2 text-sm font-semibold transition-colors"
+                  className="text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-muted/50 px-2.5 text-sm font-semibold transition-colors"
                   data-testid={`nav-${link.label.toLowerCase()}`}
                 >
                   <Link href={link.href}>{link.label}</Link>
@@ -272,9 +273,9 @@ export default function Header({ className, layout }) {
                     <Link href={"/pricing?redirect=" + pathname}>
                       <button
                         data-rybbit-event="clicked_upgrade_plan"
-                        className="flex items-center gap-1 h-8 px-1.5 text-[11px] font-medium text-muted-foreground hover:text-foreground transition rounded-lg hover:bg-muted/50 cursor-pointer"
+                        className="flex items-center gap-1.5 h-8 px-2.5 text-xs font-semibold text-zinc-800 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 transition rounded-lg hover:bg-zinc-200/70 dark:hover:bg-zinc-700/60 cursor-pointer shadow-2xs"
                       >
-                        <Gem className="h-3.5 w-3.5" />
+                        <Gem className="h-3.5 w-3.5 text-indigo-500" />
                         {user?.email ? t("header.upgrade") : t("header.upgradePlan")}
                       </button>
                     </Link>
@@ -290,6 +291,7 @@ export default function Header({ className, layout }) {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Open navigation menu"
               className="text-foreground lg:hidden"
               onClick={() => setMobileMenuOpen(true)}
               data-testid="button-mobile-menu"

@@ -34,9 +34,12 @@ export default function LanguageSwitcher({ className }: { className?: string }) 
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="outline"
+          variant="ghost"
           size="icon"
-          className={cn("p-2", className)}
+          className={cn(
+            "h-8 w-8 rounded-full border border-zinc-200 dark:border-white/[0.08] bg-zinc-100/80 dark:bg-white/[0.04] text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-white/[0.08] transition cursor-pointer",
+            className
+          )}
           aria-label="Switch language"
           data-testid="language-switcher"
         >

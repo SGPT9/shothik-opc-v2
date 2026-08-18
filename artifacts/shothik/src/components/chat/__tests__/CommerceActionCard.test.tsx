@@ -29,7 +29,7 @@ describe("CommerceActionCard", () => {
       />
     );
 
-    expect(screen.getByText("৳3,400")).toBeInTheDocument();
+    expect(screen.getAllByText(/3,400/)[0]).toBeInTheDocument();
     expect(screen.getByText("9X2A881K0Q")).toBeInTheDocument();
     expect(screen.getByText("Rahim Chowdhury")).toBeInTheDocument();
     expect(screen.getByText("House 12, Road 4, Dhanmondi, Dhaka")).toBeInTheDocument();

@@ -53,6 +53,12 @@ declare module "@upstash/redis" {
     expire(key: string, seconds: number): Promise<number>;
     lrange(key: string, start: number, stop: number): Promise<string[]>;
     rpush(key: string, ...values: any[]): Promise<number>;
+    lpush(key: string, ...values: any[]): Promise<number>;
+    ltrim(key: string, start: number, stop: number): Promise<string>;
+    hset(key: string, obj: any): Promise<any>;
+    hgetall<T = any>(key: string): Promise<T | null>;
+    sadd(key: string, ...members: any[]): Promise<number>;
+    smembers(key: string): Promise<string[]>;
     del(...keys: string[]): Promise<number>;
   }
 }
@@ -150,10 +156,59 @@ interface ImportMetaEnv {
   readonly [key: string]: any;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+declare module "next" {
+  export type Metadata = any;
+  const next: any;
+  export default next;
 }
 
+declare module "next/image" {
+  import React from "react";
+  export interface StaticImageData {
+    src: string;
+    height: number;
+    width: number;
+    blurDataURL?: string;
+  }
+  const Image: React.FC<any>;
+  export default Image;
+}
 
+declare module "next/link" {
+  import React from "react";
+  const Link: React.FC<any>;
+  export default Link;
+}
 
+declare module "next/navigation" {
+  export function usePathname(): string;
+  export function useRouter(): any;
+  export function useSearchParams(): URLSearchParams;
+  export function useParams(): any;
+  export function redirect(path: string): void;
+  export function notFound(): void;
+}
 
+declare module "next/dynamic" {
+  const dynamic: any;
+  export default dynamic;
+}
+
+declare module "next/head" {
+  import React from "react";
+  const Head: React.FC<any>;
+  export default Head;
+}
+
+declare module "next/script" {
+  import React from "react";
+  const Script: React.FC<any>;
+  export default Script;
+}
+
+declare namespace React {
+  interface StyleHTMLAttributes<T> extends React.HTMLAttributes<T> {
+    jsx?: boolean;
+    global?: boolean;
+  }
+}

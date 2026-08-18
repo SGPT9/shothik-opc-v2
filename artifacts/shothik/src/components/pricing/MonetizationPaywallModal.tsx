@@ -20,7 +20,7 @@ export const MonetizationPaywallModal: React.FC<MonetizationPaywallModalProps> =
 }) => {
   const [activeTab, setActiveTab] = useState<"credits" | "subscriptions" | "rate_card">("credits");
   const [selectedProvider, setSelectedProvider] = useState<"bkash" | "nagad">("bkash");
-  const [topupPayload, setTopupPayload] = useState<{ transactionId: string; paymentUrl: string; creditsAdded: number } | null>(null);
+  const [topupPayload, setTopupPayload] = useState<{ transactionId: string; paymentUrl: string; creditsAdded: number; totalPaidBdt: number } | null>(null);
 
   if (!isOpen) return null;
 

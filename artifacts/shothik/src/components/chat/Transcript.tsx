@@ -31,14 +31,14 @@ const STYLEX_MAP = {
   container: "mx-auto max-w-3xl px-4 py-6 space-y-8",
   userRow: "flex justify-end gap-3 group",
   userCol: "flex flex-col items-end gap-1.5 max-w-[80%]",
-  userBubble: "rounded-[20px] rounded-br-md bg-gradient-to-br from-brand to-brand-dark px-4 py-3 text-sm text-white shadow-md shadow-brand/20",
+  userBubble: "rounded-2xl rounded-tr-sm bg-white/[0.08] dark:bg-white/[0.06] backdrop-blur-xl border border-zinc-300 dark:border-white/[0.12] px-4.5 py-3.5 text-sm text-zinc-900 dark:text-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)]",
   userAttachmentPill: "inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[10px]",
   userTimestamp: "text-[10px] text-muted-foreground/50 pr-1 opacity-0 group-hover:opacity-100 transition-opacity",
-  userAvatar: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 text-white shadow-sm mt-0.5",
+  userAvatar: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.08] border border-white/[0.15] text-zinc-200 backdrop-blur-md shadow-sm mt-0.5",
   
   assistantRow: "flex gap-3.5 group",
-  assistantAvatar: "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-brand via-brand-dark to-teal-600 text-white shadow-md shadow-brand/25 mt-0.5",
-  assistantCol: "flex-1 min-w-0 space-y-5",
+  assistantAvatar: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)] mt-0.5",
+  assistantCol: "flex-1 min-w-0 space-y-5 rounded-2xl bg-zinc-900/40 dark:bg-black/50 backdrop-blur-2xl border border-zinc-200/80 dark:border-white/[0.08] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden",
   planContainer: "rounded-xl border border-border bg-muted/20 px-3.5 py-2.5",
   planTitle: "flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground mb-1.5",
   planList: "space-y-1 text-xs text-foreground",
@@ -311,7 +311,7 @@ export function Transcript({
                         </div>
                       </div>
                     ) : (
-                      <div className="rounded-[20px] rounded-br-md bg-gradient-to-br from-brand to-emerald-600 px-4 py-3 text-sm text-white shadow-md shadow-brand/20">
+                      <div className="rounded-2xl rounded-tr-sm bg-zinc-100/90 dark:bg-white/[0.06] backdrop-blur-xl border border-zinc-200 dark:border-white/[0.12] px-4 py-3 text-sm text-zinc-900 dark:text-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.2)]">
                         {message.metadata?.attachments?.length ? (
                           <div className="mb-2.5 flex flex-wrap gap-1.5">
                             {message.metadata.attachments.map((att: any) => (
@@ -356,24 +356,25 @@ export function Transcript({
                     </div>
                   </div>
 
-                  {/* User avatar */}
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-slate-700 to-slate-800 border border-white/10 text-white shadow-sm mt-0.5">
+                  {/* User avatar (Human layer) */}
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-zinc-200 dark:bg-white/[0.08] border border-zinc-300 dark:border-white/[0.15] text-zinc-800 dark:text-zinc-200 backdrop-blur-md shadow-sm mt-0.5">
                     <User className="h-4 w-4" />
                   </div>
                 </div>
               );
             }
 
-            // ── ASSISTANT message: full-width thread style ─────────────────
+            // ── ASSISTANT message: full-width thread style (Agent layer) ─────────────────
             return (
               <div key={message._id} className="flex gap-3.5 group">
-                {/* AI avatar */}
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] bg-gradient-to-br from-brand via-emerald-500 to-teal-600 text-white shadow-md shadow-brand/25 mt-0.5">
+                {/* AI avatar (Cosmic Jade aura) */}
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)] mt-0.5">
                   <Sparkles className="h-4 w-4" />
                 </div>
 
-                {/* Content column — Perplexity vertical rhythm (space-y-5) */}
-                <div className="flex-1 min-w-0 space-y-5">
+                {/* Content column — Agent Glass layer */}
+                <div className="flex-1 min-w-0 space-y-5 rounded-2xl bg-zinc-50/80 dark:bg-black/50 backdrop-blur-2xl border border-zinc-200/80 dark:border-white/[0.08] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
+                  <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent pointer-events-none" />
                   {/* Badges row: Mode badge + Epistemic Provenance */}
                   {(modeBadge || message.metadata?.epistemicStatus || sources.length > 0) && (
                     <div className="flex flex-wrap items-center gap-2">
@@ -448,13 +449,15 @@ export function Transcript({
                   )}
 
                   {/* Main content */}
-                  <div className="relative text-sm leading-relaxed">
-                    <MarkdownMessage
-                      content={displayContent || (message.status === "streaming" ? "" : slashCommand ? "Spec request" : "")}
-                      onOpenSource={onOpenSource}
-                    />
-                    {message.status === "streaming" && displayContent && <StreamingCursor />}
-                  </div>
+                  {!displayContent.includes("[Stream Error:") && (
+                    <div className="relative text-sm leading-relaxed">
+                      <MarkdownMessage
+                        content={displayContent || (message.status === "streaming" ? "" : slashCommand ? "Spec request" : "")}
+                        onOpenSource={onOpenSource}
+                      />
+                      {message.status === "streaming" && displayContent && <StreamingCursor />}
+                    </div>
+                  )}
 
                   {/* ── Control Layer: Human-in-the-Loop Approval Checkpoint ── */}
                   {message.metadata?.checkpoint && (
@@ -681,9 +684,9 @@ export function Transcript({
                   {/* Citations footer removed — now rendered ABOVE answer (Perplexity pattern) */}
 
                   {/* Inline error */}
-                  {(inlineError || message.status === "error") && (
+                  {(inlineError || message.status === "error" || displayContent.includes("[Stream Error:")) && (
                     <StandardizedChatErrorCard
-                      message={inlineError?.message || "Generation halted mid-stream. You can retry the turn."}
+                      message={inlineError?.message || (displayContent.includes("[Stream Error:") ? "Could not reach the AI gateway. You can retry or switch to local GPU (Ollama)." : "Generation halted mid-stream. You can retry the turn.")}
                       recoverable={inlineError?.recoverable ?? true}
                       onRetry={() => onRegenerate && onRegenerate(message)}
                     />

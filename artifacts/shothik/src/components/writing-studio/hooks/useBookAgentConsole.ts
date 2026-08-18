@@ -26,8 +26,9 @@ export function useBookAgentConsole() {
     status: (stream as any).status || "idle",
     progress: (stream as any).progress || 0,
     activeSubAgent: (stream as any).activeSubAgent || null,
-    logs: stream.logs || [],
+    logs: (stream as any).logs || [],
     handleRunAgent,
+    startStream: handleRunAgent,
     stopStream: stream.stopStream,
   };
 }

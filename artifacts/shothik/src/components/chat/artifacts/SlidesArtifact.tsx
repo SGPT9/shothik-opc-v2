@@ -48,28 +48,192 @@ interface SlidesArtifactProps {
 }
 
 const TEMPLATES = [
-  { id: "business", label: "Business", icon: "📊", themeClass: "from-slate-900 via-indigo-950/70 to-slate-900", accent: "text-indigo-400", border: "border-indigo-500/30" },
-  { id: "creative", label: "Creative", icon: "🎨", themeClass: "from-purple-950/80 via-slate-900 to-indigo-950/80", accent: "text-purple-400", border: "border-purple-500/30" },
-  { id: "minimal",  label: "Minimal",  icon: "⬜", themeClass: "from-zinc-900 via-zinc-950 to-black", accent: "text-zinc-300", border: "border-zinc-700/40" },
-  { id: "modern",   label: "Modern",   icon: "✨", themeClass: "from-slate-900 via-emerald-950/60 to-slate-900", accent: "text-emerald-400", border: "border-emerald-500/30" },
+  { id: "business", label: "Demo Day Pitch", icon: "📊", themeClass: "from-slate-950 via-indigo-950/80 to-slate-950", accent: "text-indigo-400", border: "border-indigo-500/30" },
+  { id: "obsidian", label: "Obsidian Gradient", icon: "🔮", themeClass: "from-neutral-950 via-purple-950/50 to-neutral-950", accent: "text-purple-300", border: "border-purple-500/30" },
+  { id: "cyber", label: "Cyber Terminal", icon: "⚡", themeClass: "from-black via-emerald-950/50 to-black font-mono", accent: "text-emerald-400", border: "border-emerald-500/40" },
+  { id: "blueprint", label: "Blueprint", icon: "📐", themeClass: "from-blue-950/90 via-slate-900 to-blue-950/90", accent: "text-sky-300", border: "border-sky-500/30" },
+  { id: "editorial", label: "Editorial", icon: "📰", themeClass: "from-stone-900 via-neutral-900 to-stone-950", accent: "text-amber-300", border: "border-amber-500/30" },
+  { id: "minimal", label: "Minimalist", icon: "⬜", themeClass: "from-zinc-900 via-zinc-950 to-black", accent: "text-zinc-300", border: "border-zinc-700/40" },
 ];
 
 const PIPELINE_STEPS = ["Outline", "Design", "Content", "Formatting", "Review"];
 
-export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming }: SlidesArtifactProps) {
-  const topicTitle = initialTopic || "AI-Powered E-Commerce & Logistics in South Asia";
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [activeTemplate, setActiveTemplate] = useState("business");
-  const [showNotes, setShowNotes] = useState(true);
-  const [copied, setCopied] = useState(false);
+export function buildDynamicDeck(topicTitle: string): SlideData[] {
+  const cleanTopic = topicTitle || "Next-Gen Autonomous Platform";
+  const lower = cleanTopic.toLowerCase();
 
-  const defaultSlides: SlideData[] = [
+  if (lower.includes("health") || lower.includes("med") || lower.includes("clinic") || lower.includes("doctor")) {
+    return [
+      {
+        id: 1,
+        layout: "hero",
+        tag: "Executive Vision",
+        title: cleanTopic,
+        subtitle: "Transforming Healthcare Access & Automated Diagnostics across Emerging Markets",
+        bullets: [
+          "AI-driven preliminary triage & prescription verification for underserved regions",
+          "Telemedicine consultation integrated with local pharmacy fulfillment",
+          "Secure HIPAA/GDPR compliant electronic health records (EHR) on edge devices",
+        ],
+        metrics: [
+          { label: "Target Patients", value: "120M+", trend: "+22% YoY" },
+          { label: "Diagnostic Accuracy", value: "98.4%", trend: "Clinical Grade" },
+          { label: "Consultation Cost", value: "৳250 BDT", trend: "$2.10 USD" },
+        ],
+        speakerNotes: "Begin with the critical healthcare infrastructure deficit and how digital triage expands primary care reach.",
+      },
+      {
+        id: 2,
+        layout: "split",
+        tag: "Clinical Problem vs Solution",
+        title: "Overcoming Diagnostic Bottlenecks",
+        subtitle: "Bridging the Specialist Shortage in Rural & Peri-Urban Clinics",
+        bullets: [],
+        splitLeft: {
+          heading: "⚠️ Traditional Healthcare Friction",
+          points: [
+            "Doctor-Patient Ratio: 1:1,800 leading to 4+ hour waiting times",
+            "Counterfeit Medication: 15% of retail drugs lack verifiable supply chains",
+            "Fragmented Paper Records: Lost patient history and adverse drug interactions",
+          ],
+        },
+        splitRight: {
+          heading: "✅ Our Digital Health Solution",
+          points: [
+            "Instant AI-assisted symptom triage resolving 70% of non-emergency visits",
+            "Batch barcode authentication on all dispensed prescriptions",
+            "Unified digital patient wallet accessible offline via SMS / QR code",
+          ],
+        },
+        speakerNotes: "Highlight how our platform reduces doctor burnout while elevating patient diagnostic precision.",
+      },
+      {
+        id: 3,
+        layout: "stats",
+        tag: "Market Opportunity",
+        title: "South Asian Digital Health TAM",
+        subtitle: "A $6.8B Market Accelerating at 28.2% CAGR",
+        bullets: [
+          "Rapid growth in out-of-pocket health expenditure seeking transparent pricing",
+          "Government digital health initiatives encouraging public-private API integration",
+        ],
+        metrics: [
+          { label: "Total Addressable Market", value: "$6.8B", trend: "+28.2% CAGR" },
+          { label: "Partner Clinics", value: "1,450+", trend: "Networked" },
+          { label: "Monthly Tele-visits", value: "85,000+", trend: "+40% MoM" },
+          { label: "Average Patient Savings", value: "62%", trend: "Per Episode" },
+        ],
+        speakerNotes: "Present the immense addressable market and explosive growth in digital health consultations.",
+      },
+      {
+        id: 4,
+        layout: "timeline",
+        tag: "Clinical Milestones",
+        title: "Clinical Rollout & Hospital Integration",
+        subtitle: "Phased Deployment across Secondary & Tertiary Care Networks",
+        bullets: [],
+        timelineSteps: [
+          { step: "Phase 1", title: "Diagnostic MVP", desc: "Launch AI symptom checker & prescription OCR", status: "completed" },
+          { step: "Phase 2", title: "Pharmacy Rails", desc: "Doorstep delivery integration with verified distributors", status: "active" },
+          { step: "Phase 3", title: "Insurance Direct", desc: "Instant cashless micro-insurance claim settlements", status: "upcoming" },
+          { step: "Phase 4", title: "Regional Hubs", desc: "Cross-border specialist second-opinion network", status: "upcoming" },
+        ],
+        speakerNotes: "Walk through the four-phase deployment plan from mobile triage to regional hospital integration.",
+      },
+      {
+        id: 5,
+        layout: "split",
+        tag: "Clinical Architecture",
+        title: "AI Symptom Triage & Electronic Health Records (EHR)",
+        subtitle: "HIPAA-Compliant Encrypted Cloud Infrastructure",
+        bullets: [],
+        splitLeft: {
+          heading: "🩺 Patient Mobile Experience",
+          points: [
+            "Bengali voice-enabled symptom intake with dial-in audio triage",
+            "Instant digital prescription storage and lab report OCR parsing",
+            "Integrated doorstep medicine delivery in under 90 minutes",
+          ],
+        },
+        splitRight: {
+          heading: "🏥 Doctor Clinical Workbench",
+          points: [
+            "Automated clinical decision support with drug-interaction alerts",
+            "Structured ICD-10 diagnostic coding with 1-click audio dictation",
+            "Instant bKash/Nagad fee disbursement per consultation",
+          ],
+        },
+        speakerNotes: "Explain the patient intake workflow and the doctor EHR workbench that eliminates administrative charting overhead.",
+      },
+      {
+        id: 6,
+        layout: "stats",
+        tag: "Unit Economics",
+        title: "High-Margin Tele-consultation & Medicine Dispatch",
+        subtitle: "Rapid Payback & Defensible Operating Contributions",
+        bullets: [
+          "Gross margin on tele-consultation platform fee exceeds 78%",
+          "Pharmacy retail fulfillment margin delivers 22% net contribution",
+        ],
+        metrics: [
+          { label: "Consultation Fee", value: "৳350", trend: "Per Session" },
+          { label: "Gross Platform Margin", value: "78.4%", trend: "Software Model" },
+          { label: "Patient LTV", value: "৳4,800", trend: "14-Month Cohort" },
+          { label: "CAC Payback", value: "2.1 Mo", trend: "Highly Capital Efficient" },
+        ],
+        speakerNotes: "Detail the unit economics: ৳350 consultation fee with 78% software gross margin and 2.1 month payback.",
+      },
+      {
+        id: 7,
+        layout: "split",
+        tag: "Defensibility",
+        title: "Regulatory Compliance & Network Effects",
+        subtitle: "BMDC Certified Clinical Protocol & Local Defensibility",
+        bullets: [],
+        splitLeft: {
+          heading: "📜 Regulatory Compliance",
+          points: [
+            "100% verified BMDC doctor registration checks via automated API",
+            "End-to-end encrypted medical tele-consultation data sovereignty",
+            "Directorate General of Drug Administration (DGDA) certified pharmacies",
+          ],
+        },
+        splitRight: {
+          heading: "🛡️ Defensible Flywheel",
+          points: [
+            "Exclusive partnerships with 1,450+ grassroots rural diagnostic hubs",
+            "Proprietary Bengali speech-to-text medical translation dataset",
+            "Zero-data-cost operator partnership for low-income patients",
+          ],
+        },
+        speakerNotes: "Highlight regulatory compliance and our proprietary Bengali medical speech dataset as our core defensible moat.",
+      },
+      {
+        id: 8,
+        layout: "timeline",
+        tag: "Funding & Execution",
+        title: "Seed Investment & Strategic Milestones",
+        subtitle: "Deploying Capital for Nationwide Distribution",
+        bullets: [],
+        timelineSteps: [
+          { step: "Q1", title: "Scale Dhaka & Sylhet", desc: "Reach 50,000 monthly active tele-consultations", status: "active" },
+          { step: "Q2", title: "Launch Micro-Insurance", desc: "Deploy ৳50/month health micro-coverage with bKash", status: "upcoming" },
+          { step: "Q3", title: "Enterprise B2B Triage", desc: "Onboard 40 RMG factory worker health programs", status: "upcoming" },
+          { step: "Q4", title: "Series-A Readiness", desc: "Hit $2.5M ARR with positive operating cash flow", status: "upcoming" },
+        ],
+        speakerNotes: "Present the capital allocation roadmap: scaling Dhaka and Sylhet, launching bKash micro-insurance, and reaching $2.5M ARR.",
+      },
+    ];
+  }
+
+  // Default consulting-grade investor deck for commerce, SaaS, and technology
+  return [
     {
       id: 1,
       layout: "hero",
       tag: "Executive Vision",
-      title: topicTitle,
-      subtitle: "Unlocking Autonomous Commerce, MFS Settlement & Next-Gen Logistics across Emerging Markets",
+      title: cleanTopic,
+      subtitle: "Unlocking Autonomous Commerce, MFS Settlement & Next-Gen Intelligence across Emerging Markets",
       bullets: [
         "Democratizing venture creation for 650M+ South Asian digital consumers",
         "Unified operator platform replacing 5 fragmented subscriptions",
@@ -110,6 +274,24 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
     {
       id: 3,
       layout: "stats",
+      tag: "Market Scale",
+      title: "Massive Emerging Market TAM",
+      subtitle: "Capturing the Digital Commerce Surge across Bangladesh & South Asia",
+      bullets: [
+        "Rapidly urbanizing demographic with 74% smartphone adoption among merchants",
+        "Over $480M e-commerce parcel delivery volume growing at 24.5% annual CAGR",
+      ],
+      metrics: [
+        { label: "Total Addressable Market", value: "$10.4B", trend: "+24.5% CAGR" },
+        { label: "Daily Active Merchants", value: "320,000+", trend: "+34% YoY" },
+        { label: "Digital MFS Volume", value: "$145B", trend: "Annual Flow" },
+        { label: "Logistics Parcels / Day", value: "180k+", trend: "Nationwide" },
+      ],
+      speakerNotes: "Present the macroeconomic tailwinds: 650M consumer TAM and exploding MFS mobile payment adoption.",
+    },
+    {
+      id: 4,
+      layout: "stats",
       tag: "Unit Economics",
       title: "Scalable Margins & Profitability",
       subtitle: "3-Scenario Financial Projection (Base vs Aggressive)",
@@ -126,7 +308,50 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
       speakerNotes: "Demonstrate strong unit economics and low infrastructure overhead running on standalone containers.",
     },
     {
-      id: 4,
+      id: 5,
+      layout: "hero",
+      tag: "Product Architecture",
+      title: "Unified Agentic Operating Engine",
+      subtitle: "Replacing Point Solutions with an All-in-One Autonomous Platform",
+      bullets: [
+        "Multi-Agent Swarm: Deep research, financial modeling, and slide synthesis",
+        "Local First & Offline GPU: Instant Ollama fallback for 100% data privacy",
+        "Integrated Commerce Rail: Instant bKash/Nagad webhook reconciliation and dispatch",
+      ],
+      metrics: [
+        { label: "Latency", value: "<250ms", trend: "SSE Stream" },
+        { label: "GPU Inference", value: "Local + Cloud", trend: "Hybrid Mesh" },
+        { label: "Uptime SLA", value: "99.98%", trend: "Edge Ready" },
+      ],
+      speakerNotes: "Explain the technical moat: hybrid local-cloud agentic execution with sub-second SSE streaming.",
+    },
+    {
+      id: 6,
+      layout: "split",
+      tag: "Competitive Moat",
+      title: "Unfair Distribution & Localized Defensibility",
+      subtitle: "How Shothik Creates an Unassailable Network Effect",
+      bullets: [],
+      splitLeft: {
+        heading: "🌐 Global Competitors (US/EU)",
+        points: [
+          "No local MFS payment rails (bKash/Nagad/UPI blocked)",
+          "No integration with Bangladesh couriers (Steadfast, Pathao, Paperfly)",
+          "Monolithic pricing ($20-$50/month) unaffordable for local SMBs",
+        ],
+      },
+      splitRight: {
+        heading: "🛡️ Shothik Defensibility",
+        points: [
+          "Micro-pass billing in BDT matched to local purchasing power",
+          "Automated courier API reconciliation preventing return losses",
+          "Banglish & Bengali dialect NLP context memory",
+        ],
+      },
+      speakerNotes: "Articulate the local defensibility: courier partnerships, micro-billing, and dialect NLP.",
+    },
+    {
+      id: 7,
       layout: "timeline",
       tag: "Execution Roadmap",
       title: "Strategic Growth & Deployment Milestones",
@@ -140,25 +365,158 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
       ],
       speakerNotes: "Walk through quarterly milestones from Bangladesh market leadership to regional pan-South Asian expansion.",
     },
+    {
+      id: 8,
+      layout: "hero",
+      tag: "The Ask & Summary",
+      title: "Fueling the Next Decade of Commerce",
+      subtitle: "Raising Seed Round to Accelerate Developer & Merchant Adoption",
+      bullets: [
+        "Target Seed Raise: Accelerating engineering, merchant integrations & regional rollout",
+        "Use of Funds: 60% Core Engineering, 25% Go-To-Market, 15% Strategic Partnerships",
+        "Contact: Founders Office (founders@shothik.ai) · Polsia OPC Master Suite",
+      ],
+      metrics: [
+        { label: "Target Round", value: "$1.5M", trend: "Seed Stage" },
+        { label: "Runway", value: "24 Months", trend: "Capital Efficient" },
+        { label: "Projected ARR", value: "$4.2M", trend: "Year 2 Target" },
+      ],
+      speakerNotes: "Close with a clear, confident investment ask, use of funds, and contact channels.",
+    },
   ];
+}
 
-  const [slideList, setSlideList] = useState<SlideData[]>(customSlides || defaultSlides);
+export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming }: SlidesArtifactProps) {
+  const topicTitle = initialTopic || "AI-Powered E-Commerce & Logistics in South Asia";
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeTemplate, setActiveTemplate] = useState("business");
+  const [showNotes, setShowNotes] = useState(true);
+  const [copied, setCopied] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const [slideList, setSlideList] = useState<SlideData[]>(() => customSlides || buildDynamicDeck(topicTitle));
+
+  // Sync with prop changes
   useEffect(() => {
     if (customSlides && customSlides.length > 0) {
       setSlideList(customSlides);
       setCurrentSlide(0);
+    } else if (initialTopic) {
+      setSlideList(buildDynamicDeck(initialTopic));
+      setCurrentSlide(0);
     }
-  }, [customSlides]);
+  }, [customSlides, initialTopic]);
 
   const active = slideList[currentSlide] || slideList[0];
   const currentTemplate = TEMPLATES.find((t) => t.id === activeTemplate) || TEMPLATES[0];
 
+  // In-Place Slide Editing Handlers
+  const handleUpdateActiveSlide = (updater: Partial<SlideData>) => {
+    setSlideList((prev) =>
+      prev.map((s, idx) => (idx === currentSlide ? { ...s, ...updater } : s))
+    );
+  };
+
+  const handleAddSlide = () => {
+    const newSlide: SlideData = {
+      id: Date.now(),
+      layout: "hero",
+      tag: "Deep Dive",
+      title: "New Strategic Slide",
+      subtitle: "Click here to edit subtitle and key narrative points",
+      bullets: ["First core breakthrough point", "Second actionable metric or strategic goal"],
+      speakerNotes: "Presenter narration notes for this new slide.",
+    };
+    setSlideList((prev) => [...prev, newSlide]);
+    setCurrentSlide(slideList.length);
+  };
+
+  const handleDeleteCurrentSlide = () => {
+    if (slideList.length <= 1) return;
+    setSlideList((prev) => prev.filter((_, idx) => idx !== currentSlide));
+    setCurrentSlide((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleSpeakCurrentSlide = () => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) return;
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const narrationText = `${active.title}. ${active.subtitle}. ${active.speakerNotes}`;
+    const utterance = new SpeechSynthesisUtterance(narrationText);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const handleExportHTML = () => {
+    const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>${topicTitle} - Shothik Slides</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .font-mono { font-family: 'JetBrains+Mono', monospace; }
+  </style>
+</head>
+<body class="bg-zinc-950 text-white min-h-screen flex flex-col items-center justify-center p-6">
+  <div class="w-full max-w-4xl space-y-8">
+    <div class="text-center space-y-2">
+      <h1 class="text-3xl font-extrabold tracking-tight">${topicTitle}</h1>
+      <p class="text-sm text-zinc-400">Generated by Shothik Operator Suite · Open Design Presentation</p>
+    </div>
+    <div class="space-y-6">
+      ${slideList
+        .map(
+          (s, i) => `
+        <div class="aspect-[16/9] rounded-2xl border border-zinc-800 bg-zinc-900/90 p-8 flex flex-col justify-between shadow-2xl">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-mono px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 font-semibold uppercase">${s.tag}</span>
+            <span class="text-xs font-mono text-zinc-500">Slide ${i + 1} / ${slideList.length}</span>
+          </div>
+          <div class="my-auto space-y-4">
+            <h2 class="text-2xl font-bold">${s.title}</h2>
+            <p class="text-sm text-zinc-300">${s.subtitle}</p>
+            ${(s.bullets || []).length > 0 ? `<ul class="space-y-2 text-sm text-zinc-300">${s.bullets.map((b) => `<li class="flex gap-2"><span class="text-indigo-400 font-bold">•</span>${b}</li>`).join("")}</ul>` : ""}
+          </div>
+          <div class="pt-3 border-t border-zinc-800 flex justify-between text-xs font-mono text-zinc-500">
+            <span>SHOTHIK OPERATOR SUITE</span>
+            <span>POLSIA OPC MASTER</span>
+          </div>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+  </div>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${topicTitle.toLowerCase().replace(/[^a-z0-9]/g, "-")}-deck.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleCopyMarkdown = () => {
     const md = slideList
       .map(
-        (s) =>
-          `---\n# ${s.title}\n### ${s.subtitle}\n\n` +
+        (s, i) =>
+          `---\n## Slide ${i + 1}: ${s.title}\n### ${s.subtitle}\n\n` +
           (s.bullets || []).map((b) => `- ${b}`).join("\n") +
           `\n\n> **Speaker Notes:** ${s.speakerNotes}`
       )
@@ -172,7 +530,7 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
     window.print();
   };
 
-  // Keyboard Navigation: ←, →, Space, PgUp/PgDn, Home/End to flip slides
+  // Keyboard Navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeTag = document.activeElement?.tagName.toLowerCase();
@@ -190,23 +548,25 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
       } else if (e.key === "End") {
         e.preventDefault();
         setCurrentSlide(slideList.length - 1);
+      } else if (e.key === "Escape" && isFullscreen) {
+        setIsFullscreen(false);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [slideList.length]);
+  }, [slideList.length, isFullscreen]);
 
   return (
-    <div className="flex flex-col h-full bg-slate-50 dark:bg-[#0d0e10] text-zinc-900 dark:text-[#e3e3e3] overflow-hidden select-none transition-colors duration-200">
+    <div className="flex flex-col h-full bg-background text-foreground overflow-hidden select-none transition-colors duration-200">
       {/* ── Top Suite Header Bar ── */}
-      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] bg-white/95 dark:bg-white/[0.02] px-3.5 py-2 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 dark:text-indigo-400 border border-indigo-500/30">
+      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 backdrop-blur-md px-3.5 py-2 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+          <div className="flex items-center justify-center h-7 w-7 rounded-lg bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 shrink-0">
             <Presentation className="h-4 w-4" />
           </div>
-          <div className="min-w-0">
-            <h3 className="text-xs font-bold text-zinc-900 dark:text-white truncate">{topicTitle}</h3>
-            <p className="text-[10px] text-zinc-500 dark:text-zinc-400 font-mono">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-xs font-bold text-foreground truncate">{topicTitle}</h3>
+            <p className="text-[10px] text-muted-foreground font-mono truncate">
               Slide {currentSlide + 1} of {slideList.length} · 16:9 Presentation Stage
             </p>
           </div>
@@ -214,33 +574,75 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
 
         {/* Action Controls */}
         <div className="flex items-center gap-1.5 shrink-0">
-          {/* Advanced Voice Presenter Launcher */}
+          <button
+            type="button"
+            onClick={handleAddSlide}
+            className="flex items-center gap-1 px-2 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 text-[11px] font-medium transition cursor-pointer"
+          >
+            <span>+ Slide</span>
+          </button>
+
+          {slideList.length > 1 && (
+            <button
+              type="button"
+              onClick={handleDeleteCurrentSlide}
+              className="p-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-red-500/20 hover:border-red-500/30 text-zinc-700 dark:text-zinc-300 hover:text-red-400 transition cursor-pointer"
+            >
+              <span className="text-[11px]">🗑️</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={handleSpeakCurrentSlide}
+            className={cn(
+              "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium transition cursor-pointer",
+              isSpeaking
+                ? "bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse"
+                : "bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/[0.08]"
+            )}
+          >
+            <span>{isSpeaking ? "⏹️ Stop" : "🔊 Narrate"}</span>
+          </button>
+
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent("shothik_toggle_vtuber"))}
             className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 hover:bg-purple-500/25 text-purple-600 dark:text-purple-300 text-[11px] font-medium transition cursor-pointer"
-            title="Launch Voice Presentation with Lip-Sync Narration"
           >
             <Play className="h-3 w-3 fill-current" />
             <span className="hidden sm:inline">Present</span>
           </button>
 
-          {/* Print / Export */}
+          <button
+            type="button"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            title="Toggle Fullscreen Stage"
+          >
+            <Maximize2 className="h-3 w-3" />
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportHTML}
+            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+          >
+            <Download className="h-3 w-3" />
+          </button>
+
           <button
             type="button"
             onClick={handlePrint}
             className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
-            title="Print Slide Deck"
           >
             <Printer className="h-3 w-3" />
           </button>
 
-          {/* Copy Markdown */}
           <button
             type="button"
             onClick={handleCopyMarkdown}
             className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
-            title="Copy Deck Markdown"
           >
             {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
           </button>
@@ -280,10 +682,14 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
       </div>
 
       {/* ── Main 16:9 Presentation Stage ── */}
-      <div className="flex-1 min-h-0 flex flex-col items-center justify-center p-3 sm:p-4 bg-zinc-950">
+      <div className={cn(
+        "flex-1 min-h-0 flex flex-col items-center justify-center p-3 sm:p-4 bg-zinc-950 transition-all",
+        isFullscreen && "fixed inset-0 z-50 p-8 sm:p-12 bg-black/95 backdrop-blur-xl"
+      )}>
         <div
           className={cn(
             "relative w-full max-w-2xl aspect-[16/9] rounded-2xl border shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden bg-gradient-to-br transition-all duration-300",
+            isFullscreen && "max-w-4xl text-base shadow-indigo-500/10",
             currentTemplate.themeClass,
             currentTemplate.border
           )}
@@ -293,27 +699,53 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
             <span className={cn("text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/[0.1] border border-white/[0.15]", currentTemplate.accent)}>
               {active.tag}
             </span>
-            <span className="text-xs font-mono font-semibold text-zinc-400">
-              {currentSlide + 1} / {slideList.length}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-mono font-semibold text-zinc-400">
+                {currentSlide + 1} / {slideList.length}
+              </span>
+              {isFullscreen && (
+                <button
+                  type="button"
+                  onClick={() => setIsFullscreen(false)}
+                  className="text-xs font-mono text-zinc-400 hover:text-white px-2 py-0.5 rounded bg-white/10"
+                >
+                  ESC
+                </button>
+              )}
+            </div>
           </div>
 
-          {/* ── Polymorphic Layout Renderers ── */}
+          {/* ── Polymorphic Layout Renderers (Full In-Place Editing) ── */}
           <div className="my-auto space-y-3">
             {/* 1. HERO LAYOUT */}
             {(!active.layout || active.layout === "hero") && (
-              <div className="space-y-3">
-                <h2 className="text-xl sm:text-2xl font-bold text-white tracking-tight leading-snug">
-                  {active.title}
-                </h2>
-                <p className="text-xs text-zinc-300 leading-relaxed max-w-xl">
-                  {active.subtitle}
-                </p>
+              <div className="space-y-2.5">
+                <input
+                  type="text"
+                  value={active.title}
+                  onChange={(e) => handleUpdateActiveSlide({ title: e.target.value })}
+                  className="w-full bg-transparent text-xl sm:text-2xl font-bold text-white tracking-tight outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400 transition"
+                />
+                <input
+                  type="text"
+                  value={active.subtitle}
+                  onChange={(e) => handleUpdateActiveSlide({ subtitle: e.target.value })}
+                  className="w-full bg-transparent text-xs text-zinc-300 leading-relaxed outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400 transition"
+                />
                 <ul className="space-y-1.5 pt-1 text-xs text-zinc-200">
                   {active.bullets?.map((bullet, idx) => (
                     <li key={idx} className="flex items-start gap-2">
                       <span className={cn("font-bold mt-0.5", currentTemplate.accent)}>•</span>
-                      <span>{bullet}</span>
+                      <input
+                        type="text"
+                        value={bullet}
+                        onChange={(e) => {
+                          const updated = [...(active.bullets || [])];
+                          updated[idx] = e.target.value;
+                          handleUpdateActiveSlide({ bullets: updated });
+                        }}
+                        className="w-full bg-transparent text-xs text-zinc-200 outline-none border-b border-transparent hover:border-white/10 focus:border-indigo-400/50 transition"
+                      />
                     </li>
                   ))}
                 </ul>
@@ -324,8 +756,18 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
             {active.layout === "split" && (
               <div className="space-y-2">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">{active.title}</h2>
-                  <p className="text-[11px] text-zinc-300">{active.subtitle}</p>
+                  <input
+                    type="text"
+                    value={active.title}
+                    onChange={(e) => handleUpdateActiveSlide({ title: e.target.value })}
+                    className="w-full bg-transparent text-lg sm:text-xl font-bold text-white tracking-tight outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                  <input
+                    type="text"
+                    value={active.subtitle}
+                    onChange={(e) => handleUpdateActiveSlide({ subtitle: e.target.value })}
+                    className="w-full bg-transparent text-[11px] text-zinc-300 outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-3 pt-1">
                   <div className="p-3 rounded-xl bg-red-950/20 border border-red-500/20 text-xs space-y-1.5">
@@ -358,8 +800,18 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
             {active.layout === "stats" && (
               <div className="space-y-3">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">{active.title}</h2>
-                  <p className="text-[11px] text-zinc-300">{active.subtitle}</p>
+                  <input
+                    type="text"
+                    value={active.title}
+                    onChange={(e) => handleUpdateActiveSlide({ title: e.target.value })}
+                    className="w-full bg-transparent text-lg sm:text-xl font-bold text-white tracking-tight outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                  <input
+                    type="text"
+                    value={active.subtitle}
+                    onChange={(e) => handleUpdateActiveSlide({ subtitle: e.target.value })}
+                    className="w-full bg-transparent text-[11px] text-zinc-300 outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
                   {active.metrics?.map((m, idx) => (
@@ -377,8 +829,18 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
             {active.layout === "timeline" && (
               <div className="space-y-2">
                 <div>
-                  <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">{active.title}</h2>
-                  <p className="text-[11px] text-zinc-300">{active.subtitle}</p>
+                  <input
+                    type="text"
+                    value={active.title}
+                    onChange={(e) => handleUpdateActiveSlide({ title: e.target.value })}
+                    className="w-full bg-transparent text-lg sm:text-xl font-bold text-white tracking-tight outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                  <input
+                    type="text"
+                    value={active.subtitle}
+                    onChange={(e) => handleUpdateActiveSlide({ subtitle: e.target.value })}
+                    className="w-full bg-transparent text-[11px] text-zinc-300 outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
                 </div>
                 <div className="grid grid-cols-4 gap-2 pt-1">
                   {active.timelineSteps?.map((s, idx) => (
@@ -403,29 +865,34 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
           </div>
         </div>
 
-        {/* ── Navigation Carousel Controls ── */}
-        <div className="flex items-center justify-center gap-3 mt-3 w-full">
+        {/* ── Filmstrip ── */}
+        <div className="flex items-center gap-2 mt-3 w-full max-w-2xl px-1">
           <Button
             size="sm"
             variant="outline"
             disabled={currentSlide === 0}
             onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
-            className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white cursor-pointer"
+            className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white shrink-0 cursor-pointer"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
-          <div className="flex items-center gap-1">
-            {slideList.map((_, idx) => (
+          <div className="flex-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+            {slideList.map((slide, idx) => (
               <button
-                key={idx}
+                key={slide.id || idx}
                 type="button"
                 onClick={() => setCurrentSlide(idx)}
                 className={cn(
-                  "h-1.5 rounded-full transition-all cursor-pointer",
-                  currentSlide === idx ? "w-5 bg-indigo-500" : "w-1.5 bg-zinc-700 hover:bg-zinc-500"
+                  "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-medium transition cursor-pointer shrink-0",
+                  currentSlide === idx
+                    ? "bg-indigo-500/20 border-indigo-500/60 text-white shadow-sm"
+                    : "bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:bg-white/[0.08]"
                 )}
-              />
+              >
+                <span className="font-mono text-[9px] opacity-70">#{idx + 1}</span>
+                <span className="truncate max-w-[90px]">{slide.tag || slide.title}</span>
+              </button>
             ))}
           </div>
 
@@ -434,14 +901,14 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
             variant="outline"
             disabled={currentSlide === slideList.length - 1}
             onClick={() => setCurrentSlide((prev) => Math.min(slideList.length - 1, prev + 1))}
-            className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white cursor-pointer"
+            className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white shrink-0 cursor-pointer"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      {/* ── Presenter Speaker Notes Accordion ── */}
+      {/* ── Presenter Speaker Notes Accordion (Editable) ── */}
       <div className="border-t border-zinc-200 dark:border-white/[0.06] bg-zinc-100/90 dark:bg-[#111214] p-3 shrink-0">
         <button
           type="button"
@@ -456,9 +923,12 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
         </button>
 
         {showNotes && (
-          <p className="mt-2 text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed font-mono bg-white dark:bg-white/[0.02] p-2.5 rounded-lg border border-zinc-200 dark:border-white/[0.04]">
-            "{active.speakerNotes}"
-          </p>
+          <textarea
+            value={active.speakerNotes}
+            onChange={(e) => handleUpdateActiveSlide({ speakerNotes: e.target.value })}
+            className="mt-2 w-full text-xs text-zinc-800 dark:text-zinc-300 leading-relaxed font-mono bg-white dark:bg-white/[0.02] p-2.5 rounded-lg border border-zinc-200 dark:border-white/[0.04] outline-none hover:border-white/20 focus:border-indigo-400 resize-none h-16 transition"
+            placeholder="Enter presenter narration script..."
+          />
         )}
       </div>
     </div>

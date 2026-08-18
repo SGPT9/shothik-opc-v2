@@ -1,8 +1,30 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ScheduledAgentTask } from "../../api/tonight-engine/schedule/route";
-import { AgentActivityEvent } from "../../api/tonight-engine/activity/route";
+export interface ScheduledAgentTask {
+  id: string;
+  title: string;
+  role: "Engineering" | "Research" | "Marketing" | "Design" | "Operations";
+  schedule: string;
+  scheduleTime?: string;
+  output: string;
+  targetOutput?: string;
+  status: "idle" | "running" | "completed" | "failed";
+  progress?: number;
+  lastRun?: string;
+  nextRun?: string;
+}
+
+export interface AgentActivityEvent {
+  id: string;
+  taskId?: string;
+  agentRole?: string;
+  role?: string;
+  message: string;
+  timestamp: string;
+  type?: "info" | "success" | "warning" | "error";
+  level?: string;
+}
 
 export default function TonightEngineDashboardPage() {
   const [tasks, setTasks] = useState<ScheduledAgentTask[]>([]);

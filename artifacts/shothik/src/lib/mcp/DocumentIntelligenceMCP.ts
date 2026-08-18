@@ -84,13 +84,13 @@ export const ASTNodeSchema = z.object({
 
 export type ASTNode = z.infer<typeof ASTNodeSchema>;
 
-export const DocumentOutlineNodeSchema: z.ZodType<DocumentOutlineNode> = z.lazy(() =>
+export const DocumentOutlineNodeSchema: z.ZodTypeAny = z.lazy(() =>
   z.object({
     id: z.string(),
     title: z.string(),
     page: z.number().int().positive(),
     level: z.number().int().positive(),
-    children: z.array(DocumentOutlineNodeSchema).default([]),
+    children: z.array(DocumentOutlineNodeSchema).optional(),
   })
 );
 

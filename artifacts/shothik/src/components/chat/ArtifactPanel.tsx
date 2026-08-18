@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2, Copy, Check, BatteryCharging } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
 import { CodeArtifact }         from "@/components/chat/artifacts/CodeArtifact";
+import { ApprovalsArtifact }    from "@/components/chat/artifacts/ApprovalsArtifact";
 import { DiagramArtifact }      from "@/components/chat/artifacts/DiagramArtifact";
 import { DocArtifact }          from "@/components/chat/artifacts/DocArtifact";
 import { PonytailSynthesizerCard } from "@/components/canvas/PonytailSynthesizerCard";
@@ -16,7 +17,7 @@ import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "boimela" | "commerce" | "swarm" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "swarm" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -26,6 +27,7 @@ interface TabConfig {
 }
 
 const TABS: TabConfig[] = [
+  { id: "approvals",   label: "Approvals",           Icon: ShieldCheck,  color: "text-emerald-400"},
   { id: "slides",      label: "Slides",              Icon: Presentation, color: "text-indigo-400" },
   { id: "boimela",     label: "বইমেলা 3D",           Icon: Sparkles,     color: "text-rose-400"   },
   { id: "commerce",    label: "Commerce & MFS",      Icon: Truck,        color: "text-emerald-400"},
@@ -33,7 +35,7 @@ const TABS: TabConfig[] = [
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
   { id: "sheet",       label: "Sheet",               Icon: Table2,       color: "text-cyan-400"   },
   { id: "research",    label: "Research",            Icon: BookOpen,     color: "text-violet-400" },
-  { id: "code",        label: "Code",                Icon: Code2,        color: "text-emerald-400"},
+  { id: "code",        label: "Python REPL",         Icon: Code2,        color: "text-emerald-400"},
   { id: "diagram",     label: "Diagram",             Icon: Network,      color: "text-sky-400"    },
   { id: "doc",         label: "Doc",                 Icon: FileText,     color: "text-amber-400"  },
   { id: "sources",     label: "Sources",             Icon: Globe,        color: "text-blue-400"   },
@@ -126,6 +128,12 @@ export function ArtifactPanel({
     activeTab ? new Set([activeTab]) : new Set()
   );
 
+  useEffect(() => {
+    if (activeTab) {
+      setMounted((prev) => new Set([...prev, activeTab]));
+    }
+  }, [activeTab]);
+
   const handleTabChange = (tab: ArtifactTab) => {
     setMounted((prev) => new Set([...prev, tab]));
     onTabChange(tab);
@@ -135,11 +143,14 @@ export function ArtifactPanel({
 
   // Only show tabs that have content OR are the currently active tab (per DeepSeek-close spec)
   const tabsWithContent = new Set<ArtifactTab>([activeTab]);
-  if (slidesTopic) tabsWithContent.add("slides");
-  if (sheetData) tabsWithContent.add("sheet");
-  if (researchQuery) tabsWithContent.add("research");
-  if (codeSnippet) tabsWithContent.add("code");
-  if (docTitle || docSourceRef || docPage) tabsWithContent.add("doc");
+  // Core work studio tabs readily accessible
+  tabsWithContent.add("approvals");
+  tabsWithContent.add("slides");
+  tabsWithContent.add("sheet");
+  tabsWithContent.add("research");
+  tabsWithContent.add("code");
+  tabsWithContent.add("diagram");
+  tabsWithContent.add("doc");
   // Sources and History always show when panel is open — they provide contextual depth
   tabsWithContent.add("sources");
   tabsWithContent.add("history");
@@ -251,6 +262,12 @@ export function ArtifactPanel({
 
       {/* ── Content area — tabs stay mounted once opened ── */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
+
+        {mounted.has("approvals") && (
+          <div className={`absolute inset-0 overflow-hidden ${activeTab === "approvals" ? "block" : "hidden"}`}>
+            <ApprovalsArtifact />
+          </div>
+        )}
 
         {mounted.has("slides") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "slides" ? "block" : "hidden"}`}>

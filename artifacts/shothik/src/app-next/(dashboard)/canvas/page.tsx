@@ -1,7 +1,18 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { CanvasArtifact } from "../../api/hermes/canvas/artifacts/route";
+
+export interface CanvasArtifact {
+  id: string;
+  title: string;
+  type: string;
+  version?: number | string;
+  content: any;
+  metadata?: any;
+  created_at?: string;
+  updated_at?: string;
+  updatedAt?: string;
+}
 
 export default function CanvasWorkspacePage() {
   const [artifacts, setArtifacts] = useState<CanvasArtifact[]>([]);

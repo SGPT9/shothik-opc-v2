@@ -224,7 +224,7 @@ export function MarkdownMessage({
           },
 
           pre: ({ children }) => (
-            <div className="my-3 overflow-hidden rounded-xl border border-border/80 bg-[#0b0f19] text-xs font-mono shadow-md">
+            <div className="my-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-white/[0.08] bg-zinc-950 dark:bg-black/90 text-xs font-mono shadow-md backdrop-blur-xl">
               {children}
             </div>
           ),
@@ -237,7 +237,7 @@ export function MarkdownMessage({
 
             if (isInline) {
               return (
-                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px] text-cyan-600 dark:text-cyan-400" {...props}>
+                <code className="rounded bg-zinc-200 dark:bg-white/[0.08] px-1.5 py-0.5 font-mono text-[11px] text-zinc-900 dark:text-emerald-400 border border-zinc-300 dark:border-white/[0.08]" {...props}>
                   {children}
                 </code>
               );
@@ -251,12 +251,12 @@ export function MarkdownMessage({
             return (
               <div className="space-y-0">
                 {/* Code Block Header Toolbar */}
-                <div className="flex items-center justify-between border-b border-border/60 bg-[#070a12] px-3 py-1.5 text-[11px] text-muted-foreground">
+                <div className="flex items-center justify-between border-b border-zinc-800 dark:border-white/[0.08] bg-zinc-900 dark:bg-black/80 px-3.5 py-2 text-[11px] text-zinc-400">
                   <div className="flex items-center space-x-2 font-mono">
-                    <span className="rounded bg-indigo-500/20 px-1.5 py-0.5 font-semibold text-indigo-300 uppercase text-[10px]">
+                    <span className="rounded bg-white/[0.08] border border-white/[0.12] px-2 py-0.5 font-semibold text-zinc-200 uppercase text-[10px]">
                       {lang}
                     </span>
-                    <span className="text-[10px] text-slate-500">REPL Sandbox</span>
+                    <span className="text-[10px] text-zinc-500 font-sans">REPL Sandbox</span>
                   </div>
 
                   <div className="flex items-center space-x-1.5">
@@ -264,20 +264,20 @@ export function MarkdownMessage({
                       type="button"
                       onClick={() => handleRunCode(codeId, text, lang)}
                       disabled={isRunning}
-                      className="flex items-center space-x-1 rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300 hover:bg-emerald-500/30 transition text-[10px] font-mono border border-emerald-500/30 cursor-pointer select-none disabled:opacity-50"
+                      className="flex items-center space-x-1 rounded-md bg-emerald-500/15 px-2.5 py-1 text-emerald-400 hover:bg-emerald-500/25 transition text-[10px] font-mono border border-emerald-500/30 cursor-pointer select-none disabled:opacity-50"
                     >
                       {isRunning ? (
                         <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />
                       ) : (
                         <Play className="h-3 w-3 text-emerald-400" />
                       )}
-                      <span>{isRunning ? "Running..." : "▶ Run Sandbox"}</span>
+                      <span>{isRunning ? "Running..." : "▶ Run"}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleCopy(text)}
-                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer select-none"
+                      className="flex items-center space-x-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] px-2.5 py-1 text-zinc-300 hover:text-white transition text-[10px] font-mono cursor-pointer select-none"
                       title="Copy code to clipboard"
                     >
                       {isCopied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
@@ -287,17 +287,17 @@ export function MarkdownMessage({
                     <button
                       type="button"
                       onClick={() => handleDownloadCode(text, lang)}
-                      className="flex items-center space-x-1 rounded bg-muted/60 px-2 py-0.5 text-muted-foreground hover:text-foreground transition text-[10px] font-mono cursor-pointer select-none"
+                      className="flex items-center space-x-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] px-2.5 py-1 text-zinc-300 hover:text-white transition text-[10px] font-mono cursor-pointer select-none"
                       title="Download code file"
                     >
-                      <Download className="h-3 w-3 text-indigo-400" />
-                      <span>File</span>
+                      <Download className="h-3 w-3 text-amber-400" />
+                      <span>Download</span>
                     </button>
                   </div>
                 </div>
 
                 {/* Code Body */}
-                <div className="p-3 overflow-x-auto text-[11px] leading-relaxed text-slate-200 bg-[#0b0f19]">
+                <div className="p-3.5 overflow-x-auto text-[11px] leading-relaxed text-zinc-200 bg-zinc-950 dark:bg-black/60 font-mono custom-scrollbar">
                   <code className={cn("block font-mono", codeClassName)} {...props}>
                     {children}
                   </code>
@@ -305,24 +305,24 @@ export function MarkdownMessage({
 
                 {/* Console Output Drawer */}
                 {logs && (
-                  <div className="border-t border-slate-800 bg-[#05070d] font-mono text-[11px]">
+                  <div className="border-t border-zinc-800 dark:border-white/[0.08] bg-black/80 font-mono text-[11px]">
                     <button
                       type="button"
                       onClick={() =>
                         setOpenConsole((prev) => ({ ...prev, [codeId]: !prev[codeId] }))
                       }
-                      className="w-full px-3 py-1 flex items-center justify-between text-slate-400 hover:bg-slate-900/50 transition text-[10px] cursor-pointer select-none"
+                      className="w-full px-3 py-1.5 flex items-center justify-between text-zinc-400 hover:bg-white/[0.04] transition text-[10px] cursor-pointer select-none"
                     >
                       <div className="flex items-center space-x-1.5">
                         <Terminal className="h-3 w-3 text-amber-400" />
-                        <span>Console Execution Log</span>
+                        <span>Console Output</span>
                       </div>
                       {isConsoleOpen ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                     </button>
                     {isConsoleOpen && (
-                      <div className="p-2.5 text-slate-300 bg-[#030408] border-t border-slate-800/80 whitespace-pre-wrap text-[10px]">
+                      <pre className="px-3.5 py-2.5 text-[10px] text-emerald-400 bg-black/90 overflow-x-auto border-t border-white/[0.06] font-mono whitespace-pre-wrap">
                         {logs}
-                      </div>
+                      </pre>
                     )}
                   </div>
                 )}

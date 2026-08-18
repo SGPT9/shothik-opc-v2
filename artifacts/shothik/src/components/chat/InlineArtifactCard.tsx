@@ -121,21 +121,19 @@ export function InlineArtifactCard({
   className,
 }: InlineArtifactCardProps) {
   const config = CONFIGS[type] || CONFIGS.slides;
-  const { Icon, color, border, bg, badgeBg, label, defaultTitle, defaultSubtitle } = config;
+  const { Icon, color, badgeBg, label, defaultTitle, defaultSubtitle } = config;
 
   return (
     <button
       type="button"
       onClick={onOpen}
       className={cn(
-        "group my-3 flex w-full items-center justify-between gap-3 rounded-2xl border p-3.5 text-left transition-all duration-200 shadow-sm hover:shadow-md",
-        border,
-        bg,
+        "group my-3 flex w-full items-center justify-between gap-3 rounded-2xl border border-zinc-200 dark:border-white/[0.12] bg-zinc-100/90 dark:bg-black/60 backdrop-blur-xl p-3.5 text-left transition-all duration-200 shadow-sm hover:border-zinc-300 dark:hover:border-white/[0.25] hover:shadow-lg cursor-pointer",
         className
       )}
     >
       <div className="flex items-center gap-3 min-w-0 flex-1">
-        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-background/80 shadow-inner", color)}>
+        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-zinc-200 dark:border-white/[0.12] bg-white dark:bg-white/[0.04] shadow-xs", color)}>
           <Icon className="h-5 w-5" />
         </div>
 
@@ -146,16 +144,16 @@ export function InlineArtifactCard({
               {label}
             </span>
           </div>
-          <p className="text-xs font-bold text-foreground truncate group-hover:text-brand transition-colors">
+          <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate group-hover:text-emerald-400 transition-colors">
             {title || defaultTitle}
           </p>
-          <p className="text-[11px] text-muted-foreground truncate">
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400 truncate">
             {subtitle || defaultSubtitle}
           </p>
         </div>
       </div>
 
-      <div className="flex h-8 items-center gap-1 rounded-xl bg-background/80 px-2.5 text-xs font-semibold text-foreground border border-border/60 group-hover:bg-brand group-hover:text-white group-hover:border-brand transition-all shrink-0">
+      <div className="flex h-8 items-center gap-1 rounded-xl bg-white dark:bg-white/[0.08] px-3 text-xs font-semibold text-zinc-900 dark:text-zinc-100 border border-zinc-200 dark:border-white/[0.15] group-hover:bg-emerald-500 group-hover:text-zinc-950 group-hover:border-emerald-500 transition-all shrink-0">
         <span>Open Canvas</span>
         <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
       </div>

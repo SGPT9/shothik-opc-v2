@@ -209,30 +209,31 @@ export default function CommunityPage() {
       </div>
 
       {/* 10 Polsia Swarm Personas Bar */}
-      <div className="mb-8 p-4 rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-background to-indigo-950/20 shadow-xs">
+      <div className="mb-8 p-4 rounded-2xl border border-zinc-200 dark:border-indigo-500/20 bg-white dark:bg-gradient-to-br dark:from-background dark:to-indigo-950/20 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Bot className="h-4 w-4 text-indigo-400" />
-            <span className="text-xs font-semibold text-foreground">Polsia Swarm Personas (10 Active)</span>
+            <Bot className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
+            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Polsia Swarm Personas (10 Active)</span>
           </div>
-          <span className="text-[10px] font-mono text-emerald-400">● 140 Sub-Agents Online</span>
+          <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">● 140 Sub-Agents Online</span>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           {POLSIA_AGENT_PERSONAS.map((agent) => {
             const Icon = agent.icon;
+            const isSelected = selectedAgent === agent.handle;
             return (
               <button
                 key={agent.handle}
                 onClick={() => setSelectedAgent(agent.handle)}
                 className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs whitespace-nowrap transition cursor-pointer ${
-                  selectedAgent === agent.handle
-                    ? "border-indigo-500 bg-indigo-500/10 text-foreground font-semibold"
-                    : "border-border/60 bg-card/60 text-muted-foreground hover:text-foreground hover:bg-card"
+                  isSelected
+                    ? "border-indigo-500 bg-indigo-50 text-indigo-950 dark:bg-indigo-500/15 dark:text-indigo-200 font-semibold shadow-xs"
+                    : "border-zinc-200 bg-zinc-50/80 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/[0.06]"
                 }`}
               >
                 <Icon className={`h-3.5 w-3.5 ${agent.color}`} />
                 <span>{agent.handle}</span>
-                <span className="text-[10px] opacity-60">({agent.role})</span>
+                <span className="text-[10px] opacity-70">({agent.role})</span>
               </button>
             );
           })}
@@ -262,14 +263,14 @@ export default function CommunityPage() {
       </div>
 
       {/* View Switcher Tabs & Search */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 border-b border-border/80 pb-3">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6 border-b border-zinc-200 dark:border-white/[0.08] pb-3">
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab("agent_swarm")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === "agent_swarm"
                 ? "bg-indigo-600 text-white shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/[0.04]"
             }`}
           >
             <Bot className="h-3.5 w-3.5" />
@@ -277,10 +278,10 @@ export default function CommunityPage() {
           </button>
           <button
             onClick={() => setActiveTab("hot")}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
               activeTab === "hot"
                 ? "bg-indigo-600 text-white shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                : "text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/[0.04]"
             }`}
           >
             <TrendingUp className="h-3.5 w-3.5" />
@@ -289,13 +290,13 @@ export default function CommunityPage() {
         </div>
 
         <div className="relative w-full sm:w-64">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-400 dark:text-zinc-500" />
           <input
             type="text"
             placeholder="Search discussions & dispatches..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-muted/50 border border-border rounded-lg pl-8 pr-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full bg-zinc-100 dark:bg-black/40 border border-zinc-200 dark:border-white/[0.12] rounded-xl pl-8 pr-3 py-1.5 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition"
           />
         </div>
       </div>
@@ -305,33 +306,33 @@ export default function CommunityPage() {
           {MOCK_AGENT_DISPATCHES.map((dispatch) => (
             <div
               key={dispatch.id}
-              className="rounded-2xl border border-border/80 bg-card p-5 transition hover:border-indigo-500/40 shadow-xs"
+              className="rounded-2xl border border-zinc-200 dark:border-white/[0.08] bg-white dark:bg-black/40 backdrop-blur-xl p-5 transition hover:border-indigo-400 dark:hover:border-indigo-500/40 shadow-xs"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-indigo-400">
+                  <span className="font-mono text-xs font-bold text-indigo-600 dark:text-indigo-400">
                     {dispatch.agent}
                   </span>
                   <span className="text-[10px] text-muted-foreground">({dispatch.role})</span>
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-white/[0.06] text-zinc-700 dark:text-zinc-300 font-mono">
                     🏢 {dispatch.company}
                   </span>
                 </div>
                 <span className="text-xs text-muted-foreground font-mono">{dispatch.time}</span>
               </div>
 
-              <h3 className="text-sm font-semibold text-foreground mb-1.5">{dispatch.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1.5">{dispatch.title}</h3>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed mb-3">
                 {dispatch.content}
               </p>
 
-              <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs">
+              <div className="flex items-center justify-between pt-2.5 border-t border-zinc-100 dark:border-white/[0.06] text-xs">
                 <div className="flex items-center gap-2">
                   {dispatch.reactions.map((r, i) => (
                     <button
                       key={i}
                       onClick={() => alert(`Upvoted dispatch: ${dispatch.title}`)}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-border bg-background hover:bg-muted text-[11px] cursor-pointer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer transition"
                     >
                       <span>{r.emoji}</span>
                       <span className="font-mono font-medium">{r.count}</span>
@@ -342,7 +343,7 @@ export default function CommunityPage() {
                   onClick={() => {
                     alert(`Opened reply thread with ${dispatch.agent} on behalf of ${dispatch.company}`);
                   }}
-                  className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 cursor-pointer"
+                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 cursor-pointer"
                 >
                   Reply or Ask Review ➔
                 </button>
@@ -355,15 +356,15 @@ export default function CommunityPage() {
           {displayHumanPosts.map((post) => (
             <div
               key={post.id}
-              className="rounded-2xl border border-border/80 bg-card p-5 transition hover:border-indigo-500/40 shadow-xs space-y-3"
+              className="rounded-2xl border border-zinc-200 dark:border-white/[0.08] bg-white dark:bg-black/40 backdrop-blur-xl p-5 transition hover:border-indigo-400 dark:hover:border-indigo-500/40 shadow-xs space-y-3"
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-[10px] font-bold text-indigo-400">
+                  <div className="w-6 h-6 rounded-full bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-[10px] font-bold text-indigo-600 dark:text-indigo-400">
                     {post.authorName[0]}
                   </div>
-                  <span className="text-xs font-semibold text-foreground">{post.authorName}</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted font-mono text-muted-foreground">
+                  <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">{post.authorName}</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-zinc-100 dark:bg-white/[0.06] font-mono text-zinc-600 dark:text-zinc-400">
                     {(post as any).category || "General"}
                   </span>
                 </div>
@@ -373,19 +374,19 @@ export default function CommunityPage() {
               </div>
 
               <div>
-                <h3 className="text-sm font-semibold text-foreground mb-1">{post.title}</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
+                <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-1">{post.title}</h3>
+                <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                   {post.content}
                 </p>
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-border/60 text-xs">
+              <div className="flex items-center justify-between pt-2.5 border-t border-zinc-100 dark:border-white/[0.06] text-xs">
                 <div className="flex items-center gap-2">
                   {post.reactions?.map((r: any, i: number) => (
                     <button
                       key={i}
                       onClick={() => handleToggleReaction(post.id, r.emoji)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border bg-background hover:bg-muted text-xs cursor-pointer transition active:scale-95"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] text-xs text-zinc-700 dark:text-zinc-300 cursor-pointer transition active:scale-95"
                     >
                       <span>{r.emoji}</span>
                       <span className="font-mono font-medium">{r.count}</span>
@@ -417,11 +418,11 @@ export default function CommunityPage() {
 
       {/* Reviewer Fund Dashboard */}
       <div className="mt-8">
-        <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-foreground">
+        <h2 className="mb-2 flex items-center gap-2 text-lg font-bold text-zinc-900 dark:text-zinc-100">
           <Coins className="h-5 w-5 fill-amber-400 text-amber-400" />
           {t("community.reviewerFund") || "Reviewer Rewards Fund"}
         </h2>
-        <p className="mb-4 text-sm text-muted-foreground">
+        <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
           {t("community.reviewerFundDescription") || "Earn 50-200 credits by reviewing autonomous agent pull requests and verifying South Asian API integrations."}
         </p>
         <ReviewerFundDashboard />
@@ -430,11 +431,11 @@ export default function CommunityPage() {
       {/* ── Start Discussion Modal ── */}
       {isNewPostModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-background border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-border">
+          <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/[0.12] rounded-2xl p-6 w-full max-w-lg shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-white/[0.08]">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5 text-indigo-500" />
-                <h3 className="font-bold text-base text-foreground">Start Community Discussion</h3>
+                <h3 className="font-bold text-base text-zinc-900 dark:text-zinc-100">Start Community Discussion</h3>
               </div>
               <button
                 onClick={() => setIsNewPostModalOpen(false)}
@@ -446,23 +447,23 @@ export default function CommunityPage() {
 
             <form onSubmit={handleCreatePost} className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">Title</label>
+                <label className="block text-xs font-semibold text-zinc-900 dark:text-zinc-200 mb-1">Title</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. bKash Webhook IPN vs Polling Architecture"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full bg-zinc-50 dark:bg-black/50 border border-zinc-200 dark:border-white/[0.12] rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">Category</label>
+                <label className="block text-xs font-semibold text-zinc-900 dark:text-zinc-200 mb-1">Category</label>
                 <select
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  className="w-full bg-zinc-50 dark:bg-black/50 border border-zinc-200 dark:border-white/[0.12] rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-indigo-500"
                 >
                   <option value="Architecture">Architecture & Code Graphs</option>
                   <option value="Logistics & COD">Logistics & Steadfast COD</option>
@@ -473,14 +474,14 @@ export default function CommunityPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-foreground mb-1">Description / Question</label>
+                <label className="block text-xs font-semibold text-zinc-900 dark:text-zinc-200 mb-1">Description / Question</label>
                 <textarea
                   required
                   rows={4}
                   placeholder="Share findings, benchmarks, or architectural questions with the community..."
                   value={newContent}
                   onChange={(e) => setNewContent(e.target.value)}
-                  className="w-full bg-muted/50 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
+                  className="w-full bg-zinc-50 dark:bg-black/50 border border-zinc-200 dark:border-white/[0.12] rounded-xl px-3 py-2 text-xs text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 resize-none"
                 />
               </div>
 
@@ -510,15 +511,16 @@ export default function CommunityPage() {
 
 function StatCard({ label, value, icon, color }: { label: string; value: number; icon: React.ReactNode; color: string }) {
   const colorMap: Record<string, string> = {
-    blue: "border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20",
-    emerald: "border-emerald-200 bg-emerald-50/50 dark:border-emerald-900 dark:bg-emerald-950/20",
-    amber: "border-amber-200 bg-amber-50/50 dark:border-amber-900 dark:bg-amber-950/20",
+    blue: "border-blue-200 bg-blue-50/70 text-blue-950 dark:border-blue-500/20 dark:bg-blue-500/10 dark:text-blue-100",
+    indigo: "border-indigo-200 bg-indigo-50/70 text-indigo-950 dark:border-indigo-500/20 dark:bg-indigo-500/10 dark:text-indigo-100",
+    emerald: "border-emerald-200 bg-emerald-50/70 text-emerald-950 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-100",
+    amber: "border-amber-200 bg-amber-50/70 text-amber-950 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-100",
   };
   return (
-    <div className={`rounded-xl border p-4 ${colorMap[color]}`}>
+    <div className={`rounded-2xl border p-5 shadow-xs ${colorMap[color] || colorMap.indigo}`}>
       <div className="mb-2">{icon}</div>
       <div className="text-2xl font-bold text-foreground">{value.toLocaleString()}</div>
-      <div className="text-sm text-muted-foreground">{label}</div>
+      <div className="text-xs text-muted-foreground font-mono mt-0.5">{label}</div>
     </div>
   );
 }

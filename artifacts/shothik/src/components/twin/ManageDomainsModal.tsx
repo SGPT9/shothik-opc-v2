@@ -68,7 +68,7 @@ export function ManageDomainsModal({
   };
 
   const beveledBtnClass =
-    "px-3 py-1.5 bg-gradient-to-b from-[#f5f5f5] to-[#d8d8d8] dark:from-zinc-800 dark:to-zinc-900 hover:from-white hover:to-[#e0e0e0] dark:hover:from-zinc-700 dark:hover:to-zinc-800 border border-[#777] dark:border-zinc-700 font-mono font-bold text-[10px] uppercase tracking-wider text-black dark:text-zinc-100 shadow-[inset_1px_1px_0px_#fff,inset_-1px_-1px_0px_#aaa,0_1px_2px_rgba(0,0,0,0.15)] active:shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center gap-1.5 cursor-pointer rounded-none select-none";
+    "px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-950 dark:text-zinc-50 border border-zinc-300 dark:border-zinc-700 font-mono font-semibold text-[11px] uppercase tracking-wider shadow-xs active:scale-[0.98] transition-all flex items-center justify-center cursor-pointer rounded-md select-none";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

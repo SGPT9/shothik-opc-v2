@@ -7,7 +7,7 @@ import {
   useGetUserLimitQuery,
   useGetUserQuery,
 } from "@/redux/api/auth/authApi";
-import { AppProgressProvider as ProgressProvider } from "@bprogress/next";
+import ProgressProvider from "@/providers/ProgressProvider";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 

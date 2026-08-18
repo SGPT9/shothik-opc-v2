@@ -190,7 +190,7 @@ ${slideHtml}
   };
 
   const isIdle      = !job && !isLoading;
-  const isRunning   = isLoading || (job && job.status === "running");
+  const isRunning   = isLoading || (job && (["outline", "design", "formatting", "content", "review", "running"] as any[]).includes(job.status));
   const isCompleted = job?.status === "completed";
   const isFailed    = job?.status === "failed";
   const isPaused    = job?.status === "paused";

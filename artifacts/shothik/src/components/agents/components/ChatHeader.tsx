@@ -31,9 +31,15 @@ export function ChatHeader({
   const toggleTheme = () => {
     if (isDark) {
       document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+      document.documentElement.setAttribute("data-theme", "light");
+      localStorage.setItem("theme", "light");
       setIsDark(false);
     } else {
+      document.documentElement.classList.remove("light");
       document.documentElement.classList.add("dark");
+      document.documentElement.setAttribute("data-theme", "dark");
+      localStorage.setItem("theme", "dark");
       setIsDark(true);
     }
   };

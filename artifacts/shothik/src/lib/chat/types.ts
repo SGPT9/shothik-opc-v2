@@ -147,6 +147,7 @@ export interface ChatMessage {
       placeholder?: string;
       submitted?: boolean;
     };
+    [key: string]: any;
   };
 
   createdAt: number;

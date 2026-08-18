@@ -1,7 +1,9 @@
 /**
  * Navigation compatibility shim — replaces next/navigation for Vite+wouter.
  */
-import { useLocation, useSearch, useParams as useWouterParams } from 'wouter';
+import { useLocation, useSearch, useParams as useWouterParams, Link } from 'wouter';
+
+export { Link };
 
 export function usePathname(): string {
   const [location] = useLocation();
