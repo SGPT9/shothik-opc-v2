@@ -1,0 +1,20 @@
+name = "shothik-hermes-edge"
+main = "artifacts/api-server/src/index.ts"
+compatibility_date = "2026-08-01"
+compatibility_flags = ["nodejs_compat"]
+
+[site]
+bucket = "./artifacts/shothik/dist"
+
+[vars]
+ENVIRONMENT = "production"
+INSFORGE_PROJECT = "oss-project"
+
+[observability]
+enabled = true
+head_sampling_rate = 1
+
+# Cloudflare OS Gatekeeper & Speculative Execution Bindings
+[[kv_namespaces]]
+binding = "SPECULATIVE_GATEKEEPER_KV"
+id = "gatekeeper_speculative_cache"
