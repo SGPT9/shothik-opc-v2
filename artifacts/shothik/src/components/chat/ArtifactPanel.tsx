@@ -14,6 +14,7 @@ import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
 import { CommerceActionCard } from "@/components/chat/CommerceActionCard";
 import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
+import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -128,6 +129,17 @@ export function ArtifactPanel({
     activeTab ? new Set([activeTab]) : new Set()
   );
 
+  const { broadcastCanvasEvent } = useCanvasRealtimeSync({
+    workspaceId: "default-workspace",
+    onSyncEvent: (event) => {
+      if (event.type === "ACTIVE_TAB_CHANGED" && event.payload?.tab) {
+        const newTab = event.payload.tab as ArtifactTab;
+        setMounted((prev) => new Set([...prev, newTab]));
+        onTabChange(newTab);
+      }
+    },
+  });
+
   useEffect(() => {
     if (activeTab) {
       setMounted((prev) => new Set([...prev, activeTab]));
@@ -137,6 +149,7 @@ export function ArtifactPanel({
   const handleTabChange = (tab: ArtifactTab) => {
     setMounted((prev) => new Set([...prev, tab]));
     onTabChange(tab);
+    broadcastCanvasEvent("ACTIVE_TAB_CHANGED", { tab });
   };
 
   if (!activeTab) return null;
