@@ -12,7 +12,6 @@ import {
   RefreshCw,
   Share2,
   Globe2,
-  Waveform,
 } from "lucide-react";
 import { LiquidGlassCard } from "../LiquidGlassCard";
 import { cn } from "@/lib/utils";
