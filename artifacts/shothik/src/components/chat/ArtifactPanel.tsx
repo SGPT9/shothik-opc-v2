@@ -19,12 +19,14 @@ import { CommunityArtifact } from "@/components/chat/artifacts/CommunityArtifact
 import { MultiAgentSwarmFlow } from "@/components/chat/artifacts/MultiAgentSwarmFlow";
 import { CareerStudioArtifact } from "@/components/chat/artifacts/CareerStudioArtifact";
 import { WhatsAppOrderSimulator } from "@/components/chat/artifacts/WhatsAppOrderSimulator";
-import { Briefcase, MessageSquare } from "lucide-react";
+import { VoicePitchToDeck } from "@/components/chat/artifacts/VoicePitchToDeck";
+import { PromptLabArtifact } from "@/components/chat/artifacts/PromptLabArtifact";
+import { Briefcase, MessageSquare, Mic } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -40,6 +42,8 @@ const TABS: TabConfig[] = [
   { id: "commerce",    label: "Commerce & MFS",      Icon: Truck,        color: "text-emerald-400"},
   { id: "whatsapp",    label: "WhatsApp Bot",        Icon: MessageSquare, color: "text-emerald-400"},
   { id: "career",      label: "Career & CV",         Icon: Briefcase,    color: "text-indigo-400" },
+  { id: "voicepitch",  label: "Voice Pitch",         Icon: Mic,          color: "text-purple-400" },
+  { id: "promptlab",   label: "Prompt Lab",          Icon: Terminal,     color: "text-cyan-400"   },
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -172,6 +176,8 @@ export function ArtifactPanel({
   tabsWithContent.add("commerce");
   tabsWithContent.add("whatsapp");
   tabsWithContent.add("career");
+  tabsWithContent.add("voicepitch");
+  tabsWithContent.add("promptlab");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -420,6 +426,18 @@ export function ArtifactPanel({
         {mounted.has("whatsapp") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "whatsapp" ? "block" : "hidden"}`}>
             <WhatsAppOrderSimulator />
+          </div>
+        )}
+
+        {mounted.has("voicepitch") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "voicepitch" ? "block" : "hidden"}`}>
+            <VoicePitchToDeck onExportToSlides={(topic) => handleTabChange("slides")} />
+          </div>
+        )}
+
+        {mounted.has("promptlab") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "promptlab" ? "block" : "hidden"}`}>
+            <PromptLabArtifact />
           </div>
         )}
 
