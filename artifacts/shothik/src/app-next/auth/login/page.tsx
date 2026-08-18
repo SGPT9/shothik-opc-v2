@@ -252,6 +252,17 @@ const LoginPage = () => {
                             onAuthSuccess={handleSocialSuccess}
                         />
 
+                        {/* Guest Quick-Access Bypass (Relaxed Auth Requirement) */}
+                        <div className="mt-3">
+                            <Link
+                                href="/agents/chat"
+                                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-brand/40 bg-brand/10 hover:bg-brand/20 text-brand font-semibold text-sm transition cursor-pointer shadow-xs"
+                            >
+                                <span>⚡ Continue as Guest (লগইন ছাড়া প্রবেশ করুন)</span>
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+
                         {/* Top-level form error */}
                         {error && (
                             <div className="mt-4 space-y-2">
