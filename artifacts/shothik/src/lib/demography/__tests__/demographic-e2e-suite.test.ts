@@ -6,6 +6,8 @@ import {
   SupplyChainEngine,
   BanglishNlpEngine,
 } from "../demographic-engines";
+import { BkashGateway } from "../bkash-gateway";
+import { RouteXpressAdapter } from "../routexpress-adapter";
 
 describe("🇧🇩 Demography-Aware Core Engines — End-to-End TDD Suite", () => {
   describe("1. bKash / Nagad MFS Engine & TrxID Verification", () => {
@@ -193,6 +195,81 @@ describe("🇧🇩 Demography-Aware Core Engines — End-to-End TDD Suite", () =
       expect(BanglishNlpEngine.isCommercialInquiry("vai black shirt er price koto porbe?")).toBe(true);
       expect(BanglishNlpEngine.isCommercialInquiry("bkash e 150 taka advance delivery fee pathiyechi TrxID check koren")).toBe(true);
       expect(BanglishNlpEngine.isCommercialInquiry("aajke brishti hocche")).toBe(false);
+    });
+  });
+
+  describe("6. bKash Gateway (Tokenized Sandbox & P2P Send-Money)", () => {
+    it("should create tokenized payment URL with grant token", async () => {
+      const bkash = new BkashGateway({ isSandbox: true });
+      const payment = await bkash.createPayment("ORD-101", 1850, "01711000000");
+
+      expect(payment.paymentId).toMatch(/^TR0011/);
+      expect(payment.bkashUrl).toContain("sandbox.payment.bkash.com");
+      expect(payment.amount).toBe(1850);
+      expect(payment.currency).toBe("BDT");
+
+      const execution = await bkash.executePayment(payment.paymentId);
+      expect(execution.transactionStatus).toBe("Completed");
+      expect(execution.trxId).toMatch(/^BK99/);
+    });
+
+    it("should verify P2P Send-Money TrxID and lock ৳150 delivery advance fee", () => {
+      const bkash = new BkashGateway();
+      
+      // Valid P2P TrxID
+      const res1 = bkash.verifyP2pTrxId({
+        orderId: "ORD-102",
+        trxId: "BK99281726X",
+        senderPhone: "01711000000",
+        amount: 150,
+      });
+      expect(res1.isValid).toBe(true);
+      expect(res1.isAdvanceFeeLocked).toBe(true);
+      expect(res1.status).toBe("VERIFIED_SETTLED");
+
+      // Invalid TrxID
+      const res2 = bkash.verifyP2pTrxId({
+        orderId: "ORD-103",
+        trxId: "short",
+        senderPhone: "01711000000",
+        amount: 150,
+      });
+      expect(res2.isValid).toBe(false);
+      expect(res2.status).toBe("INVALID_TRXID");
+    });
+  });
+
+  describe("7. RouteXpress Multi-Courier Logistics Adapter", () => {
+    it("should compare rates and recommend lowest cost carrier (Steadfast vs REDX vs Pathao)", () => {
+      const quotes = RouteXpressAdapter.compareRates("Dhaka", 1850, 0.5);
+
+      expect(quotes.length).toBe(3);
+      expect(quotes[0].carrier).toBe("steadfast"); // Lowest cost
+      expect(quotes[0].totalDeliveryCost).toBe(60);
+      expect(quotes[0].isRecommended).toBe(true);
+
+      const outsideQuotes = RouteXpressAdapter.compareRates("Chittagong", 2000, 2.5);
+      // Weight 2.5kg = 2kg extra = +৳40 surcharge
+      const steadfastOutside = outsideQuotes.find(q => q.carrier === "steadfast");
+      expect(steadfastOutside?.weightSurcharge).toBe(40); // 2 * 20
+    });
+
+    it("should dispatch parcel with tracking code and Banglish WhatsApp confirmation", () => {
+      const dispatch = RouteXpressAdapter.dispatchParcel({
+        invoice: "INV-2026-9021",
+        recipientName: "মাহমুদুর রহমান",
+        recipientPhone: "01811223344",
+        recipientAddress: "GEC Circle, Nasirabad",
+        district: "Chittagong",
+        codAmount: 3200,
+        weightKg: 1.2,
+      }, "steadfast");
+
+      expect(dispatch.carrier).toBe("steadfast");
+      expect(dispatch.consignmentId).toMatch(/^ST-\d{6}$/);
+      expect(dispatch.trackingCode).toMatch(/^TRK-BD-\d{6}$/);
+      expect(dispatch.whatsAppConfirmation).toContain("Assalamu Alaikum মাহমুদুর রহমান");
+      expect(dispatch.whatsAppConfirmation).toContain("Steadfast Courier");
     });
   });
 });
