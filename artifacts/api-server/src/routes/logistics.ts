@@ -121,4 +121,80 @@ router.get("/v1/logistics/track/:trackingCode", (req: Request, res: Response) =>
   return res.status(200).json({ success: true, parcel });
 });
 
+/**
+ * POST /api/v1/logistics/webhook
+ * Ingests live status updates from Steadfast, Pathao, or RedX couriers
+ */
+router.post("/v1/logistics/webhook", (req: Request, res: Response) => {
+  try {
+    const { trackingCode, status, provider = "steadfast", note, hubName, timestamp } = req.body;
+
+    if (!trackingCode || !status) {
+      return res.status(400).json({
+        success: false,
+        error: "Missing required fields: trackingCode and status are mandatory",
+      });
+    }
+
+    const banglaStatusMap: Record<string, string> = {
+      BOOKED: "বুকিং সম্পন্ন",
+      PICKED_UP: "রাইডার পিকআপ করেছেন",
+      IN_TRANSIT: `যাত্রাপথে আছে (${hubName || "হাব"})`,
+      DELIVERED: "সফলভাবে ডেলিভারি সম্পন্ন হয়েছে",
+      RETURNED: "পার্সেল রিটার্ন করা হয়েছে",
+      CANCELLED: "অর্ডার বাতিল করা হয়েছে",
+    };
+
+    let parcel = parcelDatabase.get(trackingCode);
+    if (!parcel) {
+      parcel = {
+        consignmentId: `CN_WH_${Date.now()}`,
+        trackingCode,
+        provider,
+        recipientName: "গ্রাহক (Customer)",
+        status,
+        statusBangla: banglaStatusMap[status.toUpperCase()] || status,
+        timeline: [],
+      };
+    }
+
+    parcel.status = status.toUpperCase();
+    parcel.statusBangla = banglaStatusMap[status.toUpperCase()] || status;
+    parcel.timeline.push({
+      status: status.toUpperCase(),
+      time: timestamp || new Date().toISOString(),
+      note: note || `Carrier status updated to ${status} via ${provider} webhook`,
+      hub: hubName,
+    });
+
+    parcelDatabase.set(trackingCode, parcel);
+
+    // Auto-generate WhatsApp notification draft on delivery completion
+    let whatsappPayload = null;
+    if (status.toUpperCase() === "DELIVERED") {
+      whatsappPayload = {
+        recipientPhone: parcel.recipientPhone || "01711000000",
+        message: `আসসালামু আলাইকুম ${parcel.recipientName}, আপনার পার্সেল (${trackingCode}) সফলভাবে ডেলিভারি হয়েছে। সঠিক ব্যবহার করার জন্য ধন্যবাদ!`,
+        sentAt: new Date().toISOString(),
+      };
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Webhook processed and parcel journey updated successfully",
+      trackingCode,
+      status: parcel.status,
+      statusBangla: parcel.statusBangla,
+      whatsappPayload,
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      error: "Failed to process logistics webhook",
+      message: err?.message || String(err),
+    });
+  }
+});
+
 export default router;

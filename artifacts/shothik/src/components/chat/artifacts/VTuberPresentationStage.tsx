@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
 import {
   Volume2,
   VolumeX,
@@ -12,7 +11,11 @@ import {
   Maximize2,
   Sliders,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Upload,
+  User,
+  Radio,
+  CheckCircle2
 } from "lucide-react";
 import { AvatarOrb3D } from "@/components/chat/AvatarOrb3D";
 import { LiquidGlassCard } from "@/components/chat/LiquidGlassCard";
@@ -27,6 +30,8 @@ interface VTuberPresentationStageProps {
   onPrevSlide?: () => void;
 }
 
+type AvatarModelMode = "orb" | "anime" | "vrm";
+
 export function VTuberPresentationStage({
   currentSlideIndex = 1,
   totalSlides = 8,
@@ -39,6 +44,9 @@ export function VTuberPresentationStage({
   const [audioLevel, setAudioLevel] = useState(0.4);
   const [speechSpeed, setSpeechSpeed] = useState<number>(1.0);
   const [showScript, setShowScript] = useState(true);
+  const [avatarMode, setAvatarMode] = useState<AvatarModelMode>("orb");
+  const [customVrmName, setCustomVrmName] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Simulated audio waveform analyzer loop
   useEffect(() => {
@@ -109,10 +117,100 @@ export function VTuberPresentationStage({
         </div>
       </div>
 
+      {/* Avatar Rigging / Model Selector */}
+      <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar pb-1 text-xs">
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setAvatarMode("orb")}
+            className={cn(
+              "px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 text-[11px] transition cursor-pointer",
+              avatarMode === "orb"
+                ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Radio className="h-3 w-3" />
+            <span>Neural Orb</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setAvatarMode("anime")}
+            className={cn(
+              "px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 text-[11px] transition cursor-pointer",
+              avatarMode === "anime"
+                ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <User className="h-3 w-3" />
+            <span>Anime Presenter</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAvatarMode("vrm");
+              fileInputRef.current?.click();
+            }}
+            className={cn(
+              "px-2.5 py-1 rounded-lg font-semibold flex items-center gap-1 text-[11px] transition cursor-pointer",
+              avatarMode === "vrm"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                : "bg-muted/40 text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Upload className="h-3 w-3" />
+            <span>{customVrmName ? customVrmName : "Upload .VRM / 3D"}</span>
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".vrm,.glb,.gltf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setCustomVrmName(file.name);
+                setAvatarMode("vrm");
+              }
+            }}
+          />
+        </div>
+
+        {customVrmName && (
+          <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1 shrink-0">
+            <CheckCircle2 className="h-3 w-3" />
+            <span>3D Rig Loaded</span>
+          </span>
+        )}
+      </div>
+
       {/* Center Stage: Avatar Orb + Waveform visualizer */}
       <div className="flex flex-col sm:flex-row items-center gap-4 bg-muted/20 p-4 rounded-xl border border-border/30">
         <div className="relative shrink-0">
-          <AvatarOrb3D isSpeaking={isPlaying} size={72} />
+          {avatarMode === "orb" ? (
+            <AvatarOrb3D isSpeaking={isPlaying} size={72} />
+          ) : avatarMode === "anime" ? (
+            <div className={cn(
+              "h-18 w-18 rounded-2xl bg-gradient-to-tr from-purple-600 to-indigo-500 p-0.5 shadow-lg flex items-center justify-center transition-all",
+              isPlaying && "animate-bounce"
+            )}>
+              <div className="h-full w-full bg-slate-900 rounded-[14px] flex flex-col items-center justify-center text-xs font-bold text-purple-300">
+                <span className="text-2xl">👩‍🏫</span>
+                <span className="text-[9px] font-mono">Shothik 3D</span>
+              </div>
+            </div>
+          ) : (
+            <div className={cn(
+              "h-18 w-18 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 p-0.5 shadow-lg flex items-center justify-center transition-all",
+              isPlaying && "scale-105"
+            )}>
+              <div className="h-full w-full bg-slate-900 rounded-[14px] flex flex-col items-center justify-center text-xs font-bold text-emerald-300">
+                <span className="text-2xl">🤖</span>
+                <span className="text-[8px] font-mono truncate px-1 max-w-[64px]">{customVrmName || "Custom VRM"}</span>
+              </div>
+            </div>
+          )}
           {isPlaying && (
             <span className="absolute -bottom-1 -right-1 flex h-3 w-3">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
