@@ -10,6 +10,7 @@ import meshRouter from "./mesh";
 import scraperRouter from "./scraper";
 import publishingRouter from "./publishing";
 import approvalsRouter from "./approvals";
+import voiceRouter from "./voice";
 import proxyRouter from "./proxy";
 
 const router: IRouter = Router();
@@ -25,6 +26,7 @@ router.use(meshRouter);
 router.use(scraperRouter);
 router.use(publishingRouter);
 router.use(approvalsRouter);
+router.use(voiceRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.

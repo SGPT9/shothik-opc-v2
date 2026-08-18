@@ -234,13 +234,32 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
       recognition.onresult = (event: any) => {
         let transcript = "";
+        let isFinal = false;
         for (let i = event.resultIndex; i < event.results.length; i++) {
           transcript += event.results[i][0].transcript;
+          if (event.results[i].isFinal) isFinal = true;
         }
         if (transcript.trim()) {
           const updated = textValue ? `${textValue} ${transcript}` : transcript;
           if (onChangeProp) onChangeProp(updated);
           else setLocalValue(updated);
+
+          // If speech fragment is final, normalize Banglish commerce terms asynchronously
+          if (isFinal) {
+            fetch("/api/v1/voice/transcribe", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ text: updated, language: voiceLang }),
+            })
+              .then((r) => (r.ok ? r.json() : null))
+              .then((res) => {
+                if (res?.normalizedText && res.normalizedText !== updated) {
+                  if (onChangeProp) onChangeProp(res.normalizedText);
+                  else setLocalValue(res.normalizedText);
+                }
+              })
+              .catch(() => {});
+          }
         }
       };
 
