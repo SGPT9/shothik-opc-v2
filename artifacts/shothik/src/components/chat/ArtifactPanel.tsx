@@ -33,12 +33,14 @@ import { ProductPhotoArtifact } from "@/components/chat/artifacts/ProductPhotoAr
 import { SupplyChainArtifact } from "@/components/chat/artifacts/SupplyChainArtifact";
 import { VoiceDubbingArtifact } from "@/components/chat/artifacts/VoiceDubbingArtifact";
 import { BroadcastCampaignArtifact } from "@/components/chat/artifacts/BroadcastCampaignArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal } from "lucide-react";
+import { DisputeResolutionArtifact } from "@/components/chat/artifacts/DisputeResolutionArtifact";
+import { PriceWatcherArtifact } from "@/components/chat/artifacts/PriceWatcherArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -68,6 +70,8 @@ const TABS: TabConfig[] = [
   { id: "inventory",   label: "Inventory & ROP",     Icon: Boxes,        color: "text-amber-400"  },
   { id: "dubbing",     label: "Voice Dubbing",       Icon: Radio,        color: "text-purple-400" },
   { id: "broadcast",   label: "Broadcast Hub",       Icon: SendHorizontal, color: "text-emerald-400"},
+  { id: "disputes",    label: "Dispute & Refund",    Icon: ShieldAlert,  color: "text-rose-400"   },
+  { id: "pricewatcher", label: "Price Watcher",      Icon: TrendingDown, color: "text-blue-400"   },
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -214,6 +218,8 @@ export function ArtifactPanel({
   tabsWithContent.add("inventory");
   tabsWithContent.add("dubbing");
   tabsWithContent.add("broadcast");
+  tabsWithContent.add("disputes");
+  tabsWithContent.add("pricewatcher");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -546,6 +552,18 @@ export function ArtifactPanel({
         {mounted.has("broadcast") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "broadcast" ? "block" : "hidden"}`}>
             <BroadcastCampaignArtifact />
+          </div>
+        )}
+
+        {mounted.has("disputes") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "disputes" ? "block" : "hidden"}`}>
+            <DisputeResolutionArtifact />
+          </div>
+        )}
+
+        {mounted.has("pricewatcher") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "pricewatcher" ? "block" : "hidden"}`}>
+            <PriceWatcherArtifact />
           </div>
         )}
 
