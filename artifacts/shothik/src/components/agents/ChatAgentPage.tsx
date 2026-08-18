@@ -1024,6 +1024,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   { id: "synthesizer", label: "Venture Synthesizer", icon: "🪄" },
                   { id: "voicepitch", label: "Voice Pitch Deck", icon: "🎙️" },
                   { id: "promptlab", label: "Prompt Lab", icon: "⚡" },
+                  { id: "legal", label: "Legal Contract", icon: "⚖️" },
+                  { id: "arena", label: "Model Arena", icon: "⚔️" },
                 ].map((t) => (
                   <button
                     key={t.id}
