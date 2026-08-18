@@ -27,12 +27,14 @@ import { TwinArtifact } from "@/components/chat/artifacts/TwinArtifact";
 import { LeadScraperArtifact } from "@/components/chat/artifacts/LeadScraperArtifact";
 import { SeoContentArtifact } from "@/components/chat/artifacts/SeoContentArtifact";
 import { ChatbotFlowArtifact } from "@/components/chat/artifacts/ChatbotFlowArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork } from "lucide-react";
+import { VideoScriptArtifact } from "@/components/chat/artifacts/VideoScriptArtifact";
+import { VatTaxArtifact } from "@/components/chat/artifacts/VatTaxArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -56,6 +58,8 @@ const TABS: TabConfig[] = [
   { id: "leads",       label: "B2B Leads",           Icon: Target,       color: "text-teal-400"   },
   { id: "seo",         label: "SEO & SERP",          Icon: Globe,        color: "text-blue-400"   },
   { id: "flows",       label: "Chatbot Flows",       Icon: GitFork,      color: "text-emerald-400"},
+  { id: "video",       label: "Video Scripts",       Icon: Clapperboard, color: "text-pink-400"   },
+  { id: "vattax",      label: "NBR VAT & Tax",       Icon: Calculator,   color: "text-emerald-400"},
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -196,6 +200,8 @@ export function ArtifactPanel({
   tabsWithContent.add("leads");
   tabsWithContent.add("seo");
   tabsWithContent.add("flows");
+  tabsWithContent.add("video");
+  tabsWithContent.add("vattax");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -492,6 +498,18 @@ export function ArtifactPanel({
         {mounted.has("flows") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "flows" ? "block" : "hidden"}`}>
             <ChatbotFlowArtifact />
+          </div>
+        )}
+
+        {mounted.has("video") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "video" ? "block" : "hidden"}`}>
+            <VideoScriptArtifact />
+          </div>
+        )}
+
+        {mounted.has("vattax") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "vattax" ? "block" : "hidden"}`}>
+            <VatTaxArtifact />
           </div>
         )}
 
