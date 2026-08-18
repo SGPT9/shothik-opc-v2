@@ -61,7 +61,7 @@ export interface FleetAgent {
 }
 
 export const FLEET_AGENTS: FleetAgent[] = [
-  { id: "core", name: "Shothik Core", badge: "General AI", icon: Sparkles, color: "text-emerald-400", bgLight: "bg-emerald-500/10", desc: "All-purpose intelligent assistant, reasoning & daily tasks" },
+  { id: "core", name: "Shothik Core", badge: "General AI", icon: Sparkles, color: "text-blue-600 dark:text-blue-400", bgLight: "bg-blue-500/10", desc: "All-purpose intelligent assistant, reasoning & daily tasks" },
   { id: "analyst", name: "Deep Analyst", badge: "Research & Docs", icon: Search, color: "text-violet-400", bgLight: "bg-violet-500/10", desc: "Academic research, data synthesis & market intelligence" },
   { id: "writer", name: "Manuscript & Book Studio", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Novels, Boi Mela 3D formatting & creative writing" },
   { id: "business", name: "Business & Pitch Partner", badge: "Ventures & Slides", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Investor decks, financial models, contracts & proposals" },
@@ -95,8 +95,16 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   });
 
   // ── Contextual User Details / Artifact panel (hidden by default) ──
-  const [artifactOpen, setArtifactOpen] = useState(Boolean(initialTab));
-  const [activeTab, setActiveTab] = useState<ArtifactTab>(initialTab || "slides");
+  const [artifactOpen, setArtifactOpen] = useState(Boolean(initialTab || searchParams.get("tab")));
+  const [activeTab, setActiveTab] = useState<ArtifactTab>((searchParams.get("tab") as ArtifactTab) || initialTab || "slides");
+
+  useEffect(() => {
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && ["slides", "sheet", "research", "doc", "code"].includes(tabFromUrl)) {
+      setArtifactOpen(true);
+      setActiveTab(tabFromUrl as ArtifactTab);
+    }
+  }, [searchParams]);
 
   // ── Artifact Context Handoff Data ──
   const [slidesTopic, setSlidesTopic] = useState<string | undefined>("AI-Powered E-Commerce & Retail in Bangladesh");
@@ -378,8 +386,10 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       }
       // Step 2: Detect Presentation & Slide Studio intent
       else if (lower.includes("slide") || lower.includes("deck") || lower.includes("presentation") || lower.includes("pitch")) {
+        const topicRaw = text.replace(/^(generate|create|build|make|show me|draft)\s+(a\s+)?(\d+[\s-]slide\s+)?(deck|presentation|slides|slide deck)?\s*(for|on|about)?\s*/i, "").trim();
+        const cleanTopic = topicRaw.length > 3 ? topicRaw.charAt(0).toUpperCase() + topicRaw.slice(1) : text;
         setActiveTab("slides");
-        setSlidesTopic(text);
+        setSlidesTopic(cleanTopic);
         setArtifactOpen(true);
       }
       // Step 3: Detect Financial Modeling & Spreadsheet intent
@@ -439,10 +449,31 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         (err) => {
           updateLastAssistantMessage(`\n\n*[Stream Error: ${err.message}]*`);
           finalizeLastAssistantMessage();
+        },
+        {
+          onThinking: (thought) => {
+            updateMessageMetadata(assistantMsgId, { thinking: thought });
+          },
+          onStep: (step) => {
+            updateMessageMetadata(assistantMsgId, { steps: [step] });
+          },
+          onArtifact: (artifact) => {
+            if (artifact.type) {
+              setActiveTab(artifact.type as any);
+              setArtifactOpen(true);
+              if (artifact.type === "slides" && artifact.title) setSlidesTopic(artifact.title);
+              if (artifact.type === "research" && artifact.title) setResearchQuery(artifact.title);
+            }
+            updateMessageMetadata(assistantMsgId, {
+              artifactType: artifact.type,
+              artifactTitle: artifact.title,
+              artifactSubtitle: artifact.subtitle,
+            });
+          },
         }
       );
     },
-    [addMessage, attachments, clearAttachments, conversationId, finalizeLastAssistantMessage, startStream, updateLastAssistantMessage, persona]
+    [addMessage, attachments, clearAttachments, conversationId, finalizeLastAssistantMessage, startStream, updateLastAssistantMessage, persona, updateMessageMetadata]
   );
 
   // Control Layer: Checkpoint & Secret Resolution Handlers
@@ -670,157 +701,73 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           </div>
         </div>
 
-        {/* Content: Conversation + Optional Contextual User Details Panel */}
-        {artifactOpen ? (
+        {/* Content: Conversation + Dedicated Work Canvas Studio + Split-Pane Workspace */}
+        {artifactOpen && messages.length === 0 ? (
+          /* ── Full-Width Interactive Work Canvas Studio ── */
+          <div className="flex flex-1 flex-col min-h-0 w-full overflow-hidden animate-fade-in bg-background">
+            <div className="flex-1 min-h-0 overflow-hidden relative">
+              <ComponentErrorBoundary title="Artifact Canvas Error">
+                <ArtifactPanel
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  onClose={() => setArtifactOpen(false)}
+                  isStreaming={streamState.isStreaming}
+                  slidesTopic={slidesTopic}
+                  researchQuery={researchQuery}
+                  sheetData={sheetData}
+                  codeSnippet={codeSnippet}
+                  docTitle={docTitle}
+                  docContent={docContent}
+                  docPage={docPage}
+                  docBbox={docBbox}
+                  docSourceRef={docSourceRef}
+                />
+              </ComponentErrorBoundary>
+            </div>
+
+            {/* Pinned Bottom AI Copilot Composer for Live Canvas Mutation */}
+            <div className="w-full max-w-4xl mx-auto px-4 py-3 shrink-0">
+              <ComponentErrorBoundary title="Composer Input Interrupted">
+                <Composer
+                  onAction={handleComposerAction}
+                  onSend={handleSendMessage}
+                  isStreaming={streamState.isStreaming}
+                  onStop={handleCancelActiveRun}
+                  onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                  onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
+                  persona={persona}
+                  onPersonaChange={handlePersonaChange}
+                  onOpenArtifact={(tab) => handleOpenArtifact(tab)}
+                  onOpenTool={handleOpenTool}
+                />
+              </ComponentErrorBoundary>
+            </div>
+          </div>
+        ) : artifactOpen && messages.length > 0 ? (
+          /* ── Split Conversation + Right Artifact Panel ── */
           <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 w-full overflow-hidden">
             {/* ── Left Conversation Column ── */}
-            <ResizablePanel defaultSize={55} minSize={35} className="flex flex-col min-w-0 h-full overflow-hidden">
+            <ResizablePanel defaultSize={50} minSize={35} className="flex flex-col min-w-0 h-full overflow-hidden">
               <ComponentErrorBoundary title="Transcript Panel Interrupted">
                 <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
-                  {messages.length === 0 ? (
-                    <div className="p-6 flex flex-col justify-center min-h-full max-w-lg mx-auto space-y-4">
-                      <div className="space-y-1 text-left">
-                        <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-brand/10 border border-brand/20 text-brand text-xs font-mono font-medium">
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span className="capitalize">{activeTab} Studio Copilot</span>
-                        </div>
-                        <h2 className="text-lg font-bold text-foreground tracking-tight">
-                          {activeTab === "slides" && "What presentation should we build?"}
-                          {activeTab === "sheet" && "What model should we structure?"}
-                          {activeTab === "research" && "What topic should we research?"}
-                          {!["slides", "sheet", "research"].includes(activeTab) && "What should we create today?"}
-                        </h2>
-                        <p className="text-xs text-muted-foreground leading-relaxed">
-                          {activeTab === "slides" && "Describe your deck or select a starter prompt to generate slides on the right canvas."}
-                          {activeTab === "sheet" && "Describe your scenario or formulas to populate the spreadsheet canvas on the right."}
-                          {activeTab === "research" && "Enter a research query or market sizing question to start multi-source synthesis."}
-                          {!["slides", "sheet", "research"].includes(activeTab) && "Type your instructions below to drive the active studio canvas."}
-                        </p>
-                      </div>
-
-                      {/* Tailored Studio Quick Starter Prompts */}
-                      <div className="space-y-2 pt-2">
-                        {activeTab === "slides" && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSendMessage("Generate a 10-slide investor pitch deck for a South Asian SaaS startup");
-                                setSlidesTopic("10-Slide Investor Pitch Deck (South Asian SaaS)");
-                              }}
-                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
-                            >
-                              <div className="font-semibold text-brand group-hover:text-brand-light flex items-center justify-between">
-                                <span>📽️ 10-Slide Investor Pitch Deck</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
-                              </div>
-                              <div className="text-[11px] text-muted-foreground mt-0.5">Problem, solution, market size, business model & traction.</div>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSendMessage("Create an executive presentation on Bangladesh e-commerce market opportunity");
-                                setSlidesTopic("Bangladesh E-Commerce Market Opportunity");
-                              }}
-                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
-                            >
-                              <div className="font-semibold text-indigo-400 group-hover:text-indigo-300 flex items-center justify-between">
-                                <span>📊 Market Opportunity Overview</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
-                              </div>
-                              <div className="text-[11px] text-muted-foreground mt-0.5">Macro landscape, mobile internet penetration & digital growth.</div>
-                            </button>
-                          </>
-                        )}
-
-                        {activeTab === "sheet" && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSendMessage("Build a 3-scenario SaaS revenue & cash flow model (Base / Aggressive / Conservative)");
-                              }}
-                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
-                            >
-                              <div className="font-semibold text-cyan-400 group-hover:text-cyan-300 flex items-center justify-between">
-                                <span>📈 3-Scenario Financial Model</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
-                              </div>
-                              <div className="text-[11px] text-muted-foreground mt-0.5">Base, aggressive, and conservative projections with formula sync.</div>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSendMessage("Generate a unit economics and customer acquisition cost (CAC) sheet with bKash/Nagad fees");
-                              }}
-                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
-                            >
-                              <div className="font-semibold text-emerald-400 group-hover:text-emerald-300 flex items-center justify-between">
-                                <span>💵 Unit Economics & MFS Payouts</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
-                              </div>
-                              <div className="text-[11px] text-muted-foreground mt-0.5">CAC, LTV, gross margin, and local merchant gateway fee splits.</div>
-                            </button>
-                          </>
-                        )}
-
-                        {activeTab === "research" && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSendMessage("Deep research analysis on Bangladesh Logistics & Parcel Delivery TAM/SAM/SOM");
-                                setResearchQuery("Bangladesh Logistics & Parcel Delivery TAM/SAM/SOM");
-                              }}
-                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
-                            >
-                              <div className="font-semibold text-violet-400 group-hover:text-violet-300 flex items-center justify-between">
-                                <span>🔬 Logistics Market TAM/SAM/SOM</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
-                              </div>
-                              <div className="text-[11px] text-muted-foreground mt-0.5">Audited competitor benchmarks across Pathao, Paperfly, and RedX.</div>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSendMessage("Compare PostgreSQL + PostgREST vs Supabase vs MongoDB for fintech");
-                                setResearchQuery("PostgreSQL + PostgREST vs Supabase vs MongoDB");
-                              }}
-                              className="w-full text-left p-3 rounded-xl bg-card hover:bg-muted/60 border border-border/70 hover:border-brand/40 text-xs text-foreground transition group cursor-pointer select-none"
-                            >
-                              <div className="font-semibold text-sky-400 group-hover:text-sky-300 flex items-center justify-between">
-                                <span>⚖️ Tech Stack Comparison</span>
-                                <span className="text-[10px] text-muted-foreground font-mono">1-Click</span>
-                              </div>
-                              <div className="text-[11px] text-muted-foreground mt-0.5">Throughput, ACID guarantees, migration safety & RLS security.</div>
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <Transcript
-                      messages={messages as any}
-                      agentId={selectedAgentId}
-                      isStreaming={streamState.isStreaming}
-                      statusText={streamState.statusText}
-                      onOpenArtifact={(type) => handleOpenArtifact(type)}
-                      onOpenSource={handleOpenSource}
-                      onSelectPrompt={(prompt, mode, tab) => {
-                        handleSendMessage(prompt);
-                        if (tab) {
-                          handleOpenArtifact(tab);
-                        }
-                      }}
-                      onApproveCheckpoint={handleApproveCheckpoint}
-                      onDenyCheckpoint={handleDenyCheckpoint}
-                      onSubmitSecret={handleSubmitSecret}
-                      onStop={handleCancelActiveRun}
-                    />
-                  )}
+                  <Transcript
+                    messages={messages as any}
+                    agentId={selectedAgentId}
+                    isStreaming={streamState.isStreaming}
+                    statusText={streamState.statusText}
+                    onOpenArtifact={(type) => handleOpenArtifact(type)}
+                    onOpenSource={handleOpenSource}
+                    onSelectPrompt={(prompt, mode, tab) => {
+                      handleSendMessage(prompt);
+                      if (tab) {
+                        handleOpenArtifact(tab);
+                      }
+                    }}
+                    onApproveCheckpoint={handleApproveCheckpoint}
+                    onDenyCheckpoint={handleDenyCheckpoint}
+                    onSubmitSecret={handleSubmitSecret}
+                    onStop={handleCancelActiveRun}
+                  />
                 </div>
               </ComponentErrorBoundary>
 
@@ -845,7 +792,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             <ResizableHandle className="w-1.5 bg-border/40 hover:bg-brand/50 transition cursor-col-resize z-30" />
 
             {/* ── Right Contextual User Details / Artifact Panel ── */}
-            <ResizablePanel defaultSize={45} minSize={25} maxSize={65} className="h-full overflow-hidden">
+            <ResizablePanel defaultSize={50} minSize={25} maxSize={65} className="h-full overflow-hidden">
               <ComponentErrorBoundary title="Artifact Canvas Error">
                 <ArtifactPanel
                   activeTab={activeTab}
@@ -922,13 +869,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     onSubmitSecret={handleSubmitSecret}
                     onStop={handleCancelActiveRun}
                   />
-
-                  {/* Twin Startup Handoff Card */}
-                  {hasStartupIntent && (
-                    <div className="px-4 pb-3 max-w-3xl mx-auto">
-                      <TwinCtaCard conversationId={conversationId || "conv_default"} />
-                    </div>
-                  )}
                 </div>
               </ComponentErrorBoundary>
 

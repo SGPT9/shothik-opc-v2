@@ -45,7 +45,8 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
 
     async function fetchRunData() {
       try {
-        const { data: runData, error: runError } = await insforge
+        const db = (insforge as any).database || insforge;
+        const { data: runData, error: runError } = await db
           .from("hermes_runs")
           .select("*")
           .eq("id", runId)
@@ -61,7 +62,7 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
           if (runData.posts_count !== undefined) setPostsCount(runData.posts_count);
         }
 
-        const { data: eventsData, error: eventsError } = await insforge
+        const { data: eventsData, error: eventsError } = await db
           .from("hermes_events")
           .select("message")
           .eq("run_id", runId)

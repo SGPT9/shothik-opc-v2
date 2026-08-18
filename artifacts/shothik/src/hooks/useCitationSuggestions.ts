@@ -69,7 +69,7 @@ export function useCitationSuggestions(): UseCitationSuggestionsReturn {
     setIsSearching(true);
     setSearchQuery(query);
     try {
-      const results = await searchSemanticScholar(query, 10, signal);
+      const results = await searchSemanticScholar(query, 10, signal as any);
       if (!signal.aborted) {
         setSuggestions(results as CitationResult[]);
       }
@@ -93,7 +93,7 @@ export function useCitationSuggestions(): UseCitationSuggestionsReturn {
 
     setIsSearching(true);
     try {
-      const results = await getSemanticScholarRecommendations(paperId, 8, signal);
+      const results = await getSemanticScholarRecommendations(paperId, 8, signal as any);
       if (!signal.aborted) {
         setSuggestions(results as CitationResult[]);
       }

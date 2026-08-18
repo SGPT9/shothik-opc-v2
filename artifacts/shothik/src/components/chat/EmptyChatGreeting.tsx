@@ -134,17 +134,25 @@ export function EmptyChatGreeting({
 }: EmptyChatGreetingProps) {
   const activeStarters = PERSONA_STARTER_MAP[agentId] || STARTER_PROMPTS;
   return (
-    <div className="flex flex-col items-center justify-center min-h-[42vh] px-4 py-6 text-center animate-fade-in space-y-6 max-w-3xl mx-auto">
-      {/* ── Center Mode Switcher (Chat | Work Canvas) ── */}
+    <div className="flex flex-col items-center justify-center min-h-[46vh] px-4 py-4 text-center animate-fade-in space-y-6 max-w-3xl mx-auto">
+      {/* ── Shothik Center Circle Glass Nexus ── */}
+      <div className="relative group">
+        <div className="absolute -inset-2 rounded-full bg-emerald-500/10 blur-xl group-hover:bg-emerald-500/20 transition-all duration-500 pointer-events-none" />
+        <div className="relative w-13 h-13 rounded-full bg-white/[0.05] dark:bg-black/60 border border-white/[0.15] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-center">
+          <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
+        </div>
+      </div>
+
+      {/* ── Center Mode Switcher in Circular Glass Capsule (Chat | Work Canvas) ── */}
       {onToggleArtifact && (
-        <div className="inline-flex items-center bg-secondary/70 p-1 rounded-2xl border border-border/50 text-xs shadow-xs backdrop-blur-md">
+        <div className="inline-flex items-center bg-black/60 dark:bg-black/80 p-1 rounded-full border border-white/[0.12] text-xs shadow-xl backdrop-blur-2xl">
           <button
             type="button"
             onClick={() => onToggleArtifact(false)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl transition font-medium cursor-pointer ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition-all duration-200 font-medium cursor-pointer ${
               !isArtifactOpen
-                ? "bg-background text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-white/[0.12] text-white shadow-sm font-semibold border border-white/[0.15]"
+                : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5" />
@@ -153,10 +161,10 @@ export function EmptyChatGreeting({
           <button
             type="button"
             onClick={() => onToggleArtifact(true)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-xl transition font-medium cursor-pointer ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition-all duration-200 font-medium cursor-pointer ${
               isArtifactOpen
-                ? "bg-background text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-white/[0.12] text-white shadow-sm font-semibold border border-white/[0.15]"
+                : "text-zinc-400 hover:text-zinc-200"
             }`}
           >
             <LayoutTemplate className="w-3.5 h-3.5" />
@@ -167,15 +175,15 @@ export function EmptyChatGreeting({
 
       {/* ── Heading & Subtitle ── */}
       <div className="space-y-2 text-center">
-        <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-foreground">
+        <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-zinc-900 dark:text-zinc-100">
           What do you want to accomplish today?
         </h1>
-        <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto leading-relaxed">
           Ask a question, research deeply, generate slides, build models, or automate workflows.
         </p>
       </div>
 
-      {/* ── 3 Intent-First Starter Prompts ── */}
+      {/* ── 3 Intent-First Starter Prompts (Glassmorphic cards) ── */}
       <div className="flex flex-col sm:flex-row items-stretch gap-3 w-full pt-1">
         {activeStarters.map((item) => {
           const Icon = item.icon;
@@ -184,16 +192,16 @@ export function EmptyChatGreeting({
               key={item.label}
               type="button"
               onClick={() => onSelectPrompt?.(item.prompt, item.mode, item.tab)}
-              className="flex-1 group flex flex-col justify-between text-left p-3.5 rounded-xl border border-border/70 bg-card/60 hover:bg-muted/70 hover:border-brand/40 hover:shadow-xs transition-all duration-200 cursor-pointer"
+              className="flex-1 group flex flex-col justify-between text-left p-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] dark:bg-black/40 backdrop-blur-xl hover:bg-white/[0.06] dark:hover:bg-white/[0.04] hover:border-emerald-500/30 hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)] transition-all duration-200 cursor-pointer"
             >
               <div className="flex items-center justify-between gap-2 mb-2">
-                <div className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                  <Icon className="w-3.5 h-3.5 text-brand" />
+                <div className="flex items-center gap-1.5 text-[11px] font-medium text-zinc-400 group-hover:text-zinc-200 transition-colors">
+                  <Icon className="w-3.5 h-3.5 text-emerald-400" />
                   <span>{item.category}</span>
                 </div>
-                <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/40 group-hover:text-brand group-hover:translate-x-1 transition-transform duration-200" />
+                <ArrowRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all duration-200" />
               </div>
-              <p className="text-xs font-medium text-foreground/90 leading-snug group-hover:text-foreground">
+              <p className="text-xs font-medium text-zinc-300 leading-snug group-hover:text-white transition-colors">
                 {item.label}
               </p>
             </button>

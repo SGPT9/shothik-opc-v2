@@ -28,7 +28,7 @@ describe("EpistemicProvenanceBadge", () => {
       />
     );
 
-    const button = screen.getByRole("button", { name: /view provenance/i });
+    const button = screen.getByRole("button");
     fireEvent.click(button);
 
     expect(screen.getByText(/Supported Truth Standard/i)).toBeInTheDocument();

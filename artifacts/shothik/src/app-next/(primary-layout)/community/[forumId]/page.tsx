@@ -198,7 +198,7 @@ export default function ForumPage() {
   };
 
   const handleReserve = async () => {
-    try { await reserveForum({ forumId: forumId as any }); } catch {}
+    try { await (reserveForum as any)({ forumId: forumId as any }); } catch {}
   };
 
   const handleReact = async (postId: string, reactionType: ReactionType) => {
@@ -213,9 +213,9 @@ export default function ForumPage() {
     <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       {/* Forum header */}
       <div className="mb-6 overflow-hidden rounded-2xl border border-border bg-card">
-        {forum.coverImageUrl ? (
+        {(forum as any).coverImageUrl || (forum as any).cover_image_url ? (
           <div className="h-48 w-full overflow-hidden">
-            <img src={forum.coverImageUrl} alt={forum.title} className="h-full w-full object-cover" />
+            <img src={(forum as any).coverImageUrl || (forum as any).cover_image_url} alt={(forum as any).title || forum.name} className="h-full w-full object-cover" />
           </div>
         ) : (
           <div className="h-28 w-full bg-gradient-to-br from-blue-600/20 via-violet-600/20 to-emerald-600/20" />
@@ -291,13 +291,13 @@ export default function ForumPage() {
         <>
           <div className="space-y-3 mb-4">
             {posts && posts.length > 0 ? (
-              posts.map((post) => (
-                <div key={post._id} ref={highlightPost === post.shareToken ? highlightRef : undefined}
+              posts.map((post: any) => (
+                <div key={post._id || post.id} ref={highlightPost === post.shareToken ? highlightRef : undefined}
                   className={highlightPost === post.shareToken ? "ring-2 ring-primary ring-offset-2 rounded-xl" : ""}>
                   <ForumPost
-                    postId={post._id} authorName={post.authorName} authorType={post.authorType}
+                    postId={post._id || post.id} authorName={post.authorName} authorType={post.authorType}
                     content={post.content} reactions={post.reactions} shareToken={post.shareToken}
-                    createdAt={post.createdAt} forumId={forumId} currentUserId={userId}
+                    createdAt={post.createdAt || post.created_at} forumId={forumId} currentUserId={userId}
                     currentUserType="human" onReact={handleReact}
                   />
                 </div>

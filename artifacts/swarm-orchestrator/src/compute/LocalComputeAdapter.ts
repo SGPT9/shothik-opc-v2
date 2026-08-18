@@ -45,7 +45,12 @@ export class LocalComputeAdapter {
       throw new Error(`Ollama local compute error: HTTP ${res.status} ${res.statusText}`);
     }
 
-    const data = await res.json();
+    const data = (await res.json()) as {
+      model: string;
+      response: string;
+      total_duration?: number;
+      eval_count?: number;
+    };
     return {
       model: data.model,
       response: data.response,

@@ -356,8 +356,8 @@ export function BookCenterCanvas({
       </div>
 
       {/* Modals */}
-      {isScenarioLabOpen && <ScenarioLabModal open={isScenarioLabOpen} onOpenChange={setIsScenarioLabOpen} />}
-      {isPreflightOpen && <PrintPreflightModal open={isPreflightOpen} onOpenChange={setIsPreflightOpen} />}
+      {isScenarioLabOpen && <ScenarioLabModal isOpen={isScenarioLabOpen} onClose={() => setIsScenarioLabOpen(false)} />}
+      {isPreflightOpen && <PrintPreflightModal isOpen={isPreflightOpen} onClose={() => setIsPreflightOpen(false)} />}
       {isCommercializeOpen && <CommercializeBookModal open={isCommercializeOpen} onOpenChange={setIsCommercializeOpen} />}
     </div>
   );

@@ -112,7 +112,7 @@ export const useCheckoutData = (
   const paymentMethods = useMemo(
     () =>
       filterPaymentMethodsByLocation(
-        allPaymentMethods,
+        allPaymentMethods as any,
         isBangladesh,
         locationLoading,
       ),

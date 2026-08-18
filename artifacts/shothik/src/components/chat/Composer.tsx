@@ -26,6 +26,8 @@ import {
   Compass,
   Truck,
   Brain,
+  Cpu,
+  RefreshCw,
 } from "lucide-react";
 import {
   forwardRef,
@@ -121,6 +123,8 @@ export interface ComposerProps {
 const MODELS = [
   { value: "gemini-3.7-flash",  label: "Gemini 3.7 Flash",  badge: "✨ Default", desc: "Frontier Hybrid Reasoning · High Speed" },
   { value: "deepseek-v4-flash", label: "DeepSeek V4 Flash", badge: "⚡ Fast", desc: "Ultra-low cost MoE · Instant Reasoning" },
+  { value: "ollama-local",      label: "Ollama Local (DeepSeek-R1 / Coder)", badge: "🦙 Local VRAM", desc: "Private On-Device LLM Inference (Port 11434)" },
+  { value: "loop-engineering",  label: "Loop Engineering (5-Stage Auto-Repair)", badge: "🔄 Agentic Loop", desc: "Closed-loop Perceive ➔ Act ➔ Self-Heal ➔ Consensus" },
   { value: "deepseek-v4-pro",   label: "DeepSeek V4 Pro",   badge: "🧠 Flagship", desc: "1M Context MoE · Deep Reasoning" },
   { value: "gemini-2.5-pro",    label: "Gemini 2.5 Pro",    badge: "🔬 Complex", desc: "Deep Thinking Engine" },
 ];
@@ -168,6 +172,29 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
     const [isListening, setIsListening] = useState(false);
     const [voiceLang, setVoiceLang] = useState("bn-BD");
+    const [voiceLangOpen, setVoiceLangOpen] = useState(false);
+    const [ollamaInfo, setOllamaInfo] = useState<{
+      online: boolean;
+      models: string[];
+      latencyMs?: number;
+    }>({ online: false, models: [] });
+
+    // Dynamic Ollama hardware and model discovery
+    useEffect(() => {
+      fetch("/api/ollama/status")
+        .then((r) => (r.ok ? r.json() : null))
+        .then((data) => {
+          if (data) {
+            setOllamaInfo({
+              online: data.connected ?? false,
+              models: data.installedModels || ["deepseek-r1:latest", "deepseek-coder:6.7b", "qwen2.5-coder:32b"],
+              latencyMs: data.latencyMs,
+            });
+          }
+        })
+        .catch(() => {});
+    }, []);
+
     const [attachMenuOpen, setAttachMenuOpen] = useState(false);
     const [modelMenuOpen, setModelMenuOpen] = useState(false);
     const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
@@ -436,14 +463,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         <input ref={pdfInputRef} type="file" accept=".pdf,.doc,.docx,.txt,.md" multiple className="hidden" onChange={handleFileChange} />
         <input ref={folderInputRef} type="file" {...({ webkitdirectory: "", directory: "" } as any)} className="hidden" onChange={handleFileChange} />
 
-        {/* Outer Composer Container */}
+        {/* Outer Composer Container — Shothik Orbital Glass Circle */}
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "relative w-full max-w-3xl mx-auto flex flex-col rounded-2xl border transition-all duration-200 bg-card/90 shadow-xl backdrop-blur-xl focus-within:border-brand/50 focus-within:ring-2 focus-within:ring-brand/10",
-            isDraggingOver ? "border-dashed border-brand bg-brand/5 ring-2 ring-brand/30" : "border-border/80"
+            "relative w-full max-w-3xl mx-auto flex flex-col rounded-3xl border transition-all duration-300 bg-white/80 dark:bg-black/75 shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-3xl focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/10 focus-within:shadow-[0_16px_50px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)]",
+            isDraggingOver ? "border-dashed border-emerald-500 bg-emerald-500/5 ring-2 ring-emerald-500/30" : "border-zinc-200 dark:border-white/[0.12]"
           )}
         >
           {/* Drag and Drop Active Overlay */}
@@ -550,6 +577,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           <div className="px-3.5 pt-3 pb-2">
             <textarea
               ref={textareaRef}
+              id="composer-chat-input"
+              name="prompt"
+              aria-label="Message prompt input"
               value={textValue}
               onChange={(e) => {
                 if (onChangeProp) onChangeProp(e.target.value);
@@ -771,8 +801,38 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     {/* Web & Voice Section */}
                     <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
                       <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Automation & Perception
+                        Automation & Engine
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onModelChange) onModelChange("ollama-local");
+                          dispatchArtifact("code");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Cpu className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">🦙 Ollama Local Runner</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">On-device VRAM inference · Port 11434</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onModelChange) onModelChange("loop-engineering");
+                          if (onSend) onSend("Run autonomous 5-stage closed-loop engineering analysis with AST self-healing.");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">🔄 Loop Engineering</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">5-stage Perceive ➔ Act ➔ Self-Heal ➔ Consensus</span>
+                        </div>
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
@@ -784,22 +844,21 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         <Globe className="w-3.5 h-3.5 text-sky-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Web Automation</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Autonomous browser form filling & actions</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Browser navigation & web scraping</span>
                         </div>
                       </button>
                       <button
                         type="button"
                         onClick={() => {
                           if (onVoiceOrbClick) onVoiceOrbClick();
-                          else dispatchTool("voice");
                           setToolsMenuOpen(false);
                         }}
                         className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Phone className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                        <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Voice Mode</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Realtime conversational voice session</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Conversational voice orb with natural turn-taking</span>
                         </div>
                       </button>
                     </div>
@@ -895,9 +954,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
                 {modelMenuOpen && (
                   <div className="absolute bottom-full right-0 mb-1.5 z-50 w-64 rounded-2xl border border-border/80 bg-popover shadow-xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
-                    <div className="px-3 py-1 border-b border-border/50 text-[10px] font-mono text-muted-foreground font-semibold flex items-center justify-between">
-                      <span>REASONING ENGINE</span>
-                      <span className="text-emerald-400">⚡ 1.8¢/job</span>
+                    <div className="px-3 py-1.5 border-b border-border/50 text-[10px] font-mono text-muted-foreground font-semibold flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <span className={cn("w-2 h-2 rounded-full", ollamaInfo.online ? "bg-emerald-400 animate-pulse" : "bg-cyan-400")} />
+                        {ollamaInfo.online ? "OLLAMA GPU (11434)" : "HYBRID MOE GATEWAY"}
+                      </span>
+                      <span className="text-emerald-400 text-[9px] font-mono">
+                        {ollamaInfo.online ? `${ollamaInfo.models.length} Local Weights` : "⚡ 1.8¢/job"}
+                      </span>
                     </div>
                     {MODELS.map((m) => (
                       <button
@@ -944,7 +1008,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 <Button
                   type="button"
                   size="icon"
-                  className="h-8 w-8 rounded-xl bg-brand text-white hover:bg-brand/90 shadow-md shadow-brand/25 scale-100 hover:scale-105 transition-all duration-150 cursor-pointer animate-in zoom-in-95"
+                  className="h-8 w-8 rounded-xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/25 scale-100 hover:scale-105 transition-all duration-150 cursor-pointer animate-in zoom-in-95 font-bold"
                   onClick={handleTextSubmit}
                   disabled={disabled}
                   aria-label="Send message"
@@ -960,11 +1024,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   }}
                   disabled={disabled}
                   aria-label="Start Voice Mode"
-                  title="Start Realtime Conversational Voice Mode (ChatGPT style)"
-                  className="group relative flex items-center justify-center h-8 w-8 rounded-xl bg-gradient-to-tr from-rose-500/20 via-purple-500/20 to-indigo-500/20 hover:from-rose-500/35 hover:to-indigo-500/35 border border-rose-500/30 hover:border-rose-500/60 text-rose-400 hover:text-white shadow-xs transition-all duration-200 cursor-pointer hover:scale-105"
+                  title="Start Realtime Conversational Voice Mode"
+                  className="group relative flex items-center justify-center h-8 w-8 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 shadow-xs transition-all duration-200 cursor-pointer hover:scale-105"
                 >
-                  <span className="absolute inset-0 rounded-xl bg-rose-500/10 animate-ping opacity-30 pointer-events-none" />
-                  <Phone className="h-3.5 w-3.5 text-rose-400 group-hover:text-white transition-colors" />
+                  <span className="absolute inset-0 rounded-xl bg-emerald-500/10 animate-ping opacity-30 pointer-events-none" />
+                  <Phone className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
                 </button>
               )}
             </div>

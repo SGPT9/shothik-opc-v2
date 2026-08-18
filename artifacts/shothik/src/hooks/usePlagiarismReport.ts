@@ -175,11 +175,11 @@ export const usePlagiarismReport = (text: string) => {
           fromCache: false,
           isNetworkError: false,
         });
-        return;
+        return null;
       }
 
       if (isRequestInProgressRef.current && !options?.forceRefresh) {
-        return;
+        return null;
       }
 
       if (!options?.forceRefresh) {
@@ -230,13 +230,13 @@ export const usePlagiarismReport = (text: string) => {
 
         if (abortController.signal.aborted) {
           isRequestInProgressRef.current = false;
-          return;
+          return null;
         }
 
         const isCurrentRequest = abortControllerRef.current === abortController;
         if (!isCurrentRequest) {
           isRequestInProgressRef.current = false;
-          return;
+          return null;
         }
 
         if (!report) {
@@ -253,7 +253,7 @@ export const usePlagiarismReport = (text: string) => {
             isNetworkError: false,
           });
           isRequestInProgressRef.current = false;
-          return;
+          return null;
         }
 
         setCachedReport(trimmedText, report);
@@ -278,12 +278,12 @@ export const usePlagiarismReport = (text: string) => {
         return report;
       } catch (error) {
         if (abortControllerRef.current !== abortController) {
-          return;
+          return null;
         }
 
         if ((error as Error)?.name === "AbortError") {
           isRequestInProgressRef.current = false;
-          return;
+          return null;
         }
 
         console.error("[Plagiarism] Scan error:", (error as Error)?.message);
@@ -291,6 +291,7 @@ export const usePlagiarismReport = (text: string) => {
 
         isRequestInProgressRef.current = false;
         handleError(error, text);
+        return null;
       } finally {
         if (abortControllerRef.current === abortController && abortController.signal.aborted) {
           abortControllerRef.current = null;

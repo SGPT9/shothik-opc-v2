@@ -37,34 +37,34 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
   };
 
   return (
-    <div className="my-3 rounded-xl border border-indigo-500/20 bg-gradient-to-r from-indigo-950/25 via-indigo-900/10 to-background/50 overflow-hidden shadow-xs transition-all">
+    <div className="my-3 rounded-xl border border-white/[0.08] dark:border-white/[0.08] bg-zinc-100/80 dark:bg-black/40 backdrop-blur-xl overflow-hidden shadow-xs transition-all">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left transition hover:bg-indigo-500/10 cursor-pointer select-none"
+        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left transition hover:bg-white/[0.04] cursor-pointer select-none"
       >
         <div
           className={cn(
-            "flex h-5 w-5 items-center justify-center rounded-md shrink-0 transition-colors",
+            "flex h-5 w-5 items-center justify-center rounded-md shrink-0 transition-colors border",
             thinkingEnded
-              ? "bg-indigo-500/20 text-indigo-300"
-              : "bg-indigo-500/30 text-indigo-200 shadow-xs shadow-indigo-500/30"
+              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
+              : "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 shadow-xs shadow-emerald-500/20"
           )}
         >
           <Brain
             className={cn(
               "h-3.5 w-3.5",
-              !thinkingEnded ? "animate-pulse text-indigo-300" : "text-indigo-400"
+              !thinkingEnded ? "animate-pulse text-emerald-300" : "text-emerald-400"
             )}
           />
         </div>
 
         <div className="flex flex-1 items-center gap-2 min-w-0">
-          <span className="text-xs font-semibold text-indigo-200">
+          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">
             {title}
           </span>
-          <span className="text-[10px] font-mono text-indigo-400/60 bg-indigo-500/10 px-1.5 py-0.5 rounded">
-            {thinkingEnded ? `${wordCount} words • ~${estimatedSeconds}s` : "stream"}
+          <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 bg-white/[0.06] border border-white/[0.08] px-1.5 py-0.5 rounded">
+            {thinkingEnded ? `${wordCount} words • ~${estimatedSeconds}s` : "streaming"}
           </span>
         </div>
 
@@ -74,7 +74,7 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
               type="button"
               onClick={handleCopy}
               title={isBengali ? "যুক্তির বিবরণ কপি করুন" : "Copy reasoning trace"}
-              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-indigo-300 hover:text-white hover:bg-indigo-500/30 transition cursor-pointer select-none"
+              className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-zinc-400 hover:text-white hover:bg-white/[0.08] transition cursor-pointer select-none"
             >
               {copied ? (
                 <>
@@ -92,7 +92,7 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
 
           <ChevronDown
             className={cn(
-              "h-3.5 w-3.5 text-indigo-400/70 transition-transform duration-200",
+              "h-3.5 w-3.5 text-zinc-400 transition-transform duration-200",
               open && "rotate-180"
             )}
           />
@@ -100,10 +100,8 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
       </button>
 
       {open && (
-        <div className="border-t border-indigo-500/15 bg-black/20 px-4 py-3 animate-in fade-in duration-150">
-          <p className="text-xs text-indigo-200/80 leading-relaxed whitespace-pre-wrap font-mono select-text selection:bg-indigo-500/30">
-            {content}
-          </p>
+        <div className="border-t border-white/[0.08] px-4 py-3 bg-black/20 text-xs leading-relaxed text-zinc-600 dark:text-zinc-300 font-mono whitespace-pre-wrap max-h-72 overflow-y-auto custom-scrollbar">
+          {content}
         </div>
       )}
     </div>

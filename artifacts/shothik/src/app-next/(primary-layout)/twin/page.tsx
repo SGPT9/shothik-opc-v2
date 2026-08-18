@@ -377,20 +377,20 @@ export default function TwinPage() {
   };
 
   const beveledBtnClass =
-    "px-3 py-1.5 bg-gradient-to-b from-[#f5f5f5] to-[#d8d8d8] dark:from-zinc-800 dark:to-zinc-900 hover:from-white hover:to-[#e0e0e0] dark:hover:from-zinc-700 dark:hover:to-zinc-800 border border-[#777] dark:border-zinc-700 font-mono font-bold text-[10px] uppercase tracking-wider text-black dark:text-zinc-100 shadow-[inset_1px_1px_0px_#fff,inset_-1px_-1px_0px_#aaa,0_1px_2px_rgba(0,0,0,0.15)] active:shadow-[inset_1px_1px_2px_rgba(0,0,0,0.3)] transition-all flex items-center justify-center gap-1.5 cursor-pointer rounded-none select-none";
+    "px-3 py-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-950 dark:text-zinc-50 border border-zinc-300 dark:border-zinc-700 font-mono font-semibold text-[11px] uppercase tracking-wider shadow-xs active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer rounded-md select-none";
 
   return (
-    <div className="min-h-screen bg-[#fcfcfc] text-[#111] dark:bg-[#0c0d0e] dark:text-[#eee] flex flex-col font-sans select-text">
+    <div className="min-h-screen bg-[#fafafa] text-zinc-950 dark:bg-[#0c0d0e] dark:text-zinc-50 flex flex-col font-sans select-text">
       {/* ── Top Micro-Step Terminal Ticker ── */}
       <LiveTerminalTicker autoModeActive={autoModeActive} activeLogs={terminalLogs} />
 
       {/* ── Header Bar ── */}
-      <header className="border-b border-[#e5e5e5] dark:border-[#222] bg-white dark:bg-[#111] px-6 py-3 flex items-center justify-between">
+      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111] px-6 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
-          <span className="font-serif text-2xl font-bold tracking-tight text-black dark:text-white">
+          <span className="font-serif text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
             {companyName}
           </span>
-          <span className="text-[10px] font-mono font-semibold uppercase tracking-wider px-2 py-0.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 rounded-none">
+          <span className="text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-md">
             AUTONOMOUS FOUNDER COCKPIT
           </span>
         </div>
@@ -422,18 +422,18 @@ export default function TwinPage() {
       </header>
 
       {/* ── Main Layout ── */}
-      <main className={`flex-1 grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-[#e5e5e5] dark:divide-[#222] min-h-[calc(100vh-85px)]`}>
+      <main className={`flex-1 grid grid-cols-1 md:grid-cols-12 divide-y md:divide-y-0 md:divide-x divide-zinc-200 dark:divide-zinc-800 min-h-[calc(100vh-85px)]`}>
         {/* ── Left Column: Agent Profile, Status, Business & Teams ── */}
-        <section className={`p-6 space-y-7 bg-[#fafafa] dark:bg-[#0f1011] ${chatSidebarOpen ? "md:col-span-3 lg:col-span-2.5" : "md:col-span-4 lg:col-span-3"}`}>
+        <section className={`p-6 space-y-7 bg-white dark:bg-[#0f1011] ${chatSidebarOpen ? "md:col-span-3 lg:col-span-2.5" : "md:col-span-4 lg:col-span-3"}`}>
           {/* Autonomous Agent Status Widget */}
           <div className="space-y-4">
-            <h2 className="font-serif text-lg font-bold tracking-tight text-black dark:text-white">
+            <h2 className="font-serif text-lg font-bold tracking-tight text-zinc-950 dark:text-white">
               Polsia
             </h2>
 
             <div className="flex items-start gap-4">
               {isPlanning ? (
-                <div className="w-16 h-20 border-2 border-black dark:border-white bg-white dark:bg-black flex flex-col items-center justify-between py-1 px-1 font-mono text-[9px] leading-tight select-none shadow-sm animate-pulse">
+                <div className="w-16 h-20 border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-black flex flex-col items-center justify-between py-1 px-1 font-mono text-[9px] leading-tight select-none shadow-sm animate-pulse text-zinc-950 dark:text-zinc-100">
                   <span className="text-[7px]">▲</span>
                   <span className="tracking-widest text-[8px]">▲ ▲ ▲</span>
                   <div className="flex items-center justify-between w-full px-1">
@@ -448,25 +448,25 @@ export default function TwinPage() {
                   </div>
                 </div>
               ) : (
-                <div className="w-16 h-16 border-2 border-black dark:border-white bg-white dark:bg-black flex flex-col items-center justify-between py-1.5 px-2 shadow-sm font-mono text-[10px] leading-tight select-none">
+                <div className="w-16 h-16 border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-black flex flex-col items-center justify-between py-1.5 px-2 shadow-sm font-mono text-[10px] leading-tight select-none text-zinc-950 dark:text-zinc-100">
                   <span className="tracking-widest text-[8px]">▲ ▲ ▲</span>
                   <div className="flex items-center justify-between w-full px-1">
                     <span>◉</span>
                     <span>◉</span>
                   </div>
                   <span>▽</span>
-                  <span className="text-[8px] text-zinc-400">~~~~~</span>
+                  <span className="text-[8px] text-zinc-500 dark:text-zinc-400">~~~~~</span>
                 </div>
               )}
 
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="font-serif text-base font-bold text-black dark:text-white">
+                  <span className="font-serif text-base font-bold text-zinc-950 dark:text-white">
                     {isPlanning ? "Planning" : "Shipped"}
                   </span>
                   <span className={`w-2 h-2 rounded-full ${isPlanning ? "bg-amber-500 animate-ping" : "bg-emerald-500 animate-pulse"}`} />
                 </div>
-                <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400 leading-tight">
+                <p className="font-serif text-xs text-zinc-700 dark:text-zinc-300 leading-tight">
                   {isPlanning ? "Formulating next moves..." : "Done — your changes are live"}
                 </p>
               </div>
@@ -478,12 +478,12 @@ export default function TwinPage() {
                 onClick={() => setAutoModeOpen(true)}
                 className={`${beveledBtnClass} ${
                   autoModeActive
-                    ? "!bg-emerald-600 !text-white !border-emerald-700 animate-pulse"
+                    ? "!bg-emerald-600 !text-white !border-emerald-700 font-bold"
                     : ""
                 }`}
               >
-                <Zap className="w-3.5 h-3.5" />
-                <span>{autoModeActive ? "AUTO ACTIVE" : "⚡ AUTO MODE"}</span>
+                <Zap className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
+                <span>{autoModeActive ? "AUTO ACTIVE" : "AUTO MODE"}</span>
               </button>
 
               <button
@@ -496,35 +496,35 @@ export default function TwinPage() {
             </div>
 
             {isPlanning && (
-              <div className="p-3.5 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-[#141517] font-serif text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 shadow-sm animate-in fade-in">
+              <div className="p-3.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-[#141517] font-serif text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 shadow-xs rounded-md">
                 Deciding the 3 highest-impact next steps to move the company forward...
               </div>
             )}
 
             {autoModeActive && autoModeRemaining !== null && (
-              <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 font-mono text-xs flex items-center justify-between">
-                <span>REMAINING:</span>
+              <div className="p-2.5 bg-emerald-500/15 border border-emerald-500/40 text-emerald-800 dark:text-emerald-300 font-mono text-xs flex items-center justify-between rounded-md">
+                <span className="font-semibold">REMAINING:</span>
                 <span className="font-bold">{formatCountdown(autoModeRemaining)}</span>
               </div>
             )}
           </div>
 
           {/* Business & Telemetry Widget */}
-          <div className="space-y-3 pt-3 border-t border-[#e5e5e5] dark:border-[#222]">
-            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+          <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
               Business
             </h3>
 
-            <div className="space-y-1.5 font-mono text-xs text-zinc-800 dark:text-zinc-300">
+            <div className="space-y-2 font-mono text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-zinc-600 dark:text-zinc-400">VISITORS:</span>
-                <span className="font-bold text-black dark:text-white">32</span>
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300">VISITORS:</span>
+                <span className="font-extrabold text-zinc-950 dark:text-white text-sm">32</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="font-semibold text-zinc-600 dark:text-zinc-400">REVENUE:</span>
-                <span className="font-bold text-black dark:text-white">$0.00</span>
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300">REVENUE:</span>
+                <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-sm">$0.00</span>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-zinc-500">
+              <div className="flex items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
                 <span>UPDATED 20M AGO</span>
               </div>
             </div>
@@ -534,14 +534,14 @@ export default function TwinPage() {
               onClick={() => setMfsGatewayOpen(true)}
               className={`w-full mt-2 ${beveledBtnClass}`}
             >
-              <CreditCard className="w-3.5 h-3.5" />
+              <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>SETUP PAYMENTS</span>
             </button>
           </div>
 
           {/* Teams Widget */}
-          <div className="space-y-3 pt-3 border-t border-[#e5e5e5] dark:border-[#222]">
-            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+          <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
               Teams
             </h3>
 
@@ -550,17 +550,17 @@ export default function TwinPage() {
               onClick={() => setInviteModalOpen(true)}
               className={`w-full ${beveledBtnClass}`}
             >
-              <Users className="w-3.5 h-3.5" />
+              <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span>ADD MEMBER</span>
             </button>
           </div>
         </section>
 
         {/* ── Center-Left Column: Tasks, Documents & Website ── */}
-        <section className={`p-6 space-y-8 bg-white dark:bg-[#0c0d0e] ${chatSidebarOpen ? "md:col-span-5 lg:col-span-4.5" : "md:col-span-5 lg:col-span-5.5"}`}>
+        <section className={`p-6 space-y-8 bg-zinc-50/50 dark:bg-[#0c0d0e] ${chatSidebarOpen ? "md:col-span-5 lg:col-span-4.5" : "md:col-span-5 lg:col-span-5.5"}`}>
           {/* Tasks Section */}
           <div className="space-y-4">
-            <h2 className="font-serif text-lg font-bold tracking-tight text-black dark:text-white">
+            <h2 className="font-serif text-lg font-bold tracking-tight text-zinc-950 dark:text-white">
               Tasks
             </h2>
 
@@ -568,25 +568,25 @@ export default function TwinPage() {
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="p-4 border border-zinc-300 dark:border-zinc-800 bg-[#fbfbfb] dark:bg-[#121315] hover:border-zinc-500 transition-colors space-y-2.5 shadow-sm"
+                  className="p-4 border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#121315] hover:border-zinc-400 dark:hover:border-zinc-700 transition-all space-y-2.5 shadow-xs rounded-lg"
                 >
-                  <h4 className="font-serif text-sm font-bold text-black dark:text-white leading-snug">
+                  <h4 className="font-serif text-sm font-bold text-zinc-950 dark:text-zinc-50 leading-snug">
                     {task.title}
                   </h4>
-                  <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  <p className="font-serif text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {task.description}
                   </p>
 
-                  <div className="flex items-center gap-2 pt-1 font-mono text-[10px]">
+                  <div className="flex items-center gap-2 pt-1 font-mono text-[11px]">
                     {task.tags.map((tag) => (
                       <span
                         key={tag}
-                        className={`px-2 py-0.5 border font-semibold tracking-wider ${
+                        className={`px-2 py-0.5 border font-bold tracking-wider rounded ${
                           tag === "TONIGHT"
-                            ? "border-amber-500/50 bg-amber-500/10 text-amber-700 dark:text-amber-400"
+                            ? "border-amber-500/50 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200"
                             : tag === "1 CREDIT"
-                            ? "border-zinc-400 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
-                            : "border-zinc-300 dark:border-zinc-700 bg-zinc-200/50 dark:bg-zinc-800/50 text-zinc-800 dark:text-zinc-200"
+                            ? "border-blue-500/40 bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200"
+                            : "border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
                         }`}
                       >
                         {tag}
@@ -604,7 +604,7 @@ export default function TwinPage() {
                 disabled={isPlanning}
                 className={`${beveledBtnClass} ${isPlanning ? "opacity-60 cursor-not-allowed" : ""}`}
               >
-                <PlusSquare className="w-3.5 h-3.5" />
+                <PlusSquare className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>{isPlanning ? "PLANNING..." : "NEW TASKS"}</span>
               </button>
               <button
@@ -612,15 +612,15 @@ export default function TwinPage() {
                 onClick={() => setManageTasksOpen(true)}
                 className={beveledBtnClass}
               >
-                <LayoutGrid className="w-3.5 h-3.5" />
+                <LayoutGrid className="w-4 h-4 text-zinc-600 dark:text-zinc-300" />
                 <span>MANAGE TASKS</span>
               </button>
             </div>
           </div>
 
           {/* Documents Section */}
-          <div className="space-y-4 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
-            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+          <div className="space-y-4 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
               Documents
             </h3>
 
@@ -629,15 +629,15 @@ export default function TwinPage() {
                 <div
                   key={doc.id}
                   onClick={() => setActiveDoc(doc)}
-                  className="flex items-center justify-between py-2 px-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 cursor-pointer transition-colors border-b border-zinc-100 dark:border-zinc-900 group"
+                  className="flex items-center justify-between py-2 px-2.5 rounded-md hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 cursor-pointer transition-colors border-b border-zinc-200/60 dark:border-zinc-900 group"
                 >
                   <div className="flex items-center gap-2.5">
-                    <FileText className="w-3.5 h-3.5 text-zinc-400 group-hover:text-black dark:group-hover:text-white shrink-0" />
-                    <span className="font-semibold text-black dark:text-white group-hover:underline">
+                    <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform shrink-0" />
+                    <span className="font-semibold text-zinc-900 dark:text-zinc-100 group-hover:text-blue-600 dark:group-hover:text-blue-400">
                       {doc.title}
                     </span>
                   </div>
-                  <span className="font-mono text-[10px] text-zinc-400 uppercase">
+                  <span className="font-mono text-[11px] font-semibold text-zinc-600 dark:text-zinc-400 uppercase">
                     {doc.timeAgo}
                   </span>
                 </div>
@@ -647,15 +647,15 @@ export default function TwinPage() {
             <button
               type="button"
               onClick={() => setDocsListOpen(true)}
-              className="font-mono text-[11px] font-bold text-zinc-600 hover:text-black dark:text-zinc-400 dark:hover:text-white uppercase tracking-wider transition-colors pt-2 block cursor-pointer"
+              className="font-mono text-xs font-bold text-zinc-700 hover:text-zinc-950 dark:text-zinc-300 dark:hover:text-white uppercase tracking-wider transition-colors pt-2 block cursor-pointer"
             >
               VIEW ALL (52)
             </button>
           </div>
 
           {/* Website Domain Section */}
-          <div className="space-y-3 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
-            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+          <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
               Website
             </h3>
 
@@ -664,7 +664,7 @@ export default function TwinPage() {
                 href="https://shothikaddress.com"
                 target="_blank"
                 rel="noreferrer"
-                className="text-zinc-900 dark:text-zinc-100 hover:underline flex items-center gap-1 font-semibold"
+                className="text-zinc-950 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline flex items-center gap-1 font-bold"
               >
                 <span>🔗</span>
                 <span>https://shothikaddress.com</span>
@@ -698,26 +698,26 @@ export default function TwinPage() {
         </section>
 
         {/* ── Center-Right Column: Twitter, Email, Ads ── */}
-        <section className={`p-6 space-y-8 bg-[#fafafa] dark:bg-[#0f1011] ${chatSidebarOpen ? "md:col-span-4 lg:col-span-2.5" : "md:col-span-3 lg:col-span-3.5"}`}>
+        <section className={`p-6 space-y-8 bg-white dark:bg-[#0f1011] ${chatSidebarOpen ? "md:col-span-4 lg:col-span-2.5" : "md:col-span-3 lg:col-span-3.5"}`}>
           {/* Twitter / X Engine */}
           <div className="space-y-3">
-            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
               Twitter
             </h3>
 
             <div className="space-y-1.5 font-mono text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-black dark:text-white">Polsia @polsia</span>
+                <span className="font-bold text-zinc-950 dark:text-white">Polsia @polsia</span>
                 <a
                   href="https://x.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[10px] font-bold underline uppercase tracking-wider text-blue-600 dark:text-blue-400"
+                  className="text-xs font-bold underline uppercase tracking-wider text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
                 >
                   CONNECT X ACCOUNT
                 </a>
               </div>
-              <p className="text-[11px] text-zinc-500 font-semibold pt-1">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold pt-1">
                 NO TWEETS POSTED YET
               </p>
             </div>
@@ -737,7 +737,7 @@ export default function TwinPage() {
                 }}
                 className={beveledBtnClass}
               >
-                <SendHorizontal className="w-3.5 h-3.5" />
+                <SendHorizontal className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 <span>TWEET</span>
               </button>
               <button
@@ -754,23 +754,23 @@ export default function TwinPage() {
                 }}
                 className={beveledBtnClass}
               >
-                <Clock3 className="w-3.5 h-3.5" />
+                <Clock3 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span>AUTO-TWEET</span>
               </button>
             </div>
           </div>
 
           {/* Email / Cold Outreach Engine */}
-          <div className="space-y-3 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
-            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+          <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
               Email
             </h3>
 
             <div className="space-y-1.5 font-mono text-xs">
-              <p className="text-zinc-600 dark:text-zinc-400 font-semibold">
+              <p className="text-zinc-800 dark:text-zinc-200 font-bold">
                 verifiq-3@polsia.app
               </p>
-              <p className="text-[11px] text-zinc-500 font-semibold pt-1">
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold pt-1">
                 NO EMAILS YET
               </p>
             </div>
@@ -790,7 +790,7 @@ export default function TwinPage() {
                 }}
                 className={beveledBtnClass}
               >
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 <span>COLD OUTREACH</span>
               </button>
               <button
@@ -798,15 +798,15 @@ export default function TwinPage() {
                 onClick={() => setAutoColdOutreachOpen(true)}
                 className={beveledBtnClass}
               >
-                <Mail className="w-3.5 h-3.5" />
+                <Mail className="w-4 h-4 text-teal-600 dark:text-teal-400" />
                 <span>AUTO COLD OUTREACH</span>
               </button>
             </div>
           </div>
 
           {/* Ads Module */}
-          <div className="space-y-3 pt-4 border-t border-[#e5e5e5] dark:border-[#222]">
-            <h3 className="font-serif text-base font-bold text-black dark:text-white">
+          <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
               Ads
             </h3>
 
@@ -824,7 +824,7 @@ export default function TwinPage() {
               }}
               className={beveledBtnClass}
             >
-              <Rocket className="w-3.5 h-3.5" />
+              <Rocket className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>RUN ADS</span>
             </button>
           </div>
@@ -832,16 +832,16 @@ export default function TwinPage() {
 
         {/* ── Right Column: Daily Standup Timeline & Chat Sidebar (2.5 cols) ── */}
         {chatSidebarOpen && (
-          <section className="md:col-span-12 lg:col-span-2.5 flex flex-col bg-white dark:bg-[#111] border-t md:border-t-0 border-[#e5e5e5] dark:border-[#222] min-h-[500px] relative">
+          <section className="md:col-span-12 lg:col-span-2.5 flex flex-col bg-white dark:bg-[#111] border-t md:border-t-0 border-zinc-200 dark:border-zinc-800 min-h-[500px] relative">
             {/* Top Close Button (Black Circular X matching screenshot) */}
             <div className="absolute top-3 right-3 z-10">
               <button
                 type="button"
                 onClick={() => setChatSidebarOpen(false)}
-                className="w-5 h-5 rounded-full bg-black hover:bg-zinc-800 text-white flex items-center justify-center text-[10px] transition-all cursor-pointer shadow-sm"
+                className="w-6 h-6 rounded-full bg-zinc-900 hover:bg-zinc-800 text-white dark:bg-zinc-100 dark:hover:bg-zinc-200 dark:text-zinc-900 flex items-center justify-center text-xs transition-all cursor-pointer shadow-xs"
                 title="Collapse Sidebar"
               >
-                <X className="w-3 h-3" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
@@ -855,11 +855,11 @@ export default function TwinPage() {
                   {/* Centered TODAY / Date Divider */}
                   {msg.dayHeader && (
                     <div className="relative flex items-center py-2">
-                      <div className="flex-grow border-t border-slate-200 dark:border-zinc-800" />
-                      <span className="shrink-0 px-3 font-mono text-[9px] font-bold uppercase tracking-widest text-zinc-400">
+                      <div className="flex-grow border-t border-zinc-300 dark:border-zinc-800" />
+                      <span className="shrink-0 px-3 font-mono text-[10px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
                         {msg.dayHeader}
                       </span>
-                      <div className="flex-grow border-t border-slate-200 dark:border-zinc-800" />
+                      <div className="flex-grow border-t border-zinc-300 dark:border-zinc-800" />
                     </div>
                   )}
 
@@ -867,7 +867,7 @@ export default function TwinPage() {
                   {msg.isNewDivider && (
                     <div className="relative flex items-center py-1">
                       <div className="flex-grow border-t border-red-500" />
-                      <span className="shrink-0 pl-2 font-mono text-[9px] font-bold uppercase tracking-widest text-red-600 dark:text-red-500">
+                      <span className="shrink-0 pl-2 font-mono text-[10px] font-bold uppercase tracking-widest text-red-600 dark:text-red-500">
                         NEW
                       </span>
                     </div>
@@ -875,16 +875,16 @@ export default function TwinPage() {
 
                   <div className="space-y-1">
                     <div
-                      className={`font-serif text-xs leading-relaxed text-slate-800 dark:text-zinc-200 [&_code]:font-mono [&_code]:text-[11px] [&_code]:bg-slate-100 dark:[&_code]:bg-zinc-900 [&_code]:px-1 [&_code]:py-0.5 [&_code]:border [&_code]:border-slate-200 dark:[&_code]:border-zinc-800 ${
+                      className={`font-serif text-xs leading-relaxed text-zinc-900 dark:text-zinc-100 [&_code]:font-mono [&_code]:text-xs [&_code]:bg-zinc-100 dark:[&_code]:bg-zinc-900 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:border [&_code]:border-zinc-300 dark:[&_code]:border-zinc-800 rounded-md ${
                         msg.fromUser
-                          ? "p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-black dark:text-white"
+                          ? "p-3 bg-zinc-100 dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 text-zinc-950 dark:text-white"
                           : ""
                       }`}
                     >
                       <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.text}</ReactMarkdown>
                     </div>
 
-                    <div className="font-mono text-[10px] text-zinc-400">
+                    <div className="font-mono text-[11px] text-zinc-500 dark:text-zinc-400">
                       {msg.time}
                     </div>
                   </div>
@@ -893,13 +893,13 @@ export default function TwinPage() {
             </div>
 
             {/* Universal Bottom Input (Screenshot Parity) */}
-            <div className="p-3 border-t border-[#e5e5e5] dark:border-[#222] bg-[#fafafa] dark:bg-[#0e0f10]">
-              <div className="flex items-center gap-2 border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-1.5 shadow-sm rounded-none">
+            <div className="p-3 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-[#0e0f10]">
+              <div className="flex items-center gap-2 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 px-3 py-1.5 shadow-xs rounded-md">
                 <button
                   type="button"
-                  className="text-zinc-400 hover:text-black dark:hover:text-white transition-colors cursor-pointer shrink-0"
+                  className="text-zinc-500 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer shrink-0"
                 >
-                  <Paperclip className="w-3.5 h-3.5" />
+                  <Paperclip className="w-4 h-4" />
                 </button>
 
                 <input
@@ -913,14 +913,14 @@ export default function TwinPage() {
                     }
                   }}
                   placeholder="Ask Polsia anything..."
-                  className="flex-1 bg-transparent font-serif text-xs text-black dark:text-white placeholder:text-zinc-400 outline-none min-w-0"
+                  className="flex-1 bg-transparent font-serif text-xs text-zinc-950 dark:text-white placeholder:text-zinc-400 outline-none min-w-0"
                 />
 
                 <button
                   type="button"
                   onClick={handleSendMessage}
                   disabled={!chatInput.trim()}
-                  className="px-2.5 py-1 bg-gradient-to-b from-[#f5f5f5] to-[#d8d8d8] dark:from-zinc-800 dark:to-zinc-900 hover:from-white hover:to-[#e0e0e0] border border-[#777] dark:border-zinc-700 text-black dark:text-white font-mono font-bold text-[9px] uppercase tracking-wider disabled:opacity-40 transition-all cursor-pointer shrink-0 shadow-[inset_1px_1px_0px_#fff,inset_-1px_-1px_0px_#aaa,0_1px_2px_rgba(0,0,0,0.15)]"
+                  className="px-3 py-1 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-mono font-bold text-[10px] uppercase tracking-wider disabled:opacity-40 transition-all cursor-pointer shrink-0 rounded shadow-xs"
                 >
                   SEND
                 </button>

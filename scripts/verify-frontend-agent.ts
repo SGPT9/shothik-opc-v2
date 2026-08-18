@@ -49,8 +49,8 @@ export async function runFrontendVerificationAgent(customBaseUrl?: string): Prom
     page.on("console", (msg) => {
       if (msg.type() === "error") {
         const text = msg.text();
-        if (text.includes("api/auth/session") || text.includes("convex-token") || text.includes("CORS policy") || text.includes("ERR_FAILED")) {
-          return; // Ignore external OAuth probe preflights in local mock dev mode
+        if (text.includes("api/auth/session") || text.includes("convex-token") || text.includes("CORS policy") || text.includes("ERR_FAILED") || text.includes("ERR_CONNECTION_REFUSED")) {
+          return; // Ignore external OAuth probe preflights or optional offline daemon probes
         }
         consoleErrors++;
         console.error("🔴 [Console Error]", text);

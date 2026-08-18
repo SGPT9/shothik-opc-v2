@@ -163,7 +163,7 @@ const ArticleDetail = () => {
 
           <div className="relative mb-12 aspect-video overflow-hidden rounded-2xl">
             <img
-              src={article.image.src}
+              src={typeof article.image === 'string' ? article.image : (article.image as any)?.src || ""}
               alt={article.title}
               className="h-full w-full object-cover"
             />

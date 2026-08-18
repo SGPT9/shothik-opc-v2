@@ -87,7 +87,7 @@ export const useUserLocation = (): UserLocationResult => {
         }
 
         // Try ipwho.is first (free, unlimited, no API key required)
-        let location = null;
+        let location: LocationData | null = null;
         try {
           const ipwhoRes = await fetch("https://ipwho.is/");
           if (ipwhoRes.ok) {

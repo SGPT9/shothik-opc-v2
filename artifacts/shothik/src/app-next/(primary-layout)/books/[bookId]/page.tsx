@@ -144,10 +144,10 @@ export default function BookDetailPage() {
     setPurchaseError(null);
     setPurchasing(true);
     try {
-      const result = await purchaseBook({ bookId: bookId as any });
-      if (result.success) {
+      const result = (await purchaseBook({ bookId: bookId as any })) as any;
+      if (result?.success || result) {
         setJustPurchased(true);
-        if (result.alreadyPurchased) {
+        if (result?.alreadyPurchased) {
           setPurchaseError(null);
         }
       }

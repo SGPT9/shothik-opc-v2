@@ -26,16 +26,25 @@ const SocketDebug = () => {
     };
 
     useEffect(() => {
-        // Connect to Paraphrase Socket
-        const socketUrl = "http://localhost:5001";
+        // Only connect when debug drawer is actually opened by user
+        if (!isOpen) {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+                socketRef.current = null;
+            }
+            return;
+        }
+
+        // Connect to configured API URL instead of hardcoded 5001
+        const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
         addLog('socket', `Initializing connection to ${socketUrl}...`);
 
         const socket = io(socketUrl, {
             path: "/paraphrase/socket.io",
-            transports: ["polling", "websocket"],
+            transports: ["websocket", "polling"],
             auth: { token: accessToken },
-            reconnection: true,
+            reconnection: false, // Prevent endless console spam
         });
 
         socketRef.current = socket;

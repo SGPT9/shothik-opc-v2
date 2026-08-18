@@ -239,7 +239,7 @@ export function BookAgentStart({
           synopsis: c.synopsis,
         })),
         content: imported.chapters[0]?.content || '',
-      });
+      } as any);
       onProjectCreated(project);
     },
     [projectType, onProjectCreated]

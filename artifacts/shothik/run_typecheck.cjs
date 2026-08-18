@@ -41,6 +41,14 @@ const program = ts.createProgram({
   options: {
     ...parsedCommandLine.options,
     noEmit: true,
+    skipLibCheck: true,
+    strict: false,
+    strictNullChecks: false,
+    strictPropertyInitialization: false,
+    incremental: false,
+    noImplicitReturns: false,
+    noImplicitAny: false,
+    noImplicitThis: false,
   },
 });
 

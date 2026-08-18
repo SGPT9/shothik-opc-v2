@@ -731,17 +731,18 @@ export class ChatOrchestrator {
               },
             }, { runStatus: "running" });
           } else {
+            const failedSearch = searchResult as { ok: false; errorCode: string; error: string };
             webSearchOutcome = "failed";
             logger.warn(
               "[chat-orchestrator] Live web search failed, falling back to knowledge-only",
-              { runId, errorCode: searchResult.errorCode, error: searchResult.error },
+              { runId, errorCode: failedSearch.errorCode, error: failedSearch.error },
             );
             await bridge.emit(sse, "progress_update", {
               message: "Live web search unavailable — answering from knowledge",
               stage: "web_search",
               webSearch: {
                 status: "failed",
-                errorCode: searchResult.errorCode,
+                errorCode: failedSearch.errorCode,
               },
             }, { runStatus: "running" });
           }
