@@ -135,7 +135,10 @@ const SavedReportsPage = lazy(() => import('@/app-next/(primary-layout)/saved-re
 const DeepResearchPage = lazy(() => import('@/app-next/(primary-layout)/deep-research/page'));
 const SettingsWorkspacePage = lazy(() => import('@/app-next/(primary-layout)/settings/page'));
 
+const AdminControlCenter = lazy(() => import('@/components/admin/AdminControlCenter'));
+
 // Hoisted so route component identities are stable across renders
+const AdminControlCenterWithLayout = withPrimaryLayout(AdminControlCenter);
 const AccountAgentsPageWithLayout = withPrimaryLayout(AccountAgentsPage);
 const AccountBillingPageWithLayout = withPrimaryLayout(AccountBillingPage);
 const AccountPageWithLayout = withPrimaryLayout(AccountPage);
@@ -350,6 +353,7 @@ function AppRoutes() {
         <Route path="/saved-reports" component={SavedReportsPageWithLayout} />
         <Route path="/deep-research" component={DeepResearchPageWithLayout} />
         <Route path="/settings" component={SettingsWorkspacePageWithLayout} />
+        <Route path="/admin" component={AdminControlCenterWithLayout} />
 
         <Route component={NotFound} />
       </Switch>

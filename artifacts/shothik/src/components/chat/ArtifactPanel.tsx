@@ -14,6 +14,7 @@ import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
 import { CommerceActionCard } from "@/components/chat/CommerceActionCard";
 import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
+import { FCommerceBlueprints } from "@/components/commerce/FCommerceBlueprints";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -308,25 +309,29 @@ export function ArtifactPanel({
 
         {mounted.has("commerce") && (
           <div className={`absolute inset-0 overflow-y-auto p-4 flex flex-col items-center justify-start ${activeTab === "commerce" ? "block" : "hidden"}`}>
-            <div className="w-full max-w-lg space-y-4">
-              <h3 className="text-sm font-bold text-foreground">F-Commerce & Logistics Hub</h3>
-              <CommerceActionCard
-                order={{
-                  invoiceNumber: "INV-2026-8891",
-                  recipientName: "তানভীর আহমেদ",
-                  recipientPhone: "01711000000",
-                  recipientAddress: "House 12, Road 4, Dhanmondi, Dhaka",
-                  codAmount: 1850,
-                  deliveryCharge: 60,
-                }}
-                payment={{
-                  trxId: "BK99281726X",
-                  amount: 1850,
-                  provider: "bkash",
-                  senderPhone: "01711000000",
-                  status: "verified",
-                }}
-              />
+            <div className="w-full max-w-2xl space-y-6">
+              <FCommerceBlueprints />
+
+              <div className="border-t border-border/40 pt-4 space-y-2">
+                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Live Transaction & Courier Consignment</h4>
+                <CommerceActionCard
+                  order={{
+                    invoiceNumber: "INV-2026-8891",
+                    recipientName: "তানভীর আহমেদ",
+                    recipientPhone: "01711000000",
+                    recipientAddress: "House 12, Road 4, Dhanmondi, Dhaka",
+                    codAmount: 1850,
+                    deliveryCharge: 60,
+                  }}
+                  payment={{
+                    trxId: "BK99281726X",
+                    amount: 1850,
+                    provider: "bkash",
+                    senderPhone: "01711000000",
+                    status: "verified",
+                  }}
+                />
+              </div>
             </div>
           </div>
         )}
