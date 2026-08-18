@@ -1,0 +1,32 @@
+# Dependencies
+node_modules
+.pnpm-store
+.pnpm-cache
+
+# Temp folders & large clones
+.temp
+ChatbotX
+.migration-backup
+temp-open-design
+cloudflare-os
+inkos-clone
+inkos-repo
+ponytail
+*.tar.gz
+*.zip
+
+# Git & agent metadata
+.git
+.agents
+.cursor
+.insforge
+
+# Cache & logs
+dist
+tmp
+.next
+.cache
+*.log
+*.png
+!artifacts/shothik/public/**
+!artifacts/shothik/src/assets/**
