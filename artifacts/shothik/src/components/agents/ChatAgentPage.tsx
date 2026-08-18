@@ -48,6 +48,10 @@ import {
   FileJson,
   Printer,
   FileText as FileTextIcon,
+  Smartphone,
+  X,
+  ChevronUp,
+  Layers
 } from "lucide-react";
 
 export interface FleetAgent {
@@ -128,6 +132,31 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const activeAgent = FLEET_AGENTS.find(a => a.id === selectedAgentId) || FLEET_AGENTS[0];
+
+  // Mobile Touch Gestures for 2GB RAM devices (Swipe Left = Canvas, Swipe Right = Chat)
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+  const [isMobileTabDrawerOpen, setIsMobileTabDrawerOpen] = useState(false);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+    const deltaX = e.changedTouches[0].clientX - touchStart.x;
+    const deltaY = e.changedTouches[0].clientY - touchStart.y;
+    // Only trigger if horizontal swipe is prominent
+    if (Math.abs(deltaX) > 65 && Math.abs(deltaX) > Math.abs(deltaY) * 1.4) {
+      if (deltaX < 0 && !artifactOpen) {
+        // Swiped Left ➔ Open Work Canvas
+        setArtifactOpen(true);
+      } else if (deltaX > 0 && artifactOpen) {
+        // Swiped Right ➔ Open Chat
+        setArtifactOpen(false);
+      }
+    }
+    setTouchStart(null);
+  };
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -519,7 +548,11 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   );
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] w-full overflow-hidden bg-background">
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="flex h-[calc(100vh-4rem)] w-full overflow-hidden bg-background"
+    >
       {/* Main Workspace Shell */}
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
         {/* ── Top Workspace Bar: ChatGPT-Style Agent Switcher & Work Mode Toggle ── */}
@@ -922,6 +955,98 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           open={isShortcutsOpen}
           onOpenChange={setIsShortcutsOpen}
         />
+
+        {/* 📱 2GB RAM Mobile Floating Action Pill & Touch Quick-Switcher */}
+        <div className="sm:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 p-1 rounded-full bg-background/95 border border-border/80 shadow-2xl backdrop-blur-lg animate-in fade-in slide-in-from-bottom-2 duration-200">
+          <button
+            type="button"
+            onClick={() => setArtifactOpen(false)}
+            className={cn(
+              "flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer",
+              !artifactOpen ? "bg-brand text-brand-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <MessageSquare className="h-3 w-3" />
+            <span>Chat</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!artifactOpen) setArtifactOpen(true);
+              setIsMobileTabDrawerOpen((o) => !o);
+            }}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer",
+              artifactOpen ? "bg-brand text-brand-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <LayoutTemplate className="h-3 w-3" />
+            <span className="capitalize">{activeTab}</span>
+            <ChevronUp className={cn("h-3 w-3 transition-transform", isMobileTabDrawerOpen && "rotate-180")} />
+          </button>
+        </div>
+
+        {/* 📱 Mobile Studio Tab Picker Drawer Sheet */}
+        {isMobileTabDrawerOpen && (
+          <div className="sm:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className="fixed bottom-0 inset-x-0 bg-popover border-t border-border p-4 rounded-t-3xl shadow-2xl space-y-3 max-h-[70vh] overflow-y-auto animate-in slide-in-from-bottom duration-300">
+              <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                <div className="flex items-center gap-2">
+                  <Smartphone className="h-4 w-4 text-brand" />
+                  <span className="text-xs font-bold text-foreground">Select Studio Canvas Tab</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsMobileTabDrawerOpen(false)}
+                  className="p-1 rounded-lg bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {[
+                  { id: "slides", label: "Slides 16:9", icon: "🎴" },
+                  { id: "sheet", label: "Financial Sheet", icon: "📊" },
+                  { id: "research", label: "Deep Research", icon: "🔍" },
+                  { id: "commerce", label: "F-Commerce & MFS", icon: "⚡" },
+                  { id: "swarm", label: "Swarm Fleet", icon: "🐝" },
+                  { id: "boimela", label: "বইমেলা 3D", icon: "📖" },
+                  { id: "community", label: "Community Hub", icon: "👥" },
+                  { id: "approvals", label: "Gatekeeper Approvals", icon: "🛡️" },
+                  { id: "code", label: "Python REPL", icon: "🐍" },
+                  { id: "diagram", label: "Architecture Diagram", icon: "📐" },
+                  { id: "doc", label: "Document Editor", icon: "📄" },
+                  { id: "synthesizer", label: "Venture Synthesizer", icon: "🪄" },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(t.id as ArtifactTab);
+                      setArtifactOpen(true);
+                      setIsMobileTabDrawerOpen(false);
+                    }}
+                    className={cn(
+                      "flex items-center gap-2 p-2.5 rounded-xl border text-left font-semibold transition cursor-pointer",
+                      activeTab === t.id && artifactOpen
+                        ? "bg-brand text-brand-foreground border-brand shadow-sm"
+                        : "bg-muted/30 border-border/40 text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <span className="text-base">{t.icon}</span>
+                    <span className="text-xs truncate">{t.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="text-[10px] text-muted-foreground text-center font-mono">
+                Swipe Left ➔ Canvas · Swipe Right ➔ Chat
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
