@@ -12,6 +12,7 @@ export interface LiquidGlassCardProps {
   glowColor?: string;
   palette?: LiquidGlassPalette;
   borderRadius?: string;
+  onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 const PALETTE_GLOWS: Record<LiquidGlassPalette, { glow: string; borderGlow: string; accent: string }> = {
@@ -55,6 +56,7 @@ export function LiquidGlassCard({
   glowColor,
   palette = "indigo",
   borderRadius = "rounded-2xl",
+  onClick,
 }: LiquidGlassCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const [mousePos, setMousePos] = useState({ x: 50, y: 50 });
@@ -89,6 +91,7 @@ export function LiquidGlassCard({
   return (
     <div
       ref={cardRef}
+      onClick={onClick}
       onMouseMove={handleMouseMove}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

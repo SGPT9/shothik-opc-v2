@@ -22,6 +22,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { VTuberPresentationStage } from "./VTuberPresentationStage";
 import { cn } from "@/lib/utils";
 
 export type SlideLayout = "hero" | "split" | "stats" | "timeline";
@@ -394,8 +395,16 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
   const [copied, setCopied] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showVTuberStage, setShowVTuberStage] = useState(false);
 
   const [slideList, setSlideList] = useState<SlideData[]>(() => customSlides || buildDynamicDeck(topicTitle));
+
+  // Listen for VTuber toggle events
+  useEffect(() => {
+    const handleToggle = () => setShowVTuberStage((prev) => !prev);
+    window.addEventListener("shothik_toggle_vtuber", handleToggle);
+    return () => window.removeEventListener("shothik_toggle_vtuber", handleToggle);
+  }, []);
 
   // Sync with prop changes
   useEffect(() => {
@@ -683,12 +692,25 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
 
       {/* ── Main 16:9 Presentation Stage ── */}
       <div className={cn(
-        "flex-1 min-h-0 flex flex-col items-center justify-center p-3 sm:p-4 bg-zinc-950 transition-all",
+        "flex-1 min-h-0 flex flex-col items-center justify-center p-3 sm:p-4 bg-zinc-950 transition-all gap-4 overflow-y-auto",
         isFullscreen && "fixed inset-0 z-50 p-8 sm:p-12 bg-black/95 backdrop-blur-xl"
       )}>
+        {showVTuberStage && (
+          <div className="w-full max-w-2xl">
+            <VTuberPresentationStage
+              currentSlideIndex={currentSlide + 1}
+              totalSlides={slideList.length}
+              slideTitle={active.title}
+              narrationScript={`${active.title}. ${active.subtitle}. ${active.speakerNotes}`}
+              onNextSlide={() => setCurrentSlide((prev) => Math.min(slideList.length - 1, prev + 1))}
+              onPrevSlide={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
+            />
+          </div>
+        )}
+
         <div
           className={cn(
-            "relative w-full max-w-2xl aspect-[16/9] rounded-2xl border shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden bg-gradient-to-br transition-all duration-300",
+            "relative w-full max-w-2xl aspect-[16/9] rounded-2xl border shadow-2xl p-6 sm:p-8 flex flex-col justify-between overflow-hidden bg-gradient-to-br transition-all duration-300 shrink-0",
             isFullscreen && "max-w-4xl text-base shadow-indigo-500/10",
             currentTemplate.themeClass,
             currentTemplate.border
