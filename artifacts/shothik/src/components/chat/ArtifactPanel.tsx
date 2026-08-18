@@ -17,11 +17,14 @@ import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 import { FCommerceBlueprints } from "@/components/commerce/FCommerceBlueprints";
 import { CommunityArtifact } from "@/components/chat/artifacts/CommunityArtifact";
 import { MultiAgentSwarmFlow } from "@/components/chat/artifacts/MultiAgentSwarmFlow";
+import { CareerStudioArtifact } from "@/components/chat/artifacts/CareerStudioArtifact";
+import { WhatsAppOrderSimulator } from "@/components/chat/artifacts/WhatsAppOrderSimulator";
+import { Briefcase, MessageSquare } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -35,6 +38,8 @@ const TABS: TabConfig[] = [
   { id: "slides",      label: "Slides",              Icon: Presentation, color: "text-indigo-400" },
   { id: "boimela",     label: "বইমেলা 3D",           Icon: Sparkles,     color: "text-rose-400"   },
   { id: "commerce",    label: "Commerce & MFS",      Icon: Truck,        color: "text-emerald-400"},
+  { id: "whatsapp",    label: "WhatsApp Bot",        Icon: MessageSquare, color: "text-emerald-400"},
+  { id: "career",      label: "Career & CV",         Icon: Briefcase,    color: "text-indigo-400" },
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -165,6 +170,8 @@ export function ArtifactPanel({
   tabsWithContent.add("slides");
   tabsWithContent.add("community");
   tabsWithContent.add("commerce");
+  tabsWithContent.add("whatsapp");
+  tabsWithContent.add("career");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -401,6 +408,18 @@ export function ArtifactPanel({
         {mounted.has("community") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "community" ? "block" : "hidden"}`}>
             <CommunityArtifact />
+          </div>
+        )}
+
+        {mounted.has("career") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "career" ? "block" : "hidden"}`}>
+            <CareerStudioArtifact />
+          </div>
+        )}
+
+        {mounted.has("whatsapp") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "whatsapp" ? "block" : "hidden"}`}>
+            <WhatsAppOrderSimulator />
           </div>
         )}
 
