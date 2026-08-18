@@ -20,6 +20,9 @@
     "test:e2e": "npx tsx scripts/run-e2e-playwright.ts",
     "verify:frontend": "npx tsx scripts/verify-frontend-agent.ts",
     "verify:all": "pnpm typecheck:all && pnpm test:api && pnpm test:artifacts && pnpm test:e2e && pnpm --filter @workspace/swarm-orchestrator test && pnpm verify:frontend",
+    "deploy:staging": "bash scripts/deploy-staging.sh",
+    "deploy:docker": "docker-compose up -d --build",
+    "deploy:cloudflare": "wrangler pages deploy artifacts/shothik/dist --project-name=shothik-hermes",
     "setup:ai": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-ai-env.ps1"
   },
   "private": true,
