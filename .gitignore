@@ -55,6 +55,8 @@ convex-jwt-private-key.pem
 
 # Migration artefacts (old Next.js codebase backup — local only)
 .migration-backup/
+cloudflare-os/
+temp-open-design/
 
 # InsForge & AI agent skills
 .insforge
