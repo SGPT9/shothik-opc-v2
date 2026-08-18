@@ -23,12 +23,13 @@ import { VoicePitchToDeck } from "@/components/chat/artifacts/VoicePitchToDeck";
 import { PromptLabArtifact } from "@/components/chat/artifacts/PromptLabArtifact";
 import { LegalContractArtifact } from "@/components/chat/artifacts/LegalContractArtifact";
 import { ModelArenaArtifact } from "@/components/chat/artifacts/ModelArenaArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords } from "lucide-react";
+import { TwinArtifact } from "@/components/chat/artifacts/TwinArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -48,6 +49,7 @@ const TABS: TabConfig[] = [
   { id: "promptlab",   label: "Prompt Lab",          Icon: Terminal,     color: "text-cyan-400"   },
   { id: "legal",       label: "Legal & Stamp",       Icon: Scale,        color: "text-amber-400"  },
   { id: "arena",       label: "Model Arena",         Icon: Swords,       color: "text-purple-400" },
+  { id: "twin",        label: "Twin Founder",        Icon: Bot,          color: "text-violet-400" },
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -184,6 +186,7 @@ export function ArtifactPanel({
   tabsWithContent.add("promptlab");
   tabsWithContent.add("legal");
   tabsWithContent.add("arena");
+  tabsWithContent.add("twin");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -456,6 +459,12 @@ export function ArtifactPanel({
         {mounted.has("arena") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "arena" ? "block" : "hidden"}`}>
             <ModelArenaArtifact />
+          </div>
+        )}
+
+        {mounted.has("twin") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "twin" ? "block" : "hidden"}`}>
+            <TwinArtifact />
           </div>
         )}
 
