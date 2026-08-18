@@ -1012,6 +1012,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   { id: "sheet", label: "Financial Sheet", icon: "📊" },
                   { id: "research", label: "Deep Research", icon: "🔍" },
                   { id: "commerce", label: "F-Commerce & MFS", icon: "⚡" },
+                  { id: "whatsapp", label: "WhatsApp Bot", icon: "💬" },
+                  { id: "career", label: "Career & CV", icon: "💼" },
                   { id: "swarm", label: "Swarm Fleet", icon: "🐝" },
                   { id: "boimela", label: "বইমেলা 3D", icon: "📖" },
                   { id: "community", label: "Community Hub", icon: "👥" },
