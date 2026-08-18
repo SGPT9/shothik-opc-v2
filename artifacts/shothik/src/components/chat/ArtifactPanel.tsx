@@ -31,12 +31,14 @@ import { VideoScriptArtifact } from "@/components/chat/artifacts/VideoScriptArti
 import { VatTaxArtifact } from "@/components/chat/artifacts/VatTaxArtifact";
 import { ProductPhotoArtifact } from "@/components/chat/artifacts/ProductPhotoArtifact";
 import { SupplyChainArtifact } from "@/components/chat/artifacts/SupplyChainArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes } from "lucide-react";
+import { VoiceDubbingArtifact } from "@/components/chat/artifacts/VoiceDubbingArtifact";
+import { BroadcastCampaignArtifact } from "@/components/chat/artifacts/BroadcastCampaignArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -64,6 +66,8 @@ const TABS: TabConfig[] = [
   { id: "vattax",      label: "NBR VAT & Tax",       Icon: Calculator,   color: "text-emerald-400"},
   { id: "photo",       label: "Product Studio",      Icon: Camera,       color: "text-cyan-400"   },
   { id: "inventory",   label: "Inventory & ROP",     Icon: Boxes,        color: "text-amber-400"  },
+  { id: "dubbing",     label: "Voice Dubbing",       Icon: Radio,        color: "text-purple-400" },
+  { id: "broadcast",   label: "Broadcast Hub",       Icon: SendHorizontal, color: "text-emerald-400"},
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -208,6 +212,8 @@ export function ArtifactPanel({
   tabsWithContent.add("vattax");
   tabsWithContent.add("photo");
   tabsWithContent.add("inventory");
+  tabsWithContent.add("dubbing");
+  tabsWithContent.add("broadcast");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -528,6 +534,18 @@ export function ArtifactPanel({
         {mounted.has("inventory") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "inventory" ? "block" : "hidden"}`}>
             <SupplyChainArtifact />
+          </div>
+        )}
+
+        {mounted.has("dubbing") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "dubbing" ? "block" : "hidden"}`}>
+            <VoiceDubbingArtifact />
+          </div>
+        )}
+
+        {mounted.has("broadcast") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "broadcast" ? "block" : "hidden"}`}>
+            <BroadcastCampaignArtifact />
           </div>
         )}
 
