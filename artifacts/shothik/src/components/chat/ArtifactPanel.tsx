@@ -16,6 +16,7 @@ import { CommerceActionCard } from "@/components/chat/CommerceActionCard";
 import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 import { FCommerceBlueprints } from "@/components/commerce/FCommerceBlueprints";
 import { CommunityArtifact } from "@/components/chat/artifacts/CommunityArtifact";
+import { MultiAgentSwarmFlow } from "@/components/chat/artifacts/MultiAgentSwarmFlow";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -345,7 +346,7 @@ export function ArtifactPanel({
 
         {mounted.has("swarm") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "swarm" ? "block" : "hidden"}`}>
-            <ParallelAgentSpace isOpen={true} onClose={onClose} />
+            <MultiAgentSwarmFlow onPopulateTab={(tab) => handleTabChange(tab)} />
           </div>
         )}
 
