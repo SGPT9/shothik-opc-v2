@@ -26,12 +26,13 @@ import { ModelArenaArtifact } from "@/components/chat/artifacts/ModelArenaArtifa
 import { TwinArtifact } from "@/components/chat/artifacts/TwinArtifact";
 import { LeadScraperArtifact } from "@/components/chat/artifacts/LeadScraperArtifact";
 import { SeoContentArtifact } from "@/components/chat/artifacts/SeoContentArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target } from "lucide-react";
+import { ChatbotFlowArtifact } from "@/components/chat/artifacts/ChatbotFlowArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -54,6 +55,7 @@ const TABS: TabConfig[] = [
   { id: "twin",        label: "Twin Founder",        Icon: Bot,          color: "text-violet-400" },
   { id: "leads",       label: "B2B Leads",           Icon: Target,       color: "text-teal-400"   },
   { id: "seo",         label: "SEO & SERP",          Icon: Globe,        color: "text-blue-400"   },
+  { id: "flows",       label: "Chatbot Flows",       Icon: GitFork,      color: "text-emerald-400"},
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -193,6 +195,7 @@ export function ArtifactPanel({
   tabsWithContent.add("twin");
   tabsWithContent.add("leads");
   tabsWithContent.add("seo");
+  tabsWithContent.add("flows");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -483,6 +486,12 @@ export function ArtifactPanel({
         {mounted.has("seo") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "seo" ? "block" : "hidden"}`}>
             <SeoContentArtifact />
+          </div>
+        )}
+
+        {mounted.has("flows") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "flows" ? "block" : "hidden"}`}>
+            <ChatbotFlowArtifact />
           </div>
         )}
 
