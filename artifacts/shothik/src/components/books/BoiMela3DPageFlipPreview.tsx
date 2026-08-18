@@ -123,6 +123,28 @@ export function BoiMela3DPageFlipPreview({
     }
   };
 
+  const [bookTouchStart, setBookTouchStart] = useState<{ x: number; y: number } | null>(null);
+
+  const handleBookTouchStart = (e: React.TouchEvent) => {
+    setBookTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
+  };
+
+  const handleBookTouchEnd = (e: React.TouchEvent) => {
+    if (!bookTouchStart) return;
+    const deltaX = e.changedTouches[0].clientX - bookTouchStart.x;
+    const deltaY = e.changedTouches[0].clientY - bookTouchStart.y;
+    if (Math.abs(deltaX) > 40 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      if (deltaX < 0) {
+        // Swiped Left ➔ Flip forward
+        handleNextPage();
+      } else {
+        // Swiped Right ➔ Flip backward
+        handlePrevPage();
+      }
+    }
+    setBookTouchStart(null);
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -258,7 +280,9 @@ export function BoiMela3DPageFlipPreview({
 
             {/* 3D 6x9 (Aspect Ratio Locked) Book Canvas */}
             <div 
-              className={`relative w-80 h-[480px] rounded-r-2xl rounded-l-sm shadow-2xl transition-all duration-300 transform-style-3d border border-white/20 overflow-hidden flex flex-col justify-between ${
+              onTouchStart={handleBookTouchStart}
+              onTouchEnd={handleBookTouchEnd}
+              className={`relative w-80 h-[480px] rounded-r-2xl rounded-l-sm shadow-2xl transition-all duration-300 transform-style-3d border border-white/20 overflow-hidden flex flex-col justify-between select-none ${
                 isFlipping ? "scale-95 rotate-y-6 opacity-90" : "scale-100 rotate-y-0 opacity-100"
               }`}
               style={{
