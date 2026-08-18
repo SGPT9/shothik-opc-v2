@@ -6,7 +6,7 @@ export interface AuthenticatedUser {
   avatar?: string;
   role?: string;
   accountType?: string;
-  authProvider: "insforge" | "legacy";
+  authProvider: "insforge" | "legacy" | "guest";
   [key: string]: unknown;
 }
 
