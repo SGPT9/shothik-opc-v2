@@ -16,6 +16,7 @@ import { useTwinHandoffDetector } from "./hooks/useTwinHandoffDetector";
 import { ComponentErrorBoundary } from "./components/ChatErrorBoundaries";
 
 import { Composer, type ComposerAction } from "@/components/chat/Composer";
+import { cn } from "@/lib/utils";
 import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveState";
 import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
