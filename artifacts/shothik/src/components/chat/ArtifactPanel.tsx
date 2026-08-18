@@ -15,11 +15,12 @@ import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPr
 import { CommerceActionCard } from "@/components/chat/CommerceActionCard";
 import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 import { FCommerceBlueprints } from "@/components/commerce/FCommerceBlueprints";
+import { CommunityArtifact } from "@/components/chat/artifacts/CommunityArtifact";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "swarm" | "sheet" | "research" | "code" | "diagram" | "doc" | "synthesizer" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -33,6 +34,7 @@ const TABS: TabConfig[] = [
   { id: "slides",      label: "Slides",              Icon: Presentation, color: "text-indigo-400" },
   { id: "boimela",     label: "বইমেলা 3D",           Icon: Sparkles,     color: "text-rose-400"   },
   { id: "commerce",    label: "Commerce & MFS",      Icon: Truck,        color: "text-emerald-400"},
+  { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
   { id: "sheet",       label: "Sheet",               Icon: Table2,       color: "text-cyan-400"   },
@@ -160,6 +162,11 @@ export function ArtifactPanel({
   // Core work studio tabs readily accessible
   tabsWithContent.add("approvals");
   tabsWithContent.add("slides");
+  tabsWithContent.add("community");
+  tabsWithContent.add("commerce");
+  tabsWithContent.add("swarm");
+  tabsWithContent.add("boimela");
+  tabsWithContent.add("synthesizer");
   tabsWithContent.add("sheet");
   tabsWithContent.add("research");
   tabsWithContent.add("code");
@@ -387,6 +394,12 @@ export function ArtifactPanel({
               sourceRef={docSourceRef}
               isStreaming={isStreaming}
             />
+          </div>
+        )}
+
+        {mounted.has("community") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "community" ? "block" : "hidden"}`}>
+            <CommunityArtifact />
           </div>
         )}
 
