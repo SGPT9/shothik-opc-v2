@@ -29,12 +29,14 @@ import { SeoContentArtifact } from "@/components/chat/artifacts/SeoContentArtifa
 import { ChatbotFlowArtifact } from "@/components/chat/artifacts/ChatbotFlowArtifact";
 import { VideoScriptArtifact } from "@/components/chat/artifacts/VideoScriptArtifact";
 import { VatTaxArtifact } from "@/components/chat/artifacts/VatTaxArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator } from "lucide-react";
+import { ProductPhotoArtifact } from "@/components/chat/artifacts/ProductPhotoArtifact";
+import { SupplyChainArtifact } from "@/components/chat/artifacts/SupplyChainArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -60,6 +62,8 @@ const TABS: TabConfig[] = [
   { id: "flows",       label: "Chatbot Flows",       Icon: GitFork,      color: "text-emerald-400"},
   { id: "video",       label: "Video Scripts",       Icon: Clapperboard, color: "text-pink-400"   },
   { id: "vattax",      label: "NBR VAT & Tax",       Icon: Calculator,   color: "text-emerald-400"},
+  { id: "photo",       label: "Product Studio",      Icon: Camera,       color: "text-cyan-400"   },
+  { id: "inventory",   label: "Inventory & ROP",     Icon: Boxes,        color: "text-amber-400"  },
   { id: "community",   label: "Community",           Icon: Users,        color: "text-brand"      },
   { id: "swarm",       label: "Swarm Fleet",         Icon: Users,        color: "text-purple-400" },
   { id: "synthesizer", label: "Venture Synthesizer", Icon: Wand2,        color: "text-purple-400" },
@@ -202,6 +206,8 @@ export function ArtifactPanel({
   tabsWithContent.add("flows");
   tabsWithContent.add("video");
   tabsWithContent.add("vattax");
+  tabsWithContent.add("photo");
+  tabsWithContent.add("inventory");
   tabsWithContent.add("swarm");
   tabsWithContent.add("boimela");
   tabsWithContent.add("synthesizer");
@@ -510,6 +516,18 @@ export function ArtifactPanel({
         {mounted.has("vattax") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "vattax" ? "block" : "hidden"}`}>
             <VatTaxArtifact />
+          </div>
+        )}
+
+        {mounted.has("photo") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "photo" ? "block" : "hidden"}`}>
+            <ProductPhotoArtifact />
+          </div>
+        )}
+
+        {mounted.has("inventory") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "inventory" ? "block" : "hidden"}`}>
+            <SupplyChainArtifact />
           </div>
         )}
 
