@@ -115,6 +115,14 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     }
   }, [searchParams]);
 
+  // Synchronize URL conversationId updates (e.g. from sidebar clicks)
+  useEffect(() => {
+    const urlConvId = searchParams.get("conversationId");
+    if (urlConvId && urlConvId !== conversationId) {
+      switchConversation(urlConvId);
+    }
+  }, [searchParams, switchConversation, conversationId]);
+
   // ── Artifact Context Handoff Data ──
   const [slidesTopic, setSlidesTopic] = useState<string | undefined>("AI-Powered E-Commerce & Retail in Bangladesh");
   const [researchQuery, setResearchQuery] = useState<string | undefined>("Dhaka Logistics & Courier Competitor Analysis");

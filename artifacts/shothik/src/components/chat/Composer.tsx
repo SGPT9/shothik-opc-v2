@@ -542,32 +542,6 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             </div>
           )}
 
-          {/* ── Mobile Quick-Action Pill Strip ── */}
-          {textValue === "" && (
-            <div className="flex items-center gap-1.5 px-3.5 pt-2.5 pb-1 overflow-x-auto no-scrollbar select-none">
-              {[
-                { label: "📦 Track Steadfast", prompt: "Track Steadfast parcel for customer Tanveer" },
-                { label: "💸 Verify bKash", prompt: "Verify bKash TrxID BK88291029X for ৳2,450" },
-                { label: "🌙 Overnight Goal", prompt: "Run autonomous overnight merchant reconciliation" },
-                { label: "🔥 FB Live Copy", prompt: "Write viral Banglish Facebook Live selling script" },
-                { label: "🌐 Deep Research", prompt: "Deep research on Bangladesh F-Commerce courier trends" },
-              ].map((pill, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => {
-                    if (onChangeProp) onChangeProp(pill.prompt);
-                    else setLocalValue(pill.prompt);
-                    if (textareaRef.current) textareaRef.current.focus();
-                  }}
-                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground whitespace-nowrap border border-border/50 transition cursor-pointer"
-                >
-                  <span>{pill.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* ── Context Chips (if any) ── */}
           {contextChips.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-1 border-b border-border/30">
@@ -907,20 +881,6 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                           <span className="text-[10px] text-muted-foreground truncate block">Fullstack engineering & sandbox runner</span>
                         </div>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onVoiceOrbClick) onVoiceOrbClick();
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Realtime Voice Mode</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Conversational voice orb with low-latency speech</span>
-                        </div>
-                      </button>
                     </div>
                   </div>
                 )}
@@ -1130,19 +1090,6 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             {errorMessage}
           </div>
         )}
-
-        {/* DeepSeek Harness Live Telemetry Ribbon */}
-        <div className="max-w-3xl mx-auto mt-2 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10px] font-mono text-zinc-500 select-none">
-          <span>1 turns · 1 steps</span>
-          <span>|</span>
-          <span>LLM 1.2s</span>
-          <span>|</span>
-          <span>TTFT avg 480ms · 124 tok/s</span>
-          <span>|</span>
-          <span className="text-emerald-500/90 font-semibold">Cache hit 85%</span>
-          <span>|</span>
-          <span>Input 4.8k tok · Output 320 tok</span>
-        </div>
 
         {footer && <p className="text-center text-[10px] text-muted-foreground/70 mt-1">{footer}</p>}
       </div>

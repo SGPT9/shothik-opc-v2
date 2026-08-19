@@ -5,6 +5,7 @@ import {
   Presentation,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Download,
   Maximize2,
   Sparkles,
@@ -603,112 +604,77 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
           </div>
         </div>
 
-        {/* Action Controls */}
+        {/* Consolidated Action Controls */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            type="button"
-            onClick={handleAddSlide}
-            className="flex items-center gap-1 px-2 py-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 text-[11px] font-medium transition cursor-pointer"
-          >
-            <span>+ Slide</span>
-          </button>
-
-          {slideList.length > 1 && (
-            <button
-              type="button"
-              onClick={handleDeleteCurrentSlide}
-              className="p-1 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-red-500/20 hover:border-red-500/30 text-zinc-700 dark:text-zinc-300 hover:text-red-400 transition cursor-pointer"
+          {/* Theme Dropdown */}
+          <div className="relative flex items-center">
+            <select
+              value={activeTemplate}
+              onChange={(e) => setActiveTemplate(e.target.value)}
+              className="h-7 pl-2 pr-6 rounded-lg text-[10px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none"
+              aria-label="Select slide theme"
             >
-              <span className="text-[11px]">🗑️</span>
-            </button>
-          )}
+              {TEMPLATES.map((tpl) => (
+                <option key={tpl.id} value={tpl.id}>
+                  {tpl.icon} {tpl.label}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="h-3 w-3 text-muted-foreground absolute right-1.5 pointer-events-none" />
+          </div>
 
           <button
             type="button"
             onClick={handleSpeakCurrentSlide}
             className={cn(
-              "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-medium transition cursor-pointer",
+              "flex items-center gap-1 px-2.5 py-1 rounded-lg border text-[11px] font-medium transition cursor-pointer",
               isSpeaking
                 ? "bg-amber-500/20 border-amber-500/40 text-amber-400 animate-pulse"
-                : "bg-zinc-100 dark:bg-white/[0.04] border-zinc-200 dark:border-white/[0.08] text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-white/[0.08]"
+                : "bg-muted/40 border-border/50 text-foreground hover:bg-muted"
             )}
+            title="Read aloud speaker notes"
           >
-            <span>{isSpeaking ? "⏹️ Stop" : "🔊 Narrate"}</span>
+            <span>{isSpeaking ? "⏹️" : "🔊"}</span>
+            <span className="hidden sm:inline">{isSpeaking ? "Stop" : "Narrate"}</span>
           </button>
 
           <button
             type="button"
             onClick={() => window.dispatchEvent(new CustomEvent("shothik_toggle_vtuber"))}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-purple-500/15 border border-purple-500/30 hover:bg-purple-500/25 text-purple-600 dark:text-purple-300 text-[11px] font-medium transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-[11px] shadow-sm shadow-emerald-500/20 transition cursor-pointer"
+            title="Launch Fullscreen Presenter Mode"
           >
             <Play className="h-3 w-3 fill-current" />
-            <span className="hidden sm:inline">Present</span>
+            <span>Present</span>
           </button>
 
+          {/* Quick Actions (Add Slide, Fullscreen, Download) */}
           <button
             type="button"
-            onClick={() => setIsFullscreen(!isFullscreen)}
-            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
-            title="Toggle Fullscreen Stage"
+            onClick={handleAddSlide}
+            className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg border border-border/50 bg-muted/40 hover:bg-muted text-foreground text-[11px] font-medium transition cursor-pointer"
+            title="Add a new slide"
           >
-            <Maximize2 className="h-3 w-3" />
+            <span>+ Slide</span>
           </button>
 
           <button
             type="button"
             onClick={handleExportHTML}
-            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            className="p-1.5 rounded-lg border border-border/50 bg-muted/40 hover:bg-muted text-foreground transition cursor-pointer"
+            title="Download Standalone HTML Presentation"
           >
-            <Download className="h-3 w-3" />
+            <Download className="h-3.5 w-3.5" />
           </button>
 
           <button
             type="button"
-            onClick={handlePrint}
-            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="p-1.5 rounded-lg border border-border/50 bg-muted/40 hover:bg-muted text-foreground transition cursor-pointer"
+            title="Toggle Fullscreen"
           >
-            <Printer className="h-3 w-3" />
+            <Maximize2 className="h-3.5 w-3.5" />
           </button>
-
-          <button
-            type="button"
-            onClick={handleCopyMarkdown}
-            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
-          >
-            {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-          </button>
-        </div>
-      </div>
-
-      {/* ── Pipeline Steps Bar ── */}
-      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] bg-zinc-100/70 dark:bg-black/20 px-3.5 py-1 text-[10px] font-mono text-zinc-500 shrink-0">
-        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-          {PIPELINE_STEPS.map((step, idx) => (
-            <div key={idx} className="flex items-center gap-1.5">
-              <CheckCircle2 className="h-3 w-3 text-emerald-500" />
-              <span className="font-semibold text-zinc-700 dark:text-zinc-300">{step}</span>
-              {idx < PIPELINE_STEPS.length - 1 && <span className="text-zinc-400 dark:text-zinc-600">→</span>}
-            </div>
-          ))}
-        </div>
-
-        {/* Template Selector */}
-        <div className="flex items-center gap-1 shrink-0 ml-2">
-          <Palette className="h-3 w-3 text-zinc-400" />
-          {TEMPLATES.map((tpl) => (
-            <button
-              key={tpl.id}
-              onClick={() => setActiveTemplate(tpl.id)}
-              className={cn(
-                "px-2 py-0.5 rounded text-[10px] font-medium transition cursor-pointer",
-                activeTemplate === tpl.id
-                  ? "bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/40"
-                  : "text-zinc-400 hover:text-zinc-200"
-              )}
-            >
-              {tpl.icon} {tpl.label}
-            </button>
-          ))}
         </div>
       </div>
 
