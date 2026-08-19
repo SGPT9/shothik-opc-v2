@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { Moon, CheckCircle2, AlertTriangle, Truck, DollarSign, FileText, Send, Sparkles, RefreshCw, ShieldCheck } from "lucide-react";
-import { OvernightMerchantGoalEngine, OvernightRoutineCheckpoint } from "@/lib/agents/overnight-merchant-goal";
+import { OvernightMerchantGoalEngine, OvernightGoalSession } from "@/lib/agents/overnight-merchant-goal";
 
 export function OvernightReconciliationArtifact() {
   const [isRunning, setIsRunning] = useState(false);
-  const [routineResult, setRoutineResult] = useState<OvernightRoutineCheckpoint | null>(null);
+  const [routineResult, setRoutineResult] = useState<OvernightGoalSession | null>(null);
 
   const handleRunOvernightRoutine = async () => {
     setIsRunning(true);
-    const engine = new OvernightMerchantGoalEngine();
-    const result = await engine.executeOvernightRoutine("MERCH-DHAKA-992");
+    const engine = new OvernightMerchantGoalEngine("MERCH-DHAKA-992");
+    const result = await engine.executeOvernightGoal();
     setRoutineResult(result);
     setIsRunning(false);
   };
@@ -105,7 +105,7 @@ export function OvernightReconciliationArtifact() {
               </span>
             </div>
             <span className="text-[11px] text-zinc-400 font-mono">
-              Timestamp: {new Date(routineResult.timestamp).toLocaleTimeString()}
+              Timestamp: {new Date(routineResult.createdAt).toLocaleTimeString()}
             </span>
           </div>
 
@@ -115,7 +115,7 @@ export function OvernightReconciliationArtifact() {
               Founder Executive Morning Briefing (WhatsApp Preview)
             </div>
             <pre className="p-3 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-emerald-300 whitespace-pre-wrap leading-relaxed">
-              {routineResult.morningBriefing}
+              {routineResult.executiveSummary}
             </pre>
           </div>
 
