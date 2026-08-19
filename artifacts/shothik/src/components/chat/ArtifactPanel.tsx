@@ -37,12 +37,13 @@ import { DisputeResolutionArtifact } from "@/components/chat/artifacts/DisputeRe
 import { PriceWatcherArtifact } from "@/components/chat/artifacts/PriceWatcherArtifact";
 import { OvernightReconciliationArtifact } from "@/components/chat/artifacts/OvernightReconciliationArtifact";
 import { WebGpuEngineArtifact } from "@/components/chat/artifacts/WebGpuEngineArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap } from "lucide-react";
+import { MarketingGrowthArtifact } from "@/components/chat/artifacts/MarketingGrowthArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "overnight" | "webgpu" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "overnight" | "webgpu" | "marketing" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -55,6 +56,7 @@ const TABS: TabConfig[] = [
   { id: "approvals",   label: "Approvals",           Icon: ShieldCheck,  color: "text-emerald-400"},
   { id: "overnight",   label: "Overnight Routine",   Icon: Moon,         color: "text-indigo-400" },
   { id: "webgpu",      label: "WebGPU Local AI",     Icon: Zap,          color: "text-emerald-400"},
+  { id: "marketing",   label: "Marketing & CRO",     Icon: TrendingUp,   color: "text-pink-400"   },
   { id: "slides",      label: "Slides",              Icon: Presentation, color: "text-indigo-400" },
   { id: "boimela",     label: "বইমেলা 3D",           Icon: Sparkles,     color: "text-rose-400"   },
   { id: "commerce",    label: "Commerce & MFS",      Icon: Truck,        color: "text-emerald-400"},
@@ -580,6 +582,12 @@ export function ArtifactPanel({
         {mounted.has("webgpu") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "webgpu" ? "block" : "hidden"}`}>
             <WebGpuEngineArtifact />
+          </div>
+        )}
+
+        {mounted.has("marketing") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "marketing" ? "block" : "hidden"}`}>
+            <MarketingGrowthArtifact />
           </div>
         )}
 
