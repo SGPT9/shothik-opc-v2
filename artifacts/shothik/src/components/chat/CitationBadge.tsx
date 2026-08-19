@@ -13,6 +13,31 @@ export function CitationBadge({ rawRef, onClick, className }: CitationBadgeProps
   // "User-seeks-assistance:p1-node-p1"
   // "#source:Quarterly_Update.pdf:p3"
   const cleanRef = rawRef.replace(/^#source:|^#doc:/, "");
+
+  // If numeric web citation e.g. "citation_1"
+  if (cleanRef.startsWith("citation_")) {
+    const num = cleanRef.replace("citation_", "");
+    return (
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClick?.(cleanRef);
+        }}
+        title={`View Source [${num}]`}
+        className={cn(
+          "inline-flex items-center justify-center h-4 min-w-4 px-1 mx-0.5 text-[10px] font-mono font-bold rounded-full",
+          "bg-brand/15 text-brand border border-brand/30 hover:bg-brand hover:text-white transition-all",
+          "no-underline align-super cursor-pointer shadow-2xs",
+          className
+        )}
+      >
+        {num}
+      </button>
+    );
+  }
+
   const parts = cleanRef.split(":");
   const docId = parts[0] || "Document";
   const sectionOrPage = parts[1] || "";
