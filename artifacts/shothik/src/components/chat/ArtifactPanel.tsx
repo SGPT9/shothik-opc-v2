@@ -35,12 +35,14 @@ import { VoiceDubbingArtifact } from "@/components/chat/artifacts/VoiceDubbingAr
 import { BroadcastCampaignArtifact } from "@/components/chat/artifacts/BroadcastCampaignArtifact";
 import { DisputeResolutionArtifact } from "@/components/chat/artifacts/DisputeResolutionArtifact";
 import { PriceWatcherArtifact } from "@/components/chat/artifacts/PriceWatcherArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown } from "lucide-react";
+import { OvernightReconciliationArtifact } from "@/components/chat/artifacts/OvernightReconciliationArtifact";
+import { WebGpuEngineArtifact } from "@/components/chat/artifacts/WebGpuEngineArtifact";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "overnight" | "webgpu" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 interface TabConfig {
   id: ArtifactTab;
@@ -51,6 +53,8 @@ interface TabConfig {
 
 const TABS: TabConfig[] = [
   { id: "approvals",   label: "Approvals",           Icon: ShieldCheck,  color: "text-emerald-400"},
+  { id: "overnight",   label: "Overnight Routine",   Icon: Moon,         color: "text-indigo-400" },
+  { id: "webgpu",      label: "WebGPU Local AI",     Icon: Zap,          color: "text-emerald-400"},
   { id: "slides",      label: "Slides",              Icon: Presentation, color: "text-indigo-400" },
   { id: "boimela",     label: "বইমেলা 3D",           Icon: Sparkles,     color: "text-rose-400"   },
   { id: "commerce",    label: "Commerce & MFS",      Icon: Truck,        color: "text-emerald-400"},
@@ -564,6 +568,18 @@ export function ArtifactPanel({
         {mounted.has("pricewatcher") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "pricewatcher" ? "block" : "hidden"}`}>
             <PriceWatcherArtifact />
+          </div>
+        )}
+
+        {mounted.has("overnight") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "overnight" ? "block" : "hidden"}`}>
+            <OvernightReconciliationArtifact />
+          </div>
+        )}
+
+        {mounted.has("webgpu") && (
+          <div className={`absolute inset-0 overflow-y-auto ${activeTab === "webgpu" ? "block" : "hidden"}`}>
+            <WebGpuEngineArtifact />
           </div>
         )}
 
