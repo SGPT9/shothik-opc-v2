@@ -51,6 +51,12 @@ mcpServers:
       - "artifacts/shothik/src/lib/mcp/shothik-vat-server.cjs"
     description: "Bangladesh NBR VAT Act 2012 & Income Tax Act 2023 Mushak-6.3 challan generator"
 
+  shothik-writing:
+    command: "node"
+    args:
+      - "artifacts/shothik/src/lib/mcp/shothik-writing-server.cjs"
+    description: "Nilkhet 6x9 Royal Demy book publishing, Bijoy/Unicode converters, scene beat mapping, and manuscript humanization"
+
 # ── 3. Shothik Autonomous Agent Presets (Twin AI, Merchant, Academic, Writer) ──
 presets:
   - title: "Twin AI — Autonomous Co-Founder"
