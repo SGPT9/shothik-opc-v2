@@ -1,5 +1,5 @@
 {
-  "framework": null,
+  "framework": "vite",
   "buildCommand": "pnpm --filter @workspace/shothik run build",
   "outputDirectory": "artifacts/shothik/dist/public",
   "rewrites": [
