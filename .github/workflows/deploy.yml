@@ -27,7 +27,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
       - name: TypeScript Compiler Check
         run: node artifacts/shothik/run_typecheck.cjs
@@ -93,7 +93,7 @@ jobs:
 
       - name: Install Dependencies & Build
         run: |
-          pnpm install --frozen-lockfile
+          pnpm install --no-frozen-lockfile
           pnpm --filter @workspace/shothik run build
 
       - name: Deploy to Cloudflare Pages & Workers
