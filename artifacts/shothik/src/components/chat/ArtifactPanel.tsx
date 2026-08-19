@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
@@ -251,28 +251,39 @@ export function ArtifactPanel({
         <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">Swipe down or tap close</span>
       </div>
 
-      {/* ── Tab bar ── */}
-      <div className="flex items-center shrink-0 border-b border-border/60 bg-muted/20 px-2">
-        <div className="flex items-center gap-0.5 flex-1 overflow-x-auto py-1.5 no-scrollbar">
-          {visibleTabs.map(({ id, label, Icon, color }) => {
-            const isActive = activeTab === id;
+      {/* ── Clean Single-Artifact Header & Switcher (DeepSeek Minimalist Standard) ── */}
+      <div className="flex items-center justify-between shrink-0 border-b border-border/60 bg-muted/20 px-3 py-2">
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          {(() => {
+            const currentTab = TABS.find((t) => t.id === activeTab) || TABS[4];
+            const TabIcon = currentTab.Icon;
             return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => handleTabChange(id)}
-                aria-selected={isActive}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-background text-foreground shadow-sm border border-border/60"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                }`}
-              >
-                <Icon className={`h-3.5 w-3.5 shrink-0 ${isActive ? color : ""}`} />
-                <span>{label}</span>
-              </button>
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-background border border-border/70 shadow-xs">
+                <TabIcon className={`h-3.5 w-3.5 shrink-0 ${currentTab.color}`} />
+                <span className="text-xs font-bold text-foreground truncate">{currentTab.label}</span>
+              </div>
             );
-          })}
+          })()}
+
+          {/* Clean Progressive Disclosure Dropdown */}
+          <div className="relative flex items-center">
+            <select
+              value={activeTab || "slides"}
+              onChange={(e) => handleTabChange(e.target.value as ArtifactTab)}
+              className="h-7 pl-2 pr-6 rounded-lg text-[10px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none"
+              aria-label="Switch Artifact Canvas"
+            >
+              <option value="slides">📽️ Slides</option>
+              <option value="sheet">📊 Financial Sheet</option>
+              <option value="research">🔬 Deep Research</option>
+              <option value="code">💻 Code Engine</option>
+              <option value="doc">📄 Document</option>
+              <option value="boimela">📖 বইমেলা 3D</option>
+              <option value="marketing">🚀 Marketing Studio</option>
+              <option value="commerce">📦 Commerce & MFS</option>
+            </select>
+            <ChevronDown className="h-3 w-3 text-muted-foreground absolute right-1.5 pointer-events-none" />
+          </div>
         </div>
 
         <div className="flex items-center gap-1 shrink-0 ml-1">
@@ -637,15 +648,6 @@ export function ArtifactPanel({
         />
       )}
 
-      {/* ── Context Token Budget & Status Footer ── */}
-      <div className="flex items-center justify-between border-t border-border/40 bg-muted/10 px-3 py-1.5 text-[10px] text-muted-foreground shrink-0 select-none">
-        <div className="flex items-center gap-1.5">
-          <BatteryCharging className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="font-mono">4.8k / 128k context (3.8% used)</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <span className="text-[9px] font-mono opacity-50">Press Esc to close</span>
-        </div>
       </div>
     </div>
   );
