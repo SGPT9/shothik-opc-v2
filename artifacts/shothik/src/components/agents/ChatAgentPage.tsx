@@ -162,7 +162,13 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     setIsDraggingFile(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       Array.from(e.dataTransfer.files).forEach((file) => {
-        addAttachment(file);
+        addAttachment({
+          id: `att_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          name: file.name,
+          size: file.size,
+          url: URL.createObjectURL(file),
+          type: file.type || "application/octet-stream",
+        });
       });
     }
   }, [addAttachment]);
