@@ -28,6 +28,7 @@ import {
   Brain,
   Cpu,
   RefreshCw,
+  Plus,
 } from "lucide-react";
 import {
   forwardRef,
@@ -694,7 +695,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 )}
               </button>
 
-              {/* 🧰 Tools Menu (Unified Launcher for Advanced Workflows) */}
+              {/* 🧰 Skills & Tools Menu (Unified Launcher for Advanced Workflows) */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
@@ -706,33 +707,51 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   }}
                   disabled={disabled || activeStreaming}
                   className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/70 text-xs font-semibold text-foreground/90 transition cursor-pointer"
-                  title="Open advanced multi-agent workflows"
+                  title="Open AI Skills & Workflows (+)"
                 >
-                  <Sparkles className="h-3.5 w-3.5 text-brand" />
-                  <span>Tools</span>
+                  <Plus className="h-3.5 w-3.5 text-brand" />
+                  <span>Skills</span>
                   <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
 
                 {toolsMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-72 rounded-2xl border border-border/80 bg-popover shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 text-left">
-                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
-                      Advanced Workflows
+                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-80 rounded-2xl border border-border/80 bg-popover shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 text-left">
+                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold flex items-center justify-between">
+                      <span>Active AI Skills</span>
+                      <span className="text-[9px] text-brand font-semibold">8 Skills Available</span>
                     </div>
 
-                    {/* Research Section */}
+                    {/* Automation & Browser Section */}
                     <div className="mt-1 space-y-0.5">
                       <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Research
+                        Browser & Autonomous
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          dispatchTool("browser");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Globe className="w-4 h-4 text-sky-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-foreground">Browser Agent</span>
+                            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30">BrowserOS / Gobii</span>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground truncate block">Headless web automation, tracking & scraping</span>
+                        </div>
+                      </button>
                       <button
                         type="button"
                         onClick={() => {
                           dispatchArtifact("research");
                           setToolsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Search className="w-3.5 h-3.5 text-violet-400 shrink-0" />
+                        <Search className="w-4 h-4 text-violet-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Deep Research</span>
                           <span className="text-[10px] text-muted-foreground truncate block">Multi-source web & academic intelligence</span>
@@ -744,12 +763,50 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                           dispatchTool("swarm");
                           setToolsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Zap className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                        <Zap className="w-4 h-4 text-purple-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Swarm Debate</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">3-agent adversarial debate & critique</span>
+                          <span className="font-medium text-foreground block">Swarm Fleet</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">3-agent adversarial debate & strategy</span>
+                        </div>
+                      </button>
+                    </div>
+
+                    {/* Commerce & Demographic Section */}
+                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
+                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
+                        Commerce & Taxation
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onOpenArtifact) onOpenArtifact("synthesizer");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <Truck className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-semibold text-foreground">Commerce & MFS</span>
+                            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">bKash + RouteXpress</span>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground truncate block">Steadfast / Pathao / REDX rate routing</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (onOpenArtifact) onOpenArtifact("synthesizer");
+                          setToolsMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
+                      >
+                        <FileCheck className="w-4 h-4 text-teal-400 shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <span className="font-medium text-foreground block">NBR VAT & Tax</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Mushak-6.3 statutory challans & Sec 78 rebates</span>
                         </div>
                       </button>
                     </div>
@@ -757,7 +814,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     {/* Create Section */}
                     <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
                       <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Create
+                        Create & Code
                       </div>
                       <button
                         type="button"
@@ -765,12 +822,12 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                           dispatchArtifact("slides");
                           setToolsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Presentation className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <Presentation className="w-4 h-4 text-indigo-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Slide Studio</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Investor pitch decks & visual slides</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">16:9 investor pitch deck assembly</span>
                         </div>
                       </button>
                       <button
@@ -779,12 +836,12 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                           dispatchArtifact("sheet");
                           setToolsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Table2 className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <Table2 className="w-4 h-4 text-cyan-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Financial Model</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Spreadsheet models & scenario forecasting</span>
+                          <span className="font-medium text-foreground block">Financial Sheet</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Unit economics & scenario models</span>
                         </div>
                       </button>
                       <button
@@ -793,9 +850,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                           dispatchArtifact("code");
                           setToolsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Code2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Code Engine</span>
                           <span className="text-[10px] text-muted-foreground truncate block">Fullstack engineering & sandbox runner</span>
@@ -804,80 +861,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       <button
                         type="button"
                         onClick={() => {
-                          window.location.href = "/writing-studio";
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">BoiMela 3D Studio</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">6×9 Royal Demy book formatting & 3D flip</span>
-                        </div>
-                      </button>
-                    </div>
-
-                    {/* Web & Voice Section */}
-                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
-                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Automation & Engine
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onModelChange) onModelChange("ollama-local");
-                          dispatchArtifact("code");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Cpu className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">🦙 Ollama Local Runner</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">On-device VRAM inference · Port 11434</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onModelChange) onModelChange("loop-engineering");
-                          if (onSend) onSend("Run autonomous 5-stage closed-loop engineering analysis with AST self-healing.");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">🔄 Loop Engineering</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">5-stage Perceive ➔ Act ➔ Self-Heal ➔ Consensus</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchTool("browser");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Globe className="w-3.5 h-3.5 text-sky-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Web Automation</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Browser navigation & web scraping</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
                           if (onVoiceOrbClick) onVoiceOrbClick();
                           setToolsMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs hover:bg-muted/70 transition cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
                       >
-                        <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                        <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Voice Mode</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Conversational voice orb with natural turn-taking</span>
+                          <span className="font-medium text-foreground block">Realtime Voice Mode</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Conversational voice orb with low-latency speech</span>
                         </div>
                       </button>
                     </div>
