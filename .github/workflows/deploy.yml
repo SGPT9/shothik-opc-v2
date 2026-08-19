@@ -20,10 +20,10 @@ jobs:
         with:
           version: 9
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install Dependencies
@@ -32,8 +32,8 @@ jobs:
       - name: TypeScript Compiler Check
         run: node artifacts/shothik/run_typecheck.cjs
 
-      - name: Run API Server Tests
-        run: pnpm test:api
+      - name: Run Demography & Agent Swarm Tests
+        run: pnpm --filter @workspace/shothik run test:demography
 
       - name: Build Frontend Bundle
         run: pnpm --filter @workspace/shothik run build
@@ -85,10 +85,10 @@ jobs:
         with:
           version: 9
 
-      - name: Setup Node.js 20
+      - name: Setup Node.js 22
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: 'pnpm'
 
       - name: Install Dependencies & Build
