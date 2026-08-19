@@ -542,6 +542,32 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             </div>
           )}
 
+          {/* ── Mobile Quick-Action Pill Strip ── */}
+          {textValue === "" && (
+            <div className="flex items-center gap-1.5 px-3.5 pt-2.5 pb-1 overflow-x-auto no-scrollbar select-none">
+              {[
+                { label: "📦 Track Steadfast", prompt: "Track Steadfast parcel for customer Tanveer" },
+                { label: "💸 Verify bKash", prompt: "Verify bKash TrxID BK88291029X for ৳2,450" },
+                { label: "🌙 Overnight Goal", prompt: "Run autonomous overnight merchant reconciliation" },
+                { label: "🔥 FB Live Copy", prompt: "Write viral Banglish Facebook Live selling script" },
+                { label: "🌐 Deep Research", prompt: "Deep research on Bangladesh F-Commerce courier trends" },
+              ].map((pill, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  onClick={() => {
+                    if (onChangeProp) onChangeProp(pill.prompt);
+                    else setLocalValue(pill.prompt);
+                    if (textareaRef.current) textareaRef.current.focus();
+                  }}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-muted/60 hover:bg-muted text-[11px] font-medium text-muted-foreground hover:text-foreground whitespace-nowrap border border-border/50 transition cursor-pointer"
+                >
+                  <span>{pill.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* ── Context Chips (if any) ── */}
           {contextChips.length > 0 && (
             <div className="flex flex-wrap gap-1.5 px-3.5 pt-3 pb-1 border-b border-border/30">
