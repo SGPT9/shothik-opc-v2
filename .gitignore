@@ -88,4 +88,6 @@ inkos-clone/
 inkos-repo/
 ponytail/
 *.tar.gz
+.temp/
+
 
