@@ -243,7 +243,13 @@ export function ArtifactPanel({
   const visibleTabs = TABS.filter(({ id }) => tabsWithContent.has(id));
 
   return (
-    <div className="flex flex-col h-full border-l border-border/60 bg-background w-full shrink-0 animate-in slide-in-from-right-4 duration-300">
+    <div className="fixed inset-x-0 bottom-0 top-12 z-50 md:relative md:top-0 md:inset-auto md:z-0 flex flex-col h-[calc(100vh-3rem)] md:h-full border-t md:border-t-0 md:border-l border-border/60 bg-background w-full shrink-0 rounded-t-3xl md:rounded-none shadow-2xl md:shadow-none animate-in slide-in-from-bottom-6 md:slide-in-from-right-4 duration-300">
+
+      {/* Mobile Top Grabber Bar */}
+      <div className="md:hidden flex flex-col items-center justify-center pt-2 pb-1 bg-muted/40 rounded-t-3xl border-b border-border/30">
+        <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mb-1" />
+        <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">Swipe down or tap close</span>
+      </div>
 
       {/* ── Tab bar ── */}
       <div className="flex items-center shrink-0 border-b border-border/60 bg-muted/20 px-2">
