@@ -647,8 +647,6 @@ export function ArtifactPanel({
           className="m-2 shrink-0 border-t border-slate-800"
         />
       )}
-
-      </div>
     </div>
   );
 }
