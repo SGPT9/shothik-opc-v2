@@ -52,7 +52,8 @@ import {
   Smartphone,
   X,
   ChevronUp,
-  Layers
+  Layers,
+  Paperclip
 } from "lucide-react";
 
 export interface FleetAgent {
@@ -137,6 +138,34 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   // Mobile Touch Gestures for 2GB RAM devices (Swipe Left = Canvas, Swipe Right = Chat)
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
   const [isMobileTabDrawerOpen, setIsMobileTabDrawerOpen] = useState(false);
+
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDraggingFile(true);
+    }
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDraggingFile(false);
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      Array.from(e.dataTransfer.files).forEach((file) => {
+        addAttachment(file);
+      });
+    }
+  }, [addAttachment]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setTouchStart({ x: e.touches[0].clientX, y: e.touches[0].clientY });
@@ -552,8 +581,24 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     <div
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="flex h-[calc(100vh-4rem)] w-full overflow-hidden bg-background"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className="relative flex h-[calc(100vh-4rem)] w-full overflow-hidden bg-background"
     >
+      {/* ── Global Multimodal Drag & Drop Overlay ── */}
+      {isDraggingFile && (
+        <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-md border-2 border-dashed border-emerald-500/60 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
+          <div className="p-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex flex-col items-center gap-3 shadow-2xl">
+            <Paperclip className="w-8 h-8 animate-bounce" />
+            <div className="text-center">
+              <div className="text-sm font-semibold text-foreground">Drop files to attach to Shothik AI</div>
+              <div className="text-xs text-muted-foreground">Images, PDFs, spreadsheets, or code files</div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Workspace Shell */}
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
         {/* ── Top Workspace Bar: ChatGPT-Style Agent Switcher & Work Mode Toggle ── */}

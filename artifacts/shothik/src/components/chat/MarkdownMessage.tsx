@@ -40,6 +40,7 @@ export function MarkdownMessage({
   const [runningCode, setRunningCode] = useState<string | null>(null);
   const [consoleLogs, setConsoleLogs] = useState<Record<string, string>>({});
   const [openConsole, setOpenConsole] = useState<Record<string, boolean>>({});
+  const [codePreviewMap, setCodePreviewMap] = useState<Record<string, boolean>>({});
   const [activeLens, setActiveLens] = useState<"executive" | "research" | "action">("executive");
 
   // Preprocess epistemic tags, clean think tags, and convert citations to interactive badges
@@ -255,6 +256,9 @@ export function MarkdownMessage({
             const logs = consoleLogs[codeId];
             const isConsoleOpen = openConsole[codeId] ?? false;
 
+            const isPreviewable = ["html", "svg", "xml", "jsx", "tsx"].includes(lang.toLowerCase());
+            const isPreviewOpen = codePreviewMap[codeId] ?? false;
+
             return (
               <div className="space-y-0">
                 {/* Code Block Header Toolbar */}
@@ -263,7 +267,30 @@ export function MarkdownMessage({
                     <span className="rounded bg-white/[0.08] border border-white/[0.12] px-2 py-0.5 font-semibold text-zinc-200 uppercase text-[10px]">
                       {lang}
                     </span>
-                    <span className="text-[10px] text-zinc-500 font-sans">REPL Sandbox</span>
+                    {isPreviewable && (
+                      <div className="inline-flex rounded-lg bg-black/40 p-0.5 border border-white/[0.08]">
+                        <button
+                          type="button"
+                          onClick={() => setCodePreviewMap((prev) => ({ ...prev, [codeId]: false }))}
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-[10px] font-sans font-medium transition cursor-pointer",
+                            !isPreviewOpen ? "bg-white/[0.15] text-white font-semibold shadow-xs" : "text-zinc-400 hover:text-zinc-200"
+                          )}
+                        >
+                          Code
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCodePreviewMap((prev) => ({ ...prev, [codeId]: true }))}
+                          className={cn(
+                            "px-2 py-0.5 rounded-md text-[10px] font-sans font-medium transition cursor-pointer flex items-center gap-1",
+                            isPreviewOpen ? "bg-emerald-500/20 text-emerald-300 font-semibold shadow-xs border border-emerald-500/30" : "text-zinc-400 hover:text-zinc-200"
+                          )}
+                        >
+                          <span>👁️ Live Preview</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center space-x-1.5">
@@ -303,13 +330,28 @@ export function MarkdownMessage({
                   </div>
                 </div>
 
-                {/* Code Body */}
-                <div className="p-3.5 overflow-x-auto text-[11px] leading-relaxed text-zinc-200 bg-zinc-950 dark:bg-black/60 font-mono custom-scrollbar">
-                  <code className={cn("block font-mono", codeClassName)} {...props}>
-                    {children}
-                  </code>
-                </div>
-
+                {/* Code Body or Live Preview Iframe */}
+                {isPreviewOpen ? (
+                  <div className="p-3 bg-white dark:bg-zinc-900 border-t border-border/40 rounded-b-xl overflow-hidden min-h-[160px] flex items-center justify-center">
+                    {lang.toLowerCase() === "svg" ? (
+                      <div dangerouslySetInnerHTML={{ __html: text }} className="max-w-full max-h-64 flex items-center justify-center p-2" />
+                    ) : (
+                      <iframe
+                        title="Sandboxed HTML Preview"
+                        srcDoc={`<!DOCTYPE html><html><head><meta charset="utf-8"/><style>body{font-family:system-ui,-apple-system,sans-serif;padding:12px;margin:0;color:#222;background:#fff;}</style></head><body>${text}</body></html>`}
+                        sandbox="allow-scripts"
+                        className="w-full h-48 border-0 rounded-lg bg-white"
+                      />
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-3.5 overflow-x-auto text-[11px] leading-relaxed text-zinc-200 bg-zinc-950 dark:bg-black/60 font-mono custom-scrollbar">
+                    <code className={cn("block font-mono", codeClassName)} {...props}>
+                      {children}
+                    </code>
+                  </div>
+                )}
+                
                 {/* Console Output Drawer */}
                 {logs && (
                   <div className="border-t border-zinc-800 dark:border-white/[0.08] bg-black/80 font-mono text-[11px]">

@@ -619,6 +619,29 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             </div>
           )}
 
+          {/* ── Live Audio Dictation Waveform Visualizer ── */}
+          {isListening && (
+            <div className="flex items-center justify-between px-4 py-2 bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-400 text-xs font-mono rounded-t-2xl animate-in fade-in">
+              <div className="flex items-center gap-2">
+                <Mic className="w-3.5 h-3.5 animate-pulse text-emerald-400" />
+                <span className="font-semibold">{voiceLang === "bn-BD" ? "কথা শুনছি (বাংলা)..." : "Listening (English)..."}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span className="w-1 h-3 bg-emerald-400 rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="w-1 h-5 bg-emerald-400 rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:300ms]" />
+                <span className="w-1 h-4 bg-emerald-400 rounded-full animate-bounce [animation-delay:450ms]" />
+                <button
+                  type="button"
+                  onClick={stopListening}
+                  className="ml-2 px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-semibold transition cursor-pointer"
+                >
+                  Done
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* ── Textarea Input Box ── */}
           <div className="px-3.5 pt-3 pb-2">
             <textarea
