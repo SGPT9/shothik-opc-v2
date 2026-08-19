@@ -1,6 +1,7 @@
 
 
 import { cn } from "@/lib/utils";
+import { DeepSeekCheckpointNode } from "@/components/chat/DeepSeekCheckpointNode";
 
 export interface MessageBubbleProps {
   message: string;
@@ -18,6 +19,11 @@ export function MessageBubble({
   children,
 }: MessageBubbleProps) {
   const isSent = variant === "sent";
+
+  // Check for DeepSeek <compacted-summary> tags
+  if (message && message.includes("<compacted-summary>")) {
+    return <DeepSeekCheckpointNode content={message} className={className} />;
+  }
 
   const groupedRadius = {
     first: isSent
