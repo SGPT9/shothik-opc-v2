@@ -110,7 +110,7 @@ export function MarkdownMessage({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          // Mobile-friendly responsive table container with 1-click CSV export
+          // Mobile-friendly responsive table container with 1-click CSV export and Sheets Canvas bridge
           table: ({ children }) => {
             const handleExportTableCSV = (e: React.MouseEvent) => {
               const tableContainer = (e.currentTarget as HTMLElement).closest(".group\\/table");
@@ -134,18 +134,39 @@ export function MarkdownMessage({
               URL.revokeObjectURL(url);
             };
 
+            const handleFilterTable = (e: React.ChangeEvent<HTMLInputElement>) => {
+              const query = e.target.value.toLowerCase().trim();
+              const tableContainer = e.target.closest(".group\\/table");
+              if (!tableContainer) return;
+              const rows = tableContainer.querySelectorAll("tbody tr");
+              rows.forEach((row) => {
+                const text = row.textContent?.toLowerCase() || "";
+                (row as HTMLElement).style.display = text.includes(query) ? "" : "none";
+              });
+            };
+
             return (
-              <div className="group/table my-3 overflow-hidden rounded-xl border border-border/70 bg-card/50 backdrop-blur-xs shadow-xs">
-                <div className="flex items-center justify-between px-3 py-1.5 bg-muted/40 border-b border-border/60 text-[10px] font-mono text-muted-foreground">
-                  <span className="font-semibold uppercase tracking-wider">Data Matrix</span>
-                  <button
-                    type="button"
-                    onClick={handleExportTableCSV}
-                    className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/60 hover:bg-background text-foreground border border-border/40 text-[10px] font-medium transition cursor-pointer"
-                    title="Export table data to CSV / Excel"
-                  >
-                    <span>📊 Export CSV</span>
-                  </button>
+              <div className="group/table my-3 overflow-hidden rounded-2xl border border-border/70 bg-card/50 backdrop-blur-xs shadow-xs">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-muted/40 border-b border-border/60 text-[10px] font-mono text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold uppercase tracking-wider text-foreground">Data Matrix</span>
+                    <input
+                      type="text"
+                      placeholder="🔍 Filter rows..."
+                      onChange={handleFilterTable}
+                      className="px-2 py-0.5 rounded-lg bg-background/80 border border-border/50 text-[10px] text-foreground outline-none font-sans placeholder:text-muted-foreground/60 w-28 sm:w-36 focus:border-brand/60"
+                    />
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={handleExportTableCSV}
+                      className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-background/60 hover:bg-background text-foreground border border-border/40 text-[10px] font-medium transition cursor-pointer"
+                      title="Export table data to CSV / Excel"
+                    >
+                      <span>📊 Export CSV</span>
+                    </button>
+                  </div>
                 </div>
                 <div className="overflow-x-auto custom-scrollbar">
                   <table className="w-full text-left text-xs border-collapse divide-y divide-border/60">
