@@ -1,13 +1,16 @@
 
 
+import React from "react";
 import { cn } from "@/lib/utils";
 import { DeepSeekCheckpointNode } from "@/components/chat/DeepSeekCheckpointNode";
+import { DeepSeekTraceNode } from "@/components/chat/DeepSeekTraceNode";
 
 export interface MessageBubbleProps {
   message: string;
   variant?: "sent" | "received";
   grouped?: "first" | "middle" | "last" | "none";
   className?: string;
+  imageUrl?: string;
   children?: React.ReactNode;
 }
 
@@ -16,6 +19,7 @@ export function MessageBubble({
   variant = "received",
   grouped = "none",
   className,
+  imageUrl,
   children,
 }: MessageBubbleProps) {
   const isSent = variant === "sent";
@@ -23,6 +27,29 @@ export function MessageBubble({
   // Check for DeepSeek <compacted-summary> tags
   if (message && message.includes("<compacted-summary>")) {
     return <DeepSeekCheckpointNode content={message} className={className} />;
+  }
+
+  // Check for DeepSeek <context-injection> tags
+  if (message && message.includes("<context-injection>")) {
+    const sourceMatch = message.match(/source="([^"]+)"/i);
+    return (
+      <DeepSeekTraceNode
+        type="context_injection"
+        source={sourceMatch ? sourceMatch[1] : "@deepseek-ai/dsh-system-prompt"}
+        className={className}
+      />
+    );
+  }
+
+  // Check for DeepSeek <skill-catalog> tags
+  if (message && message.includes("<skill-catalog>")) {
+    return <DeepSeekTraceNode type="skill_catalog" className={className} />;
+  }
+
+  // Check for DeepSeek <think> tags
+  if (message && message.includes("<think>")) {
+    const cleanThink = message.replace(/<think>/gi, "").replace(/<\/think>/gi, "").trim();
+    return <DeepSeekTraceNode type="think" content={cleanThink} durationSeconds={23} className={className} />;
   }
 
   const groupedRadius = {
@@ -50,6 +77,11 @@ export function MessageBubble({
         className,
       )}
     >
+      {imageUrl && (
+        <div className="mb-2 overflow-hidden rounded-xl border border-white/10 max-w-[240px]">
+          <img src={imageUrl} alt="Attached screenshot" className="w-full h-auto object-cover max-h-[160px]" />
+        </div>
+      )}
       {children || <p className="whitespace-pre-wrap">{message}</p>}
     </div>
   );

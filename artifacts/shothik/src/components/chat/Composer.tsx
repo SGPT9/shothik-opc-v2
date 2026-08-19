@@ -1082,6 +1082,19 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           </div>
         )}
 
+        {/* DeepSeek Harness Live Telemetry Ribbon */}
+        <div className="max-w-3xl mx-auto mt-2 flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-[10px] font-mono text-zinc-500 select-none">
+          <span>1 turns · 1 steps</span>
+          <span>|</span>
+          <span>LLM 1.2s</span>
+          <span>|</span>
+          <span>TTFT avg 480ms · 124 tok/s</span>
+          <span>|</span>
+          <span className="text-emerald-500/90 font-semibold">Cache hit 85%</span>
+          <span>|</span>
+          <span>Input 4.8k tok · Output 320 tok</span>
+        </div>
+
         {footer && <p className="text-center text-[10px] text-muted-foreground/70 mt-1">{footer}</p>}
       </div>
     );
