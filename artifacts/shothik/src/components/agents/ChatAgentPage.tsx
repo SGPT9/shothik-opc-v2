@@ -27,6 +27,8 @@ import { ChatGPTVoiceOrbModal } from "@/components/voice/ChatGPTVoiceOrbModal";
 import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal";
+import { ShareArtifactModal } from "@/components/chat/ShareArtifactModal";
+import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
 import { getStoredChatSessions } from "@/lib/chat-sessions-store";
@@ -53,7 +55,8 @@ import {
   X,
   ChevronUp,
   Layers,
-  Paperclip
+  Paperclip,
+  Share2
 } from "lucide-react";
 
 export interface FleetAgent {
@@ -129,6 +132,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [persona, setPersona] = useState<ChatPersona>("cofounder");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("core");
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
@@ -738,6 +742,19 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </div>
             )}
 
+            {/* 🔗 Public 1-Click Viral Share Button */}
+            {messages.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition cursor-pointer shadow-xs"
+                title="Share public link to this workspace (WhatsApp / LinkedIn)"
+              >
+                <Share2 className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+            )}
+
             {/* Keyboard Shortcuts Help Button */}
             <button
               type="button"
@@ -1117,6 +1134,21 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             </div>
           </div>
         )}
+
+        {/* ── Modals & Overlays ── */}
+        <ShareArtifactModal
+          open={isShareModalOpen}
+          onOpenChange={setIsShareModalOpen}
+          title={activeConversation?.title || "Shothik Workspace"}
+          artifactType={activeTab}
+        />
+
+        <KeyboardShortcutsModal
+          open={isShortcutsOpen}
+          onOpenChange={setIsShortcutsOpen}
+        />
+
+        <PwaInstallBanner />
       </div>
     </div>
   );

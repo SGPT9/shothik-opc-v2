@@ -1,0 +1,19 @@
+{
+  "name": "Shothik AI — Autonomous Co-Founder for South Asia",
+  "short_name": "Shothik AI",
+  "description": "The All-in-One Autonomous AI Co-Founder for South Asian Merchants, Creators & Enterprise. Features bKash PGW, Steadfast Courier API, and DeepSeek Hybrid MoE.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#09090b",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"]
+}
