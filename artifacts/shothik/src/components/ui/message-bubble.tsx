@@ -46,11 +46,26 @@ export function MessageBubble({
     return <DeepSeekTraceNode type="skill_catalog" className={className} />;
   }
 
-  // Check for DeepSeek <think> tags
+  // Handle compound DeepSeek <think> tags alongside response body
+  let thinkContent: string | null = null;
+  let cleanMessage = message;
+
   if (message && message.includes("<think>")) {
-    const cleanThink = message.replace(/<think>/gi, "").replace(/<\/think>/gi, "").trim();
-    return <DeepSeekTraceNode type="think" content={cleanThink} durationSeconds={23} className={className} />;
+    const thinkMatch = message.match(/<think>([\s\S]*?)<\/think>/i);
+    if (thinkMatch) {
+      thinkContent = thinkMatch[1].trim();
+      cleanMessage = message.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+    } else if (message.startsWith("<think>")) {
+      // In-flight streaming thinking state
+      thinkContent = message.replace(/<think>/i, "").trim();
+      cleanMessage = "";
+    }
   }
+
+  // Calculate thinking duration estimate based on word count
+  const estimatedThinkSec = thinkContent
+    ? Math.max(1, Math.round(thinkContent.split(/\s+/).filter(Boolean).length / 30))
+    : 12;
 
   const groupedRadius = {
     first: isSent
@@ -66,23 +81,35 @@ export function MessageBubble({
   };
 
   return (
-    <div
-      className={cn(
-        "relative max-w-[70%] px-5 py-2 leading-6 break-words",
-        groupedRadius[grouped],
-        grouped === "first" || grouped === "middle" ? "mb-1.5" : "",
-        isSent
-          ? "self-end bg-primary text-primary-foreground"
-          : "self-start bg-muted text-foreground",
-        className,
+    <div className="flex flex-col gap-2 max-w-[85%] self-start w-full">
+      {thinkContent && (
+        <DeepSeekTraceNode
+          type="think"
+          content={thinkContent}
+          durationSeconds={estimatedThinkSec}
+          className="mb-1 w-full"
+        />
       )}
-    >
-      {imageUrl && (
-        <div className="mb-2 overflow-hidden rounded-xl border border-white/10 max-w-[240px]">
-          <img src={imageUrl} alt="Attached screenshot" className="w-full h-auto object-cover max-h-[160px]" />
+      {cleanMessage && (
+        <div
+          className={cn(
+            "relative max-w-[85%] px-5 py-2 leading-6 break-words",
+            groupedRadius[grouped],
+            grouped === "first" || grouped === "middle" ? "mb-1.5" : "",
+            isSent
+              ? "self-end bg-primary text-primary-foreground"
+              : "self-start bg-muted text-foreground",
+            className,
+          )}
+        >
+          {imageUrl && (
+            <div className="mb-2 overflow-hidden rounded-xl border border-white/10 max-w-[240px]">
+              <img src={imageUrl} alt="Attached screenshot" className="w-full h-auto object-cover max-h-[160px]" />
+            </div>
+          )}
+          {children || <p className="whitespace-pre-wrap">{cleanMessage}</p>}
         </div>
       )}
-      {children || <p className="whitespace-pre-wrap">{message}</p>}
     </div>
   );
 }

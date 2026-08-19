@@ -42,13 +42,20 @@ export function MarkdownMessage({
   const [openConsole, setOpenConsole] = useState<Record<string, boolean>>({});
   const [activeLens, setActiveLens] = useState<"executive" | "research" | "action">("executive");
 
-  // Preprocess epistemic inline coordinate tags [[doc:key:sec]] into interactive source links
-  const processedContent = (content ?? "").replace(/\[\[doc:([^\]]+)\]\]/g, (_match, docRef) => {
-    const parts = docRef.split(":");
-    const docId = parts[0];
-    const section = parts[1] ? ` · ${parts[1]}` : "";
-    return `[📄 ${docId}${section}](#source:${docRef})`;
-  });
+  // Preprocess epistemic tags, clean think tags, and convert citations to interactive badges
+  const processedContent = (content ?? "")
+    .replace(/<think>[\s\S]*?<\/think>/gi, "")
+    .replace(/<think>/gi, "")
+    .replace(/<\/think>/gi, "")
+    .replace(/\[\[doc:([^\]]+)\]\]/g, (_match, docRef) => {
+      const parts = docRef.split(":");
+      const docId = parts[0];
+      const section = parts[1] ? ` · ${parts[1]}` : "";
+      return `[📄 ${docId}${section}](#source:${docRef})`;
+    })
+    .replace(/(?<=\s|^)\[([0-9]+)\](?=[\s,.:;!?]|$)/g, (_match, citationNum) => {
+      return `[${citationNum}](#source:citation_${citationNum})`;
+    });
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);

@@ -146,11 +146,19 @@ export function Transcript({
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState<string>("");
   const [copiedUserMsgId, setCopiedUserMsgId] = useState<string | null>(null);
+  const [copiedAssistantMsgId, setCopiedAssistantMsgId] = useState<string | null>(null);
 
   const handleCopyUserPrompt = (msgId: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedUserMsgId(msgId);
     setTimeout(() => setCopiedUserMsgId(null), 2000);
+  };
+
+  const handleCopyAssistantMessage = (message: ChatMessage) => {
+    navigator.clipboard.writeText(message.content);
+    setCopiedAssistantMsgId(message._id);
+    onCopy?.(message);
+    setTimeout(() => setCopiedAssistantMsgId(null), 2000);
   };
 
   const handleStartEdit = (msg: ChatMessage) => {
@@ -262,7 +270,23 @@ export function Transcript({
             const canRegenerate = message.role === "assistant" && message.status !== "streaming";
             const canStop = message.role === "assistant" && message.status === "streaming";
             const slashCommand = isUser ? getSlashCommandDisplayText(message.content) : null;
-            const displayContent = slashCommand ? slashCommand.body : message.content;
+            const rawContent = slashCommand ? slashCommand.body : message.content;
+
+            // Decouple embedded <think>...</think> if present in raw string
+            let extractedThinking: string | null = null;
+            let displayContent = rawContent || "";
+
+            if (!isUser && rawContent && rawContent.includes("<think>")) {
+              const thinkMatch = rawContent.match(/<think>([\s\S]*?)<\/think>/i);
+              if (thinkMatch) {
+                extractedThinking = thinkMatch[1].trim();
+                displayContent = rawContent.replace(/<think>[\s\S]*?<\/think>/i, "").trim();
+              } else if (rawContent.startsWith("<think>")) {
+                extractedThinking = rawContent.replace(/<think>/i, "").trim();
+                displayContent = "";
+              }
+            }
+
             const inlineError = message.metadata?.inlineError;
             const modeBadge = !isUser && message.metadata?.chatMode
               ? CHAT_MODE_BADGES[message.metadata.chatMode]
@@ -427,9 +451,9 @@ export function Transcript({
                   )}
 
                   {/* ── ThinkBox: chain-of-thought (Tier 2) ── */}
-                  {message.metadata?.thinking && (
+                  {(message.metadata?.thinking || extractedThinking) && (
                     <ThinkBox
-                      content={message.metadata.thinking}
+                      content={message.metadata?.thinking || extractedThinking || ""}
                       thinkingEnded={message.status !== "streaming"}
                     />
                   )}
@@ -694,14 +718,18 @@ export function Transcript({
 
                   {/* Follow-up action bar — minimal: Copy + Regenerate + ⋯ */}
                   {!canStop && displayContent && (
-                    <div className="flex items-center gap-1 pt-1.5 opacity-0 group-hover:opacity-100 transition-all duration-150">
+                    <div className="flex items-center gap-1 pt-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-150">
                       {/* Copy */}
                       <button
-                        onClick={() => onCopy?.(message)}
-                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition"
-                        title="Copy"
+                        onClick={() => handleCopyAssistantMessage(message)}
+                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+                        title={copiedAssistantMsgId === message._id ? "Copied to clipboard!" : "Copy"}
                       >
-                        <Copy className="h-3.5 w-3.5" />
+                        {copiedAssistantMsgId === message._id ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
                       </button>
 
                       {/* Read Aloud (TTS) */}
