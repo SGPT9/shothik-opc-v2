@@ -48,9 +48,9 @@
   --color-info: var(--info);
 
   --font-manrope: var(--font-manrope);
-  --font-geist-sans: var(--font-geist-sans, 'Outfit', 'Inter', 'Noto Sans Bengali', sans-serif);
+  --font-geist-sans: var(--font-geist-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif);
   --font-geist-mono: var(--font-geist-mono, monospace);
-  --font-sans: var(--font-geist-sans, 'Outfit', 'Inter', 'Noto Sans Bengali', sans-serif);
+  --font-sans: var(--font-geist-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif);
   --font-mono: var(--font-geist-mono, monospace);
 
   /* Brand color tokens — Cosmic Earth Tri-Color */
@@ -73,8 +73,11 @@
 :root, .light, [data-theme="light"] {
   --radius: 0.625rem;
 
-  --background: #ffffff;
+  --background: #f5f6f7;
   --foreground: #09090b;
+  
+  --glass-soft: rgba(255, 255, 255, 0.78);
+  --glass-strong: rgba(255, 255, 255, 0.96);
 
   --card: #ffffff;
   --card-foreground: #09090b;
@@ -138,8 +141,11 @@
 :root.dark,
 [data-theme="dark"],
 .dark {
-  --background: #060709;
+  --background: #0b0f17;
   --foreground: #f4f4f5;
+
+  --glass-soft: rgba(28, 30, 34, 0.78);
+  --glass-strong: rgba(28, 30, 34, 0.96);
 
   --card: #0c0d11;
   --card-foreground: #f4f4f5;

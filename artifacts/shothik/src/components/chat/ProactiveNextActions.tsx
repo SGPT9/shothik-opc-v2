@@ -62,9 +62,9 @@ export function ProactiveNextActions({
   const actions = ACTION_SETS[type] || ACTION_SETS.general;
 
   return (
-    <div className={cn("my-2.5 pt-1 space-y-1.5", className)}>
-      <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
-        <Sparkles className="h-3 w-3 text-brand" />
+    <div className={cn("my-2.5 pt-1 space-y-2", className)}>
+      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+        <Sparkles className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
         <span>Suggested Next Actions</span>
       </div>
 
@@ -74,10 +74,10 @@ export function ProactiveNextActions({
             key={act.id}
             type="button"
             onClick={() => onSelectAction?.(act.query)}
-            className="flex items-center gap-1.5 rounded-xl border border-border/60 bg-muted/20 px-3 py-1.5 text-xs text-foreground font-medium hover:bg-brand/10 hover:border-brand/40 hover:text-brand transition shadow-sm cursor-pointer select-none group"
+            className="flex items-center gap-1.5 rounded-full border border-gray-200 dark:border-[#334155] bg-gray-50 dark:bg-[#151B28] px-3.5 py-1.5 text-[13px] text-gray-700 dark:text-gray-300 font-medium hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 transition-all shadow-sm cursor-pointer select-none group"
           >
             <span>{act.label}</span>
-            <ArrowRight className="h-3 w-3 text-muted-foreground group-hover:text-brand group-hover:translate-x-0.5 transition-transform" />
+            <ArrowRight className="h-3.5 w-3.5 text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 transition-transform" />
           </button>
         ))}
       </div>

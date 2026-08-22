@@ -204,6 +204,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const lastPromptRef = useRef<string>("");
 
+    const [isFocused, setIsFocused] = useState(false);
+    const hasContent = textValue.length > 0 || attachments.length > 0 || contextChips.length > 0;
+    const isExpanded = isFocused || hasContent;
+
     const recognitionRef = useRef<any>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
@@ -217,7 +221,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       const el = textareaRef.current;
       if (!el) return;
       el.style.height = "auto";
-      const maxHeight = 200;
+      const maxHeight = 144; // Approx 6 lines
       el.style.height = `${Math.min(el.scrollHeight, maxHeight)}px`;
     }, [textValue, textareaRef]);
 
@@ -489,8 +493,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "relative w-full max-w-3xl mx-auto flex flex-col rounded-3xl border transition-all duration-300 bg-white/80 dark:bg-black/75 shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-3xl focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/10 focus-within:shadow-[0_16px_50px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)]",
-            isDraggingOver ? "border-dashed border-emerald-500 bg-emerald-500/5 ring-2 ring-emerald-500/30" : "border-zinc-200 dark:border-white/[0.12]"
+            "relative w-full max-w-3xl mx-auto flex flex-col rounded-3xl border transition-all duration-300 bg-white/80 dark:bg-black/75 shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-3xl focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/10 focus-within:shadow-[0_16px_50px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)]",
+            isDraggingOver ? "border-dashed border-blue-500 bg-blue-500/5 ring-2 ring-blue-500/30" : "border-zinc-200 dark:border-white/[0.12]"
           )}
         >
           {/* Drag and Drop Active Overlay */}
@@ -595,20 +599,20 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
           {/* ── Live Audio Dictation Waveform Visualizer ── */}
           {isListening && (
-            <div className="flex items-center justify-between px-4 py-2 bg-emerald-500/10 border-b border-emerald-500/20 text-emerald-400 text-xs font-mono rounded-t-2xl animate-in fade-in">
+            <div className="flex items-center justify-between px-4 py-2 bg-blue-500/10 border-b border-blue-500/20 text-blue-500 text-xs font-mono rounded-t-2xl animate-in fade-in">
               <div className="flex items-center gap-2">
-                <Mic className="w-3.5 h-3.5 animate-pulse text-emerald-400" />
+                <Mic className="w-3.5 h-3.5 animate-pulse text-blue-500" />
                 <span className="font-semibold">{voiceLang === "bn-BD" ? "কথা শুনছি (বাংলা)..." : "Listening (English)..."}</span>
               </div>
               <div className="flex items-center gap-1">
-                <span className="w-1 h-3 bg-emerald-400 rounded-full animate-bounce [animation-delay:0ms]" />
-                <span className="w-1 h-5 bg-emerald-400 rounded-full animate-bounce [animation-delay:150ms]" />
-                <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:300ms]" />
-                <span className="w-1 h-4 bg-emerald-400 rounded-full animate-bounce [animation-delay:450ms]" />
+                <span className="w-1 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:0ms]" />
+                <span className="w-1 h-5 bg-blue-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                <span className="w-1 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                <span className="w-1 h-4 bg-blue-500 rounded-full animate-bounce [animation-delay:450ms]" />
                 <button
                   type="button"
                   onClick={stopListening}
-                  className="ml-2 px-2 py-0.5 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-[10px] font-semibold transition cursor-pointer"
+                  className="ml-2 px-2 py-0.5 rounded bg-blue-500/20 hover:bg-blue-500/30 text-blue-500 text-[10px] font-semibold transition cursor-pointer"
                 >
                   Done
                 </button>
@@ -628,17 +632,25 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 if (onChangeProp) onChangeProp(e.target.value);
                 else setLocalValue(e.target.value);
               }}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => {
+                // Slight delay to allow clicking buttons in the toolbar before it hides
+                setTimeout(() => setIsFocused(false), 200);
+              }}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               disabled={disabled || activeStreaming}
               placeholder={placeholder}
-              rows={2}
-              className="w-full bg-transparent resize-none outline-none text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/60 custom-scrollbar max-h-48"
+              rows={isExpanded ? 2 : 1}
+              className="w-full bg-transparent resize-none outline-none text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/60 custom-scrollbar max-h-36 transition-all duration-200"
             />
           </div>
 
-          {/* ── Bottom Toolbar ── */}
-          <div className="flex items-center justify-between px-3 py-2 border-t border-border/40 mt-1">
+          {/* ── Bottom Toolbar (Progressive Disclosure) ── */}
+          <div className={cn(
+            "flex items-center justify-between px-3 py-2 border-t border-border/40 mt-1 transition-all duration-300",
+            isExpanded ? "opacity-100 max-h-20" : "opacity-0 max-h-0 overflow-hidden py-0 border-transparent mt-0"
+          )}>
             {/* Left Controls: Attach + Voice Input + Tools Dropdown + Focus Selector */}
             <div className="flex items-center gap-1.5">
               {/* 📎 Attach Button & Dropdown */}
@@ -704,14 +716,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 className={cn(
                   "relative flex items-center justify-center h-8 w-8 rounded-lg transition cursor-pointer",
                   isListening
-                    ? "bg-rose-500/20 text-rose-500 border border-rose-500/40 shadow-xs ring-2 ring-rose-500/30"
+                    ? "bg-blue-500/20 text-blue-500 border border-blue-500/40 shadow-xs ring-2 ring-blue-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 {isListening ? (
                   <>
-                    <span className="absolute inset-0 rounded-lg bg-rose-500/30 animate-ping opacity-60 pointer-events-none" />
-                    <MicOff className="h-4 w-4 text-rose-500 relative z-10" />
+                    <span className="absolute inset-0 rounded-lg bg-blue-500/30 animate-ping opacity-60 pointer-events-none" />
+                    <MicOff className="h-4 w-4 text-blue-500 relative z-10" />
                   </>
                 ) : (
                   <Mic className="h-4 w-4" />

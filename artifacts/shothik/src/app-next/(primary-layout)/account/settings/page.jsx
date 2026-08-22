@@ -19,12 +19,13 @@ import { PATH_ACCOUNT } from "@/config/route";
 import { trackCreditPurchaseCompleted } from "@/lib/posthog";
 import { useTranslation, SUPPORTED_LOCALES } from "@/i18n";
 import { useSyncLocaleToConvex } from "@/i18n/useSyncLocaleToConvex";
-import { User, Wallet, Bot, BookOpen, Brain, CheckCircle2, XCircle, Globe, ArrowRight, CreditCard } from "lucide-react";
+import { User, Wallet, Bot, BookOpen, Brain, CheckCircle2, XCircle, Globe, ArrowRight, CreditCard, Sun, Moon, Monitor } from "lucide-react";
 import { Link } from "wouter";
 import { useRouter } from "@/lib/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/providers/AuthProvider";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { updateTheme } from "@/redux/slices/settings-slice";
 
 export const dynamic = "force-dynamic";
 
@@ -36,6 +37,9 @@ export default function AccountSettings() {
 
   const user = authUser || reduxUser || (reduxAccessToken ? { name: "User", email: "user@shothik.ai" } : null);
   const isAuthenticated = authIsAuthenticated || Boolean(reduxAccessToken || authUser);
+
+  const dispatch = useDispatch();
+  const theme = useSelector((state) => state.settings?.theme);
 
   const [currentTab, setCurrentTab] = useState("general");
   const [purchaseBanner, setPurchaseBanner] = useState(null);
@@ -179,30 +183,49 @@ export default function AccountSettings() {
 
             <div className="rounded-xl border border-border bg-card p-6">
               <div className="flex items-center gap-3 mb-4">
-                <Globe className="h-5 w-5 text-muted-foreground" />
+                <Monitor className="h-5 w-5 text-muted-foreground" />
                 <div>
-                  <h3 className="text-base font-semibold">{t('account.languagePreference')}</h3>
-                  <p className="text-sm text-muted-foreground">{t('account.languageDescription')}</p>
+                  <h3 className="text-base font-semibold">{t('account.themePreference', 'Theme Preference')}</h3>
+                  <p className="text-sm text-muted-foreground">{t('account.themeDescription', 'Choose how Shothik AI looks to you.')}</p>
                 </div>
               </div>
-              <div className="flex gap-3">
-                {SUPPORTED_LOCALES.map((loc) => (
-                  <button
-                    key={loc.code}
-                    onClick={() => handleLocaleChange(loc.code)}
-                    className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
-                      locale === loc.code
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-background text-foreground hover:bg-muted"
-                    }`}
-                    data-testid={`settings-lang-${loc.code}`}
-                  >
-                    {loc.nativeLabel}
-                    {locale === loc.code && (
-                      <CheckCircle2 className="h-4 w-4" />
-                    )}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={() => dispatch(updateTheme('light'))}
+                  className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+                    theme === 'light'
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                  data-testid="settings-theme-light"
+                >
+                  <Sun className="h-4 w-4" />
+                  {t('account.themeLight', 'Light')}
+                </button>
+                <button
+                  onClick={() => dispatch(updateTheme('dark'))}
+                  className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+                    theme === 'dark'
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                  data-testid="settings-theme-dark"
+                >
+                  <Moon className="h-4 w-4" />
+                  {t('account.themeDark', 'Dark')}
+                </button>
+                <button
+                  onClick={() => dispatch(updateTheme('system'))}
+                  className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+                    theme === 'system'
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background text-foreground hover:bg-muted"
+                  }`}
+                  data-testid="settings-theme-system"
+                >
+                  <Monitor className="h-4 w-4" />
+                  {t('account.themeSystem', 'System')}
+                </button>
               </div>
             </div>
 

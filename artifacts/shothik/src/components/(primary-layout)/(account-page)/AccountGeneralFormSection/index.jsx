@@ -626,40 +626,7 @@ export default function AccountGeneral({ user }) {
         </CardContent>
       </Card>
 
-      {/* Language Preference Card */}
-      <Card>
-        <CardHeader className="border-b">
-          <div className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            <h2 className="text-xl font-semibold">{t("account.languagePreference")}</h2>
-          </div>
-        </CardHeader>
-        <CardContent className="p-6">
-          <p className="text-muted-foreground mb-4 text-sm">
-            {t("account.languageDescription")}
-          </p>
-          <div className="flex gap-3">
-            <Button
-              variant={locale === "en" ? "default" : "outline"}
-              onClick={() => setLocale("en")}
-              className="min-w-[120px]"
-              data-testid="lang-en"
-            >
-              <span className="mr-2 font-bold">EN</span>
-              English
-            </Button>
-            <Button
-              variant={locale === "bn" ? "default" : "outline"}
-              onClick={() => setLocale("bn")}
-              className="min-w-[120px]"
-              data-testid="lang-bn"
-            >
-              <span className="mr-2 font-bold">বাং</span>
-              বাংলা
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+
     </div>
   );
 }

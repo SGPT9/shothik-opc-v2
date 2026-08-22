@@ -18,9 +18,9 @@ export const PerplexityRelatedQueries: React.FC<PerplexityRelatedQueriesProps> =
   if (!queries || queries.length === 0) return null;
 
   return (
-    <div className="mt-4 pt-3 border-t border-slate-800/80 space-y-2">
-      <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-400">
-        <span className="text-purple-400">💡</span>
+    <div className="mt-4 pt-3 border-t border-gray-200 dark:border-[#334155] space-y-2">
+      <div className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-gray-400">
+        <span className="text-blue-600 dark:text-blue-400">💡</span>
         <span>Related Questions</span>
       </div>
 
@@ -30,13 +30,13 @@ export const PerplexityRelatedQueries: React.FC<PerplexityRelatedQueriesProps> =
             key={idx}
             type="button"
             onClick={() => onSelectQuery(q)}
-            className="flex items-center justify-between w-full bg-slate-950/70 border border-slate-800/90 hover:border-purple-500/40 p-2.5 rounded-xl text-left text-xs text-slate-300 hover:text-white transition-all group"
+            className="flex items-center justify-between w-full bg-gray-50 dark:bg-[#151B28] border border-gray-200 dark:border-[#334155] hover:border-blue-500/50 p-2.5 rounded-xl text-left text-[13px] text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-gray-100 transition-all shadow-sm group"
           >
             <span className="flex items-center gap-2">
-              <span className="text-purple-400 font-bold">+</span>
+              <span className="text-blue-600 dark:text-blue-400 font-bold">+</span>
               <span>{q}</span>
             </span>
-            <span className="text-slate-500 group-hover:text-purple-400 font-bold transition-colors">➔</span>
+            <span className="text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 font-bold transition-colors">➔</span>
           </button>
         ))}
       </div>
