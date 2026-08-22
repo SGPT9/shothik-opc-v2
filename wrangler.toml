@@ -1,7 +1,7 @@
 name = "shothik-hermes-edge"
 main = "worker.ts"
 compatibility_date = "2026-08-01"
-compatibility_flags = ["nodejs_compat"]
+compatibility_flags = []
 
 [site]
 bucket = "./artifacts/shothik/dist"
@@ -15,6 +15,6 @@ enabled = true
 head_sampling_rate = 1
 
 # Cloudflare OS Gatekeeper & Speculative Execution Bindings
-[[kv_namespaces]]
-binding = "SPECULATIVE_GATEKEEPER_KV"
-id = "608ac410a89e470eb7d224ebeb3c9007"
+# [[kv_namespaces]]
+# binding = "SPECULATIVE_GATEKEEPER_KV"
+# id = "608ac410a89e470eb7d224ebeb3c9007"

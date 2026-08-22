@@ -13,7 +13,6 @@ interface Env {
   __STATIC_CONTENT: KVNamespace;
   ENVIRONMENT: string;
   INSFORGE_PROJECT: string;
-  SPECULATIVE_GATEKEEPER_KV: KVNamespace;
 }
 
 export default {
