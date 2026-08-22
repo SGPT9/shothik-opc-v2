@@ -41,15 +41,13 @@ ENV PORT=8080
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 hermes
 
-# Copy built artifacts and minimal dependencies
+# Copy built frontend assets and bundled API server
 COPY --from=builder --chown=hermes:nodejs /app/artifacts/shothik/dist ./artifacts/shothik/dist
 COPY --from=builder --chown=hermes:nodejs /app/artifacts/api-server/dist ./artifacts/api-server/dist
 COPY --from=builder --chown=hermes:nodejs /app/package.json ./package.json
-COPY --from=builder --chown=hermes:nodejs /app/node_modules ./node_modules
-COPY --from=builder --chown=hermes:nodejs /app/artifacts/api-server/node_modules ./artifacts/api-server/node_modules
 
 USER hermes
 
-EXPOSE 8080 5000
+EXPOSE 8080 5000 3000
 
-CMD ["node", "artifacts/api-server/dist/index.js"]
+CMD ["node", "artifacts/api-server/dist/index.mjs"]
