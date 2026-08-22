@@ -147,6 +147,15 @@ export interface ChatMessage {
       placeholder?: string;
       submitted?: boolean;
     };
+    githubAnalysis?: {
+      owner: string;
+      repo: string;
+      prompt: string;
+      status: 'loading' | 'streaming' | 'done' | 'error';
+      errorMessage?: string;
+      issuesAnalysis?: string;
+      issuesStatus?: 'loading' | 'streaming' | 'done' | 'error';
+    };
     [key: string]: any;
   };
 

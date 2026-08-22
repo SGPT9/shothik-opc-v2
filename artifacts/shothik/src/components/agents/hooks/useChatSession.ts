@@ -3,11 +3,13 @@ import { saveChatSession } from "@/lib/chat-sessions-store";
 
 export interface ChatMessage {
   id: string;
+  _id?: string;
   role: "user" | "assistant" | "system";
   content: string;
   timestamp: string;
   attachments?: string[];
   isStreaming?: boolean;
+  metadata?: Record<string, any>;
 }
 
 export function useChatSession(initialConversationId?: string) {
