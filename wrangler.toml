@@ -1,5 +1,5 @@
 name = "shothik-hermes-edge"
-main = "artifacts/api-server/src/index.ts"
+main = "worker.ts"
 compatibility_date = "2026-08-01"
 compatibility_flags = ["nodejs_compat"]
 
