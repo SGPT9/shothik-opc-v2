@@ -102,11 +102,9 @@ jobs:
           pnpm install --no-frozen-lockfile
           pnpm --filter @workspace/shothik run build
 
-      - name: Deploy to Cloudflare Pages & Workers
+      - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          preCommands: |
-            pnpm dlx wrangler pages project create shothik-hermes --production-branch main || true
-          command: pages deploy artifacts/shothik/dist --project-name=shothik-hermes
+          command: deploy
