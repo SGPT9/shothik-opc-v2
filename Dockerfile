@@ -14,6 +14,11 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY artifacts/shothik/package.json ./artifacts/shothik/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
+COPY lib/api-client-react/package.json ./lib/api-client-react/
+COPY lib/api-spec/package.json ./lib/api-spec/
+COPY lib/api-zod/package.json ./lib/api-zod/
+COPY lib/db/package.json ./lib/db/
+COPY lib/hermes/package.json ./lib/hermes/
 
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile
