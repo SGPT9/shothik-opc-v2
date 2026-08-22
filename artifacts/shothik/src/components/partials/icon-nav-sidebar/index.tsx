@@ -62,6 +62,8 @@ export default function IconNavSidebar() {
     }
     return false;
   });
+  const [isHovering, setIsHovering] = useState(false);
+  const effectiveCollapsed = isCollapsed && !isHovering;
   const [isWritingSuiteOpen, setIsWritingSuiteOpen] = useState(isWritingRoute);
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
   const [isSessionsOpen, setIsSessionsOpen] = useState(true);
@@ -132,13 +134,18 @@ export default function IconNavSidebar() {
 
   return (
     <>
-      <aside className={cn(
-        "hidden md:flex flex-col h-screen bg-zinc-50 dark:bg-black text-zinc-700 dark:text-[#e3e3e3] border-r border-zinc-200 dark:border-zinc-800/90 z-40 overflow-hidden flex-shrink-0 select-none transition-all duration-300",
-        isCollapsed ? "w-16" : "w-68"
+      {isCollapsed && isHovering && <div className="hidden md:block w-16 h-screen flex-shrink-0" />}
+      <aside 
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
+        className={cn(
+        "hidden md:flex flex-col h-screen bg-zinc-50 dark:bg-[#0b0f17] text-zinc-700 dark:text-[#e3e3e3] border-r border-zinc-200 dark:border-zinc-800/90 z-50 overflow-hidden flex-shrink-0 select-none transition-all duration-300",
+        (isCollapsed && isHovering) ? "absolute left-0 top-0 shadow-2xl w-[264px]" : 
+        effectiveCollapsed ? "w-16 relative" : "w-[264px] relative"
       )}>
         {/* ── Top Header: Logo + Collapse Toggle ── */}
-        <div className={cn("flex items-center h-14 pt-3 pb-2 flex-shrink-0", isCollapsed ? "justify-center px-2" : "justify-between px-4")}>
-          {!isCollapsed && (
+        <div className={cn("flex items-center h-14 pt-3 pb-2 flex-shrink-0", effectiveCollapsed ? "justify-center px-2" : "justify-between px-4")}>
+          {!effectiveCollapsed && (
             <Link href="/" className="flex items-center gap-2.5 no-underline">
               <img
                 src="/moscot.png"
@@ -167,12 +174,12 @@ export default function IconNavSidebar() {
             onClick={startNewChat}
             className={cn(
               "flex items-center h-10 rounded-xl bg-zinc-200/90 hover:bg-zinc-300 dark:bg-white/[0.08] dark:hover:bg-white/[0.14] text-zinc-950 dark:text-white text-sm font-bold transition-all active:scale-[0.99] cursor-pointer shadow-xs",
-              isCollapsed ? "justify-center w-full px-0" : "w-full justify-start gap-3 px-3.5"
+              effectiveCollapsed ? "justify-center w-full px-0" : "w-full justify-start gap-3 px-3.5"
             )}
             title="New Chat"
           >
             <Plus className="h-4.5 w-4.5 text-zinc-900 dark:text-zinc-100" />
-            {!isCollapsed && <span>New Chat</span>}
+            {!effectiveCollapsed && <span>New Chat</span>}
           </button>
 
           {/* ── Core Navigation: Twin, Writing Suite, Connectors, Files, Saved Reports ── */}
@@ -183,127 +190,31 @@ export default function IconNavSidebar() {
               title="Twin AI"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
-                isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
                 isActive('/twin')
                   ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
                   : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <Brain className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              {!isCollapsed && <span>Twin AI</span>}
+              {!effectiveCollapsed && <span>Twin AI</span>}
             </Link>
 
             {/* 2. Writing Suite */}
-            {!isCollapsed ? (
-              <div className="space-y-0.5">
-                <button
-                  type="button"
-                  onClick={() => setIsWritingSuiteOpen(!isWritingSuiteOpen)}
-                  className={cn(
-                    "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-semibold transition-colors cursor-pointer group",
-                    isWritingSuiteOpen || pathname.includes('/writing-studio') || pathname.includes('/paraphrase')
-                      ? "text-zinc-950 dark:text-zinc-100 bg-zinc-200/70 dark:bg-white/[0.06]"
-                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                  )}
-                >
-                  <div className="flex items-center gap-3">
-                    <PenTool className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-                    <span>Writing Suite</span>
-                  </div>
-                  {isWritingSuiteOpen ? <ChevronDown className="h-4 w-4 text-zinc-400" /> : <ChevronRight className="h-4 w-4 text-zinc-400" />}
-                </button>
-
-                {isWritingSuiteOpen && (
-                  <div className="pl-6 space-y-1 mt-1 border-l-2 border-zinc-200 dark:border-white/[0.08] ml-5">
-                    <Link
-                      href="/writing-studio"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/writing-studio') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>Writing Studio</span>
-                    </Link>
-                    <Link
-                      href="/paraphrase"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/paraphrase') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>Paraphrasing</span>
-                    </Link>
-                    <Link
-                      href="/ai-detector"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/ai-detector') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>AI Detector</span>
-                    </Link>
-                    <Link
-                      href="/humanize-gpt"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/humanize-gpt') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>Humanize GPT</span>
-                    </Link>
-                    <Link
-                      href="/plagiarism-checker"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/plagiarism-checker') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>Plagiarism Check</span>
-                    </Link>
-                    <Link
-                      href="/summarize"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/summarize') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>Summarizer</span>
-                    </Link>
-                    <Link
-                      href="/grammar-checker"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/grammar-checker') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>Grammar Fix</span>
-                    </Link>
-                    <Link
-                      href="/translator"
-                      className={cn(
-                        "flex items-center gap-2 px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors no-underline",
-                        isActive('/translator') ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold" : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/50 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-                      )}
-                    >
-                      <span>Translator</span>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                href="/writing-studio"
-                title="Writing Studio"
-                className={cn(
-                  "flex items-center justify-center rounded-xl text-sm font-semibold transition-colors no-underline py-2.5 group",
-                  isActive('/writing-studio') || isActive('/paraphrase')
-                    ? "bg-zinc-200 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-semibold"
-                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-zinc-200"
-                )}
-              >
-                <PenTool className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
-              </Link>
-            )}
+            <Link
+              href="/writing-studio"
+              title="Writing Studio"
+              className={cn(
+                "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                isActive('/writing-studio') || isActive('/paraphrase')
+                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+              )}
+            >
+              <PenTool className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+              {!effectiveCollapsed && <span>Writing Studio</span>}
+            </Link>
 
             {/* 3. Connectors */}
             <Link
@@ -311,14 +222,14 @@ export default function IconNavSidebar() {
               title="Connectors"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
-                isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
                 isActive('/connectors')
                   ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
                   : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <Link2 className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              {!isCollapsed && <span>Connectors</span>}
+              {!effectiveCollapsed && <span>Connectors</span>}
             </Link>
 
             {/* 4. Files */}
@@ -327,14 +238,14 @@ export default function IconNavSidebar() {
               title="Files"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
-                isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
                 isActive('/files')
                   ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
                   : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <FolderOpen className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              {!isCollapsed && <span>Files</span>}
+              {!effectiveCollapsed && <span>Files</span>}
             </Link>
 
             {/* 5. Saved Reports */}
@@ -343,19 +254,19 @@ export default function IconNavSidebar() {
               title="Saved Reports"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
-                isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
                 isActive('/saved-reports')
                   ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
                   : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <FileText className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              {!isCollapsed && <span>Saved Reports</span>}
+              {!effectiveCollapsed && <span>Saved Reports</span>}
             </Link>
           </div>
 
           {/* ── Projects Section (with Create Project Modal) ── */}
-          {!isCollapsed && (
+          {!effectiveCollapsed && (
             <div className="space-y-2 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
               <button
                 type="button"
@@ -382,7 +293,7 @@ export default function IconNavSidebar() {
           )}
 
           {/* ── Sessions Section ── */}
-          {!isCollapsed && (
+          {!effectiveCollapsed && (
             <div className="space-y-1.5 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
               <button
                 type="button"
@@ -523,14 +434,14 @@ export default function IconNavSidebar() {
               title="Community"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline",
-                isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
                 isActive('/community')
                   ? "bg-zinc-200/90 dark:bg-white/[0.12] text-zinc-950 dark:text-white font-bold shadow-xs"
                   : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <Users className="h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
-              {!isCollapsed && <span>Community</span>}
+              {!effectiveCollapsed && <span>Community</span>}
             </Link>
 
             <Link
@@ -538,14 +449,14 @@ export default function IconNavSidebar() {
               title="Settings"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline",
-                isCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
                 isActive('/settings')
                   ? "bg-zinc-200/90 dark:bg-white/[0.12] text-zinc-950 dark:text-white font-bold shadow-xs"
                   : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] hover:text-zinc-950 dark:hover:text-white"
               )}
             >
               <Settings className="h-5 w-5 shrink-0 text-zinc-600 dark:text-zinc-300" />
-              {!isCollapsed && <span>Settings</span>}
+              {!effectiveCollapsed && <span>Settings</span>}
             </Link>
           </div>
         </div>
@@ -581,12 +492,12 @@ export default function IconNavSidebar() {
 
         {/* ── Bottom Profile Section ── */}
         <div className={cn("border-t border-zinc-300 dark:border-white/[0.08] mt-auto", isCollapsed ? "p-2 flex flex-col items-center gap-2" : "p-3.5 space-y-2.5")}>
-          <div className={cn("flex items-center w-full", isCollapsed ? "justify-center" : "justify-between")}>
-            <Link href="/account" title={user?.name || "Account Profile"} className={cn("flex items-center min-w-0 no-underline group cursor-pointer", isCollapsed ? "justify-center" : "gap-3 flex-1")}>
+          <div className={cn("flex items-center w-full", effectiveCollapsed ? "justify-center" : "justify-between")}>
+            <Link href="/account" title={user?.name || "Account Profile"} className={cn("flex items-center min-w-0 no-underline group cursor-pointer", effectiveCollapsed ? "justify-center" : "gap-3 flex-1")}>
               <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 border border-zinc-300 dark:border-white/[0.15] flex items-center justify-center text-sm font-bold text-zinc-800 dark:text-zinc-200 group-hover:border-zinc-500 dark:group-hover:border-white/40 transition shrink-0">
                 {user?.name?.[0]?.toUpperCase() || "A"}
               </div>
-              {!isCollapsed && (
+              {!effectiveCollapsed && (
                 <div className="flex flex-col min-w-0 flex-1">
                   <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 truncate group-hover:text-zinc-950 dark:group-hover:text-white transition">
                     {user?.email ? user.email.split("@")[0] : "ahsan91927374"}
@@ -598,7 +509,7 @@ export default function IconNavSidebar() {
               )}
             </Link>
 
-            {!isCollapsed && (
+            {!effectiveCollapsed && (
               masterId ? (
                 <NotificationBell masterId={masterId} />
               ) : (
@@ -614,7 +525,7 @@ export default function IconNavSidebar() {
           </div>
 
           {/* Workspace Switcher Stub */}
-          {!isCollapsed && (
+          {!effectiveCollapsed && (
             <div className="pt-2 border-t border-zinc-300 dark:border-white/[0.06] flex items-center gap-1.5 text-xs">
               <div className="flex items-center gap-2.5 flex-1 truncate px-2 py-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-white/[0.05] transition cursor-pointer">
                 <Layers className="h-4 w-4 text-zinc-500 dark:text-zinc-400 shrink-0" />

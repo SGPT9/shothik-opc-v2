@@ -28,17 +28,18 @@ The core change is structural rather than cosmetic: the default user experience 
 
 ---
 
-## 2. The 3-Part Shell Structure
+## 2. The 2-Pane Shell Structure (OpenWorker Model)
 
-```
-┌─────────────────┬───────────────────────────────────────────┬───────────────────────────┐
-│     Sidebar     │            Conversation Column            │    User Details Drawer    │
-│  (Navigation)   │          (Primary Work Surface)           │   (Contextual / Closed)   │
-├─────────────────┼───────────────────────────────────────────┼───────────────────────────┤
-│ • Workspace     │ [Empty State]: Mode Toggle + Hero Greeting│ • Output (Preview/Export) │
-│ • History       │ [Transcript]:  Sources ➔ Answer ➔ Cards   │ • History (Prior Tasks)   │
-│ • New Chat      │ [Composer]:    Input + Dictation + Tools  │ • Sources (Citations/Docs)│
-└─────────────────┴───────────────────────────────────────────┴───────────────────────────┘
+```text
+┌─────────────────┬────────────────────────────────────────────────────────────────────────┐
+│     Sidebar     │                           Main Canvas                                  │
+│  (Navigation)   │         (Primary Work Surface + Fluid Contextual Right-Rail)           │
+├─────────────────┼────────────────────────────────────────────────────────────────────────┤
+│ • Workspace     │ [Empty State]: Greeting ➔ Progressive Disclosure Composer              │
+│ • History       │ [Transcript]:  Sources ➔ Answer ➔ Cards                                │
+│ • New Chat      │ [Composer]:    Dynamic text area (1-6 lines), hidden tools until needed│
+│ (Hover to peek) │ [Right Rail]:  (Only appears on-demand when inspecting an artifact)    │
+└─────────────────┴────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -138,13 +139,14 @@ Adopted from industry best practices (Anthropic Claude Artifacts, OpenAI ChatGPT
 
 ---
 
-## 10. Tri-Color Brand Palette Standard (Electric Blue, Pure White, Deep Obsidian Slate)
+## 10. Tri-Color Brand Palette Standard (Electric Blue, Cool Gray, Deep Obsidian Slate)
 
 1. **Electric Blue Primary Brand Token (`--primary: #2563EB` / `oklch(0.56 0.22 255)` / `oklch(0.64 0.21 250)`)**:
    - Used for all primary actions, active tabs, focus rings, selected filters, and verified trust badges.
    - Generates high perceived value, crisp technological authority, and instant recognizability.
-2. **Pure White Light Mode (`--background: #FAFAFC` / `--card: #FFFFFF` / `--foreground: #0F172A`)**:
-   - Clean, glare-free, distractionless canvas with deep ink typography maintaining a 14.5:1 contrast ratio.
+2. **Cool Gray Tooling Light Mode (`--background: #F5F6F7` / `--card: #FFFFFF` / `--foreground: #09090B`)**:
+   - Clean, glare-free, distractionless canvas that reads as a "tool" rather than a reading app.
+   - Typography uses native system fonts (`-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif`) to ensure standard desktop utility feel, explicitly avoiding custom geometric sans or editorial serifs.
    - Subtle slate gray borders (`#E2E8F0`) and muted backdrops (`#F1F5F9`).
 3. **Deep Obsidian Slate Dark Mode (`--background: #0B0F17` / `--card: #151B28` / `--foreground: #F8FAFC`)**:
    - Ultra-calm dark theme optimized for OLED and low-power screens without pitch-black harshness.

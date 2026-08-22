@@ -403,11 +403,8 @@ export const defaultFetchTransport: StreamTransport = {
 
       // Generic response fallback
       const defaultTokens = [
-        "I have processed your request across our **autonomous agent mesh**.\n\n",
-        "How would you like to proceed? You can:\n",
-        "- **Generate Slides**: Turn this into a 10-slide presentation\n",
-        "- **Build Spreadsheet**: Calculate unit economics and financial scenarios\n",
-        "- **Deep Research**: Run a grounded multi-source audit across the web",
+        "I have processed your request.\n\n",
+        "If you have a specific document, codebase, or topic you'd like to explore, you can detail it here or use the tools menu to launch a focused workflow.",
       ];
 
       for (const token of defaultTokens) {
