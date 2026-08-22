@@ -1,39 +1,4 @@
-# Dependencies (recursive)
-node_modules
-**/node_modules/**
-.pnpm-store
-**/.pnpm-store/**
-.pnpm-cache
-**/.pnpm-cache/**
-
-# Sub-projects & Reference clones
-.temp/**
-ChatbotX/**
-.migration-backup/**
-temp-open-design/**
-cloudflare-os/**
-inkos-clone/**
-inkos-repo/**
-ponytail/**
-deploy/**
-*.tar.gz
-*.zip
-
-# Git & agent metadata
-.git/**
-.agents/**
-.cursor/**
-.insforge/**
-.gemini/**
-
-# Build outputs & caches
-dist/**
-**/dist/**
-tmp/**
-.next/**
-**/.next/**
-.cache/**
-**/.cache/**
-*.log
-*.heapsnapshot
-*.trace
+node_modules/
+.next/
+dist/
+build/
