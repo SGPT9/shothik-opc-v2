@@ -7,6 +7,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: write
+  deployments: write
+
 jobs:
   test-and-build:
     name: 🧪 Test & Typecheck
@@ -102,4 +107,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          preCommands: |
+            pnpm dlx wrangler pages project create shothik-hermes --production-branch main || true
           command: pages deploy artifacts/shothik/dist --project-name=shothik-hermes
