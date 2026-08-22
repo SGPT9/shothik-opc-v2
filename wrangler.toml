@@ -17,4 +17,4 @@ head_sampling_rate = 1
 # Cloudflare OS Gatekeeper & Speculative Execution Bindings
 [[kv_namespaces]]
 binding = "SPECULATIVE_GATEKEEPER_KV"
-id = "gatekeeper_speculative_cache"
+id = "608ac410a89e470eb7d224ebeb3c9007"
