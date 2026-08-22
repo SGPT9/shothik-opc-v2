@@ -21,6 +21,7 @@ import { SecretShareCard } from "./SecretShareCard";
 import { WayfinderBoard } from "./WayfinderBoard";
 import { TwinCtaCard } from "./TwinCtaCard";
 import { EpistemicProvenanceBadge } from "./EpistemicProvenanceBadge";
+import { GitHubRepoCard } from "./GitHubRepoCard";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState } from "react";
@@ -111,6 +112,7 @@ interface TranscriptProps {
   onApproveCheckpoint?: (checkpointId: string, message: ChatMessage) => void;
   onDenyCheckpoint?: (checkpointId: string, message: ChatMessage) => void;
   onSubmitSecret?: (checkpointId: string, secretValue: string, message: ChatMessage) => void;
+  onAnalyzeIssues?: (message: ChatMessage) => void;
   className?: string;
   agentId?: string;
 }
@@ -132,6 +134,7 @@ export function Transcript({
   onApproveCheckpoint,
   onDenyCheckpoint,
   onSubmitSecret,
+  onAnalyzeIssues,
   className,
   agentId = "core",
 }: TranscriptProps) {
@@ -472,8 +475,22 @@ export function Transcript({
                     <PerplexitySourcesGrid sources={message.metadata?.sources} />
                   )}
 
+                  {/* ── GitHub Repo Analysis Card ── */}
+                  {message.metadata?.githubAnalysis && (
+                    <GitHubRepoCard
+                      owner={message.metadata.githubAnalysis.owner}
+                      repo={message.metadata.githubAnalysis.repo}
+                      prompt={message.metadata.githubAnalysis.prompt || message.content}
+                      status={message.metadata.githubAnalysis.status}
+                      errorMessage={message.metadata.githubAnalysis.errorMessage}
+                      issuesAnalysis={message.metadata.githubAnalysis.issuesAnalysis}
+                      issuesStatus={message.metadata.githubAnalysis.issuesStatus}
+                      onAnalyzeIssues={() => onAnalyzeIssues?.(message)}
+                    />
+                  )}
+
                   {/* Main content */}
-                  {!displayContent.includes("[Stream Error:") && (
+                  {!message.metadata?.githubAnalysis && !displayContent.includes("[Stream Error:") && (
                     <div className="relative text-sm leading-relaxed">
                       <MarkdownMessage
                         content={displayContent || (message.status === "streaming" ? "" : slashCommand ? "Spec request" : "")}

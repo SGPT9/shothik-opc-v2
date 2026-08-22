@@ -448,10 +448,215 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
   }, [createNewConversation, handleExportSession]);
 
+  // GitHub Repo Reverse-Engineering Handler
+  const handleAnalyzeRepo = useCallback(
+    async (rawRepo: string) => {
+      const match = rawRepo.trim().match(/(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)|([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)/);
+      const slug = (match?.[1] || match?.[2] || rawRepo.trim()).replace(/\/$/, "");
+      const [owner, repo] = slug.split("/");
+
+      if (!owner || !repo) return;
+
+      const userMsgId = `usr_${Date.now()}`;
+      const assistantMsgId = `ast_${Date.now()}`;
+
+      addMessage({
+        id: userMsgId,
+        role: "user",
+        content: `https://github.com/${owner}/${repo}`,
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        attachments: [],
+      });
+
+      addMessage({
+        id: assistantMsgId,
+        role: "assistant",
+        content: "",
+        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        isStreaming: true,
+        metadata: {
+          githubAnalysis: {
+            owner,
+            repo,
+            prompt: "",
+            status: "loading",
+          },
+        },
+      });
+
+      const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+
+      try {
+        const res = await fetch(`${insforgeUrl}/functions/v1/analyze-repo`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({ url: `${owner}/${repo}` }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Failed to analyze repository (${res.status})`);
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          const data = await res.json();
+          updateMessageMetadata(assistantMsgId, {
+            githubAnalysis: {
+              owner,
+              repo,
+              prompt: data.prompt || "",
+              status: "done",
+            },
+          });
+          return;
+        }
+
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        if (reader) {
+          let accumulated = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            accumulated += decoder.decode(value, { stream: true });
+            updateMessageMetadata(assistantMsgId, {
+              githubAnalysis: {
+                owner,
+                repo,
+                prompt: accumulated,
+                status: "streaming",
+              },
+            });
+          }
+          updateMessageMetadata(assistantMsgId, {
+            githubAnalysis: {
+              owner,
+              repo,
+              prompt: accumulated,
+              status: "done",
+            },
+          });
+        }
+      } catch (err: any) {
+        updateMessageMetadata(assistantMsgId, {
+          githubAnalysis: {
+            owner,
+            repo,
+            prompt: "",
+            status: "error",
+            errorMessage: err.message || "An unexpected error occurred during repo analysis",
+          },
+        });
+      }
+    },
+    [addMessage, updateMessageMetadata]
+  );
+
+  // GitHub Issues & PRs Analysis Handler
+  const handleAnalyzeIssues = useCallback(
+    async (message: any) => {
+      const msgId = message.id || message._id;
+      const gh = message.metadata?.githubAnalysis;
+      if (!gh || !gh.owner || !gh.repo) return;
+      const { owner, repo } = gh;
+
+      updateMessageMetadata(msgId, {
+        githubAnalysis: {
+          ...gh,
+          issuesStatus: "loading",
+          issuesAnalysis: "",
+        },
+      });
+
+      const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+
+      try {
+        const res = await fetch(`${insforgeUrl}/functions/v1/analyze-issues`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: anonKey,
+            Authorization: `Bearer ${anonKey}`,
+          },
+          body: JSON.stringify({ url: `${owner}/${repo}` }),
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || `Failed to analyze issues (${res.status})`);
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          const data = await res.json();
+          updateMessageMetadata(msgId, {
+            githubAnalysis: {
+              ...gh,
+              issuesAnalysis: data.analysis || "",
+              issuesStatus: "done",
+            },
+          });
+          return;
+        }
+
+        const reader = res.body?.getReader();
+        const decoder = new TextDecoder();
+        if (reader) {
+          let accumulated = "";
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            accumulated += decoder.decode(value, { stream: true });
+            updateMessageMetadata(msgId, {
+              githubAnalysis: {
+                ...gh,
+                issuesAnalysis: accumulated,
+                issuesStatus: "streaming",
+              },
+            });
+          }
+          updateMessageMetadata(msgId, {
+            githubAnalysis: {
+              ...gh,
+              issuesAnalysis: accumulated,
+              issuesStatus: "done",
+            },
+          });
+        }
+      } catch (err: any) {
+        updateMessageMetadata(msgId, {
+          githubAnalysis: {
+            ...gh,
+            issuesStatus: "error",
+            errorMessage: err.message || "Failed to analyze repository issues",
+          },
+        });
+      }
+    },
+    [updateMessageMetadata]
+  );
+
   // Intent-First Natural Language Routing Engine
   const handleSendMessage = useCallback(
     async (text: string) => {
       if (!text.trim() && attachments.length === 0) return;
+
+      const trimmedText = text.trim();
+      const githubUrlRegex = /^(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/?$/i;
+      const bareRepoRegex = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
+
+      // Intercept direct GitHub repo URLs for dedicated reverse-engineering
+      if (githubUrlRegex.test(trimmedText) || (!trimmedText.includes(" ") && bareRepoRegex.test(trimmedText))) {
+        handleAnalyzeRepo(trimmedText);
+        return;
+      }
 
       const lower = text.toLowerCase();
 
@@ -876,6 +1081,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     onApproveCheckpoint={handleApproveCheckpoint}
                     onDenyCheckpoint={handleDenyCheckpoint}
                     onSubmitSecret={handleSubmitSecret}
+                    onAnalyzeIssues={handleAnalyzeIssues}
                     onStop={handleCancelActiveRun}
                   />
                 </div>
@@ -977,6 +1183,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     onApproveCheckpoint={handleApproveCheckpoint}
                     onDenyCheckpoint={handleDenyCheckpoint}
                     onSubmitSecret={handleSubmitSecret}
+                    onAnalyzeIssues={handleAnalyzeIssues}
                     onStop={handleCancelActiveRun}
                   />
                 </div>
