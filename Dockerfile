@@ -1,8 +1,8 @@
 # Multi-Stage Production Dockerfile for Shothik Hermes
-# Targets: Lightweight Node.js 20 Alpine (<120MB final footprint)
+# Targets: Lightweight Node.js 22 Alpine (<120MB final footprint)
 
 # ── Stage 1: Dependency & Builder ──
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 RUN apk add --no-cache libc6-compat python3 make g++
@@ -26,7 +26,7 @@ RUN pnpm --filter @workspace/api-server run build || true
 RUN pnpm --filter @workspace/shothik run build
 
 # ── Stage 2: Production Runtime ──
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 ENV NODE_ENV=production
