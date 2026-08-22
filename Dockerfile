@@ -2,10 +2,10 @@
 # Targets: Lightweight Node.js 22 Alpine (<120MB final footprint)
 
 # ── Stage 1: Dependency & Builder ──
-FROM node:22-alpine AS builder
+FROM node:22-slim AS builder
 
 WORKDIR /app
-RUN apk add --no-cache libc6-compat python3 make g++
+RUN apt-get update && apt-get install -y python3 make g++ && rm -rf /var/lib/apt/lists/*
 
 # Install PNPM
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -31,9 +31,10 @@ RUN pnpm --filter @workspace/api-server run build || true
 RUN pnpm --filter @workspace/shothik run build
 
 # ── Stage 2: Production Runtime ──
-FROM node:22-alpine AS runner
+FROM node:22-slim AS runner
 
 WORKDIR /app
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV PORT=8080
 
