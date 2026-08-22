@@ -16,7 +16,7 @@ COPY artifacts/shothik/package.json ./artifacts/shothik/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
 
 # Install dependencies
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # Copy source tree
 COPY . .
