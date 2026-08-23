@@ -30,6 +30,7 @@ import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal
 import { ShareArtifactModal } from "@/components/chat/ShareArtifactModal";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
+import { OfflineSyncBadge } from "@/components/common/OfflineSyncBadge";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
 import { getStoredChatSessions } from "@/lib/chat-sessions-store";
 import type { ChatPersona } from "@/lib/chat/types";
@@ -890,13 +891,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </div>
             )}
 
-            {/* Offline Status Badge */}
-            {!isOnline && (
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-[10px] font-medium text-amber-400">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                <span>Offline · Local GPU Mode</span>
-              </div>
-            )}
+            {/* Offline-First Sync & Outbox Badge */}
+            <OfflineSyncBadge />
           </div>
 
           {/* Right Mode Toggle & Actions */}

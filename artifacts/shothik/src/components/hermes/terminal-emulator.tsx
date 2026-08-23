@@ -40,7 +40,9 @@ export function TerminalEmulator({
   }, [lastEvent]);
 
   useEffect(() => {
-    terminalEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (typeof terminalEndRef.current?.scrollIntoView === "function") {
+      terminalEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [logs]);
 
   const handleSubmit = (e: React.FormEvent) => {

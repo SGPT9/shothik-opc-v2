@@ -57,10 +57,10 @@ router.post("/v1/logistics/steadfast/book", async (req: Request, res: Response) 
       consignmentId,
       trackingCode,
       provider,
-      recipientName: order.recipientName,
-      recipientPhone: order.recipientPhone,
+      recipientName: order.customerName,
+      recipientPhone: order.customerPhone,
       city: order.city,
-      address: order.address,
+      address: order.deliveryAddress,
       codAmountBdt: order.codAmountBdt,
       deliveryFeeBdt,
       codFeeBdt,
@@ -79,17 +79,20 @@ router.post("/v1/logistics/steadfast/book", async (req: Request, res: Response) 
       provider,
       consignmentId,
       trackingCode,
-      trackingUrl: `https://steadfast.com.bd/tracking/${trackingCode}`,
-      estimatedDeliveryDays: isInsideDhaka ? 1 : 3,
+      estimatedDeliveryDays: isInsideDhaka ? "24-48 Hours (Dhaka Metro)" : "48-72 Hours (Outside Dhaka)",
       deliveryFeeBdt,
       codFeeBdt,
-      whatsappNotificationStatus: autoSendWhatsAppConfirmation ? "sent" : "disabled",
-      createdAt: new Date().toISOString(),
+      totalPayableBdt: order.codAmountBdt,
+      whatsappNotificationStatus: autoSendWhatsAppConfirmation ? "sent" : "skipped",
+      whatsappConfirmationPreview: autoSendWhatsAppConfirmation
+        ? `🚚 *Order Confirmation — Delivery Booked*\n\nTracking: ${trackingCode}\nAddress: ${order.deliveryAddress}, ${order.city}\nAmount to Pay: ৳${order.codAmountBdt} BDT (Cash On Delivery)\n\nThank you for ordering with us!`
+        : null,
+      message: "Parcel booked successfully with courier partner",
     });
   } catch (error: any) {
     return res.status(500).json({
       success: false,
-      error: "Logistics booking failure",
+      error: "Failed to dispatch courier parcel",
       message: error?.message || String(error),
     });
   }
@@ -100,7 +103,7 @@ router.post("/v1/logistics/steadfast/book", async (req: Request, res: Response) 
  * Fetches real-time status and journey timeline for any parcel
  */
 router.get("/v1/logistics/track/:trackingCode", (req: Request, res: Response) => {
-  const { trackingCode } = req.params;
+  const trackingCode = typeof req.params.trackingCode === "string" ? req.params.trackingCode : String(req.params.trackingCode || "");
   const parcel = parcelDatabase.get(trackingCode);
 
   if (!parcel) {

@@ -22,7 +22,7 @@
     "verify:all": "pnpm typecheck:all && pnpm test:api && pnpm test:artifacts && pnpm test:e2e && pnpm --filter @workspace/swarm-orchestrator test && pnpm verify:frontend",
     "deploy:staging": "bash scripts/deploy-staging.sh",
     "deploy:docker": "docker-compose up -d --build",
-    "deploy:cloudflare": "wrangler pages deploy artifacts/shothik/dist --project-name=shothik-hermes",
+    "deploy:cloudflare": "wrangler deploy",
     "setup:ai": "powershell -ExecutionPolicy Bypass -File ./scripts/setup-ai-env.ps1"
   },
   "private": true,
@@ -61,7 +61,7 @@
     "globals": "^16.4.0",
     "jsdom": "^27.4.0",
     "lightningcss-win32-x64-msvc": "1.32.0",
-    "prettier": "^3.6.2",
+    "prettier": "^3.9.6",
     "prettier-plugin-css-order": "^2.1.2",
     "prettier-plugin-tailwindcss": "^0.7.1",
     "prisma": "7.4.0",
@@ -76,7 +76,7 @@
     "@playwright/test": "^1.59.1",
     "axios": "^1.7.9",
     "prettier": "^3.9.6",
-    "typescript": "~5.9.3"
+    "typescript": "^5.9.3"
   },
   "pnpm": {
     "builtDependencies": [

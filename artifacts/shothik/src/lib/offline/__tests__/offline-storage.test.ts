@@ -7,6 +7,16 @@ import {
   saveOfflineTask,
   listOfflineTasks,
   deleteOfflineTask,
+  saveOfflineTranscript,
+  getOfflineTranscript,
+  listOfflineTranscripts,
+  deleteOfflineTranscript,
+  markTranscriptSynced,
+  enqueueOutbox,
+  getOutboxItem,
+  listOutbox,
+  updateOutboxItem,
+  deleteOutboxItem,
   clearOfflineStorage,
 } from '../offline-storage';
 
@@ -43,6 +53,69 @@ describe('Offline-First Storage Engine (offline-storage.ts)', () => {
     deleteOfflineManuscript('doc-1');
 
     expect(getOfflineManuscript('doc-1')).toBeUndefined();
+  });
+
+  it('saves, lists, and marks offline transcripts as synced', () => {
+    saveOfflineTranscript({
+      conversationId: 'conv-101',
+      messages: [
+        {
+          _id: 'm1',
+          conversationId: 'conv-101',
+          userId: 'u1',
+          role: 'user',
+          content: 'Audit bKash checkout',
+          contentFormat: 'plain',
+          status: 'completed',
+          createdAt: 1000,
+          updatedAt: 1000,
+        },
+      ],
+      updatedAt: 1000,
+      syncStatus: 'pending_upload',
+    });
+
+    const transcript = getOfflineTranscript('conv-101');
+    expect(transcript).toBeDefined();
+    expect(transcript?.syncStatus).toBe('pending_upload');
+    expect(transcript?.messages).toHaveLength(1);
+
+    markTranscriptSynced('conv-101');
+    expect(getOfflineTranscript('conv-101')?.syncStatus).toBe('synced');
+
+    deleteOfflineTranscript('conv-101');
+    expect(getOfflineTranscript('conv-101')).toBeUndefined();
+  });
+
+  it('manages offline outbox queue items with status transitions', () => {
+    enqueueOutbox({
+      id: 'outbox-bkash-01',
+      type: 'mfs_verify',
+      payload: { trxId: 'BK99281726X', amount: 1850 },
+      retryCount: 0,
+      status: 'queued',
+      createdAt: 1000,
+    });
+
+    enqueueOutbox({
+      id: 'outbox-courier-02',
+      type: 'courier_dispatch',
+      payload: { trackingId: 'ST-582910', provider: 'steadfast' },
+      retryCount: 0,
+      status: 'queued',
+      createdAt: 2000,
+    });
+
+    const queued = listOutbox('queued');
+    expect(queued).toHaveLength(2);
+    expect(queued[0].id).toBe('outbox-bkash-01');
+
+    updateOutboxItem('outbox-bkash-01', { status: 'in_flight' });
+    expect(getOutboxItem('outbox-bkash-01')?.status).toBe('in_flight');
+    expect(listOutbox('queued')).toHaveLength(1);
+
+    deleteOutboxItem('outbox-bkash-01');
+    expect(getOutboxItem('outbox-bkash-01')).toBeUndefined();
   });
 
   it('saves, lists, and deletes offline tasks persistently', () => {

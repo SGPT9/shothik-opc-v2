@@ -14,10 +14,10 @@ router.post("/loop/execute", async (req: Request, res: Response) => {
 
   try {
     const result = await LoopEngineeringEngine.runLoop({ prompt, context, maxIterations });
-    res.json(result);
+    return res.json(result);
   } catch (err: any) {
     logger.error({ err: err?.message }, "[loop-route] Loop execution failed");
-    res.status(500).json({ error: "Loop execution failed", details: err?.message });
+    return res.status(500).json({ error: "Loop execution failed", details: err?.message });
   }
 });
 
@@ -31,9 +31,9 @@ router.post("/loop/self-heal", (req: Request, res: Response) => {
 
   try {
     const result = LoopEngineeringEngine.performSelfHealing({ code, errorMessage, language });
-    res.json(result);
+    return res.json(result);
   } catch (err: any) {
-    res.status(500).json({ error: "Self-healing failed", details: err?.message });
+    return res.status(500).json({ error: "Self-healing failed", details: err?.message });
   }
 });
 

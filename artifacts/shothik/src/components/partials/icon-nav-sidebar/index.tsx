@@ -200,21 +200,69 @@ export default function IconNavSidebar() {
               {!effectiveCollapsed && <span>Twin AI</span>}
             </Link>
 
-            {/* 2. Writing Suite */}
-            <Link
-              href="/writing-studio"
-              title="Writing Studio"
-              className={cn(
-                "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
-                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
-                isActive('/writing-studio') || isActive('/paraphrase')
-                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+            {/* 2. Writing Suite (Expandable) */}
+            <div className="space-y-0.5">
+              <div
+                className={cn(
+                  "flex items-center rounded-xl text-sm font-semibold transition-colors group",
+                  effectiveCollapsed ? "justify-center px-0 py-2.5" : "justify-between px-3.5 py-2.5",
+                  isWritingRoute
+                    ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
+                    : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+                )}
+              >
+                <Link
+                  href="/writing-studio"
+                  title="Writing Suite"
+                  className="flex items-center gap-3 flex-1 min-w-0 no-underline text-inherit"
+                >
+                  <PenTool className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+                  {!effectiveCollapsed && <span>Writing Suite</span>}
+                </Link>
+                {!effectiveCollapsed && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setIsWritingSuiteOpen(!isWritingSuiteOpen);
+                    }}
+                    className="p-1 rounded-md text-zinc-500 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-300/50 dark:hover:bg-white/[0.1] transition cursor-pointer"
+                    title={isWritingSuiteOpen ? "Collapse writing tools" : "Expand writing tools"}
+                  >
+                    {isWritingSuiteOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+                  </button>
+                )}
+              </div>
+
+              {!effectiveCollapsed && isWritingSuiteOpen && (
+                <div className="pl-3.5 pr-1 py-1 space-y-0.5 animate-in fade-in duration-100 border-l border-zinc-300 dark:border-white/[0.1] ml-5 my-0.5">
+                  {[
+                    { label: "Writing Studio", path: "/writing-studio" },
+                    { label: "Paraphrase", path: "/paraphrase" },
+                    { label: "Humanize GPT", path: "/humanize-gpt" },
+                    { label: "Grammar Fix", path: "/grammar-checker" },
+                    { label: "AI Detector", path: "/ai-detector" },
+                    { label: "Plagiarism Checker", path: "/plagiarism-checker" },
+                    { label: "Summarizer", path: "/summarize" },
+                    { label: "Translator", path: "/translator" },
+                  ].map((tool) => (
+                    <Link
+                      key={tool.path}
+                      href={tool.path}
+                      className={cn(
+                        "block px-2.5 py-1.5 rounded-lg text-xs transition-colors no-underline",
+                        isActive(tool.path)
+                          ? "bg-brand/10 text-brand font-semibold"
+                          : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+                      )}
+                    >
+                      {tool.label}
+                    </Link>
+                  ))}
+                </div>
               )}
-            >
-              <PenTool className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              {!effectiveCollapsed && <span>Writing Studio</span>}
-            </Link>
+            </div>
 
             {/* 3. Connectors */}
             <Link

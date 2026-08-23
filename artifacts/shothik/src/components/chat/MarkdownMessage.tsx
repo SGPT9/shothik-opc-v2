@@ -107,6 +107,46 @@ export function MarkdownMessage({
 
   return (
     <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words space-y-3", className)}>
+      {/* Perspective Lenses (Executive / Research / Task Action) */}
+      <div className="flex items-center gap-1.5 pt-1 pb-0.5 text-[11px] font-mono select-none not-prose">
+        <button
+          type="button"
+          onClick={() => setActiveLens("executive")}
+          className={cn(
+            "px-2 py-0.5 rounded-md transition cursor-pointer border",
+            activeLens === "executive"
+              ? "bg-violet-500/20 text-violet-300 border-violet-500/40 font-semibold"
+              : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
+          )}
+        >
+          <span>🚀 Executive</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveLens("research")}
+          className={cn(
+            "px-2 py-0.5 rounded-md transition cursor-pointer border",
+            activeLens === "research"
+              ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-semibold"
+              : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
+          )}
+        >
+          <span>🔬 Research</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveLens("action")}
+          className={cn(
+            "px-2 py-0.5 rounded-md transition cursor-pointer border",
+            activeLens === "action"
+              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold"
+              : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
+          )}
+        >
+          <span>💼 Task Action</span>
+        </button>
+      </div>
+
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{

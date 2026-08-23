@@ -89,5 +89,13 @@ inkos-repo/
 ponytail/
 *.tar.gz
 .temp/
+scratch/
+reference-repos/
+*.log
+*.png
+tmp_*
+test-memori-store.json
+test-dsh-traces.json
+worker-startup.cpuprofile
 
 

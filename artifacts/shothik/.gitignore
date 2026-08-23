@@ -1,1 +1,32 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Production build artifacts
+dist/
+build/
+.output/
+
+# Environment and sensitive keys
+.env
+.env.local
+.env.*.local
+*.pem
+
+# IDE and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Next / Vercel
 .vercel
+.next/
+
+# Temporary and cache files
+tmp/
+scratch/
+*.log
+*.tsbuildinfo
+.replit-artifact/
+.turbo/

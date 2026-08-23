@@ -137,7 +137,8 @@ router.post("/v1/mfs/speculative-order", async (req: Request, res: Response) => 
  * Check order reconciliation status
  */
 router.get("/v1/mfs/speculative-order/:orderId", (req: Request, res: Response) => {
-  const order = speculativeLedger.get(req.params.orderId);
+  const orderId = typeof req.params.orderId === "string" ? req.params.orderId : String(req.params.orderId || "");
+  const order = speculativeLedger.get(orderId);
   if (!order) {
     return res.status(404).json({ success: false, error: "Order not found" });
   }

@@ -40,11 +40,16 @@ export type MuleMessage = z.infer<typeof MuleMessageSchema>;
 export const DAGNodeStatusSchema = z.enum([
   "pending",
   "in_progress",
+  "awaiting_approval",
   "completed",
   "failed",
   "blocked",
+  "cancelled",
 ]);
 export type DAGNodeStatus = z.infer<typeof DAGNodeStatusSchema>;
+
+export const ApprovalOutcomeSchema = z.enum(["approved", "denied"]);
+export type ApprovalOutcome = z.infer<typeof ApprovalOutcomeSchema>;
 
 export const DAGNodeSchema = z.object({
   id: z.string(),
@@ -52,6 +57,12 @@ export const DAGNodeSchema = z.object({
   assignedRole: SwarmAgentRoleSchema,
   dependencies: z.array(z.string()),
   status: DAGNodeStatusSchema,
+  requiresApproval: z.boolean().optional(),
+  checkpointId: z.string().optional(),
+  approvalSummary: z.string().optional(),
+  approvalReason: z.string().optional(),
+  approvalDetails: z.string().optional(),
+  approvalOutcome: ApprovalOutcomeSchema.optional(),
   context: z.record(z.any()).optional(),
   result: z.record(z.any()).optional(),
 });
@@ -65,3 +76,25 @@ export const SwarmExecutionPlanSchema = z.object({
   createdAt: z.string(),
 });
 export type SwarmExecutionPlan = z.infer<typeof SwarmExecutionPlanSchema>;
+
+export const SwarmRunnerStateSchema = z.enum([
+  "idle",
+  "running",
+  "paused",
+  "waiting_approval",
+  "completed",
+  "cancelled",
+  "failed",
+]);
+export type SwarmRunnerState = z.infer<typeof SwarmRunnerStateSchema>;
+
+export interface CheckpointEvent {
+  checkpointId: string;
+  planId: string;
+  nodeId: string;
+  actionSummary: string;
+  reason: string;
+  details?: string;
+  createdAt: string;
+}
+
