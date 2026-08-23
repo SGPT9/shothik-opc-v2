@@ -113,7 +113,7 @@ describe("Visual WOW Components", () => {
       );
 
       expect(screen.getByText(/TRX_BKASH_9921/i)).toBeDefined();
-      expect(screen.getByText(/Steadfast Courier Dispatch/i)).toBeDefined();
+      expect(screen.getByText(/RouteXpress Multi-Courier Router/i)).toBeDefined();
       expect(screen.getByText(/Tanvir Rahman/i)).toBeDefined();
       expect(screen.getByText(/1-Click Dispatch to Steadfast/i)).toBeDefined();
     });

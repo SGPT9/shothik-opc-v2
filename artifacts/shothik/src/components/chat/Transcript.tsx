@@ -501,57 +501,76 @@ export function Transcript({
                   )}
 
                   {/* ── Control Layer: Human-in-the-Loop Approval Checkpoint ── */}
-                  {message.metadata?.checkpoint && (
-                    <div className="mt-2">
-                      <ApprovalCard
-                        checkpointId={message.metadata.checkpoint.checkpointId}
-                        actionSummary={message.metadata.checkpoint.actionSummary}
-                        reason={message.metadata.checkpoint.reason}
-                        details={message.metadata.checkpoint.details}
-                        resolved={message.metadata.checkpoint.status !== "pending"}
-                        outcome={
-                          message.metadata.checkpoint.outcome ||
-                          (message.metadata.checkpoint.status === "approved"
-                            ? "approved"
-                            : message.metadata.checkpoint.status === "denied"
-                            ? "denied"
-                            : undefined)
-                        }
-                        onApprove={() =>
-                          onApproveCheckpoint?.(message.metadata!.checkpoint!.checkpointId, message)
-                        }
-                        onDeny={() =>
-                          onDenyCheckpoint?.(message.metadata!.checkpoint!.checkpointId, message)
-                        }
-                      />
-                    </div>
-                  )}
+                  {(message.metadata?.checkpoint || message.metadata?.approval) && (() => {
+                    const chk = message.metadata?.checkpoint || message.metadata?.approval;
+                    return (
+                      <div className="mt-2">
+                        <ApprovalCard
+                          checkpointId={chk?.checkpointId}
+                          actionSummary={chk?.actionSummary || "Approval Required"}
+                          reason={chk?.reason || ""}
+                          details={chk?.details}
+                          resolved={chk?.resolved ?? (chk?.status !== "pending" && chk?.status !== undefined)}
+                          outcome={
+                            chk?.outcome ||
+                            (chk?.status === "approved"
+                              ? "approved"
+                              : chk?.status === "denied"
+                              ? "denied"
+                              : undefined)
+                          }
+                          onApprove={() => {
+                            const id = chk?.checkpointId || message._id;
+                            if (onApproveCheckpoint) {
+                              onApproveCheckpoint(id, message);
+                            } else {
+                              onSelectPrompt?.("Proceed with approved action.", "cofounder");
+                            }
+                          }}
+                          onDeny={() => {
+                            const id = chk?.checkpointId || message._id;
+                            if (onDenyCheckpoint) {
+                              onDenyCheckpoint(id, message);
+                            } else {
+                              onSelectPrompt?.("Cancel and abort this action.", "cofounder");
+                            }
+                          }}
+                        />
+                      </div>
+                    );
+                  })()}
 
                   {/* ── Control Layer: Secure Credential Share Card ── */}
-                  {message.metadata?.secretRequest && (
-                    <div className="mt-2">
-                      <SecretShareCard
-                        checkpointId={message.metadata.secretRequest.checkpointId}
-                        purpose={message.metadata.secretRequest.purpose}
-                        label={message.metadata.secretRequest.label}
-                        placeholder={message.metadata.secretRequest.placeholder}
-                        submitted={message.metadata.secretRequest.submitted}
-                        onSubmit={(val) =>
-                          onSubmitSecret?.(
-                            message.metadata!.secretRequest!.checkpointId || message._id,
-                            val,
-                            message
-                          )
-                        }
-                        onCancel={() =>
-                          onDenyCheckpoint?.(
-                            message.metadata!.secretRequest!.checkpointId || message._id,
-                            message
-                          )
-                        }
-                      />
-                    </div>
-                  )}
+                  {(message.metadata?.secretRequest || message.metadata?.secretShare) && (() => {
+                    const sec = message.metadata?.secretRequest || message.metadata?.secretShare;
+                    return (
+                      <div className="mt-2">
+                        <SecretShareCard
+                          checkpointId={sec?.checkpointId}
+                          purpose={sec?.purpose}
+                          label={sec?.label}
+                          placeholder={sec?.placeholder}
+                          submitted={sec?.submitted}
+                          onSubmit={(val) => {
+                            const id = sec?.checkpointId || message._id;
+                            if (onSubmitSecret) {
+                              onSubmitSecret(id, val, message);
+                            } else {
+                              onSelectPrompt?.(`[SECURE CREDENTIAL RECEIVED]: ${val.slice(0, 4)}••••`, "cofounder");
+                            }
+                          }}
+                          onCancel={() => {
+                            const id = sec?.checkpointId || message._id;
+                            if (onDenyCheckpoint) {
+                              onDenyCheckpoint(id, message);
+                            } else {
+                              onSelectPrompt?.("Secret sharing cancelled.", "cofounder");
+                            }
+                          }}
+                        />
+                      </div>
+                    );
+                  })()}
 
                   {/* ── 1-Tap bKash / Nagad Mobile App Deep-Link Card (Ticket #2) ── */}
                   {(message.metadata as any)?.paymentInfo && (() => {
@@ -686,28 +705,6 @@ export function Transcript({
                       <OvernightJobCard
                         {...(message.metadata.overnightJob as any)}
                         onOpenArtifact={(tab) => onOpenArtifact?.(tab, message)}
-                      />
-                    </div>
-                  )}
-
-                  {/* 🛡️ Human-in-the-Loop Orchestrator Approval Checkpoint */}
-                  {message.metadata?.approval && (
-                    <div className="mt-2">
-                      <ApprovalCard
-                        {...(message.metadata.approval as any)}
-                        onApprove={() => onSelectPrompt?.("Proceed with approved action.", "cofounder")}
-                        onDeny={() => onSelectPrompt?.("Cancel and abort this action.", "cofounder")}
-                      />
-                    </div>
-                  )}
-
-                  {/* 🔑 Secure In-Band Credential Sharing */}
-                  {message.metadata?.secretShare && (
-                    <div className="mt-2">
-                      <SecretShareCard
-                        {...(message.metadata.secretShare as any)}
-                        onSubmit={(val) => onSelectPrompt?.(`[SECURE CREDENTIAL RECEIVED]: ${val.slice(0, 4)}••••`, "cofounder")}
-                        onCancel={() => onSelectPrompt?.("Secret sharing cancelled.", "cofounder")}
                       />
                     </div>
                   )}

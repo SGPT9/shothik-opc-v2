@@ -734,6 +734,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
+                  aria-label="Tools"
                   onClick={() => {
                     setToolsMenuOpen((o) => !o);
                     setAttachMenuOpen(false);
@@ -742,10 +743,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   }}
                   disabled={disabled || activeStreaming}
                   className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/70 text-xs font-semibold text-foreground/90 transition cursor-pointer"
-                  title="Open AI Skills & Workflows (+)"
+                  title="Open Tools & AI Skills (+)"
                 >
                   <Plus className="h-3.5 w-3.5 text-brand" />
-                  <span>Skills</span>
+                  <span>Tools</span>
                   <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
 

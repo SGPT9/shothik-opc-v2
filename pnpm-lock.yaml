@@ -255,7 +255,7 @@ importers:
         specifier: 1.32.0
         version: 1.32.0
       prettier:
-        specifier: ^3.6.2
+        specifier: ^3.9.6
         version: 3.9.6
       prettier-plugin-css-order:
         specifier: ^2.1.2

@@ -92,7 +92,7 @@ export function VoicePopup({
         {/* Top Meta Header */}
         <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[11px] font-mono text-slate-300 mb-2">
           <Globe className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-          <span>Dual-Voice Sync (Bangla / English)</span>
+          <span>Dual-Voice Sync ({activeOption.label})</span>
         </div>
 
         {/* 3D Holographic Avatar Orb with Reactive Concentric Waves */}

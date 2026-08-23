@@ -43,11 +43,11 @@ router.post("/ollama/chat", async (req: Request, res: Response) => {
         res.write(`data: ${JSON.stringify(chunk)}\n\n`);
       }
       res.write("data: [DONE]\n\n");
-      res.end();
+      return res.end();
     } catch (err: any) {
       logger.error({ err: err?.message }, "[ollama-route] Chat stream error");
       res.write(`data: ${JSON.stringify({ error: err?.message })}\n\n`);
-      res.end();
+      return res.end();
     }
   } else {
     try {
@@ -55,9 +55,9 @@ router.post("/ollama/chat", async (req: Request, res: Response) => {
       for await (const chunk of OllamaService.streamChat({ messages, model, temperature })) {
         fullContent += chunk.content;
       }
-      res.json({ message: { role: "assistant", content: fullContent } });
+      return res.json({ message: { role: "assistant", content: fullContent } });
     } catch (err: any) {
-      res.status(500).json({ error: err?.message });
+      return res.status(500).json({ error: err?.message });
     }
   }
 });
@@ -112,11 +112,11 @@ router.post(["/ollama/pull", "/v1/models/pull"], async (req: Request, res: Respo
     }
 
     res.write("data: [DONE]\n\n");
-    res.end();
+    return res.end();
   } catch (error: any) {
     res.write(`data: ${JSON.stringify({ status: "success", simulated: true, model })}\n\n`);
     res.write("data: [DONE]\n\n");
-    res.end();
+    return res.end();
   }
 });
 
