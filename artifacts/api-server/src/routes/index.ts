@@ -18,6 +18,7 @@ import { dshRouter } from "./dsh";
 import { swarmRouter } from "./swarm";
 import { ragRouter } from "./rag";
 import { sandboxRouter } from "./sandbox";
+import { visionRouter } from "./vision";
 import proxyRouter from "./proxy";
 
 const router: IRouter = Router();
@@ -29,6 +30,7 @@ router.use(dshRouter);
 router.use(swarmRouter);
 router.use(ragRouter);
 router.use(sandboxRouter);
+router.use(visionRouter);
 router.use(loopRouter);
 router.use(chatLocalRouter);
 router.use(twinSeedRouter);
