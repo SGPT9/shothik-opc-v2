@@ -1,10 +1,10 @@
 # Multi-Stage Production Dockerfile for Shothik API Server
 # Stage 1: Build API Server
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Enable pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Enable pnpm v9
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 # Copy monorepo workspace configs and package definitions
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
@@ -22,7 +22,7 @@ WORKDIR /app/artifacts/api-server
 RUN pnpm run build
 
 # Stage 2: Production Runner
-FROM node:20-alpine AS runner
+FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4000
