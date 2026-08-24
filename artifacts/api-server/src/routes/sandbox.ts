@@ -1,0 +1,59 @@
+import { Router, Request, Response } from "express";
+import { codeSandbox, SandboxLanguage } from "../lib/code-sandbox.js";
+import { logger } from "../lib/logger.js";
+
+export const sandboxRouter = Router();
+
+/**
+ * GET /api/v1/sandbox/runtimes
+ * Lists supported code sandbox runtimes.
+ */
+sandboxRouter.get("/v1/sandbox/runtimes", (_req: Request, res: Response): void => {
+  const runtimes = codeSandbox.getRuntimes();
+  res.json({
+    success: true,
+    count: runtimes.length,
+    runtimes,
+  });
+});
+
+/**
+ * POST /api/v1/sandbox/run
+ * Executes arbitrary code safely inside the isolated sandbox.
+ */
+sandboxRouter.post("/v1/sandbox/run", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { language = "javascript", code, timeoutMs = 10000, environmentVars } = req.body;
+
+    if (!code || typeof code !== "string") {
+      res.status(400).json({ success: false, error: "Missing or invalid 'code' field (string required)" });
+      return;
+    }
+
+    const validLanguages: SandboxLanguage[] = ["javascript", "typescript", "python", "bash"];
+    if (!validLanguages.includes(language)) {
+      res.status(400).json({
+        success: false,
+        error: `Invalid language '${language}'. Must be one of: ${validLanguages.join(", ")}`,
+      });
+      return;
+    }
+
+    logger.info(`[sandbox-route] Executing ${language} snippet (${code.length} chars)`);
+
+    const result = await codeSandbox.execute({
+      language,
+      code,
+      timeoutMs: Number(timeoutMs),
+      environmentVars,
+    });
+
+    res.json({
+      success: result.success,
+      result,
+    });
+  } catch (err: any) {
+    logger.error(`[sandbox-route] Execution error: ${err.message}`);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
