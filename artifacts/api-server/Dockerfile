@@ -8,14 +8,11 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 # Copy monorepo workspace configs and package definitions
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
-COPY artifacts/api-server/package.json ./artifacts/api-server/
-COPY packages ./packages
+COPY lib ./lib
+COPY artifacts/api-server ./artifacts/api-server
 
 # Install dependencies across workspace
 RUN pnpm install --filter @workspace/api-server... --no-frozen-lockfile
-
-# Copy api-server source
-COPY artifacts/api-server ./artifacts/api-server
 
 # Build api-server bundle
 WORKDIR /app/artifacts/api-server
