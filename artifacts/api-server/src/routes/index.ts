@@ -15,6 +15,7 @@ import mcpRouter from "./mcp";
 import { memoryRouter } from "./memory";
 import { inferenceRouter } from "./inference";
 import { dshRouter } from "./dsh";
+import { swarmRouter } from "./swarm";
 import proxyRouter from "./proxy";
 
 const router: IRouter = Router();
@@ -23,6 +24,7 @@ router.use(healthRouter);
 router.use(ollamaRouter);
 router.use(inferenceRouter);
 router.use(dshRouter);
+router.use(swarmRouter);
 router.use(loopRouter);
 router.use(chatLocalRouter);
 router.use(twinSeedRouter);
