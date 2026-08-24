@@ -20,12 +20,14 @@ RUN pnpm run build
 
 # Stage 2: Production Runner
 FROM node:22-alpine AS runner
-WORKDIR /app
+WORKDIR /app/artifacts/api-server
 ENV NODE_ENV=production
 ENV PORT=4000
+ENV NODE_PATH=/app/node_modules
 
-# Copy node_modules, built bundle, and package metadata
-COPY --from=builder /app/node_modules ./node_modules
+# Copy root node_modules and distribution
+COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=builder /app/lib /app/lib
 COPY --from=builder /app/artifacts/api-server/dist ./dist
 COPY --from=builder /app/artifacts/api-server/package.json ./package.json
 
