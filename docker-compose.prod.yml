@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # 1. Ask-First Frontend Shell (shothikgpt.com)
+  frontend:
+    build:
+      context: ./artifacts/shothik
+      dockerfile: Dockerfile
+    container_name: shothik-frontend-prod
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=https://api.shothikgpt.com
+      - VITE_WS_URL=wss://ws.shothikgpt.com
+    ports:
+      - "3000:3000"
+    networks:
+      - shothik-mesh
+
+  # 2. Unified Backend API Gateway (api.shothikgpt.com)
+  api-server:
+    build:
+      context: ./artifacts/api-server
+      dockerfile: Dockerfile
+    container_name: shothik-api-prod
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - REDIS_URL=redis://redis:6379
+      - SEARXNG_URL=http://searxng:8080
+      - OLLAMA_HOST=http://host.docker.internal:11434
+    ports:
+      - "4000:4000"
+    depends_on:
+      - redis
+      - searxng
+    networks:
+      - shothik-mesh
+
+  # 3. Redis Priority Queue & Semantic Cache (BullMQ)
+  redis:
+    image: redis:7-alpine
+    container_name: shothik-redis-prod
+    restart: always
+    command: redis-server --save 60 1 --loglevel warning
+    volumes:
+      - redis-data:/data
+    networks:
+      - shothik-mesh
+
+  # 4. Zero-Cost Local Search Proxy (SearXNG)
+  searxng:
+    image: searxng/searxng:latest
+    container_name: shothik-searxng-prod
+    restart: always
+    environment:
+      - SEARXNG_BASE_URL=https://api.shothikgpt.com/search
+    networks:
+      - shothik-mesh
+
+networks:
+  shothik-mesh:
+    driver: bridge
+
+volumes:
+  redis-data:
