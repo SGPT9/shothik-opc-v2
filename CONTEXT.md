@@ -16,7 +16,8 @@
   • Gortex Mesh      • Key Custody Vault             • Founder Cockpit   • 57-Skill Registry
   • Tonight Engine   • RLS Governance Auditor        • Visual Canvas     • Smart Router
   • Bangla NLP       • Unit Economics Engine         • Office Slidev     • Local Search Scraper
-  • Soup Fine-Tuning • MFS Fraud Guard               • Writing Studio    • CLI Tools
+  • Vespa Hybrid RAG • MFS Fraud Guard               • Writing Studio    • CLI Tools
+  • Soup Fine-Tuning
 ```
 
 ---
@@ -24,6 +25,7 @@
 ## 📖 Canonical Domain Glossary
 
 * **Autonomous Swarm (`@shothik/swarm`)**: A 5-agent Directed Acyclic Graph (DAG) execution pipeline reaching deterministic consensus before code execution or financial actions.
+* **Vespa Hybrid Search & Tensor Engine (`@shothik/vespa`)**: High-throughput BM25 lexical matching, dense HNSW vector search, and Tensor cross-scoring retrieval engine.
 * **Smart Intent Router (`@shothik/router`)**: Intent-first semantic prompt classifier and multi-model dispatcher.
 * **GORTEX Local Mesh (`@shothik/gortex`)**: Sub-50ms local LLM gateway and 96% token cost reducer.
 * **Tonight Autonomous Engine (`@shothik/tonight`)**: Scheduled overnight batch executor, competitor ad spy, and ScenarioLabs 30-scenario stress simulator.
