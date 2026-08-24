@@ -20,16 +20,16 @@ RUN pnpm run build
 
 # Stage 2: Production Runner
 FROM node:22-alpine AS runner
-WORKDIR /app/artifacts/api-server
+WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4000
-ENV NODE_PATH=/app/node_modules
 
-# Copy root node_modules and distribution
-COPY --from=builder /app/node_modules /app/node_modules
+# Install runtime dependencies required by externalized bundle modules
+RUN npm install --no-package-lock --no-save @pinojs/redact pino express cors dotenv
+
 COPY --from=builder /app/lib /app/lib
-COPY --from=builder /app/artifacts/api-server/dist ./dist
-COPY --from=builder /app/artifacts/api-server/package.json ./package.json
+COPY --from=builder /app/artifacts/api-server/dist /app/dist
+COPY --from=builder /app/artifacts/api-server/package.json /app/package.json
 
 EXPOSE 4000
 
