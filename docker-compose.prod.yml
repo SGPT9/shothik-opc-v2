@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # 1. Ask-First Frontend Shell (shothikgpt.com)
   frontend:
