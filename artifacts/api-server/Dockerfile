@@ -24,7 +24,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=4000
 
-# Copy built bundle from builder
+# Copy node_modules, built bundle, and package metadata
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/artifacts/api-server/dist ./dist
 COPY --from=builder /app/artifacts/api-server/package.json ./package.json
 
