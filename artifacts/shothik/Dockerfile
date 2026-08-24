@@ -7,7 +7,7 @@ WORKDIR /app
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
 # Copy workspace configs and package definitions
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* tsconfig*.json ./
 COPY lib ./lib
 COPY artifacts/shothik ./artifacts/shothik
 
