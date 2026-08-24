@@ -2,8 +2,8 @@ services:
   # 1. Ask-First Frontend Shell (shothikgpt.com)
   frontend:
     build:
-      context: ./artifacts/shothik
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: artifacts/shothik/Dockerfile
     container_name: shothik-frontend-prod
     restart: always
     environment:

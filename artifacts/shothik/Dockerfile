@@ -1,4 +1,4 @@
-# Multi-Stage Production Dockerfile for Shothik AI on Hostinger VPS
+# Multi-Stage Production Dockerfile for Shothik Frontend Shell
 # Stage 1: Build Frontend
 FROM node:22-alpine AS builder
 WORKDIR /app
@@ -6,12 +6,16 @@ WORKDIR /app
 # Enable pnpm v9
 RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 
-# Install dependencies
-COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile || pnpm install
+# Copy workspace configs and package definitions
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+COPY lib ./lib
+COPY artifacts/shothik ./artifacts/shothik
+
+# Install dependencies across workspace
+RUN pnpm install --filter @workspace/shothik... --no-frozen-lockfile
 
 # Build static assets
-COPY . .
+WORKDIR /app/artifacts/shothik
 RUN pnpm run build
 
 # Stage 2: Production Server Runner
@@ -24,9 +28,9 @@ ENV PORT=3000
 RUN npm install express cors dotenv
 
 # Copy built assets from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/server ./server
-COPY --from=builder /app/public ./public
+COPY --from=builder /app/artifacts/shothik/dist ./dist
+COPY --from=builder /app/artifacts/shothik/server ./server
+COPY --from=builder /app/artifacts/shothik/public ./public
 
 EXPOSE 3000
 
