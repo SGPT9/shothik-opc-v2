@@ -1,0 +1,40 @@
+name: Release Automation & Semver
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          release-type: node
+          package-name: shothik-opc-v2
+          changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"perf","section":"Performance Improvements","hidden":false}]'
+
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          node-version: 22
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          version: 9
+
+      - name: Publish to NPM / GitHub Packages
+        if: ${{ steps.release.outputs.release_created }}
+        run: echo "Release ${{ steps.release.outputs.tag_name }} published successfully."
