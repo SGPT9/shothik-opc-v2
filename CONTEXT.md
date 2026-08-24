@@ -1,6 +1,16 @@
 # Ubiquitous Domain Glossary & Context Map
 
-> **Canonical Terminology & Bounded Contexts for Shothik Platform**
+> **Canonical Terminology, Production Domain Topology & Bounded Contexts for Shothik Platform**
+
+---
+
+## 🌐 Official Production Domain & Edge Topology (`shothikgpt.com`)
+
+* **Primary Web & Ask-First Shell**: `https://shothikgpt.com`
+* **API Gateway & InsForge Connector**: `https://api.shothikgpt.com`
+* **Realtime Audio & Swarm WebSockets**: `wss://ws.shothikgpt.com`
+* **Developer Docs & OpenAPI 3.1**: `https://docs.shothikgpt.com`
+* **Quantized Model Registry (GGUF)**: `https://models.shothikgpt.com`
 
 ---
 
