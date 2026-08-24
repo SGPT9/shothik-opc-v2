@@ -18,8 +18,8 @@ services:
   # 2. Unified Backend API Gateway (api.shothikgpt.com)
   api-server:
     build:
-      context: ./artifacts/api-server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: artifacts/api-server/Dockerfile
     container_name: shothik-api-prod
     restart: always
     environment:
