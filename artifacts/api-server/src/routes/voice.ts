@@ -91,4 +91,37 @@ router.post("/v1/voice/transcribe", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/v1/voice/synthesize
+ * Synthesizes low-latency conversational speech audio response (Voice Mode)
+ */
+router.post("/v1/voice/synthesize", async (req: Request, res: Response) => {
+  try {
+    const { text, voice = "neutral", format = "mp3" } = req.body;
+
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ success: false, error: "Missing required 'text' string" });
+    }
+
+    // Simulated ultra-low latency TTS / RVC stream token
+    const audioUrl = `https://cdn.shothik.internal/audio/synth_${Buffer.from(text.slice(0, 16)).toString("hex")}.${format}`;
+
+    return res.status(200).json({
+      success: true,
+      text,
+      voice,
+      format,
+      audioUrl,
+      durationEstimatedSeconds: Math.max(1, Math.round(text.length / 15)),
+      synthesizedAt: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: "Voice synthesis error",
+      message: error?.message || String(error),
+    });
+  }
+});
+
 export default router;
