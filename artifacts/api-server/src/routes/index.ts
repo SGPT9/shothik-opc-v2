@@ -16,6 +16,8 @@ import { memoryRouter } from "./memory";
 import { inferenceRouter } from "./inference";
 import { dshRouter } from "./dsh";
 import { swarmRouter } from "./swarm";
+import { ragRouter } from "./rag";
+import { sandboxRouter } from "./sandbox";
 import proxyRouter from "./proxy";
 
 const router: IRouter = Router();
@@ -25,6 +27,8 @@ router.use(ollamaRouter);
 router.use(inferenceRouter);
 router.use(dshRouter);
 router.use(swarmRouter);
+router.use(ragRouter);
+router.use(sandboxRouter);
 router.use(loopRouter);
 router.use(chatLocalRouter);
 router.use(twinSeedRouter);
