@@ -71,6 +71,7 @@ export default function UrlInput() {
             onChange={(e) => setUrl(e.target.value)}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
+            aria-label="GitHub repository URL or owner/repo"
             placeholder="github.com/vercel/next.js or owner/repo"
             className="flex-1 py-4 pr-2 bg-transparent outline-none text-base placeholder:text-[var(--text-muted)] text-[var(--text-primary)]"
             autoComplete="off"
