@@ -138,12 +138,12 @@ export default function AccountPopover() {
           )}
 
           <div className="flex flex-col">
-            <Link href="mailto:support@shothik.ai" className="no-underline">
+            <a href="mailto:contact@shothikgpt.com" className="no-underline">
               <div className="hover:bg-primary/10 flex w-full items-center gap-3 px-3 py-2 text-sm">
                 <HelpCircle className="h-5 w-5" />
                 <span>Help Center</span>
               </div>
-            </Link>
+            </a>
             <Link
               href="/contact-us"
               data-rybbit-event="Contact us"
