@@ -308,6 +308,40 @@ export default defineConfig(async ({ mode }) => {
   build: {
     outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 800,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('scheduler') || id.includes('wouter')) {
+              return 'vendor-react-core';
+            }
+            if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('class-variance-authority') || id.includes('clsx') || id.includes('tailwind-merge')) {
+              return 'vendor-ui-primitives';
+            }
+            if (id.includes('@tiptap') || id.includes('prosemirror')) {
+              return 'vendor-editor-suite';
+            }
+            if (id.includes('jspdf') || id.includes('html2canvas') || id.includes('xlsx') || id.includes('jszip')) {
+              return 'vendor-heavy-export';
+            }
+            if (id.includes('three') || id.includes('@react-three')) {
+              return 'vendor-3d-visuals';
+            }
+            if (id.includes('framer-motion') || id.includes('motion')) {
+              return 'vendor-motion';
+            }
+            if (id.includes('@tanstack/react-query') || id.includes('axios')) {
+              return 'vendor-networking';
+            }
+            if (id.includes('prismjs') || id.includes('shiki') || id.includes('highlight.js') || id.includes('refractor')) {
+              return 'vendor-syntax-highlighter';
+            }
+          }
+        },
+      },
+    },
   },
   server: {
     port,
