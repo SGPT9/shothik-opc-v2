@@ -1,11 +1,13 @@
+import { Suspense, lazy } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import Editor from "@monaco-editor/react";
 import { Bot, Brain, Globe, Minimize2 } from "lucide-react";
 import { motion } from "motion/react";
 import RenderMarkdown from "./RenderMarkdown";
 import TaskProgress from "./TaskProgress";
+
+const Editor = lazy(() => import("@monaco-editor/react"));
 
 const ComputerWindow = ({ computerLogs, closeWindow, taskProgress }) => {
   function handleEditorWillMount(monaco) {
@@ -97,24 +99,26 @@ const ComputerWindow = ({ computerLogs, closeWindow, taskProgress }) => {
           >
             {computerLogs?.message?.includes("##") &&
             computerLogs?.type === "text"
-              ? "Shothik AI Agent Task is completed"
+              ? "ShothikGPT Agent Task is completed"
               : computerLogs.message}
           </div>
           {computerLogs?.type === "tool" ? (
-            <Editor
-              height="93.5%"
-              defaultLanguage="markdown"
-              value={computerLogs?.data?.result}
-              beforeMount={handleEditorWillMount}
-              theme="mint-light-theme"
-              options={{
-                readOnly: true,
-                scrollBeyondLastLine: false,
-                minimap: { enabled: false },
-                lineNumbers: "off",
-                wordWrap: "on",
-              }}
-            />
+            <Suspense fallback={<div className="p-4 text-xs text-zinc-500">Loading IDE preview...</div>}>
+              <Editor
+                height="93.5%"
+                defaultLanguage="markdown"
+                value={computerLogs?.data?.result}
+                beforeMount={handleEditorWillMount}
+                theme="mint-light-theme"
+                options={{
+                  readOnly: true,
+                  scrollBeyondLastLine: false,
+                  minimap: { enabled: false },
+                  lineNumbers: "off",
+                  wordWrap: "on",
+                }}
+              />
+            </Suspense>
           ) : computerLogs?.type === "result" ||
             computerLogs?.message?.includes("##") ? (
             <div className={cn("h-[93.5%] overflow-auto px-4", "bg-primary/5")}>
