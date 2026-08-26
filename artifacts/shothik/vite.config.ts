@@ -335,6 +335,12 @@ export default defineConfig(async ({ mode }) => {
             if (id.includes('@tanstack/react-query') || id.includes('axios')) {
               return 'vendor-networking';
             }
+            if (id.includes('@monaco-editor') || id.includes('monaco-editor')) {
+              return 'vendor-monaco';
+            }
+            if (id.includes('@fortune-sheet')) {
+              return 'vendor-spreadsheet';
+            }
             if (id.includes('prismjs') || id.includes('shiki') || id.includes('highlight.js') || id.includes('refractor')) {
               return 'vendor-syntax-highlighter';
             }
