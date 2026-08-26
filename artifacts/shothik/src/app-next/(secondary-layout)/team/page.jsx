@@ -3,13 +3,12 @@ import TeamCulture from "@/components/(secondary-layout)/(team-page)/TeamCulture
 import TeamDepartments from "@/components/(secondary-layout)/(team-page)/TeamDepartments";
 import TeamHero from "@/components/(secondary-layout)/(team-page)/TeamHero";
 import TeamLeadership from "@/components/(secondary-layout)/(team-page)/TeamLeadership";
-import TeamMembers from "@/components/(secondary-layout)/(team-page)/TeamMembers";
 
 export async function generateMetadata() {
   return {
-    title: "Our Team - Meet the Minds Behind Shothik AI",
+    title: "Leadership & Team - Shothik AI (SGPT9)",
     description:
-      "Meet the talented team behind Shothik AI. From engineers and designers to legal advisors, discover the people building the future of AI writing and marketing automation.",
+      "Meet the leadership team behind Shothik AI. Driving autonomous multi-agent intelligence and enterprise AI operating systems for Emerging Markets.",
   };
 }
 
@@ -20,7 +19,6 @@ export default function TeamPage() {
       <div className="container mx-auto px-4">
         <TeamLeadership />
         <TeamDepartments />
-        <TeamMembers />
         <TeamCulture />
         <TeamCTA />
       </div>

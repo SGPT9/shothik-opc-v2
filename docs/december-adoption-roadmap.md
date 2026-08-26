@@ -68,12 +68,12 @@ After a deeptech evaluation across SRE, Frontend, AI/LLM Gateway, and Security d
 
 ## 🛠️ Step-by-Step Action Items
 
-| Department | Action Item | Target File | Priority |
+| Department | Action Item | Target File | Status |
 | :--- | :--- | :--- | :--- |
-| **DevOps** | Inject `output: 'standalone'` into Next.js Docker builds | [`src/lib/infrastructure/coolify-deployer.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/coolify-deployer.ts) | 🔴 High |
-| **Frontend** | Add `Cmd + \` split toggle & element inspector overlay | [`src/components/writing-studio/components/BookCenterCanvas.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/writing-studio/components/BookCenterCanvas.tsx) | 🔴 High |
-| **AI Gateway** | Add local Ollama/ODS v2.6.0 auto-discovery scanner | [`src/lib/llm/gateway.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/llm/gateway.ts) | 🟡 Medium |
-| **Security** | Enforce non-root `USER nextjs` execution in Dokploy | [`src/lib/infrastructure/coolify-deployer.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/coolify-deployer.ts) | 🟡 Medium |
+| **DevOps** | Inject `output: 'standalone'` into Next.js Docker builds | [`src/lib/infrastructure/coolify-deployer.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/coolify-deployer.ts) | ✅ Completed |
+| **Frontend** | Add `Cmd + \` split toggle & element inspector overlay | [`src/components/writing-studio/components/BookCenterCanvas.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/writing-studio/components/BookCenterCanvas.tsx) | ✅ Completed |
+| **AI Gateway** | Add local Ollama/ODS v2.6.0 auto-discovery scanner | [`src/lib/llm/gateway.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/llm/gateway.ts) | ✅ Completed |
+| **Security** | Enforce non-root `USER nextjs` execution in Dokploy | [`src/lib/infrastructure/coolify-deployer.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/infrastructure/coolify-deployer.ts) | ✅ Completed |
 
 ---
 

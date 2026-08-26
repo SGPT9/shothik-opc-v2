@@ -100,6 +100,14 @@ vi.mock("@/lib/hermes/modules/document-ingestion-orchestrator", () => ({
   })),
 }));
 
+// Mock InsForgeTwinRagMemory to prevent unmocked pgvector network queries in unit tests
+vi.mock("@/lib/insforge/rag-memory", () => ({
+  InsForgeTwinRagMemory: {
+    searchWorkspaceContext: vi.fn().mockResolvedValue(""),
+    upsertMemoryChunk: vi.fn().mockResolvedValue(undefined),
+  },
+}));
+
 // Mock logger to suppress noise
 vi.mock("@/lib/logger", () => ({
   default: {

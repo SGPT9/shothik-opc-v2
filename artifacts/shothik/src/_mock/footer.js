@@ -1,42 +1,44 @@
-import { PATH_PAGE, PATH_TOOLS } from "@/config/route";
-
 export const LINKS = [
   {
     headline: "Company",
     children: [
-      { name: "About us", href: "/about-us" },
-      { name: "Contact us", href: "/contact-us" },
-      { name: "Pricing", href: "/pricing" },
-      { name: "Blogs", href: "/blogs" },
+      { name: "About Us", href: "/about-us" },
+      { name: "Leadership & Team", href: "/team" },
+      { name: "Contact Support", href: "/contact-us" },
+      { name: "Pricing & Plans", href: "/pricing" },
+      { name: "Engineering Blog", href: "/blogs" },
       { name: "Careers", href: "/career" },
     ],
   },
   {
-    headline: "Products & Tools",
+    headline: "Platform & Tools",
     children: [
-      { name: "AI Chat", href: "/agents/chat" },
-      { name: "Writing Studio", href: "/writing-studio" },
-      { name: "Twin AI Cofounder", href: "/twin" },
-      { name: "Slide Generation", href: "/slide-generation" },
-      { name: "Paraphrasing", href: "/paraphrase" },
+      { name: "Autonomous AI Chat", href: "/agents/chat" },
+      { name: "Writing Studio & Canvas", href: "/writing-studio" },
+      { name: "Merchant Twin Cockpit", href: "/twin" },
+      { name: "Slide & Presentation AI", href: "/slide-generation" },
+      { name: "Bangla & English Paraphraser", href: "/paraphrase" },
+      { name: "Plagiarism & AI Humanizer", href: "/plagiarism-checker" },
     ],
   },
   {
     headline: "Legal & Trust",
     children: [
-      { name: "Terms of service", href: "/terms" },
-      { name: "Privacy policy", href: "/privacy" },
-      { name: "Deletion policy", href: "/deletion" },
-      { name: "Refund policy", href: "/payment/refund-policy" },
+      { name: "Terms of Service", href: "/terms" },
+      { name: "Privacy Policy", href: "/privacy" },
+      { name: "Data Deletion Policy", href: "/deletion" },
+      { name: "Refund & Billing Policy", href: "/payment/refund-policy" },
+      { name: "Community Guidelines", href: "/copyright" },
+      { name: "Magna Carta", href: "/magna-carta" },
     ],
   },
   {
-    headline: "Support",
+    headline: "Ecosystem & Support",
     children: [
-      { name: "Help center", href: "mailto:support@shothik.ai" },
-      { name: "Tutorials", href: "/tutorials" },
-      { name: "FAQs", href: "/faqs" },
-      { name: "Community Forum", href: "/community" },
+      { name: "Community Showcase", href: "/community" },
+      { name: "Tutorials & Guides", href: "/tutorials" },
+      { name: "Frequently Asked Questions", href: "/faqs" },
+      { name: "Help Center", href: "mailto:contact@shothikgpt.com", isExternal: true },
     ],
   },
 ];

@@ -11,6 +11,7 @@ import scraperRouter from "./scraper";
 import publishingRouter from "./publishing";
 import approvalsRouter from "./approvals";
 import voiceRouter from "./voice";
+import whatsappRouter from "./whatsapp";
 import mcpRouter from "./mcp";
 import { memoryRouter } from "./memory";
 import { inferenceRouter } from "./inference";
@@ -19,9 +20,12 @@ import { swarmRouter } from "./swarm";
 import { ragRouter } from "./rag";
 import { sandboxRouter } from "./sandbox";
 import { visionRouter } from "./vision";
+import telemetryRouter from "./telemetry";
 import proxyRouter from "./proxy";
 
 const router: IRouter = Router();
+
+router.use("/api/telemetry", telemetryRouter);
 
 router.use(healthRouter);
 router.use(ollamaRouter);
@@ -41,6 +45,7 @@ router.use(scraperRouter);
 router.use(publishingRouter);
 router.use(approvalsRouter);
 router.use(voiceRouter);
+router.use(whatsappRouter);
 router.use(mcpRouter);
 router.use(memoryRouter);
 

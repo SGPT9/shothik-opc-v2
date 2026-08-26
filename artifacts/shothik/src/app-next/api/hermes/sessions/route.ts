@@ -42,7 +42,9 @@ export async function GET(request: NextRequest) {
   if (!user?._id) return unauthorized();
 
   try {
-    const query = Object.fromEntries(request.nextUrl.searchParams.entries());
+    const searchParams =
+      request.nextUrl?.searchParams ?? new URL(request.url).searchParams;
+    const query = Object.fromEntries(searchParams.entries());
     const validated = ListSessionsQuerySchema.parse(query);
 
     const sessions = await getHermesOrchestrator().listSessions({

@@ -16,6 +16,9 @@ import {
   Video,
   Rocket,
   Languages,
+  MousePointerClick,
+  Copy,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -67,12 +70,55 @@ export function BookCenterCanvas({
   livePreviewUrl = "https://yourbusiness.com",
 }: BookCenterCanvasProps) {
   const [isInspectorActive, setIsInspectorActive] = useState(false);
-  const [selectedElementInfo, setSelectedElementInfo] = useState<{ tagName: string; textContent: string } | null>(null);
+  const [inspectedElement, setInspectedElement] = useState<{
+    selector: string;
+    tagName: string;
+    textContent: string;
+    dimensions?: string;
+  } | null>(null);
+  const [copiedSelector, setCopiedSelector] = useState(false);
   const [isScenarioLabOpen, setIsScenarioLabOpen] = useState(false);
   const [isPreflightOpen, setIsPreflightOpen] = useState(false);
   const [isVTuberOpen, setIsVTuberOpen] = useState(false);
   const [isCommercializeOpen, setIsCommercializeOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  // December Adaptation: Cmd + \ or Ctrl + \ split/switch shortcut between Writing Studio and Web Preview
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
+        e.preventDefault();
+        onTabChange(activeTab === "editor" ? "web_preview" : "editor");
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeTab, onTabChange]);
+
+  // December Adaptation: Element Inspector postMessage communication
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (!event.data || typeof event.data !== "object") return;
+      if (event.data.type === "SHOTHIK_INSPECT_HOVER" || event.data.type === "SHOTHIK_INSPECT_SELECT") {
+        setInspectedElement({
+          selector: event.data.selector || "",
+          tagName: event.data.tagName || "",
+          textContent: event.data.textContent || "",
+          dimensions: event.data.dimensions,
+        });
+      }
+    };
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  const handleCopySelector = () => {
+    if (inspectedElement?.selector) {
+      navigator.clipboard.writeText(inspectedElement.selector);
+      setCopiedSelector(true);
+      setTimeout(() => setCopiedSelector(false), 2000);
+    }
+  };
 
   const wordCount = editorText.trim() ? editorText.trim().split(/\s+/).length : 0;
   const readingTimeMin = Math.ceil(wordCount / 200);
@@ -343,14 +389,75 @@ export function BookCenterCanvas({
 
         {activeTab === "web_preview" && (
           <div className="flex flex-col h-full rounded-xl border border-border overflow-hidden bg-card">
+            {/* Inspector and URL Bar */}
             <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-muted/50 text-xs">
-              <span className="font-mono text-muted-foreground">{livePreviewUrl}</span>
-              <a href={livePreviewUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline flex items-center gap-1">
-                <span>Open in New Tab</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsInspectorActive(!isInspectorActive)}
+                  className={cn(
+                    "h-6 px-2 text-[10px] font-semibold gap-1 rounded-md transition cursor-pointer",
+                    isInspectorActive
+                      ? "bg-indigo-500/20 text-indigo-400 border-indigo-500/40 shadow-xs"
+                      : "text-muted-foreground hover:bg-muted/80"
+                  )}
+                  title="Toggle Element Inspector (Highlight DOM elements on hover)"
+                  data-testid="toggle-element-inspector"
+                >
+                  <MousePointerClick className="w-3 h-3" />
+                  {isInspectorActive ? "Inspector ON" : "Inspect Element"}
+                </Button>
+
+                <span className="font-mono text-muted-foreground truncate max-w-xs">{livePreviewUrl}</span>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono text-muted-foreground/80 hidden sm:inline-block">
+                  Press <kbd className="px-1 py-0.5 rounded bg-muted border border-border text-[9px]">⌘ \</kbd> to toggle editor
+                </span>
+                <a href={livePreviewUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline flex items-center gap-1">
+                  <span>Open in New Tab</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
             </div>
-            <iframe src={livePreviewUrl} className="w-full flex-1 border-0" title="Live Preview" />
+
+            {/* Inspected Element Status Bar Overlay if inspector is active */}
+            {isInspectorActive && (
+              <div className="flex items-center justify-between px-4 py-1.5 bg-indigo-950/40 border-b border-indigo-500/20 text-[11px] font-mono text-indigo-200">
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <span className="text-indigo-400 font-bold">INSPECTING:</span>
+                  {inspectedElement ? (
+                    <span className="truncate bg-indigo-500/20 px-2 py-0.5 rounded text-indigo-300 border border-indigo-500/30">
+                      {inspectedElement.selector || `<${inspectedElement.tagName.toLowerCase()}>`}
+                      {inspectedElement.dimensions && <span className="ml-1 text-muted-foreground text-[10px]">({inspectedElement.dimensions})</span>}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground italic">Hover over any element in the preview below to inspect…</span>
+                  )}
+                </div>
+
+                {inspectedElement?.selector && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={handleCopySelector}
+                    className="h-5 px-1.5 text-[10px] text-indigo-300 hover:text-white hover:bg-indigo-500/30 gap-1 cursor-pointer"
+                  >
+                    {copiedSelector ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                    <span>{copiedSelector ? "Copied" : "Copy Selector"}</span>
+                  </Button>
+                )}
+              </div>
+            )}
+
+            <iframe
+              src={livePreviewUrl}
+              className="w-full flex-1 border-0"
+              title="Live Preview"
+              data-testid="live-preview-iframe"
+            />
           </div>
         )}
       </div>
