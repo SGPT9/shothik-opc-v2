@@ -1,48 +1,46 @@
-
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Award, Globe, Heart, Rocket, Users, Zap } from "lucide-react";
+import { Award, Globe, Heart, Rocket, Shield, Zap } from "lucide-react";
 import * as motion from "motion/react-client";
 
 const cultureValues = [
   {
-    title: "Innovation First",
-    description: "Pushing boundaries of AI technology and creative solutions",
+    title: "Frontier Innovation",
+    description: "Pushing the boundaries of autonomous LLM reasoning and 5-tier model routing.",
     Icon: Rocket,
   },
   {
-    title: "Collaboration",
-    description: "Working together across departments to achieve excellence",
-    Icon: Users,
+    title: "Zero-Latency Architecture",
+    description: "Optimized for extreme low-memory devices and asynchronous background execution.",
+    Icon: Zap,
   },
   {
-    title: "Quality Excellence",
-    description: "Delivering reliable, accurate AI tools that users trust",
-    Icon: Award,
+    title: "Postgres RLS Security",
+    description: "Enterprise multi-tenant data isolation with strict tenant policy enforcement.",
+    Icon: Shield,
   },
   {
-    title: "Global Impact",
-    description:
-      "Making AI accessible to users worldwide, especially in Bangladesh",
+    title: "South Asian Demography Focus",
+    description: "Tailored for bKash, Nagad, Banglish NLP, and regional digital merchant commerce.",
     Icon: Globe,
   },
   {
-    title: "User-Centric",
-    description: "Every decision made with user success in mind",
+    title: "Customer-Centric Automation",
+    description: "Empowering creators, merchants, and students with autonomous AI workflows.",
     Icon: Heart,
   },
   {
-    title: "Move Fast",
-    description: "Rapid iteration and continuous improvement",
-    Icon: Zap,
+    title: "Engineering Excellence",
+    description: "Rigorous test-driven microservices, type safety, and real-time observability.",
+    Icon: Award,
   },
 ];
 
 const stats = [
-  { value: `${15}+`, label: "Team Members" },
-  { value: "4+", label: "Departments" },
-  { value: "Bangladesh", label: "Based In" },
+  { value: "3", label: "Core Pillars" },
+  { value: "5-Tier", label: "Model Mesh" },
   { value: "150+", label: "Countries Served" },
+  { value: "99.9%", label: "System Uptime" },
 ];
 
 export default function TeamCulture() {
@@ -60,10 +58,10 @@ export default function TeamCulture() {
             Our Culture
           </Badge>
           <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
-            How We Work
+            Engineering Principles
           </h2>
           <p className="text-muted-foreground mx-auto max-w-3xl text-xl leading-relaxed">
-            The values and principles that guide our team every day
+            The core technical values and architecture standards guiding our platform.
           </p>
         </motion.div>
 

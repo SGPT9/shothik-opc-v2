@@ -198,14 +198,17 @@ export default function SlidePreview({
     const timeoutId = setTimeout(updateDimensions, 100);
 
     // Create ResizeObserver for more accurate resize detection
-    const resizeObserver = new ResizeObserver(() => {
-      // Debounce resize events
-      clearTimeout(timeoutId);
-      setTimeout(updateDimensions, 50);
-    });
+    let resizeObserver = null;
+    if (typeof ResizeObserver !== "undefined") {
+      resizeObserver = new ResizeObserver(() => {
+        // Debounce resize events
+        clearTimeout(timeoutId);
+        setTimeout(updateDimensions, 50);
+      });
 
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current);
+      }
     }
 
     // Listen to window resize for viewport changes
@@ -213,7 +216,9 @@ export default function SlidePreview({
 
     return () => {
       clearTimeout(timeoutId);
-      resizeObserver.disconnect();
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       window.removeEventListener("resize", updateDimensions);
     };
   }, [activeTab]); // Re-run when tab changes

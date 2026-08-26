@@ -1,82 +1,33 @@
-
 import { team } from "@/_mock/team";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Briefcase, Code, Palette, Scale } from "lucide-react";
+import { Briefcase, Cpu, Sparkles } from "lucide-react";
 import * as motion from "motion/react-client";
 
 const departments = [
   {
-    title: "Engineering Team",
+    title: "AI Systems & Core Engineering",
     description:
-      "Full-stack developers, AI engineers, and system architects building robust AI solutions",
-    Icon: Code,
-    teamSize: team.filter(
-      (m) =>
-        m.designation?.includes("Developer") ||
-        m.designation?.includes("Engineer") ||
-        m.designation?.includes("Technology"),
-    ).length,
-    members: team
-      .filter(
-        (m) =>
-          m.designation?.includes("Developer") ||
-          m.designation?.includes("Engineer") ||
-          m.designation?.includes("Technology"),
-      )
-      .map((m) => m.name),
+      "Architecting distributed agent swarms, 5-tier model mesh, Hermes MCP gateway, and generative work surfaces",
+    Icon: Cpu,
+    teamSize: 1,
+    members: ["Ahsan Habib"],
   },
   {
-    title: "Design Team",
+    title: "Operations & Business Strategy",
     description:
-      "UI/UX designers creating intuitive and beautiful user experiences",
-    Icon: Palette,
-    teamSize: team.filter((m) => m.designation?.includes("Designer")).length,
-    members: team
-      .filter((m) => m.designation?.includes("Designer"))
-      .map((m) => m.name),
-  },
-  {
-    title: "Leadership & Strategy",
-    description:
-      "Visionary leaders guiding Shothik AI's strategic direction and growth",
+      "Operational leadership, commercial growth, merchant scaling, and strategic company execution",
     Icon: Briefcase,
-    teamSize: team.filter(
-      (m) =>
-        m.designation?.includes("CEO") ||
-        m.designation?.includes("Founder") ||
-        m.designation?.includes("Director") ||
-        m.designation?.includes("Advisor"),
-    ).length,
-    members: team
-      .filter(
-        (m) =>
-          m.designation?.includes("CEO") ||
-          m.designation?.includes("Founder") ||
-          m.designation?.includes("Director") ||
-          m.designation?.includes("Advisor"),
-      )
-      .map((m) => m.name),
+    teamSize: 1,
+    members: ["Shafin Ahmed"],
   },
   {
-    title: "Legal & Compliance",
+    title: "Strategic Advisory & Ecosystem",
     description:
-      "Legal advisors ensuring regulatory compliance and corporate governance",
-    Icon: Scale,
-    teamSize: team.filter(
-      (m) =>
-        m.designation?.includes("Legal") ||
-        m.designation?.includes("Barrister") ||
-        m.designation?.includes("Advocate"),
-    ).length,
-    members: team
-      .filter(
-        (m) =>
-          m.designation?.includes("Legal") ||
-          m.designation?.includes("Barrister") ||
-          m.designation?.includes("Advocate"),
-      )
-      .map((m) => m.name),
+      "Advisors and partners driving international expansion, governance, and institutional scaling",
+    Icon: Sparkles,
+    teamSize: 1,
+    members: ["Sudip Majumder"],
   },
 ];
 
@@ -92,17 +43,17 @@ export default function TeamDepartments() {
           className="mb-16 text-center"
         >
           <Badge className="mb-4 px-4 py-2 text-sm font-medium">
-            Departments
+            Core Pillars
           </Badge>
           <h2 className="mb-6 text-3xl font-bold sm:text-4xl lg:text-5xl">
-            Our Departments
+            Our Organization
           </h2>
           <p className="text-muted-foreground mx-auto max-w-3xl text-xl leading-relaxed">
-            Specialized teams working together to deliver exceptional AI tools
+            Focused leadership delivering frontier multi-agent AI for South Asia & Global markets
           </p>
         </motion.div>
 
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-3 justify-items-center">
           {departments.map((dept, index) => (
             <motion.div
               key={index}
@@ -110,6 +61,7 @@ export default function TeamDepartments() {
               whileInView={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.6, delay: 0.1 * (index + 1) }}
               viewport={{ once: true }}
+              className="w-full"
             >
               <Card className="bg-card h-full border-0 shadow-md transition-all duration-300 hover:shadow-lg">
                 <CardContent className="p-6 text-center">
@@ -121,12 +73,10 @@ export default function TeamDepartments() {
                     {dept.description}
                   </p>
                   <Badge variant="secondary" className="mb-3 text-xs">
-                    {dept.teamSize}+ Team Members
+                    {dept.teamSize} Member{dept.teamSize > 1 ? "s" : ""}
                   </Badge>
-                  <div className="text-muted-foreground text-xs">
-                    {dept.members.slice(0, 2).join(", ")}
-                    {dept.members.length > 2 &&
-                      ` +${dept.members.length - 2} more`}
+                  <div className="text-muted-foreground text-xs font-medium">
+                    {dept.members.join(", ")}
                   </div>
                 </CardContent>
               </Card>

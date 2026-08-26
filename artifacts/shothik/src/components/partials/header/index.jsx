@@ -46,6 +46,7 @@ import MenuColumn from "./MenuColumn";
 import MobileMenu from "./MobileMenu";
 import ThemeToggle from "./ThemeToggle";
 import { useTranslation } from "@/i18n";
+import { OfflineSyncStatusBadge } from "@/components/sync/OfflineSyncStatusBadge";
 
 
 const NotificationBell = lazy(() => import("@/components/forum/NotificationBell"));
@@ -259,6 +260,7 @@ export default function Header({ className, layout }) {
 
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
+              <OfflineSyncStatusBadge />
               <LanguageSwitcher className="inline-flex" />
               <ThemeToggle className="inline-flex" />
               <div className="flex items-center gap-2 md:gap-3">

@@ -78,6 +78,7 @@
 - `pnpm.cmd exec vitest run "lib/convex/auth-diagnostics.test.ts" "app/api/auth/convex-token/route.test.ts" "app/api/health/__tests__/route.test.ts" "lib/security/owasp-compliance.test.ts"` -> `4` files passed, `14` tests passed
 - `pnpm.cmd exec vitest run lib/convex/auth-diagnostics.test.ts app/api/auth/convex-token/route.test.ts lib/chat/server.test.ts app/api/chat/conversations/route.test.ts app/api/chat/conversations/[conversationId]/route.test.ts app/api/chat/conversations/[conversationId]/messages/route.test.ts app/api/chat/messages/[messageId]/route.test.ts` -> `7` files passed, `22` tests passed
 - `pnpm.cmd exec convex deploy --typecheck disable --env-file .env.local` -> deployed Convex functions to `https://dashing-mandrill-233.convex.cloud`
+- `npx vitest run "artifacts/shothik/src/lib/hermes/modules/chat-orchestrator/providers.test.ts" "artifacts/shothik/src/lib/hermes/modules/chat-orchestrator/chat-orchestrator.test.ts" "artifacts/shothik/src/lib/hermes/modules/chat-orchestrator/stream-bridge.test.ts" "artifacts/shothik/src/lib/hermes/modules/chat-orchestrator/vendor-manager.test.ts" "artifacts/shothik/src/lib/hermes/modules/chat-orchestrator/web-search.test.ts"` -> `5` test files passed, `38` tests passed (100%)
 - Live runtime diagnostics now report:
   - `https://dashing-mandrill-233.convex.site/.well-known/jwks.json` now serves the redeployed modulus that matches the app signer
   - `/api/health?deep=true` -> `checks["convex:auth"] = healthy`
@@ -91,3 +92,4 @@
 ## Current Status
 - Milestone 1: `Ready for Final Acceptance (99%)`
 - Highest-value blocker: `Execute and record one fully authenticated chat turn`
+

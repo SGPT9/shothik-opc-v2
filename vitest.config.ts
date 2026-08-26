@@ -20,6 +20,8 @@ export default defineConfig({
       'dist/**',
       'e2e/**',
       'deer-flow-backend/**',
+      'reference-repos/**',
+      'scratch/**',
       'tmp/**',
     ],
     coverage: {

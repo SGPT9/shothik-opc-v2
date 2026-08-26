@@ -15,5 +15,25 @@ describe("CoolifyDokployDeployer One-Click Deployment Engine", () => {
     expect(deployment.liveUrl).toContain("store.shothikgpt.com");
     expect(deployment.providerUsed).toBe("coolify");
     expect(deployment.monetizationInjected).toBe(true);
+    expect(deployment.containerSizeEstimateMb).toBe(88);
+    expect(deployment.dockerfileSnippet).toContain("USER nextjs");
+    expect(deployment.dockerfileSnippet).toContain(".next/standalone");
+    expect(deployment.nextConfigSnippet).toContain("output: 'standalone'");
+  });
+
+  it("should generate a valid 3-stage minimal Dockerfile with non-root execution", () => {
+    const dockerfile = CoolifyDokployDeployer.generateStandaloneDockerfile();
+    expect(dockerfile).toContain("FROM node:20-alpine AS deps");
+    expect(dockerfile).toContain("FROM node:20-alpine AS builder");
+    expect(dockerfile).toContain("FROM node:20-alpine AS runner");
+    expect(dockerfile).toContain("adduser --system --uid 1001 nextjs");
+    expect(dockerfile).toContain("USER nextjs");
+    expect(dockerfile).toContain('CMD ["node", "server.js"]');
+  });
+
+  it("should generate standalone next.config.js snippet", () => {
+    const config = CoolifyDokployDeployer.generateStandaloneNextConfig();
+    expect(config).toContain("output: 'standalone'");
+    expect(config).toContain("module.exports = nextConfig;");
   });
 });
