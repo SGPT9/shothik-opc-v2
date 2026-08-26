@@ -1,7 +1,7 @@
 export const PROJECT = {
-  name: "Shothik AI",
-  website: "https://shothik.ai",
+  name: "ShothikGPT",
+  website: "https://shothikgpt.com",
   description:
-    "Shothik AI is an AI-powered platform that provides intelligent solutions to enhance productivity and creativity.",
-  version: "1.0.0",
+    "ShothikGPT is a frontier multi-agent AI operating platform engineered for Bangladesh & Emerging Markets.",
+  version: "2.0.0",
 };

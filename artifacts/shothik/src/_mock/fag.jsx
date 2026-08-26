@@ -464,12 +464,12 @@ export const faqData = {
           <p>
             Email us at{" "}
             <strong>
-              <Link
-                href="mailto:support@shothik.ai"
+              <a
+                href="mailto:contact@shothikgpt.com"
                 style={{ color: "inherit", textDecoration: "underline" }}
               >
-                support@shothik.ai
-              </Link>
+                contact@shothikgpt.com
+              </a>
             </strong>{" "}
             with your subscription details within the refund window.
           </p>

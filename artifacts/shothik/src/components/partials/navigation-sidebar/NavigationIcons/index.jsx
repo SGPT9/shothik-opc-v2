@@ -23,7 +23,7 @@ const NavigationBar = ({ className }) => {
       id: "help",
       icon: HelpCircle,
       label: "Help",
-      href: "mailto:support@shothik.ai",
+      href: "mailto:contact@shothikgpt.com",
     },
   ];
 
