@@ -169,7 +169,7 @@
     "confirmPassword": "Confirm Password",
     "name": "Name",
     "country": "Country",
-    "workspaceBadge": "Shothik AI Writing Workspace",
+    "workspaceBadge": "ShothikGPT Writing Workspace",
     "loginHeadline": "Login into a workflow, not just an account",
     "loginSubheadline": "Continue your writing projects, launch a research paper, start an assignment, or train your Twin. We'll use your selected intent and recent activity to recommend the fastest next step after login.",
     "selectedFirstStep": "Selected first step",
@@ -274,7 +274,7 @@
     "tryAgain": "Try Again",
     "contactUs": "Contact Us",
     "headline": "Our pricing plan made simple",
-    "subheadline": "Discover the right plan for your needs and take advantage of Shothik.ai's powerful tools. Whether you're just getting started or need advanced features for your business, we've got you covered.",
+    "subheadline": "Discover the right plan for your needs and take advantage of ShothikGPT's powerful tools. Whether you're just getting started or need advanced features for your business, we've got you covered.",
     "all": "All",
     "noPackages": "No packages available at the moment.",
     "checkout": "Checkout",
@@ -678,7 +678,7 @@
     "runningAds": "Running ads..."
   },
   "chat": {
-    "heading": "Chat with Shothik AI",
+    "heading": "Chat with ShothikGPT",
     "subheading": "Your AI assistant for academic research, writing, and STEM questions.",
     "placeholder": "Ask anything...",
     "footer": "Enter to send · Shift+Enter for new line · 30 messages/min",
