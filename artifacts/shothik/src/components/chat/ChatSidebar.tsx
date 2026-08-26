@@ -168,8 +168,17 @@ export function ChatSidebar({
         {renderGroup("Older", groupedConversations.older)}
 
         {filteredConversations.length === 0 && (
-          <div className="text-center py-8 px-4 text-zinc-500 text-xs font-mono">
-            No chat sessions found
+          <div className="text-center py-8 px-4 text-zinc-400 text-xs font-sans space-y-2.5">
+            <p>No conversations match &ldquo;{searchQuery}&rdquo;</p>
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="px-3 py-1 bg-white/[0.08] hover:bg-white/[0.15] text-zinc-200 rounded-lg text-xs font-medium transition cursor-pointer"
+              >
+                Clear filter
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -275,7 +284,7 @@ export function ChatSidebar({
                   onClick={() => handleSelectConversation(String(chat._id))}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm text-left transition cursor-pointer select-none ${
                     isActive
-                      ? "bg-slate-800 text-white font-semibold shadow-xs border border-slate-700"
+                      ? "bg-slate-800 text-white font-semibold shadow-xs border border-slate-700 border-l-2 border-l-emerald-400"
                       : "text-slate-200 hover:bg-slate-900 hover:text-white font-medium"
                   }`}
                 >
@@ -294,7 +303,7 @@ export function ChatSidebar({
                           e.stopPropagation();
                           onDeleteConversation(String(chat._id));
                         }}
-                        className="p-1 hover:text-rose-400 text-slate-400 transition cursor-pointer"
+                        className="p-1.5 hover:text-rose-400 text-slate-400 transition cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
                         title="Delete Session"
                       >
                         <Trash2 className="w-4 h-4" />
