@@ -15,7 +15,7 @@ const Logo = forwardRef(({ className }, ref) => {
       <Image
         src="/shothik_light_logo.png"
         priority={true}
-        alt="shothik_logo"
+        alt="ShothikGPT Logo"
         width={100}
         height={40}
         className="inline-block h-auto w-full object-contain dark:hidden"
@@ -24,7 +24,7 @@ const Logo = forwardRef(({ className }, ref) => {
       <Image
         src="/shothik_dark_logo.png"
         priority={true}
-        alt="shothik_logo"
+        alt="ShothikGPT Logo"
         width={100}
         height={40}
         className="hidden h-auto w-full object-contain dark:inline-block"

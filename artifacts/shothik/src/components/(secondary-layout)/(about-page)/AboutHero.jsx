@@ -15,7 +15,7 @@ export default function AboutHero() {
     <div className="relative overflow-hidden">
       {/* Background with gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-muted via-background to-muted/50">
-        <div className="absolute inset-0 bg-[url('/pattern.svg')] opacity-5" />
+        <div className="absolute inset-0 bg-[radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] opacity-[0.04]" />
       </div>
       
       {/* Hero content */}
