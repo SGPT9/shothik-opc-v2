@@ -141,19 +141,18 @@ export function ArtifactPanel({
   const [selectedVersion, setSelectedVersion] = useState<string>("v3");
   const [showTerminal, setShowTerminal] = useState<boolean>(false);
   const [internalMaximized, setInternalMaximized] = useState<boolean>(false);
-  const [copied, setCopied] = useState<boolean>(false);
   const effectiveMaximized = onToggleMaximize ? isMaximized : internalMaximized;
 
   // Global Escape key listener to close drawer
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && activeTab) {
         onClose();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
+  }, [activeTab, onClose]);
 
   const handleCopyContent = () => {
     let contentToCopy = "";
