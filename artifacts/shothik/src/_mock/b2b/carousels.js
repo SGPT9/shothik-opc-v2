@@ -1,10 +1,10 @@
 export const carousels = [
   {
     image: "/home/b2b-background.png",
-    boldTitle: "Shothik: ",
-    title: "Shothik.ai – The Future of AI-Powered Business Solutions",
+    boldTitle: "ShothikGPT: ",
+    title: "ShothikGPT — Frontier AI-Powered Enterprise Solutions",
     description:
-      "Businesses worldwide are turning to AI to navigate the complexities of the modern market. Where Shothik.ai always gives you effective solutions those are not just tools but catalysts for transformation.",
+      "Businesses worldwide are turning to AI to navigate the complexities of the modern market. ShothikGPT delivers frontier multi-agent operating systems that act as catalysts for enterprise transformation.",
     buttons: [
       {
         label: "Contact Now",
