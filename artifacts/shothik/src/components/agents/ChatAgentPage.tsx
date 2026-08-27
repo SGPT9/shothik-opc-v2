@@ -31,6 +31,7 @@ import { ShareArtifactModal } from "@/components/chat/ShareArtifactModal";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { OfflineSyncBadge } from "@/components/common/OfflineSyncBadge";
+import { DshExecutionDrawer } from "@/components/chat/DshExecutionDrawer";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
 import { getStoredChatSessions } from "@/lib/chat-sessions-store";
 import type { ChatPersona } from "@/lib/chat/types";
@@ -57,7 +58,9 @@ import {
   ChevronUp,
   Layers,
   Paperclip,
-  Share2
+  Share2,
+  Cpu,
+  Brain
 } from "lucide-react";
 
 export interface FleetAgent {
@@ -142,6 +145,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isDshDrawerOpen, setIsDshDrawerOpen] = useState(false);
   const [persona, setPersona] = useState<ChatPersona>("cofounder");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("core");
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
@@ -964,6 +968,17 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </button>
             )}
 
+            {/* 🧠 DSH Execution Trace & Memori Profile Drawer Trigger */}
+            <button
+              type="button"
+              onClick={() => setIsDshDrawerOpen(true)}
+              className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-indigo-400 hover:text-indigo-300 transition border border-indigo-500/20 cursor-pointer hidden md:flex items-center gap-1 text-xs"
+              title="DSH Execution Trace & Epistemic Memory"
+            >
+              <Cpu className="w-3.5 h-3.5" />
+              <span className="text-[11px] font-mono font-medium">DSH Replay</span>
+            </button>
+
             {/* Keyboard Shortcuts Help Button */}
             <button
               type="button"
@@ -1352,6 +1367,13 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           onOpenChange={setIsShareModalOpen}
           title={activeConversation?.title || "Shothik Workspace"}
           artifactType={activeTab}
+        />
+
+        <DshExecutionDrawer
+          open={isDshDrawerOpen}
+          onClose={() => setIsDshDrawerOpen(false)}
+          sessionId={conversationId}
+          onForkCreated={(newId) => switchConversation(newId)}
         />
 
         <KeyboardShortcutsModal

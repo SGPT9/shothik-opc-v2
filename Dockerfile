@@ -14,6 +14,8 @@ RUN corepack enable && corepack prepare pnpm@latest --activate
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY artifacts/shothik/package.json ./artifacts/shothik/
 COPY artifacts/api-server/package.json ./artifacts/api-server/
+COPY packages/gortex/package.json ./packages/gortex/
+COPY packages/taste-skill/package.json ./packages/taste-skill/
 COPY lib/api-client-react/package.json ./lib/api-client-react/
 COPY lib/api-spec/package.json ./lib/api-spec/
 COPY lib/api-zod/package.json ./lib/api-zod/

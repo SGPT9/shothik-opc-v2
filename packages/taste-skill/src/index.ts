@@ -10,8 +10,8 @@ const TEMPLATES_DIR = path.join(__dirname, '../src/templates');
 
 program
   .name('taste-skill')
-  .description('A portable system to inject design taste into AI coding agents')
-  .version('1.0.0');
+  .description('A portable system to inject design taste into AI coding agents and reject frontend slop')
+  .version('1.1.0');
 
 program
   .command('init')
@@ -28,6 +28,8 @@ program
         choices: [
           { title: 'All-Rounder Default', description: 'Strong foundations, generous whitespace, subtle motion', value: 'default.md' },
           { title: 'Soft Calm (Expensive)', description: 'Glassmorphism, soft shadows, low contrast borders', value: 'soft-calm.md' },
+          { title: 'Cyber Dark (Deep Tech)', description: 'Obsidian surfaces, monospace telemetry, cyan glow accents', value: 'cyber-dark.md' },
+          { title: 'Neo-Brutalism (Bold & Tactile)', description: 'Hard drop shadows, 2px borders, vibrant punchy contrast', value: 'neo-brutalist.md' },
           { title: 'Restrained Editorial', description: 'Strong typography, high contrast, monochrome', value: 'editorial.md' },
           { title: 'Strict GSAP', description: 'Aggressive layout shifts, scroll-driven animations', value: 'strict-gsap.md' },
           { title: 'Redesign Audit', description: 'Audits and upgrades existing generic code', value: 'redesign.md' },
@@ -105,7 +107,7 @@ program
     let targetDir = process.cwd();
 
     if (response.targetSystem === 'rules') {
-      targetFile = path.join(targetDir, '.cursorrules'); // Defaults to cursor rules
+      targetFile = path.join(targetDir, '.cursorrules');
     } else if (response.targetSystem === 'skill') {
       targetDir = path.join(process.cwd(), '.agents', 'skills', 'taste');
       if (!fs.existsSync(targetDir)) {
@@ -129,6 +131,41 @@ alwaysApply: true
     fs.writeFileSync(targetFile, content);
     console.log(chalk.green(`\n✅ Successfully installed taste profile to ${targetFile}\n`));
     console.log(chalk.blue('Your AI agent will now generate better, non-generic UIs!'));
+  });
+
+program
+  .command('prompt')
+  .description('Generate copy-paste prompts for AI image generation (Midjourney / DALL-E / Gemini)')
+  .action(async () => {
+    console.log(chalk.magenta.bold('\n🎨 Image Generation Prompt Generator 🎨\n'));
+
+    const response = await prompts([
+      {
+        type: 'select',
+        name: 'promptType',
+        message: 'Select prompt category:',
+        choices: [
+          { title: 'Brand Identity Kit', value: 'brand-kits.md' },
+          { title: 'UI Reference Board', value: 'reference-boards.md' },
+          { title: 'Component Design System Sheet', value: 'design-systems.md' }
+        ]
+      }
+    ]);
+
+    if (!response.promptType) {
+      process.exit(0);
+    }
+
+    const filePath = path.join(TEMPLATES_DIR, 'image-generation', response.promptType);
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf-8');
+      console.log(chalk.cyan('\n----------------------------------------\n'));
+      console.log(content);
+      console.log(chalk.cyan('----------------------------------------\n'));
+      console.log(chalk.green('💡 Copy the prompt above into your image generation tool!'));
+    } else {
+      console.error(chalk.red('Prompt template not found.'));
+    }
   });
 
 program.parse();

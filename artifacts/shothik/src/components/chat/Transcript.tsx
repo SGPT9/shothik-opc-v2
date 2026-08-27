@@ -151,15 +151,37 @@ export function Transcript({
   const [copiedUserMsgId, setCopiedUserMsgId] = useState<string | null>(null);
   const [copiedAssistantMsgId, setCopiedAssistantMsgId] = useState<string | null>(null);
 
+  const dispatchTelemetry = (event: string, properties: Record<string, unknown> = {}) => {
+    try {
+      fetch("/api/telemetry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          event,
+          properties,
+          timestamp: new Date().toISOString(),
+        }),
+      }).catch(() => {});
+    } catch {
+      // noop
+    }
+  };
+
   const handleCopyUserPrompt = (msgId: string, text: string) => {
     navigator.clipboard.writeText(text);
     setCopiedUserMsgId(msgId);
+    dispatchTelemetry("user_copied_prompt", { msgId, length: text.length });
     setTimeout(() => setCopiedUserMsgId(null), 2000);
   };
 
   const handleCopyAssistantMessage = (message: ChatMessage) => {
     navigator.clipboard.writeText(message.content);
     setCopiedAssistantMsgId(message._id);
+    dispatchTelemetry("user_copied_assistant_response", {
+      msgId: message._id,
+      length: message.content.length,
+      hasReasoning: Boolean(message.reasoning_content),
+    });
     onCopy?.(message);
     setTimeout(() => setCopiedAssistantMsgId(null), 2000);
   };
@@ -176,6 +198,10 @@ export function Transcript({
 
   const handleSaveEdit = () => {
     if (editingText.trim() && onSelectPrompt) {
+      dispatchTelemetry("user_edited_prompt_turn", {
+        msgId: editingMsgId,
+        newLength: editingText.length,
+      });
       onSelectPrompt(editingText.trim());
       setEditingMsgId(null);
       setEditingText("");
@@ -200,10 +226,18 @@ export function Transcript({
   };
 
   const handleFeedback = (msgId: string, type: "up" | "down") => {
+    const isTogglingOff = feedbackMap[msgId] === type;
+    const newRating = isTogglingOff ? undefined : type;
     setFeedbackMap((prev) => ({
       ...prev,
-      [msgId]: prev[msgId] === type ? undefined! : type,
+      [msgId]: newRating!,
     }));
+    if (newRating) {
+      dispatchTelemetry("user_feedback_rating", {
+        msgId,
+        rating: newRating,
+      });
+    }
   };
 
   // Dynamic DOM node virtualization for budget devices (Ticket #1)

@@ -104,6 +104,8 @@ export interface ChatMessage {
   status: MessageStatus;
   modelHandle?: string;
   parentMessageId?: string;
+  reasoning_content?: string;
+  thought?: string;
   metadata?: {
     tokensUsed?: number;
     latencyMs?: number;

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { PyodideClientSandbox } from "@/lib/sandbox/pyodide-client";
 
 // ─── Python Presets & Execution Sandbox ───────────────────────────────────────
 
@@ -258,22 +259,22 @@ export function CodeArtifact({
         }
       }
 
-      // Default local client-side evaluation
-      setTimeout(() => {
-        const res = executePythonLocally(codeToRun);
-        setExecutionOutput(res.stdout);
-        setExecutionMetrics({
-          durationMs: res.durationMs,
-          memoryMb: +(11.4 + Math.random() * 3).toFixed(1),
-        });
-        setIsRunning(false);
+      // Default local client-side evaluation via WASM Pyodide Runner
+      const wasmRunner = PyodideClientSandbox.getInstance();
+      const wasmRes = await wasmRunner.execute(codeToRun);
 
-        setReplHistory((prev) => [
-          ...prev,
-          { type: "in", text: `exec(${PYTHON_PRESETS[selectedPreset]?.filename || "script.py"})` },
-          { type: "out", text: res.stdout },
-        ]);
-      }, 250);
+      setExecutionOutput(wasmRes.stdout);
+      setExecutionMetrics({
+        durationMs: wasmRes.executionTimeMs,
+        memoryMb: +(11.4 + Math.random() * 3).toFixed(1),
+      });
+      setIsRunning(false);
+
+      setReplHistory((prev) => [
+        ...prev,
+        { type: "in", text: `exec(${PYTHON_PRESETS[selectedPreset]?.filename || "script.py"}) [Pyodide WASM]` },
+        { type: "out", text: wasmRes.stdout },
+      ]);
     } catch (err: any) {
       const res = executePythonLocally(codeToRun);
       setExecutionOutput(res.stdout);

@@ -25,7 +25,7 @@ import proxyRouter from "./proxy";
 
 const router: IRouter = Router();
 
-router.use("/api/telemetry", telemetryRouter);
+router.use("/telemetry", telemetryRouter);
 
 router.use(healthRouter);
 router.use(ollamaRouter);

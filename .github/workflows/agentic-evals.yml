@@ -1,0 +1,46 @@
+name: Agentic Evals & Monorepo CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  agentic-evals:
+    name: Run Deterministic Evals & Guardrails
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Install Monorepo Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run GORTEX Mesh & Trajectory Evals
+        run: |
+          cd packages/gortex
+          npm test
+          npm run build
+
+      - name: Run API Server Test Suite & Gatekeeper Guardrails
+        run: |
+          cd artifacts/api-server
+          node build.mjs
+          npm test
+
+      - name: Typecheck Frontend Shell
+        run: |
+          cd artifacts/shothik
+          npm run typecheck

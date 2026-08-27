@@ -1,0 +1,38 @@
+{
+  "name": "@shothik/gortex",
+  "version": "1.0.0",
+  "description": "Local LLM Inference Mesh, Sub-50ms Model Gateway Router, and Zero-Cost Fallback Engine",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "gortex",
+    "local-llm",
+    "inference-mesh",
+    "model-router",
+    "ollama-gateway"
+  ],
+  "author": "Ahsan Habib <ahsanhab919@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.9",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vitest": "^3.0.7"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SGPT9/shothik-gortex.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  }
+}
