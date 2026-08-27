@@ -140,6 +140,7 @@ export function ArtifactPanel({
   // Version History State (Pillar 5)
   const [selectedVersion, setSelectedVersion] = useState<string>("v3");
   const [showTerminal, setShowTerminal] = useState<boolean>(false);
+  const [copied, setCopied] = useState<boolean>(false);
   const [internalMaximized, setInternalMaximized] = useState<boolean>(false);
   const effectiveMaximized = onToggleMaximize ? isMaximized : internalMaximized;
 

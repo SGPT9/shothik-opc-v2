@@ -1,7 +1,9 @@
 import { Router, type Request, type Response } from "express";
 import { SwitchyardRouteRequestSchema } from "@workspace/hermes/contracts";
+import { GortexInferenceMesh } from "../../../../packages/gortex/src/index.js";
 
 const router = Router();
+const gortexMesh = new GortexInferenceMesh();
 
 /**
  * POST /api/v1/mesh/dispatch
@@ -53,6 +55,61 @@ router.post("/v1/mesh/dispatch", async (req: Request, res: Response) => {
       error: "Model mesh dispatch error",
       message: error?.message || String(error),
     });
+  }
+});
+
+/**
+ * POST /api/v1/mesh/speculative-benchmark
+ * Benchmarks local speculative decoding draft acceptance rate, TTFT, and tokens/sec speedup
+ */
+router.post("/v1/mesh/speculative-benchmark", (req: Request, res: Response) => {
+  try {
+    const { prompt = "Generate a fast React component with memoization", draftTokens = 5 } = req.body;
+    const benchmark = gortexMesh.benchmarkSpeculativeDrafting(prompt, draftTokens);
+
+    return res.status(200).json({
+      success: true,
+      benchmark,
+      hardwareTarget: {
+        gpuWorkerPort: 11434,
+        targetModel: benchmark.targetModel,
+        draftModel: benchmark.draftModel,
+        speedupFactor: benchmark.speedupFactor,
+        tokensPerSecond: benchmark.tokensPerSecond,
+        acceptanceRatePercent: benchmark.acceptanceRatePercent,
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/v1/mesh/saturation-test
+ * Simulates GPU memory saturation / worker timeout to test circuit breaker failover to cloud
+ */
+router.post("/v1/mesh/saturation-test", async (req: Request, res: Response) => {
+  try {
+    const { simulateSaturated = true, prompt = "Analyze financial reports" } = req.body;
+    
+    // Simulate primary GPU saturation by tripping the circuit breaker
+    if (simulateSaturated) {
+      const primaryBreaker = gortexMesh.getCircuitBreaker("local-qwen");
+      primaryBreaker?.recordFailure();
+      primaryBreaker?.recordFailure();
+    }
+
+    const decision = await gortexMesh.routeInference(prompt, true);
+
+    return res.status(200).json({
+      success: true,
+      saturationSimulated: simulateSaturated,
+      routingDecision: decision,
+      activeNode: decision.selectedNode.name,
+      failoverEngaged: decision.status === "FAILOVER_ENGAGED",
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 

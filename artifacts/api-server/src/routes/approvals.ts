@@ -2,14 +2,14 @@ import { Router, type Request, type Response } from "express";
 
 export interface PendingApproval {
   id: string;
-  type: "MFS_RECONCILIATION" | "COURIER_DISPATCH" | "AST_CODE_PATCH" | "SCHEMA_MIGRATION";
+  type: "MFS_RECONCILIATION" | "COURIER_DISPATCH" | "AST_CODE_PATCH" | "SCHEMA_MIGRATION" | "SECURITY_GUARDRAIL_INTERCEPTION";
   title: string;
-  category: "Finance" | "Logistics" | "System" | "Database";
+  category: "Finance" | "Logistics" | "System" | "Database" | "Security";
   target: string;
   amountBdt?: number;
   feeBdt?: number;
   status: "PENDING" | "COMMITTED" | "REJECTED";
-  riskLevel: "LOW" | "MEDIUM" | "HIGH";
+  riskLevel: "LOW" | "MEDIUM" | "HIGH" | "DESTRUCTIVE";
   detail: string;
   speculativeOutput: string;
   createdAt: string;
@@ -208,6 +208,88 @@ router.post("/v1/approvals/reject", (req: Request, res: Response) => {
       remainingPending: pendingQueue.filter((a) => a.status === "PENDING").length,
       items: pendingQueue,
       message: `Rejected speculative action ${id}. State reverted.`,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/v1/gatekeeper/evaluate-tool
+ * ECC-inspired execution guardrail evaluation for tool actions
+ */
+router.post("/v1/gatekeeper/evaluate-tool", (req: Request, res: Response) => {
+  try {
+    const { toolName, args = {}, riskLevel = "LOW_RISK", approvedByUser = false } = req.body;
+    const rawArgs = JSON.stringify(args);
+
+    const DESTRUCTIVE_PATTERNS = [
+      /rm\s+-rf/i,
+      /DROP\s+TABLE/i,
+      /TRUNCATE/i,
+      /git\s+push\s+.*--force/i,
+      /git\s+reset\s+--hard/i,
+      /mkfs/i,
+      /dd\s+if=/i,
+    ];
+
+    for (const pattern of DESTRUCTIVE_PATTERNS) {
+      if (pattern.test(rawArgs)) {
+        const approvalId = `APP-SEC-${Math.floor(1000 + Math.random() * 9000)}`;
+        const interception: PendingApproval = {
+          id: approvalId,
+          type: "SECURITY_GUARDRAIL_INTERCEPTION",
+          title: `Security Interception · Blocked Tool [${toolName}]`,
+          category: "Security",
+          target: `${toolName} (${pattern.source})`,
+          status: "PENDING",
+          riskLevel: "DESTRUCTIVE",
+          detail: `Destructive pattern detected in arguments: ${rawArgs.slice(0, 120)}...`,
+          speculativeOutput: "Execution halted by Deterministic Security Guardrail.",
+          createdAt: new Date().toISOString(),
+        };
+
+        pendingQueue.unshift(interception);
+
+        return res.status(200).json({
+          allowed: false,
+          requiresUserConfirmation: true,
+          reason: `Blocked by Security Guardrail: Potentially destructive pattern detected (${pattern.source})`,
+          approvalId,
+          item: interception,
+        });
+      }
+    }
+
+    if ((riskLevel === "DESTRUCTIVE" || riskLevel === "HIGH_RISK_MUTATING") && !approvedByUser) {
+      const approvalId = `APP-MUT-${Math.floor(1000 + Math.random() * 9000)}`;
+      const interception: PendingApproval = {
+        id: approvalId,
+        type: "SECURITY_GUARDRAIL_INTERCEPTION",
+        title: `Privilege Gate · Tool [${toolName}] Requires User Consent`,
+        category: "Security",
+        target: `${toolName}`,
+        status: "PENDING",
+        riskLevel: riskLevel === "DESTRUCTIVE" ? "DESTRUCTIVE" : "HIGH",
+        detail: `State-mutating operation invoked with payload: ${rawArgs.slice(0, 120)}...`,
+        speculativeOutput: "Waiting for human-in-the-loop (HITL) approval.",
+        createdAt: new Date().toISOString(),
+      };
+
+      pendingQueue.unshift(interception);
+
+      return res.status(200).json({
+        allowed: false,
+        requiresUserConfirmation: true,
+        reason: `Tool '${toolName}' mutates persistent state and requires explicit user confirmation.`,
+        approvalId,
+        item: interception,
+      });
+    }
+
+    return res.status(200).json({
+      allowed: true,
+      reason: "Safe execution path confirmed by Security Guardrail.",
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });

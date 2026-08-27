@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@pinojs/redact": "^0.4.0",
+    "@shothik/gortex": "workspace:*",
     "@workspace/api-zod": "workspace:*",
     "@workspace/db": "workspace:*",
     "@workspace/hermes": "workspace:*",

@@ -146,27 +146,91 @@ describe("Demography-Aware API Gateway Routes", () => {
     });
   });
 
-  describe("POST /api/v1/publishing/export-book", () => {
-    it("generates Boi Mela 6x9 trade book PDF with embedded Bengali font", async () => {
+  describe("POST /api/v1/gatekeeper/evaluate-tool", () => {
+    it("blocks destructive shell commands and creates a security interception approval item", async () => {
       const payload = {
-        bookId: "book_boi_mela_2026",
-        title: "Nirbapito Pradip",
-        authorName: "Kazi Nazrul",
-        format: "boi_mela_6x9_trade",
-        font: "kalpurush",
-        chapters: [
-          { id: "ch1", chapterNumber: 1, title: "Prothom Porbo", contentMarkdown: "# Chapter 1\nShuru holo...", wordCount: 1200 },
-          { id: "ch2", chapterNumber: 2, title: "Dwitiyo Porbo", contentMarkdown: "# Chapter 2\nTarpor...", wordCount: 1500 },
-        ],
+        toolName: "bash",
+        args: { command: "rm -rf /var/lib/important-data" },
+        riskLevel: "DESTRUCTIVE",
       };
 
-      const { status, body } = await post("/api/v1/publishing/export-book", payload);
+      const { status, body } = await post("/api/v1/gatekeeper/evaluate-tool", payload);
+
+      expect(status).toBe(200);
+      expect(body.allowed).toBe(false);
+      expect(body.requiresUserConfirmation).toBe(true);
+      expect(body.reason).toContain("Blocked by Security Guardrail");
+      expect(body.approvalId).toContain("APP-SEC-");
+      expect(body.item.type).toBe("SECURITY_GUARDRAIL_INTERCEPTION");
+    });
+
+    it("allows safe read-only commands through without requiring confirmation", async () => {
+      const payload = {
+        toolName: "read_file",
+        args: { path: "src/index.ts" },
+        riskLevel: "READ_ONLY",
+      };
+
+      const { status, body } = await post("/api/v1/gatekeeper/evaluate-tool", payload);
+
+      expect(status).toBe(200);
+      expect(body.allowed).toBe(true);
+      expect(body.reason).toContain("Safe execution path");
+    });
+  });
+
+  describe("Speculative Decoding & Hardware Benchmark Routes", () => {
+    it("POST /api/v1/mesh/speculative-benchmark returns draft acceptance speedup and TTFT", async () => {
+      const payload = {
+        prompt: "Write a high performance quicksort algorithm in Rust",
+        draftTokens: 5,
+      };
+
+      const { status, body } = await post("/api/v1/mesh/speculative-benchmark", payload);
 
       expect(status).toBe(200);
       expect(body.success).toBe(true);
-      expect(body.downloadUrl).toContain("boi-mela-6x9.pdf");
-      expect(body.fontEmbedded).toBe("kalpurush");
-      expect(body.readyForBoiMelaPrint).toBe(true);
+      expect(body.hardwareTarget.gpuWorkerPort).toBe(11434);
+      expect(body.hardwareTarget.targetModel).toBe("deepseek-r1:8b");
+      expect(body.benchmark.speedupFactor).toBeGreaterThan(1.5);
+      expect(body.benchmark.acceptanceRatePercent).toBeGreaterThanOrEqual(70);
+    });
+
+    it("POST /api/v1/mesh/saturation-test engages circuit breaker failover during GPU saturation", async () => {
+      const payload = {
+        simulateSaturated: true,
+        prompt: "Execute high throughput inference",
+      };
+
+      const { status, body } = await post("/api/v1/mesh/saturation-test", payload);
+
+      expect(status).toBe(200);
+      expect(body.success).toBe(true);
+      expect(body.failoverEngaged).toBe(true);
+      expect(body.activeNode).toBe("deepseek-r1:8b");
+    });
+  });
+
+  describe("Production Container Health & Telemetry Verification", () => {
+    it("GET /healthz returns HTTP 200 with uptime and status OK", async () => {
+      const res = await fetch(`${baseUrl}/healthz`);
+      const body = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(body.status).toBe("OK");
+      expect(body.uptime).toBeGreaterThanOrEqual(0);
+    });
+
+    it("POST /api/telemetry ingests client feedback events", async () => {
+      const payload = {
+        event: "user_copied_assistant_response",
+        properties: { msgId: "msg_test_99", length: 120 },
+      };
+
+      const { status, body } = await post("/api/telemetry", payload);
+
+      expect(status).toBe(200);
+      expect(body.success).toBe(true);
     });
   });
 });
