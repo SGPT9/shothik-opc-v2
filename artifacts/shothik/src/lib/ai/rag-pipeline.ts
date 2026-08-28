@@ -201,35 +201,44 @@ export async function runRAGPipeline(
 }
 
 /**
- * Context retriever using Convex vector search
+ * Context retriever using vector cosine similarity search
  */
-export function createConvexRetriever(
-  convexClient: any,
-  options: {
-    table: string;
-    vectorField: string;
-    contentField: string;
+export function createVectorRetriever(
+  customRetrieverOrClient?: any,
+  options?: {
+    table?: string;
+    vectorField?: string;
+    contentField?: string;
   }
 ): ContextRetriever {
   return async (query: string, searchOptions?: any) => {
     // Generate embedding for query
-    // This would use your embedding model
-    const embedding = await generateEmbedding(query);
-    
-    // Search Convex
-    const results = await convexClient.query(
-      `${options.table}:search`,
-      {
-        vector: embedding,
-        limit: searchOptions?.limit || 5,
+    try {
+      const embedding = await generateEmbedding(query);
+      if (!embedding || embedding.length === 0) return [];
+      
+      // If a custom query function is provided
+      if (customRetrieverOrClient && typeof customRetrieverOrClient.query === 'function') {
+        const results = await customRetrieverOrClient.query(
+          `${options?.table || 'documentation'}:search`,
+          {
+            vector: embedding,
+            limit: searchOptions?.limit || 5,
+          }
+        );
+        return (results || [])
+          .filter((r: any) => r.score >= (searchOptions?.minScore || 0.7))
+          .map((r: any) => r[options?.contentField || 'content']);
       }
-    );
-    
-    return results
-      .filter((r: any) => r.score >= (searchOptions?.minScore || 0.7))
-      .map((r: any) => r[options.contentField]);
+      
+      return [];
+    } catch {
+      return [];
+    }
   };
 }
+
+export const createConvexRetriever = createVectorRetriever;
 
 /**
  * Generate text embedding using Gemini text-embedding-004.

@@ -128,58 +128,26 @@ const PERSONA_STARTER_MAP: Record<string, StarterPromptItem[]> = {
 
 export function EmptyChatGreeting({
   onSelectPrompt,
-  isArtifactOpen = false,
-  onToggleArtifact,
   agentId = "core",
 }: EmptyChatGreetingProps) {
   const activeStarters = PERSONA_STARTER_MAP[agentId] || STARTER_PROMPTS;
   return (
-    <div className="flex flex-col items-center justify-center min-h-[46vh] px-4 py-4 text-center animate-fade-in space-y-6 max-w-3xl mx-auto">
-      {/* ── Shothik Center Circle Glass Nexus ── */}
+    <div className="flex flex-col items-center justify-center min-h-[38vh] px-4 py-6 text-center animate-fade-in space-y-6 max-w-2xl mx-auto">
+      {/* ── Shothik Center Minimal Icon ── */}
       <div className="relative group">
-        <div className="absolute -inset-2 rounded-full bg-emerald-500/10 blur-xl group-hover:bg-emerald-500/20 transition-all duration-500 pointer-events-none" />
-        <div className="relative w-13 h-13 rounded-full bg-white/[0.05] dark:bg-black/60 border border-white/[0.15] backdrop-blur-2xl shadow-[0_8px_32px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.2)] flex items-center justify-center">
-          <Sparkles className="w-5 h-5 text-emerald-400 animate-pulse" />
+        <div className="absolute -inset-2 rounded-full bg-brand/10 blur-xl group-hover:bg-brand/20 transition-all duration-500 pointer-events-none" />
+        <div className="relative w-12 h-12 rounded-2xl bg-white/[0.05] dark:bg-zinc-900 border border-white/[0.1] backdrop-blur-2xl shadow-xl flex items-center justify-center">
+          <Sparkles className="w-5 h-5 text-brand" />
         </div>
       </div>
 
-      {/* ── Center Mode Switcher in Circular Glass Capsule (Chat | Work Canvas) ── */}
-      {onToggleArtifact && (
-        <div className="inline-flex items-center bg-black/60 dark:bg-black/80 p-1 rounded-full border border-white/[0.12] text-xs shadow-xl backdrop-blur-2xl">
-          <button
-            type="button"
-            onClick={() => onToggleArtifact(false)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition-all duration-200 font-medium cursor-pointer ${
-              !isArtifactOpen
-                ? "bg-white/[0.12] text-white shadow-sm font-semibold border border-white/[0.15]"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>Chat</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => onToggleArtifact(true)}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full transition-all duration-200 font-medium cursor-pointer ${
-              isArtifactOpen
-                ? "bg-white/[0.12] text-white shadow-sm font-semibold border border-white/[0.15]"
-                : "text-zinc-400 hover:text-zinc-200"
-            }`}
-          >
-            <LayoutTemplate className="w-3.5 h-3.5" />
-            <span>Work Canvas</span>
-          </button>
-        </div>
-      )}
-
       {/* ── Heading & Subtitle ── */}
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl sm:text-4xl font-normal tracking-tight text-zinc-900 dark:text-zinc-100">
-          What do you want to accomplish today?
+      <div className="space-y-1.5 text-center">
+        <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-foreground">
+          What would you like to build or analyze today?
         </h1>
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-md mx-auto leading-relaxed">
-          Ask a question, research deeply, generate slides, build models, or automate workflows.
+        <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+          Ask questions, research markets, draft agreements, or generate models.
         </p>
       </div>
 

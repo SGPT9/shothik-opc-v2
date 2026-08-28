@@ -17,6 +17,7 @@ const WORKSPACE_ROUTES = [
   "/translator",
   "/files",
   "/connectors",
+  "/connector",
   "/saved-reports",
   "/settings",
   "/account",

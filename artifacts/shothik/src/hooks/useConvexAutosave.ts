@@ -1,8 +1,4 @@
-
-
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useMutation, useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
 
 interface ConvexAutosaveResult {
   isSaving: boolean;
@@ -16,39 +12,80 @@ export function useConvexAutosave(
   localProjectId: string | undefined,
   content: string,
   wordCount: number,
-  clerkUserId?: string
+  userId?: string
 ): ConvexAutosaveResult {
   const [isSaving, setIsSaving] = useState(false);
   const [lastCloudSave, setLastCloudSave] = useState<Date | null>(null);
   const [cloudError, setCloudError] = useState<string | null>(null);
+  const [cloudContent, setCloudContent] = useState<string | null>(null);
+  const [cloudWordCount, setCloudWordCount] = useState<number>(0);
+  
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedContent = useRef<string>('');
 
-  const autosaveMutation = useMutation(api.writing.autosave);
+  // Initial fetch of saved content from cloud
+  useEffect(() => {
+    if (!localProjectId || !userId) return;
 
-  const savedData = useQuery(
-    api.writing.getAutosave,
-    localProjectId ? { localProjectId } : 'skip'
-  );
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/v1/writing/autosave/${encodeURIComponent(localProjectId)}`, {
+          headers: {
+            'x-user-id': userId,
+          },
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (json.success && json.data && isMounted) {
+          setCloudContent(json.data.content || null);
+          setCloudWordCount(json.data.wordCount || 0);
+          if (json.data.savedAt) {
+            setLastCloudSave(new Date(json.data.savedAt));
+          }
+        }
+      } catch (err) {
+        console.warn('[useConvexAutosave] Failed to load autosave snapshot:', err);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [localProjectId, userId]);
 
   const save = useCallback(async (id: string, text: string, wc: number) => {
     if (text === lastSavedContent.current) return;
     setIsSaving(true);
     setCloudError(null);
     try {
-      await autosaveMutation({
-        localProjectId: id,
-        content: text,
-        wordCount: wc,
+      const res = await fetch('/api/v1/writing/autosave', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': userId || 'guest',
+        },
+        body: JSON.stringify({
+          localProjectId: id,
+          content: text,
+          wordCount: wc,
+        }),
       });
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.error || 'Autosave failed');
+
       lastSavedContent.current = text;
       setLastCloudSave(new Date());
+      setCloudContent(text);
+      setCloudWordCount(wc);
     } catch (err: any) {
       setCloudError(err?.message || 'Cloud sync failed');
     } finally {
       setIsSaving(false);
     }
-  }, [autosaveMutation]);
+  }, [userId]);
 
   useEffect(() => {
     if (!localProjectId || !content) return;
@@ -68,7 +105,7 @@ export function useConvexAutosave(
     isSaving,
     lastCloudSave,
     cloudError,
-    cloudContent: savedData?.content ?? null,
-    cloudWordCount: savedData?.wordCount ?? 0,
+    cloudContent,
+    cloudWordCount,
   };
 }

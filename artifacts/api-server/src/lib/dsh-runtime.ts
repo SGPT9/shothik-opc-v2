@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { recordAgentTrace } from "@workspace/db";
 import { logger } from "./logger";
 
 export type DshEventType =
@@ -182,6 +183,27 @@ export class DshRuntimeEngine {
     }
 
     this.saveToDisk();
+
+    // Persist to SQLite agent_traces
+    try {
+      await recordAgentTrace({
+        id: event.id,
+        sessionId,
+        agentName: (data.agent || data.agentName || "dsh-agent") as string,
+        prompt: (data.goal || data.prompt || data.thought || data.tool || type) as string,
+        response: typeof data.result === "string" ? data.result : typeof data.response === "string" ? data.response : JSON.stringify(data),
+        status: type === "error" ? "error" : "completed",
+        durationMs: metadata?.durationMs || 0,
+        metadata: {
+          eventType: type,
+          eventIndex,
+          ...metadata,
+        },
+      });
+    } catch (err: any) {
+      logger.warn({ err: err?.message }, `[dsh-runtime] Failed to persist trace event to SQLite`);
+    }
+
     return event;
   }
 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authenticateTwinRequest, requireTwinKey } from "@/lib/twin-api-auth";
 import { twinApi, createTwinClient } from "@/lib/twin-convex";
-import { isBlockedState } from "@/convex/twin_lifecycle_transitions";
+import { isBlockedState } from "@/lib/twin-lifecycle";
 import { checkAbility } from "@/lib/twin-route-guard";
 
 export async function POST(req: NextRequest) {

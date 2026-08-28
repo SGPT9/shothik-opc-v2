@@ -13,6 +13,8 @@
  *  7. bookwriting: Scene beat expansion, Story Bible bidirectional linking, timeline audit
  */
 
+import { RegionalDomainParsers, CourierParcelExtraction, TaxCalculationResult } from './nanogpt';
+
 export type StudioMode = 'chat' | 'websearch' | 'coding' | 'deepresearch' | 'slide' | 'sheet' | 'bookwriting';
 
 export interface NeedleToolDeclaration {
@@ -74,13 +76,25 @@ const TOOL_CATALOG: Record<StudioMode, NeedleToolDeclaration[]> = {
     {
       name: 'translate_banglish',
       description: 'Translate or transliterate Banglish to Standard Bangla or English',
-      keywords: ['translate', 'bangla', 'banglish', 'transliterate', 'orthography', 'order', 'status', 'dekhe bolo'],
+      keywords: ['translate', 'bangla', 'banglish', 'transliterate', 'orthography', 'order', 'status', 'dekhe bolo', 'ami', 'koto tk'],
       schema: { type: 'object', properties: { text: { type: 'string' }, targetLang: { type: 'string' } }, required: ['text'] },
+    },
+    {
+      name: 'parse_courier_parcel',
+      description: 'Extract recipient, 11-digit phone, district (64 BD districts), thana, and COD from order text',
+      keywords: ['courier', 'steadfast', 'pathao', 'parcel', 'delivery', 'district', 'thana', 'cod', '017', '018', '019', '016', '013', '014', '015'],
+      schema: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'] },
+    },
+    {
+      name: 'calculate_nbr_tax',
+      description: 'Calculate Bangladesh NBR Section 78 Individual Tax, slabs, and rebate in <2ms',
+      keywords: ['tax', 'income tax', 'nbr', 'salary tax', 'tax rebate', 'tax calculation', 'tax on'],
+      schema: { type: 'object', properties: { income: { type: 'number' }, investment: { type: 'number' } }, required: ['income'] },
     },
     {
       name: 'calculate_currency',
       description: 'Execute exact offline currency, fee, and math calculation without LLM token cost',
-      keywords: ['calculate', 'bkash fee', 'fee', 'currency', 'bdt', 'usd', '%', 'tax', 'vat'],
+      keywords: ['calculate', 'bkash fee', 'fee', 'currency', 'bdt', 'usd', '%', 'vat'],
       schema: { type: 'object', properties: { amount: { type: 'number' }, rate: { type: 'number' } }, required: ['amount'] },
     },
     {
@@ -393,6 +407,26 @@ export class NeedleDispatcher {
         };
       }
 
+      // 6. Courier Parcel Extraction (Steadfast / Pathao NER)
+      if (mode === 'chat' && toolName === 'parse_courier_parcel') {
+        const parcel = RegionalDomainParsers.parseCourierParcel(rawInput);
+        return {
+          valid: Boolean(parcel.phone || parcel.district),
+          data: parcel as unknown as T,
+        };
+      }
+
+      // 7. NBR Section 78 Tax Calculation AST
+      if (mode === 'chat' && toolName === 'calculate_nbr_tax') {
+        const incomeMatch = rawInput.match(/([0-9,]+)/);
+        const income = incomeMatch ? parseInt(incomeMatch[1].replace(/,/g, ''), 10) : 0;
+        const tax = RegionalDomainParsers.calculateNBRTax(income);
+        return {
+          valid: income > 0,
+          data: tax as unknown as T,
+        };
+      }
+
       return {
         valid: true,
         data: { raw: rawInput } as unknown as T,
@@ -447,23 +481,13 @@ export class NeedleDispatcher {
   }
 
   public normalizeBanglish(text: string): string {
-    const BANGLISH_MAP: Record<string, string> = {
-      kivabe: 'কীভাবে',
-      kemon: 'কেমন',
-      achen: 'আছেন',
-      amar: 'আমার',
-      order: 'অর্ডার',
-      dekhe: 'দেখে',
-      bolo: 'বলো',
-      koro: 'করো',
-      lagbe: 'লাগবে',
-      koto: 'কত',
-      taka: 'টাকা',
-    };
-
-    return text
-      .split(/\s+/)
-      .map((word) => BANGLISH_MAP[word.toLowerCase()] || word)
-      .join(' ');
+    return RegionalDomainParsers.transliterateBanglish(text);
   }
 }
+
+/**
+ * Global Needle 2 Dispatcher & Edge-Class Schema Extractor Singleton
+ */
+export const needle2 = new NeedleDispatcher();
+export const defaultNeedleDispatcher = needle2;
+

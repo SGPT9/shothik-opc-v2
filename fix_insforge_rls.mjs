@@ -21,6 +21,17 @@ async function fixInsforgeRLSAndOwnership() {
       "hermes_events",
       "hermes_tool_calls",
       "twin_knowledge_vectors",
+      "projects",
+      "writing_autosave",
+      "user_subscriptions",
+      "tool_usage",
+      "llm_usage",
+      "key_custody",
+      "writing_profiles",
+      "twins",
+      "twin_tasks",
+      "twin_activity_log",
+      "twin_pending_approvals",
     ];
 
     // 1. Reassign ownership to project_admin so dashboard and app can manage them

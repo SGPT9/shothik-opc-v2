@@ -9,6 +9,7 @@
  */
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "@/lib/navigation";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useChatSession } from "./hooks/useChatSession";
 import { useChatStreamEngine } from "./hooks/useChatStreamEngine";
 import { useAttachmentUploader } from "./hooks/useAttachmentUploader";
@@ -17,6 +18,7 @@ import { ComponentErrorBoundary } from "./components/ChatErrorBoundaries";
 
 import { Composer, type ComposerAction } from "@/components/chat/Composer";
 import { cn } from "@/lib/utils";
+import { needle2 } from "@/lib/ai/needle-dispatcher";
 import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveState";
 import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
@@ -60,8 +62,14 @@ import {
   Paperclip,
   Share2,
   Cpu,
-  Brain
+  Brain,
+  Zap,
+  Compass,
+  ShieldCheck,
+  CheckCircle2,
+  MoreHorizontal,
 } from "lucide-react";
+import { WebGpuInferenceService, type WebGpuCapability } from "@/lib/ai/WebGpuInferenceService";
 
 export interface FleetAgent {
   id: string;
@@ -75,9 +83,13 @@ export interface FleetAgent {
 
 export const FLEET_AGENTS: FleetAgent[] = [
   { id: "core", name: "Shothik Core", badge: "General AI", icon: Sparkles, color: "text-blue-600 dark:text-blue-400", bgLight: "bg-blue-500/10", desc: "All-purpose intelligent assistant, reasoning & daily tasks" },
-  { id: "analyst", name: "Deep Analyst", badge: "Research & Docs", icon: Search, color: "text-violet-400", bgLight: "bg-violet-500/10", desc: "Academic research, data synthesis & market intelligence" },
-  { id: "writer", name: "Manuscript & Book Studio", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Novels, Boi Mela 3D formatting & creative writing" },
-  { id: "business", name: "Business & Pitch Partner", badge: "Ventures & Slides", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Investor decks, financial models, contracts & proposals" },
+  { id: "planner", name: "Planner & Strategist", badge: "ECC Planner", icon: Compass, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Implementation planning, multi-phase execution & dependency mapping" },
+  { id: "architect", name: "System Architect", badge: "ECC Architect", icon: Layers, color: "text-purple-400", bgLight: "bg-purple-500/10", desc: "System design, deep module boundaries, API topology & scalability" },
+  { id: "security", name: "Security Reviewer", badge: "ECC Security", icon: ShieldCheck, color: "text-red-400", bgLight: "bg-red-500/10", desc: "Vulnerability detection, SQL/XSS prevention & secret leakage guardrails" },
+  { id: "tdd", name: "TDD & Quality Guide", badge: "ECC TDD Guide", icon: CheckCircle2, color: "text-emerald-400", bgLight: "bg-emerald-500/10", desc: "Test-driven verification, red-green refactoring & 80%+ test coverage" },
+  { id: "analyst", name: "Deep Research Analyst", badge: "Research & Citations", icon: Search, color: "text-cyan-400", bgLight: "bg-cyan-500/10", desc: "Market sizing, TAM analysis, competitor telemetry & grounded citations" },
+  { id: "business", name: "Venture & Pitch Partner", badge: "Slides & Models", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Investor pitch decks, 3-scenario financial models & unit economics" },
+  { id: "writer", name: "Manuscript & Book Studio", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Scene beat expansion, Story Bible linking & longform manuscript polish" },
 ];
 
 export interface ChatAgentPageProps {
@@ -107,6 +119,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     sessionId: conversationId,
   });
 
+  const isMobile = useIsMobile();
+
   // ── Contextual User Details / Artifact panel (hidden by default) ──
   const [artifactOpen, setArtifactOpen] = useState(Boolean(initialTab || searchParams.get("tab")));
   const [activeTab, setActiveTab] = useState<ArtifactTab>((searchParams.get("tab") as ArtifactTab) || initialTab || "slides");
@@ -131,6 +145,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [slidesTopic, setSlidesTopic] = useState<string | undefined>("AI-Powered E-Commerce & Retail in Bangladesh");
   const [researchQuery, setResearchQuery] = useState<string | undefined>("Dhaka Logistics & Courier Competitor Analysis");
   const [sheetData, setSheetData] = useState<string[][] | undefined>();
+  const [sheetTitle, setSheetTitle] = useState<string | undefined>("3-Scenario Financial Model (BDT)");
   const [codeSnippet, setCodeSnippet] = useState<string | undefined>();
   const [docTitle, setDocTitle] = useState<string | undefined>("Executive Business Briefing");
   const [docContent, setDocContent] = useState<string | undefined>();
@@ -144,8 +159,14 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDshDrawerOpen, setIsDshDrawerOpen] = useState(false);
+  const [webGpuInfo, setWebGpuInfo] = useState<WebGpuCapability | null>(null);
+
+  useEffect(() => {
+    WebGpuInferenceService.probeHardware().then(setWebGpuInfo).catch(() => {});
+  }, []);
   const [persona, setPersona] = useState<ChatPersona>("cofounder");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("core");
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
@@ -664,44 +685,67 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       }
 
       const lower = text.toLowerCase();
+      let autoAgentId = selectedAgentId;
+      let autoChatMode = persona === "cofounder" ? "cofounder" : persona === "coworker" ? "scenario-testing" : "web-search";
 
-      // Step 1: Detect GitHub Repo / Codebase intent
-      if (lower.includes("github.com/") || lower.includes("repo") || lower.includes("codebase") || lower.includes("pull request") || lower.includes("pr")) {
-        setActiveTab("code");
-        setCodeSnippet(text);
-        setArtifactOpen(true);
+      // ── Autonomous Intent & Agent Router (Zero user clicks needed) ──
+      // 1. Planner & Roadmap Intent
+      if (/(plan|roadmap|milestones|breakdown|phases|implementation plan|task list)/i.test(lower)) {
+        autoAgentId = "planner";
+        setSelectedAgentId("planner");
       }
-      // Step 2: Detect Presentation & Slide Studio intent
-      else if (lower.includes("slide") || lower.includes("deck") || lower.includes("presentation") || lower.includes("pitch")) {
+      // 2. System Architecture & API Design Intent
+      else if (/(architect|system design|scalability|api design|microservice|database schema|topology)/i.test(lower)) {
+        autoAgentId = "architect";
+        setSelectedAgentId("architect");
+      }
+      // 3. Security & Vulnerability Review Intent
+      else if (/(security|vulnerability|owasp|xss|sql injection|auth|leak|credential|pentest)/i.test(lower)) {
+        autoAgentId = "security";
+        setSelectedAgentId("security");
+      }
+      // 4. Test-Driven Development (TDD) Intent
+      else if (/(test|tdd|unit test|coverage|vitest|jest|refactor|assertion)/i.test(lower)) {
+        autoAgentId = "tdd";
+        setSelectedAgentId("tdd");
+      }
+      // 5. Deep Research & Live Market Search Intent
+      else if (/(deep research|market sizing|tam|competitor|news|latest|update|vs|compare|price|tariff)/i.test(lower)) {
+        autoAgentId = "analyst";
+        setSelectedAgentId("analyst");
+        autoChatMode = "web-search";
+        setActiveTab("research");
+        setResearchQuery(text);
+      }
+      // 6. Presentation & Slide Studio Intent
+      else if (/(slide|deck|presentation|pitch deck|pitch)/i.test(lower)) {
+        autoAgentId = "business";
+        setSelectedAgentId("business");
         const topicRaw = text.replace(/^(generate|create|build|make|show me|draft)\s+(a\s+)?(\d+[\s-]slide\s+)?(deck|presentation|slides|slide deck)?\s*(for|on|about)?\s*/i, "").trim();
         const cleanTopic = topicRaw.length > 3 ? topicRaw.charAt(0).toUpperCase() + topicRaw.slice(1) : text;
         setActiveTab("slides");
         setSlidesTopic(cleanTopic);
-        setArtifactOpen(true);
       }
-      // Step 3: Detect Financial Modeling & Spreadsheet intent
-      else if (lower.includes("sheet") || lower.includes("financial model") || lower.includes("mrr") || lower.includes("pricing scenario") || lower.includes("excel")) {
+      // 7. Financial Modeling & Spreadsheet Intent
+      else if (/(sheet|financial model|mrr|pricing scenario|excel|cash flow|cac|gross margin)/i.test(lower)) {
+        autoAgentId = "business";
+        setSelectedAgentId("business");
         setActiveTab("sheet");
-        setArtifactOpen(true);
       }
-      // Step 4: Detect Deep Research intent
-      else if (lower.includes("deep research") || lower.includes("market sizing") || lower.includes("tam sam som") || lower.includes("competitor analysis")) {
-        setActiveTab("research");
-        setResearchQuery(text);
-        setArtifactOpen(true);
+      // 8. Manuscript & Creative Publishing Intent
+      else if (/(novel|book|chapter|story bible|boi mela|character|manuscript|scene)/i.test(lower)) {
+        autoAgentId = "writer";
+        setSelectedAgentId("writer");
+        setActiveTab("doc");
+        setDocTitle(text.slice(0, 40));
       }
-      // Step 5: Detect Code Generation intent
-      else if (lower.includes("generate code") || lower.includes("react component") || lower.includes("database schema") || lower.includes("api endpoint")) {
+      // 9. Code Generation Intent
+      else if (/(github\.com\/|repo|codebase|generate code|react component|api endpoint|fix bug)/i.test(lower)) {
         setActiveTab("code");
         setCodeSnippet(text);
-        setArtifactOpen(true);
       }
-      // Step 6: Detect Web Automation intent
-      else if (lower.includes("login") || lower.includes("fill form") || lower.includes("navigate to") || lower.includes("scrape") || lower.includes("browser") || lower.includes("automate") || lower.includes("collect api key") || lower.includes("open website")) {
-        // Web automation — trigger browser workflow via message, no artifact panel
-      }
-      // Step 7: Detect Voice Mode intent
-      else if (lower.includes("let's talk") || lower.includes("voice chat") || lower.includes("talk to me") || lower.includes("voice mode") || lower.includes("call me")) {
+      // 10. Voice Mode Intent
+      else if (/(let's talk|voice chat|talk to me|voice mode|call me)/i.test(lower)) {
         setIsVoiceOrbOpen(true);
       }
 
@@ -726,11 +770,34 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         isStreaming: true,
       });
 
-      const chatMode = persona === "cofounder" ? "cofounder" : persona === "coworker" ? "scenario-testing" : "web-search";
+      const chatMode = autoChatMode;
+      const needleRoute = needle2.routeIntent("chat", text.trim());
+      const chatHistory = messages.slice(-8).map((m) => ({ role: m.role, content: m.content })).concat([{ role: "user", content: text.trim() }]);
 
       await startStream(
         "/api/chat",
-        { conversationId, message: text.trim(), chatMode },
+        {
+          conversationId,
+          message: text.trim(),
+          messages: chatHistory,
+          chatMode,
+          context: {
+            persona,
+            selectedAgentId: autoAgentId,
+            activeTab,
+            activeArtifact: {
+              tab: activeTab,
+              topic: activeTab === "slides" ? slidesTopic : undefined,
+              query: activeTab === "research" ? researchQuery : undefined,
+              docTitle: activeTab === "doc" ? docTitle : undefined,
+            },
+            locale: "Asia/Dhaka",
+            currency: "BDT",
+            timestamp: new Date().toISOString(),
+            needleRoute,
+            attachments: attachments.map((a) => ({ name: a.name, type: a.type, url: a.url })),
+          },
+        },
         (chunk) => updateLastAssistantMessage(chunk),
         () => finalizeLastAssistantMessage(),
         (err) => {
@@ -744,12 +811,21 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           onStep: (step) => {
             updateMessageMetadata(assistantMsgId, { steps: [step] });
           },
+          onSources: (sources) => {
+            updateMessageMetadata(assistantMsgId, { sources, chatMode });
+          },
           onArtifact: (artifact) => {
             if (artifact.type) {
               setActiveTab(artifact.type as any);
               setArtifactOpen(true);
               if (artifact.type === "slides" && artifact.title) setSlidesTopic(artifact.title);
               if (artifact.type === "research" && artifact.title) setResearchQuery(artifact.title);
+              if (artifact.type === "sheet") setSheetTitle(artifact.title || "3-Scenario Financial Model");
+              if (artifact.type === "doc") {
+                setDocTitle(artifact.title || "Executive Document");
+                if ((artifact as any).content) setDocContent((artifact as any).content);
+              }
+              if (artifact.type === "code" && (artifact as any).content) setCodeSnippet((artifact as any).content);
             }
             updateMessageMetadata(assistantMsgId, {
               artifactType: artifact.type,
@@ -830,23 +906,23 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       {/* Main Workspace Shell */}
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
         {/* ── Top Workspace Bar: ChatGPT-Style Agent Switcher & Work Mode Toggle ── */}
-        <div className="h-12 border-b border-border/60 bg-background/80 backdrop-blur-md px-4 flex items-center justify-between shrink-0 z-20">
-          <div className="flex items-center gap-3">
+        <div className="h-12 border-b border-border/60 bg-background/80 backdrop-blur-md px-2 sm:px-4 flex items-center justify-between shrink-0 z-20 gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
             {/* Agent Fleet Dropdown */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 type="button"
                 onClick={() => setIsAgentMenuOpen(!isAgentMenuOpen)}
-                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary text-sm font-semibold text-foreground transition border border-border/40 hover:border-border cursor-pointer shadow-xs"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary text-xs sm:text-sm font-semibold text-foreground transition border border-border/40 hover:border-border cursor-pointer shadow-xs"
               >
-                <div className={`w-5 h-5 rounded-md ${activeAgent.bgLight} ${activeAgent.color} flex items-center justify-center`}>
+                <div className={`w-5 h-5 rounded-md ${activeAgent.bgLight} ${activeAgent.color} flex items-center justify-center shrink-0`}>
                   <activeAgent.icon className="w-3.5 h-3.5" />
                 </div>
-                <span>{activeAgent.name}</span>
-                <span className="text-[10px] font-mono font-normal px-1.5 py-0.5 rounded-md bg-background/60 text-muted-foreground border border-border/30">
+                <span className="max-w-[85px] xs:max-w-[120px] sm:max-w-none truncate">{activeAgent.name}</span>
+                <span className="text-[10px] font-mono font-normal px-1.5 py-0.5 rounded-md bg-background/60 text-muted-foreground border border-border/30 hidden md:inline-block">
                   {activeAgent.badge}
                 </span>
-                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground ml-0.5" />
+                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
               </button>
 
               {isAgentMenuOpen && (
@@ -890,7 +966,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
 
             {/* Active Conversation Title */}
             {messages.length > 0 && activeConversation && (
-              <div className="hidden md:flex items-center gap-2 text-xs text-muted-foreground/80 pl-2 border-l border-border/50 max-w-[280px] truncate font-medium">
+              <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground/80 pl-2 border-l border-border/50 max-w-[200px] xl:max-w-[280px] truncate font-medium">
                 <span className="truncate">{activeConversation.title || "Active Research Session"}</span>
               </div>
             )}
@@ -899,137 +975,147 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             <OfflineSyncBadge />
           </div>
 
-          {/* Right Mode Toggle & Actions */}
-          <div className="flex items-center gap-2">
-            {/* Multi-Format Export Menu */}
-            {messages.length > 0 && (
-              <div className="relative">
-                <button
-                  type="button"
-                  onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                  className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-medium transition border border-border/30 cursor-pointer"
-                  title="Export session (Ctrl+Shift+E)"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Export</span>
-                  <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                </button>
-
-                {isExportMenuOpen && (
-                  <div className="absolute right-0 top-full mt-1.5 z-50 w-52 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/70 rounded-2xl shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100">
-                    <button
-                      type="button"
-                      onClick={() => handleExportSession("md")}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
-                    >
-                      <FileTextIcon className="w-3.5 h-3.5 text-brand shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-xs">Markdown (.md)</div>
-                        <div className="text-[10px] text-muted-foreground">Standard formatted report</div>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleExportSession("json")}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
-                    >
-                      <FileJson className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-xs">JSON (.json)</div>
-                        <div className="text-[10px] text-muted-foreground">Full schema & metadata</div>
-                      </div>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleExportSession("print")}
-                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer border-t border-border/40 mt-1 pt-1"
-                    >
-                      <Printer className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="font-semibold text-xs">Print / PDF</div>
-                        <div className="text-[10px] text-muted-foreground">System print dialogue</div>
-                      </div>
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
+          {/* Right Zen Actions */}
+          <div className="flex items-center gap-1.5 shrink-0">
             {/* 🔗 Public 1-Click Viral Share Button */}
             {messages.length > 0 && (
               <button
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-semibold transition cursor-pointer shadow-xs"
-                title="Share public link to this workspace (WhatsApp / LinkedIn)"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-xs font-semibold transition cursor-pointer shadow-xs"
+                title="Share public link"
               >
                 <Share2 className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Share</span>
               </button>
             )}
 
-            {/* 🧠 DSH Execution Trace & Memori Profile Drawer Trigger */}
-            <button
-              type="button"
-              onClick={() => setIsDshDrawerOpen(true)}
-              className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-indigo-400 hover:text-indigo-300 transition border border-indigo-500/20 cursor-pointer hidden md:flex items-center gap-1 text-xs"
-              title="DSH Execution Trace & Epistemic Memory"
+            {/* Live Edge Engine Indicator */}
+            <div
+              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs cursor-default select-none animate-in fade-in duration-300"
+              title="Shothik Neural Speculative Engine Active (Sub-15ms Edge Latency · Local Acceleration)"
             >
-              <Cpu className="w-3.5 h-3.5" />
-              <span className="text-[11px] font-mono font-medium">DSH Replay</span>
-            </button>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span>Shothik ⚡ Edge</span>
+            </div>
 
-            {/* Keyboard Shortcuts Help Button */}
-            <button
-              type="button"
-              onClick={() => setIsShortcutsOpen(true)}
-              className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer hidden md:flex"
-              title="Keyboard Shortcuts (?)"
-            >
-              <Keyboard className="w-4 h-4" />
-            </button>
-
-            {/* Dual Mode Switcher (Chat | Work Canvas) - Shown in header when transcript is active or canvas open */}
+            {/* Work Canvas Toggle Pill (only if messages > 0 or artifact is open) */}
             {(messages.length > 0 || artifactOpen) && (
-              <div className="flex items-center bg-secondary/60 p-0.5 rounded-xl border border-border/40 text-xs animate-fade-in">
-                <button
-                  type="button"
-                  onClick={() => setArtifactOpen(false)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
-                    !artifactOpen ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <MessageSquare className="w-3.5 h-3.5" />
-                  <span>Chat</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setArtifactOpen(true)}
-                  className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition font-medium cursor-pointer ${
-                    artifactOpen ? "bg-background text-foreground shadow-xs font-semibold" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <LayoutTemplate className="w-3.5 h-3.5" />
-                  <span>Work Canvas</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setArtifactOpen(!artifactOpen)}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border",
+                  artifactOpen
+                    ? "bg-brand/15 text-brand border-brand/40 shadow-xs"
+                    : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
+                )}
+                title="Toggle Work Canvas"
+              >
+                <LayoutTemplate className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Canvas</span>
+              </button>
             )}
 
             {/* New Thread (+) */}
             <button
               type="button"
               onClick={createNewConversation}
-              className="p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer"
               title="New Chat (Ctrl+Shift+O)"
             >
               <Plus className="w-4 h-4" />
             </button>
+
+            {/* ⋯ Zen Overflow Menu (Export, Telemetry, Shortcuts) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsMoreMenuOpen(!isMoreMenuOpen)}
+                className={cn(
+                  "p-1.5 sm:p-2 rounded-xl transition border cursor-pointer",
+                  isMoreMenuOpen
+                    ? "bg-secondary text-foreground border-border/60"
+                    : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
+                )}
+                title="More options & diagnostics"
+              >
+                <MoreHorizontal className="w-4 h-4" />
+              </button>
+
+              {isMoreMenuOpen && (
+                <div
+                  className="absolute right-0 top-full mt-1.5 z-50 w-56 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/70 rounded-2xl shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
+                  onClick={() => setIsMoreMenuOpen(false)}
+                >
+                  {/* Export Options */}
+                  {messages.length > 0 && (
+                    <>
+                      <div className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                        Export Session
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleExportSession("md")}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                      >
+                        <FileTextIcon className="w-3.5 h-3.5 text-brand shrink-0" />
+                        <span className="font-medium">Markdown (.md)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleExportSession("json")}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                      >
+                        <FileJson className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        <span className="font-medium">JSON (.json)</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleExportSession("print")}
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer border-b border-border/40 pb-1.5 mb-1"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                        <span className="font-medium">Print / Save PDF</span>
+                      </button>
+                    </>
+                  )}
+
+                  {/* Tools & Shortcuts */}
+                  <div className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Tools & Shortcuts
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsDshDrawerOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <Cpu className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                    <span className="font-medium">Workflow Step Audit</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsShortcutsOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <Keyboard className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                    <span className="font-medium">Keyboard Shortcuts (?)</span>
+                  </button>
+                  {webGpuInfo?.isSupported && (
+                    <div className="px-2.5 py-1.5 text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 border-t border-border/30 mt-1">
+                      <Zap className="w-3 h-3 text-emerald-400" />
+                      <span>Turbo Engine Active</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Content: Conversation + Dedicated Work Canvas Studio + Split-Pane Workspace */}
-        {artifactOpen && messages.length === 0 ? (
-          /* ── Full-Width Interactive Work Canvas Studio ── */
+        {artifactOpen && (messages.length === 0 || isMobile) ? (
+          /* ── Full-Width Interactive Work Canvas Studio (Empty state or Mobile Canvas View) ── */
           <div className="flex flex-1 flex-col min-h-0 w-full overflow-hidden animate-fade-in bg-background">
             <div className="flex-1 min-h-0 overflow-hidden relative">
               <ComponentErrorBoundary title="Artifact Canvas Error">
@@ -1041,6 +1127,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   slidesTopic={slidesTopic}
                   researchQuery={researchQuery}
                   sheetData={sheetData}
+                  sheetTitle={sheetTitle}
                   codeSnippet={codeSnippet}
                   docTitle={docTitle}
                   docContent={docContent}
@@ -1052,7 +1139,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             </div>
 
             {/* Pinned Bottom AI Copilot Composer for Live Canvas Mutation */}
-            <div className="w-full max-w-4xl mx-auto px-4 py-3 shrink-0">
+            <div className="w-full max-w-4xl mx-auto px-2 sm:px-4 py-2 sm:py-3 shrink-0">
               <ComponentErrorBoundary title="Composer Input Interrupted">
                 <Composer
                   onAction={handleComposerAction}
@@ -1069,8 +1156,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </ComponentErrorBoundary>
             </div>
           </div>
-        ) : artifactOpen && messages.length > 0 ? (
-          /* ── Split Conversation + Right Artifact Panel ── */
+        ) : artifactOpen && messages.length > 0 && !isMobile ? (
+          /* ── Split Conversation + Right Artifact Panel (Desktop Only) ── */
           <ResizablePanelGroup direction="horizontal" className="flex-1 min-h-0 w-full overflow-hidden">
             {/* ── Left Conversation Column ── */}
             <ResizablePanel defaultSize={50} minSize={35} className="flex flex-col min-w-0 h-full overflow-hidden">
@@ -1129,6 +1216,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   slidesTopic={slidesTopic}
                   researchQuery={researchQuery}
                   sheetData={sheetData}
+                  sheetTitle={sheetTitle}
                   codeSnippet={codeSnippet}
                   docTitle={docTitle}
                   docContent={docContent}
@@ -1140,8 +1228,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : messages.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center min-h-0 w-full overflow-y-auto px-4 py-8 custom-scrollbar animate-fade-in">
-            <div className="w-full max-w-3xl space-y-6 text-center">
+          <div className="flex flex-1 flex-col items-center justify-center min-h-0 w-full overflow-y-auto px-3 sm:px-4 py-4 sm:py-8 custom-scrollbar animate-fade-in">
+            <div className="w-full max-w-3xl space-y-4 sm:space-y-6 text-center">
               {/* ── Empty State Greeting & Intent Starter Prompts ── */}
               <EmptyChatGreeting
                 isArtifactOpen={artifactOpen}
@@ -1181,6 +1269,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 <div className="flex-1 min-h-0 overflow-hidden">
                   <Transcript
                     messages={messages as any}
+                    agentId={selectedAgentId}
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}

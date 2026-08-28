@@ -70,10 +70,19 @@ catalog:
 autoInstallPeers: false
 
 onlyBuiltDependencies:
+  - '@prisma/engines'
+  - '@scarf/scarf'
   - '@swc/core'
+  - '@tree-sitter-grammars/tree-sitter-yaml'
+  - better-sqlite3
   - esbuild
   - msw
+  - prisma
+  - sharp
+  - tree-sitter
+  - tree-sitter-json
   - unrs-resolver
+  - workerd
 
 overrides:
   # replit uses linux-x64 only, we can exclude all other platforms
@@ -164,6 +173,7 @@ allowBuilds:
   '@prisma/engines': false
   '@scarf/scarf': false
   '@tree-sitter-grammars/tree-sitter-yaml': false
+  better-sqlite3: set this to true or false
   core-js: false
   core-js-pure: false
   esbuild: false

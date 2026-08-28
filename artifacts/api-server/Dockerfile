@@ -9,6 +9,7 @@ RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
 # Copy monorepo workspace configs and package definitions
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* tsconfig*.json ./
 COPY lib ./lib
+COPY packages ./packages
 COPY artifacts/api-server ./artifacts/api-server
 
 # Install dependencies across workspace

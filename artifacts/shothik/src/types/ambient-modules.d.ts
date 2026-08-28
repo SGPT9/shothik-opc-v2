@@ -85,14 +85,6 @@ declare module "@modelcontextprotocol/sdk/client/sse.js" {
   }
 }
 
-declare module "@/convex/twin_lifecycle_transitions" {
-  export const LIFECYCLE_TRANSITIONS: Record<string, { from: string[]; to: string }>;
-  export const BLOCKED_STATES: string[];
-  export function validateTransition(from: string, to: string): boolean;
-  export function canTransition(from: string, to: string): boolean;
-  export function isActiveState(state: string): boolean;
-  export type LifecycleState = string;
-}
 
 declare module "@llamaindex/liteparse" {
   export const LiteParse: any;

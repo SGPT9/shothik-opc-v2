@@ -1,50 +1,17 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
   "buildCommand": "pnpm --filter @workspace/shothik run build",
   "outputDirectory": "artifacts/shothik/dist/public",
-  "headers": [
+  "installCommand": "pnpm install",
+  "rewrites": [
     {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "SAMEORIGIN"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
-        {
-          "key": "Referrer-Policy",
-          "value": "strict-origin-when-cross-origin"
-        },
-        {
-          "key": "Permissions-Policy",
-          "value": "camera=(), microphone=(self), geolocation=()"
-        },
-        {
-          "key": "Strict-Transport-Security",
-          "value": "max-age=63072000; includeSubDomains; preload"
-        }
-      ]
+      "source": "/api/(.*)",
+      "destination": "https://api.shothikgpt.com/api/$1"
     },
     {
-      "source": "/assets/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=31536000, immutable"
-        }
-      ]
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
-  ],
-  "rewrites": [
-    { "source": "/api/:path*", "destination": "https://shothikgpt.com/api/:path*" },
-    { "source": "/paraphrase-with-variant/:path*", "destination": "https://shothikgpt.com/paraphrase-with-variant/:path*" },
-    { "source": "/:path*", "destination": "/index.html" }
   ]
 }

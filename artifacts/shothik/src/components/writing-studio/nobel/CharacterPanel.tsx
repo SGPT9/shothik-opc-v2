@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Users, Brain, Heart, Shield, Sparkles, Cloud, CloudOff } from 'lucide-react';
-import { useMutation, useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
 import { EnneagramEngine, type CharacterDNA, type EnneagramType } from '@/lib/nobel-engine';
 import { cn } from '@/lib/utils';
 
@@ -17,28 +15,29 @@ export function CharacterPanel({ projectId }: CharacterPanelProps) {
   const [showCreate, setShowCreate] = useState(false);
   const [syncStatus, setSyncStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
 
-  const saveCharactersMutation = useMutation(api.writing.saveCharacters);
-  const savedData = useQuery(api.writing.getCharacters, { localProjectId: projectId });
-
   useEffect(() => {
-    if (Array.isArray(savedData)) {
-      setCharacters(savedData as CharacterDNA[]);
+    if (!projectId) return;
+    try {
+      const local = localStorage.getItem(`project-characters-${projectId}`);
+      if (local) {
+        setCharacters(JSON.parse(local));
+      }
+    } catch (e) {
+      console.warn('[CharacterPanel] Failed to read characters from storage:', e);
     }
-  }, [savedData]);
+  }, [projectId]);
 
   const persistCharacters = useCallback(async (updated: CharacterDNA[]) => {
+    if (!projectId) return;
     setSyncStatus('saving');
     try {
-      await saveCharactersMutation({
-        localProjectId: projectId,
-        characters: updated as any,
-      });
+      localStorage.setItem(`project-characters-${projectId}`, JSON.stringify(updated));
       setSyncStatus('saved');
       setTimeout(() => setSyncStatus('idle'), 2000);
     } catch {
       setSyncStatus('error');
     }
-  }, [projectId, saveCharactersMutation]);
+  }, [projectId]);
 
   const createCharacter = (name: string, type: EnneagramType) => {
     const newChar = EnneagramEngine.generateCharacterDNA(name, type);

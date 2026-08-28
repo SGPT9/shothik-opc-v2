@@ -24,26 +24,26 @@ import { EpistemicProvenanceBadge } from "./EpistemicProvenanceBadge";
 import { GitHubRepoCard } from "./GitHubRepoCard";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useState, useMemo } from "react";
 import { LowRamStylexOptimizerService } from "@/lib/infrastructure/low-ram-stylex-optimizer";
 
 // Pre-compiled static class map matching compile-time StyleX layout rules
 const STYLEX_MAP = {
-  container: "mx-auto max-w-3xl px-4 py-6 space-y-8",
-  userRow: "flex justify-end gap-3 group",
-  userCol: "flex flex-col items-end gap-1.5 max-w-[80%]",
-  userBubble: "rounded-2xl rounded-tr-sm bg-white/[0.08] dark:bg-white/[0.06] backdrop-blur-xl border border-zinc-300 dark:border-white/[0.12] px-4.5 py-3.5 text-sm text-zinc-900 dark:text-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)]",
+  container: "mx-auto max-w-3xl px-3 sm:px-4 py-4 sm:py-6 space-y-6 sm:space-y-8",
+  userRow: "flex justify-end gap-2 sm:gap-3 group",
+  userCol: "flex flex-col items-end gap-1.5 max-w-[92%] sm:max-w-[80%]",
+  userBubble: "rounded-2xl rounded-tr-sm bg-white/[0.08] dark:bg-white/[0.06] backdrop-blur-xl border border-zinc-300 dark:border-white/[0.12] px-3.5 sm:px-4.5 py-2.5 sm:py-3.5 text-sm text-zinc-900 dark:text-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] break-words",
   userAttachmentPill: "inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[10px]",
   userTimestamp: "text-[10px] text-muted-foreground/50 pr-1 opacity-0 group-hover:opacity-100 transition-opacity",
-  userAvatar: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.08] border border-white/[0.15] text-zinc-200 backdrop-blur-md shadow-sm mt-0.5",
+  userAvatar: "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.08] border border-white/[0.15] text-zinc-200 backdrop-blur-md shadow-sm mt-0.5",
   
-  assistantRow: "flex gap-3.5 group",
-  assistantAvatar: "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)] mt-0.5",
-  assistantCol: "flex-1 min-w-0 space-y-5 rounded-2xl bg-zinc-900/40 dark:bg-black/50 backdrop-blur-2xl border border-zinc-200/80 dark:border-white/[0.08] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden",
-  planContainer: "rounded-xl border border-border bg-muted/20 px-3.5 py-2.5",
+  assistantRow: "flex gap-2.5 sm:gap-3.5 group",
+  assistantAvatar: "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)] mt-0.5",
+  assistantCol: "flex-1 min-w-0 space-y-4 sm:space-y-5 rounded-2xl bg-zinc-900/40 dark:bg-black/50 backdrop-blur-2xl border border-zinc-200/80 dark:border-white/[0.08] p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden",
+  planContainer: "rounded-xl border border-border bg-muted/20 px-3 py-2 sm:px-3.5 sm:py-2.5",
   planTitle: "flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground mb-1.5",
   planList: "space-y-1 text-xs text-foreground",
-  contentContainer: "relative text-sm leading-relaxed",
+  contentContainer: "relative text-sm leading-relaxed overflow-x-auto",
   
   actionBtn: "flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition",
   overflowMenu: "absolute bottom-full left-0 mb-1 z-50 hidden group-hover/overflow:block w-40 rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100",
@@ -244,6 +244,17 @@ export function Transcript({
   const slicedMessages = lowRamConfig.isLowEndDevice ? messages.slice(-visibleLimit) : messages;
   const hasMoreMessages = lowRamConfig.isLowEndDevice && messages.length > visibleLimit;
 
+  // Check if conversation has developed into an explicit PRD, Sprint Backlog, or Company Execution plan
+  const isTwinEligible = useMemo(() => {
+    if (!messages || messages.length < 2) return false;
+    return messages.some((msg) => {
+      const meta = msg.metadata as any;
+      if (meta?.twinEligible || meta?.projectIntent || meta?.isPrd) return true;
+      const content = msg.content || "";
+      return /(### (strategic execution roadmap|product requirements|project roadmap|sprint plan|architecture specification)|\|\s*\*\*foundation|\*\*sprint backlog\*\*|user stories & acceptance criteria|workstream.*timeline)/i.test(content);
+    });
+  }, [messages]);
+
   // Auto-scroll to bottom on new messages / streaming only if near bottom
   useEffect(() => {
     if (!userScrolledUp && bottomRef.current && typeof bottomRef.current.scrollIntoView === "function") {
@@ -302,10 +313,12 @@ export function Transcript({
             />
           )}
           {slicedMessages.map((message, idx) => {
+            const msgKey = message._id || (message as any).id || `msg_${idx}`;
             const isUser = message.role === "user";
+            const isMsgStreaming = message.status === "streaming" || Boolean((message as any).isStreaming);
             const isLast = idx === messages.length - 1;
-            const canRegenerate = message.role === "assistant" && message.status !== "streaming";
-            const canStop = message.role === "assistant" && message.status === "streaming";
+            const canRegenerate = message.role === "assistant" && !isMsgStreaming;
+            const canStop = message.role === "assistant" && isMsgStreaming;
             const slashCommand = isUser ? getSlashCommandDisplayText(message.content) : null;
             const rawContent = slashCommand ? slashCommand.body : message.content;
 
@@ -335,7 +348,7 @@ export function Transcript({
             // ── USER message: right-aligned bubble ─────────────────────────
             if (isUser) {
               return (
-                <div key={message._id} className="flex justify-end gap-3 group">
+                <div key={msgKey} className="flex justify-end gap-3 group">
                   <div className="flex flex-col items-end gap-1.5 max-w-[80%]">
                     {/* Slash command badge */}
                     {slashCommand && (
@@ -346,7 +359,7 @@ export function Transcript({
                     )}
 
                     {/* Bubble or Inline Editor */}
-                    {editingMsgId === message._id ? (
+                    {editingMsgId === msgKey ? (
                       <div className="w-full min-w-[320px] rounded-2xl bg-card border border-brand/40 p-3 shadow-xl space-y-2.5">
                         <textarea
                           value={editingText}
@@ -391,11 +404,11 @@ export function Transcript({
                     <div className="flex items-center gap-1 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         type="button"
-                        onClick={() => handleCopyUserPrompt(message._id, message.content)}
+                        onClick={() => handleCopyUserPrompt(msgKey, message.content)}
                         className="flex items-center justify-center h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
-                        title={copiedUserMsgId === message._id ? "Copied!" : "Copy prompt"}
+                        title={copiedUserMsgId === msgKey ? "Copied!" : "Copy prompt"}
                       >
-                        {copiedUserMsgId === message._id ? (
+                        {copiedUserMsgId === msgKey ? (
                           <Check className="h-3 w-3 text-emerald-400" />
                         ) : (
                           <Copy className="h-3 w-3" />
@@ -427,7 +440,7 @@ export function Transcript({
 
             // ── ASSISTANT message: full-width thread style (Agent layer) ─────────────────
             return (
-              <div key={message._id} className="flex gap-3.5 group">
+              <div key={msgKey} className="flex gap-3.5 group">
                 {/* AI avatar (Cosmic Jade aura) */}
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)] mt-0.5">
                   <Sparkles className="h-4 w-4" />
@@ -478,12 +491,12 @@ export function Transcript({
                   {(message.metadata?.isOvernight || message.metadata?.executionMode === "airllm_frontier") && (
                     <OvernightJobCard
                       taskTitle={displayContent}
-                      status={message.status === "completed" ? "completed" : message.status === "streaming" ? "processing" : "queued"}
+                      status={message.status === "completed" || !isMsgStreaming ? "completed" : "processing"}
                     />
                   )}
 
                   {/* Thinking state */}
-                  {message.status === "streaming" && !displayContent && (
+                  {isMsgStreaming && !displayContent && (
                     <ThinkingDots label={safeStatusLabel(statusLabel)} />
                   )}
 
@@ -491,7 +504,7 @@ export function Transcript({
                   {(message.metadata?.thinking || extractedThinking) && (
                     <ThinkBox
                       content={message.metadata?.thinking || extractedThinking || ""}
-                      thinkingEnded={message.status !== "streaming"}
+                      thinkingEnded={!isMsgStreaming}
                     />
                   )}
 
@@ -499,7 +512,7 @@ export function Transcript({
                   {Array.isArray(message.metadata?.steps) && message.metadata.steps.length > 0 && (
                     <AssistantSteps
                       steps={message.metadata.steps}
-                      collapsed={message.status !== "streaming"}
+                      collapsed={!isMsgStreaming}
                     />
                   )}
 
@@ -527,10 +540,10 @@ export function Transcript({
                   {!message.metadata?.githubAnalysis && !displayContent.includes("[Stream Error:") && (
                     <div className="relative text-sm leading-relaxed">
                       <MarkdownMessage
-                        content={displayContent || (message.status === "streaming" ? "" : slashCommand ? "Spec request" : "")}
+                        content={displayContent || (isMsgStreaming ? "" : slashCommand ? "Spec request" : "")}
                         onOpenSource={onOpenSource}
                       />
-                      {message.status === "streaming" && displayContent && <StreamingCursor />}
+                      {isMsgStreaming && displayContent && <StreamingCursor />}
                     </div>
                   )}
 
@@ -659,60 +672,31 @@ export function Transcript({
                     );
                   })()}
 
-                  {/* ── Inline Artifact Card Trigger (Replit Agent On-Demand Pattern) ── */}
-                  {((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (message.role === "assistant" && (displayContent?.includes("```") || displayContent?.toLowerCase().includes("slide") || displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("research")))) && (
+                  {/* ── Inline Artifact Card Trigger (Only when artifact generated) ── */}
+                  {Boolean((message.metadata as any)?.artifactType || (message.metadata as any)?.tab) && (
                     <>
                       <InlineArtifactCard
-                        type={
-                          ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (
-                            displayContent?.toLowerCase().includes("slide") ? "slides" :
-                            displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
-                            displayContent?.toLowerCase().includes("research") ? "research" : "code"
-                          )) as any
-                        }
+                        type={((message.metadata as any)?.artifactType || (message.metadata as any)?.tab) as any}
                         title={(message.metadata as any)?.artifactTitle}
                         subtitle={(message.metadata as any)?.artifactSubtitle}
                         onOpen={() => {
-                          const targetTab = (
-                            (message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (
-                              displayContent?.toLowerCase().includes("slide") ? "slides" :
-                              displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
-                              displayContent?.toLowerCase().includes("research") ? "research" : "code"
-                            )
-                          );
+                          const targetTab = ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab);
                           onOpenArtifact?.(targetTab, message);
                         }}
                       />
 
                       {/* ── Proactive Agentic Next Action Chips ── */}
                       <ProactiveNextActions
-                        type={
-                          ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || (
-                            displayContent?.toLowerCase().includes("slide") || displayContent?.toLowerCase().includes("pitch deck") ? "slides" :
-                            displayContent?.toLowerCase().includes("courier") || displayContent?.toLowerCase().includes("bkash") || displayContent?.toLowerCase().includes("nagad") || displayContent?.toLowerCase().includes("steadfast") || displayContent?.toLowerCase().includes("pathao") ? "commerce" :
-                            displayContent?.toLowerCase().includes("novel") || displayContent?.toLowerCase().includes("chapter") || displayContent?.toLowerCase().includes("manuscript") || displayContent?.toLowerCase().includes("boi mela") ? "writing" :
-                            displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") || displayContent?.toLowerCase().includes("revenue") || displayContent?.toLowerCase().includes("valuation") ? "sheet" :
-                            displayContent?.toLowerCase().includes("function") || displayContent?.toLowerCase().includes("const ") || displayContent?.toLowerCase().includes("```") ? "code" :
-                            displayContent?.toLowerCase().includes("research") || displayContent?.toLowerCase().includes("competitor") ? "research" : "general"
-                          )) as any
-                        }
+                        type={((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || "general") as any}
                         onSelectAction={(query) => {
-                          const targetTab = (
-                            displayContent?.toLowerCase().includes("slide") ? "slides" :
-                            displayContent?.toLowerCase().includes("sheet") || displayContent?.toLowerCase().includes("mrr") ? "sheet" :
-                            displayContent?.toLowerCase().includes("function") || displayContent?.toLowerCase().includes("```") ? "code" :
-                            displayContent?.toLowerCase().includes("research") ? "research" : undefined
-                          );
+                          const targetTab = ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab);
                           onSelectPrompt?.(query, "cofounder", targetTab as any);
                         }}
                       />
-
-                      {/* ── Perplexity-Style Related Questions Pills ── */}
-                      <PerplexityRelatedQueries
-                        onSelectQuery={(q) => onSelectPrompt?.(q, "cofounder")}
-                      />
                     </>
                   )}
+
+
 
                   {/* DeerFlow / Swarm visualizers */}
                   {message.metadata?.deerflowPlan && (
@@ -764,9 +748,17 @@ export function Transcript({
                     />
                   )}
 
+                  {/* ── Dynamic Perplexity Related / Follow-Up Questions ── */}
+                  {!isMsgStreaming && displayContent && (
+                    <PerplexityRelatedQueries
+                      messageContent={displayContent}
+                      onSelectQuery={(query) => onSelectPrompt?.(query, "cofounder")}
+                    />
+                  )}
+
                   {/* Follow-up action bar — minimal: Copy + Regenerate + ⋯ */}
                   {!canStop && displayContent && (
-                    <div className="flex items-center gap-1 pt-1.5 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-150">
+                    <div className="flex items-center gap-1 pt-1.5 flex-wrap opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-150">
                       {/* Copy */}
                       <button
                         onClick={() => handleCopyAssistantMessage(message)}
@@ -907,8 +899,8 @@ export function Transcript({
             );
           })}
 
-          {/* 🚀 Next-Step Bridge: Turn into Twin Workspace */}
-          {messages.length >= 2 && !isStreaming && (
+          {/* 🚀 Next-Step Bridge: Turn into Twin Workspace (Only for explicit PRDs & Project Workflows) */}
+          {isTwinEligible && !isStreaming && (
             <TwinCtaCard conversationId={messages[0]?._id || "conv_active"} />
           )}
 

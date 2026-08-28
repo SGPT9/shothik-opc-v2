@@ -1,9 +1,5 @@
-
-
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useState, useEffect, useMemo } from "react";
 import { useSelector } from "react-redux";
-import { useMemo } from "react";
 import type { RootState } from "@/redux/store";
 import {
   SUBSCRIPTION_TIERS,
@@ -27,12 +23,49 @@ export interface SubscriptionState {
 
 export function useSubscription(): SubscriptionState {
   const { user } = useSelector((state: RootState) => state.auth);
-  const userId = user?._id || user?.email || "";
+  const userId = user?._id || user?.id || user?.email || "";
 
-  const subscription = useQuery(
-    api.subscriptions.getUserSubscription,
-    userId ? { userId } : "skip",
-  );
+  const [subscription, setSubscription] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) {
+      setSubscription({
+        tier: "free",
+        status: "active",
+        interval: "month",
+        currentPeriodEnd: null,
+        cancelAtPeriodEnd: false,
+      });
+      setIsLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/v1/subscriptions/me", {
+          headers: {
+            "x-user-id": userId,
+          },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && isMounted) {
+            setSubscription(json.data);
+          }
+        }
+      } catch (err) {
+        console.warn("[useSubscription] Failed to load subscription, falling back to free:", err);
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [userId]);
 
   return useMemo(() => {
     const tier = ((subscription?.tier as SubscriptionTier) || "free") as SubscriptionTier;
@@ -44,14 +77,14 @@ export function useSubscription(): SubscriptionState {
       tierName: tierConfig.name,
       status: subscription?.status || "active",
       interval,
-      currentPeriodEnd: subscription?.currentPeriodEnd || null,
+      currentPeriodEnd: subscription?.currentPeriodEnd ? new Date(subscription.currentPeriodEnd).getTime() : null,
       cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd || false,
       stripeSubscriptionId: subscription?.stripeSubscriptionId,
       stripeCustomerId: subscription?.stripeCustomerId,
-      isLoading: subscription === undefined,
+      isLoading,
       isPaid: tier !== "free",
       isActive: subscription?.status === "active" || tier === "free",
       tierConfig,
     };
-  }, [subscription]);
+  }, [subscription, isLoading]);
 }

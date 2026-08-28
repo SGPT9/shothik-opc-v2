@@ -1,8 +1,17 @@
-// Convex generated-API shim for the Vite port.
-// Uses convex's `anyApi` so function references resolve to real deployed
-// functions (e.g. api.projects.list -> "projects:list") without needing
-// the full codegen output in this repo.
-import { anyApi } from "convex/server";
+// Self-contained dynamic API proxy
+// Eliminates external dependency on convex/server
 
-export const api = anyApi;
-export const internal = anyApi;
+function createProxy(path: string[] = []): any {
+  return new Proxy(() => {}, {
+    get(_target, prop: string) {
+      if (typeof prop === "symbol") return undefined;
+      return createProxy([...path, prop]);
+    },
+    apply(_target, _thisArg, args) {
+      return { path: path.join(":"), args: args[0] || {} };
+    },
+  });
+}
+
+export const api: any = createProxy();
+export const internal: any = createProxy();

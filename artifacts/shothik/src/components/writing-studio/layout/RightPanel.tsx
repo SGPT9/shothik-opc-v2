@@ -27,9 +27,6 @@ import { cn } from '@/lib/utils';
 import { useDeerFlowStream } from '@/hooks/useDeerFlowStream';
 import { NeuralPanel } from '@/components/writing-studio/nobel/NeuralPanel';
 import { UXAgentPanel } from '@/components/writing-studio/ux/UXAgentPanel';
-import { useQuery } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import type { Id } from '@/convex/_generated/dataModel';
 
 const NobelPanel = lazy(() => import('@/components/writing-studio/nobel/NobelPanel').then(m => ({ default: m.NobelPanel })));
 const CharacterPanel = lazy(() => import('@/components/writing-studio/nobel/CharacterPanel').then(m => ({ default: m.CharacterPanel })));
@@ -117,25 +114,20 @@ export function RightPanel({
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Only query Convex if projectId is a genuine Convex Id (skip local 'proj_' or non-Convex IDs)
-  const isConvexId = Boolean(projectId && projectId !== 'default' && !projectId.startsWith('proj_') && projectId.length >= 24);
-  const convexVersions = useQuery(
-    api.projects.getVersions,
-    isConvexId ? { projectId: projectId as Id<"projects"> } : "skip"
-  );
+  // Local/cloud version history state
+  const [versions, setVersions] = useState<Version[]>([]);
 
-  const versions: Version[] = (convexVersions ?? []).map((v) => ({
-    id: v._id,
-    timestamp: new Date(v.savedAt).toLocaleString(undefined, {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }),
-    preview: v.label || v.content.substring(0, 120).replace(/<[^>]*>/g, '') + (v.content.length > 120 ? '…' : ''),
-    isAISuggestion: false,
-    status: 'applied' as const,
-  }));
+  useEffect(() => {
+    if (!projectId) return;
+    try {
+      const stored = localStorage.getItem(`project-versions-${projectId}`);
+      if (stored) {
+        setVersions(JSON.parse(stored));
+      }
+    } catch {
+      // Ignore parse errors
+    }
+  }, [projectId]);
 
   const { generate, isGenerating, streamedText, abort } = useAiCoWriter();
   const streamingIdRef = useRef<string | null>(null);

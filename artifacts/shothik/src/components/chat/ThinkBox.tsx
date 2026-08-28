@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ChevronDown, Brain, Copy, Check, Sparkles } from "lucide-react";
+import { ChevronDown, Brain, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ThinkBoxProps {
@@ -23,11 +23,11 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
 
   const title = thinkingEnded
     ? isBengali
-      ? "চিন্তন ও যুক্তি বিশ্লেষণ সম্পন্ন"
-      : "Reasoning Process Complete"
+      ? `চিন্তন সম্পন্ন (${estimatedSeconds} সে)`
+      : `Thought for ${estimatedSeconds}s`
     : isBengali
       ? "যুক্তি বিশ্লেষণ চলছে…"
-      : "Analyzing & Reasoning…";
+      : "Thinking…";
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -37,11 +37,11 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
   };
 
   return (
-    <div className="my-3 rounded-xl border border-white/[0.08] dark:border-white/[0.08] bg-zinc-100/80 dark:bg-black/40 backdrop-blur-xl overflow-hidden shadow-xs transition-all">
+    <div className="my-2.5 rounded-xl border border-white/[0.08] dark:border-white/[0.08] bg-zinc-100/80 dark:bg-black/40 backdrop-blur-xl overflow-hidden shadow-xs transition-all">
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left transition hover:bg-white/[0.04] cursor-pointer select-none"
+        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left transition hover:bg-white/[0.04] cursor-pointer select-none"
       >
         <div
           className={cn(
@@ -60,11 +60,8 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
         </div>
 
         <div className="flex flex-1 items-center gap-2 min-w-0">
-          <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-200">
+          <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
             {title}
-          </span>
-          <span className="text-[10px] font-mono text-zinc-500 dark:text-zinc-400 bg-white/[0.06] border border-white/[0.08] px-1.5 py-0.5 rounded">
-            {thinkingEnded ? `${wordCount} words • ~${estimatedSeconds}s` : "streaming"}
           </span>
         </div>
 
@@ -73,7 +70,7 @@ export function ThinkBox({ content, thinkingEnded = true }: ThinkBoxProps) {
             <button
               type="button"
               onClick={handleCopy}
-              title={isBengali ? "যুক্তির বিবরণ কপি করুন" : "Copy reasoning trace"}
+              title={isBengali ? "যুক্তির বিবরণ কপি করুন" : "Copy reasoning"}
               className="flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium text-zinc-400 hover:text-white hover:bg-white/[0.08] transition cursor-pointer select-none"
             >
               {copied ? (

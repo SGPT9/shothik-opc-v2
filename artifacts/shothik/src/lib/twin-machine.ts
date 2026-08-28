@@ -6,7 +6,7 @@ import {
   canTransition as sharedCanTransition,
   isActiveState as sharedIsActiveState,
   type LifecycleState,
-} from "@/convex/twin_lifecycle_transitions";
+} from "@/lib/twin-lifecycle";
 
 export { LIFECYCLE_TRANSITIONS, validateTransition };
 export type TwinLifecycleState = LifecycleState;

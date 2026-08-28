@@ -64,6 +64,7 @@ router.use(async (req: Request, res: Response) => {
       headers,
       body,
       signal: controller.signal,
+      redirect: "follow",
       // Required by Node's fetch when the request body is a stream.
       ...(body && typeof body !== "string" ? { duplex: "half" as const } : {}),
     } as Parameters<typeof fetch>[1]);
@@ -84,10 +85,11 @@ router.use(async (req: Request, res: Response) => {
     } else {
       res.end();
     }
-  } catch (error) {
+  } catch (error: any) {
     const aborted = controller.signal.aborted;
     if (!aborted) {
-      logger.warn({ err: error, targetUrl }, "upstream proxy request failed");
+      const errMsg = error?.message || String(error);
+      logger.warn({ message: errMsg, targetUrl }, "Upstream proxy request unreachable");
     }
     if (!res.headersSent) {
       res.status(502).json({

@@ -34,7 +34,7 @@ describe("WhatsApp Business Webhook Router", () => {
     );
 
     expect(getLayer).toBeDefined();
-    getLayer.route.stack[0].handle(req, res);
+    getLayer!.route!.stack[0].handle(req, res, () => {});
 
     expect(responseStatus).toBe(200);
     expect(responseBody).toBe("CHALLENGE_CODE_12345");
@@ -64,7 +64,7 @@ describe("WhatsApp Business Webhook Router", () => {
       (layer: any) => layer.route?.path === "/v1/whatsapp/webhook" && layer.route?.methods?.get
     );
 
-    getLayer.route.stack[0].handle(req, res);
+    getLayer!.route!.stack[0].handle(req, res, () => {});
     expect(responseStatus).toBe(403);
   });
 
@@ -111,7 +111,7 @@ describe("WhatsApp Business Webhook Router", () => {
       (layer: any) => layer.route?.path === "/v1/whatsapp/webhook" && layer.route?.methods?.post
     );
 
-    await postLayer.route.stack[0].handle(req, res);
+    await postLayer!.route!.stack[0].handle(req, res, () => {});
 
     expect(responseStatus).toBe(200);
     expect(jsonBody.status).toBe("EVENT_RECEIVED");

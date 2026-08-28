@@ -6,24 +6,26 @@ import { z } from 'zod';
  */
 
 const serverEnvSchema = z.object({
-  // Database
-  CONVEX_DEPLOYMENT: z.string().min(1, 'Convex deployment name required'),
+  // Database — PostgreSQL + SQLite
+  DATABASE_URL: z.string().optional(),
+  CONVEX_DEPLOYMENT: z.string().optional(),
   
-  // Auth
-  CLERK_SECRET_KEY: z.string().min(1, 'Clerk secret key required'),
+  // Auth — Clerk removed, Better Auth in use
+  // (no server-side auth key required in schema)
   
-  // LLM APIs (at least one required)
+  // LLM APIs (at least one required — validated below)
   KIMI_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
   
-  // Payments
-  STRIPE_SECRET_KEY: z.string().min(1, 'Stripe secret key required'),
-  STRIPE_WEBHOOK_SECRET: z.string().min(1, 'Stripe webhook secret required'),
+  // Payments (optional — not all environments use Stripe)
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
 });
 
 const clientEnvSchema = z.object({
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1).optional(),
   NEXT_PUBLIC_STREAMING_ENABLED: z.string().optional().default("true"),
 });
@@ -50,8 +52,8 @@ export function validateServerEnv() {
   }
   
   // Ensure at least one LLM provider
-  if (!process.env.KIMI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
-    throw new Error('At least one LLM provider must be configured (KIMI_API_KEY, OPENAI_API_KEY, or ANTHROPIC_API_KEY)');
+  if (!process.env.KIMI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY && !process.env.OPENROUTER_API_KEY && !process.env.GEMINI_API_KEY) {
+    throw new Error('At least one LLM provider must be configured (KIMI_API_KEY, OPENAI_API_KEY, ANTHROPIC_API_KEY, OPENROUTER_API_KEY, or GEMINI_API_KEY)');
   }
   
   return result.data;

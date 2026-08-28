@@ -8,7 +8,8 @@ services:
     restart: always
     environment:
       - NODE_ENV=production
-      - VITE_API_URL=https://api.shothikgpt.com
+      - API_SERVER_URL=http://api-server:4000
+      - VITE_API_URL=/api
       - VITE_WS_URL=wss://ws.shothikgpt.com
     ports:
       - "3000:3000"
@@ -21,13 +22,19 @@ services:
       context: .
       dockerfile: artifacts/api-server/Dockerfile
     container_name: shothik-api-prod
-    restart: always
+    env_file:
+      - path: .env.local
+        required: false
+      - path: .env
+        required: false
     environment:
       - NODE_ENV=production
       - PORT=4000
       - REDIS_URL=redis://redis:6379
       - SEARXNG_URL=http://searxng:8080
       - OLLAMA_HOST=http://host.docker.internal:11434
+    volumes:
+      - ./data:/app/data
     ports:
       - "4000:4000"
     depends_on:

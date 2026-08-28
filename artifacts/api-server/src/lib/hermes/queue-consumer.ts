@@ -18,7 +18,7 @@ export interface QueueBatchResponse {
 export class HermesQueueConsumer {
   private queueName: string;
   private isProcessing: boolean = false;
-  private localQueue: QueueMessage[] = [];
+  private localQueue: QueueMessage<any>[] = [];
 
   constructor(queueName?: string) {
     this.queueName = queueName || process.env.HERMES_WORKER_QUEUE_NAME || "shothik-hermes-run-queue";
@@ -39,11 +39,14 @@ export class HermesQueueConsumer {
     };
 
     this.localQueue.push(message);
-    logger.info("[queue-consumer] Enqueued async task to queue", {
-      queueName: this.queueName,
-      messageId: message.id,
-      type,
-    });
+    logger.info(
+      {
+        queueName: this.queueName,
+        messageId: message.id,
+        type,
+      },
+      "[queue-consumer] Enqueued async task to queue"
+    );
 
     return message;
   }
@@ -72,22 +75,28 @@ export class HermesQueueConsumer {
         const result = await handler(msg);
         if (result.success) {
           processed++;
-          logger.info("[queue-consumer] Successfully processed queue message", { messageId: msg.id });
+          logger.info({ messageId: msg.id }, "[queue-consumer] Successfully processed queue message");
         } else {
           if (msg.retryCount < msg.maxRetries) {
             msg.retryCount++;
             retried++;
             this.localQueue.push(msg);
-            logger.warn("[queue-consumer] Message failed, requeued for retry", {
-              messageId: msg.id,
-              retryCount: msg.retryCount,
-              error: result.error,
-            });
+            logger.warn(
+              {
+                messageId: msg.id,
+                retryCount: msg.retryCount,
+                error: result.error,
+              },
+              "[queue-consumer] Message failed, requeued for retry"
+            );
           } else {
             failed++;
-            logger.error("[queue-consumer] Message exceeded max retries, sent to DLQ", {
-              messageId: msg.id,
-            });
+            logger.error(
+              {
+                messageId: msg.id,
+              },
+              "[queue-consumer] Message exceeded max retries, sent to DLQ"
+            );
           }
         }
       } catch (err: any) {

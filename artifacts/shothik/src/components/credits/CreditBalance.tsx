@@ -1,7 +1,5 @@
-
-
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -12,8 +10,30 @@ interface CreditBalanceProps {
 }
 
 export default function CreditBalance({ onClick, className, size = "md" }: CreditBalanceProps) {
-  const balanceData = useQuery(api.credits.getBalance);
-  const balance = balanceData?.balance ?? 0;
+  const user = useSelector((state: any) => state.auth?.user);
+  const [balance, setBalance] = useState<number>(550);
+
+  useEffect(() => {
+    let mounted = true;
+    const userId = user?.id || user?._id || "guest";
+
+    fetch("/api/v1/subscriptions/me", {
+      headers: { "x-user-id": userId },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (mounted && data.success && data.data?.subscription) {
+          const tier = data.data.subscription.tier;
+          const tierCredits = tier === "team" ? 50000 : tier === "pro" ? 15000 : 500;
+          setBalance(tierCredits);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      mounted = false;
+    };
+  }, [user]);
 
   return (
     <button

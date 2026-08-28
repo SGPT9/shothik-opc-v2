@@ -1,10 +1,5 @@
-
-
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import type { Id } from '@/convex/_generated/dataModel';
 import { ModeSwitcherHeader } from '../navigation/ModeSwitcherHeader';
 import { PolishedWriteView } from '../PolishedWriteView';
 import { PublishingPage } from '../PublishingPage';
@@ -51,7 +46,7 @@ export function ProjectContainer({
   initialMode = 'write',
 }: ProjectContainerProps) {
   const { user } = useSelector((state: any) => state.auth);
-  const clerkUserId = user?._id || user?.id || '';
+  const userId = user?._id || user?.id || '';
 
   const [currentMode, setCurrentMode] = useState<Mode>(initialMode);
   const [projectName, setProjectName] = useState('');
@@ -60,24 +55,64 @@ export function ProjectContainer({
   const [history, setHistory] = useState<string[]>(['']);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [migrationDone, setMigrationDone] = useState(false);
+  const [projectData, setProjectData] = useState<any>(null);
+  const [savedSections, setSavedSections] = useState<Record<string, string> | null>(null);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isMounted = useRef(true);
 
-  const isValidConvexId = projectId && /^[a-zA-Z0-9_]+$/.test(projectId) && projectId.length > 10;
+  // Fetch project from REST backend
+  useEffect(() => {
+    if (!projectId || !userId) return;
 
-  const convexProject = useQuery(
-    api.projects.get,
-    isValidConvexId ? { id: projectId as Id<'projects'> } : 'skip'
-  );
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/v1/projects/${encodeURIComponent(projectId)}`, {
+          headers: { 'x-user-id': userId },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data && active) {
+            setProjectData(json.data);
+            if (json.data.title) setProjectName(json.data.title);
+          }
+        }
+      } catch (err) {
+        console.warn('[ProjectContainer] Could not fetch project from cloud:', err);
+      }
+    })();
 
-  const savedSections = useQuery(
-    api.writing.getSections,
-    projectId ? { localProjectId: projectId } : 'skip'
-  );
+    return () => {
+      active = false;
+    };
+  }, [projectId, userId]);
 
-  const updateProject = useMutation(api.projects.update);
-  const saveSectionsMutation = useMutation(api.writing.saveSections);
+  // Fetch sections from REST backend
+  useEffect(() => {
+    if (!projectId || !userId) return;
+
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch(`/api/v1/writing/sections/${encodeURIComponent(projectId)}`, {
+          headers: { 'x-user-id': userId },
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data && active) {
+            setSavedSections(json.data);
+          }
+        }
+      } catch (err) {
+        console.warn('[ProjectContainer] Could not fetch sections from cloud:', err);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [projectId, userId]);
 
   useEffect(() => {
     isMounted.current = true;
@@ -85,15 +120,15 @@ export function ProjectContainer({
   }, []);
 
   useEffect(() => {
-    if (convexProject && convexProject.title) {
-      setProjectName(convexProject.title);
-    } else if (!convexProject && projectId) {
+    if (projectData && projectData.title) {
+      setProjectName(projectData.title);
+    } else if (projectId) {
       const savedName = localStorage.getItem(`project-name-${projectId}`);
       if (savedName) setProjectName(savedName);
     }
-  }, [convexProject, projectId]);
+  }, [projectData, projectId]);
 
-  const handleSaveToConvex = useCallback(async () => {
+  const handleSaveToCloud = useCallback(async () => {
     if (!projectId || isSaving || !isMounted.current) return;
 
     setIsSaving(true);
@@ -102,19 +137,32 @@ export function ProjectContainer({
       const wordCount = countWordsInSections(sections);
 
       const promises: Promise<any>[] = [
-        saveSectionsMutation({
-          localProjectId: projectId,
-          sections,
+        fetch('/api/v1/writing/sections', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-user-id': userId || 'guest',
+          },
+          body: JSON.stringify({
+            localProjectId: projectId,
+            sections,
+          }),
         }),
       ];
 
-      if (isValidConvexId) {
+      if (projectId) {
         const flatContent = Object.values(sections).join('\n');
         promises.push(
-          updateProject({
-            id: projectId as Id<'projects'>,
-            content: flatContent,
-            wordCount,
+          fetch(`/api/v1/projects/${encodeURIComponent(projectId)}`, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': userId || 'guest',
+            },
+            body: JSON.stringify({
+              content: flatContent,
+              wordCount,
+            }),
           })
         );
       }
@@ -126,25 +174,26 @@ export function ProjectContainer({
     } finally {
       if (isMounted.current) setIsSaving(false);
     }
-  }, [projectId, isSaving, isValidConvexId, saveSectionsMutation, updateProject]);
+  }, [projectId, isSaving, userId]);
 
   const handleSave = useCallback(async () => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      handleSaveToConvex();
+      handleSaveToCloud();
     }, AUTOSAVE_DEBOUNCE_MS);
-  }, [handleSaveToConvex]);
+  }, [handleSaveToCloud]);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!isSaving) handleSaveToConvex();
+      if (!isSaving) handleSaveToCloud();
     }, AUTOSAVE_INTERVAL_MS);
     return () => clearInterval(interval);
-  }, [handleSaveToConvex, isSaving]);
+  }, [handleSaveToCloud, isSaving]);
 
+  // Migration from local storage to cloud
   useEffect(() => {
-    if (!projectId || !clerkUserId || migrationDone) return;
-    const migrationKey = `convex-migrated-${projectId}`;
+    if (!projectId || !userId || migrationDone) return;
+    const migrationKey = `cloud-migrated-${projectId}`;
     if (localStorage.getItem(migrationKey)) {
       setMigrationDone(true);
       return;
@@ -158,9 +207,16 @@ export function ProjectContainer({
             setMigrationDone(true);
             return;
           }
-          await saveSectionsMutation({
-            localProjectId: projectId,
-            sections,
+          await fetch('/api/v1/writing/sections', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-user-id': userId,
+            },
+            body: JSON.stringify({
+              localProjectId: projectId,
+              sections,
+            }),
           });
           localStorage.setItem(migrationKey, '1');
           if (isMounted.current) setMigrationDone(true);
@@ -172,7 +228,7 @@ export function ProjectContainer({
     } else {
       setMigrationDone(true);
     }
-  }, [projectId, clerkUserId, savedSections, migrationDone, saveSectionsMutation]);
+  }, [projectId, userId, savedSections, migrationDone]);
 
   const handleUndo = useCallback(() => {
     if (historyIndex > 0) setHistoryIndex((prev) => prev - 1);
@@ -184,10 +240,10 @@ export function ProjectContainer({
 
   const handleModeChange = useCallback(
     (mode: Mode) => {
-      handleSaveToConvex();
+      handleSaveToCloud();
       setCurrentMode(mode);
     },
-    [handleSaveToConvex]
+    [handleSaveToCloud]
   );
 
   const handleTitleChange = useCallback(
@@ -204,7 +260,7 @@ export function ProjectContainer({
         currentMode={currentMode}
         onModeChange={handleModeChange}
         projectName={projectName}
-        onSave={handleSaveToConvex}
+        onSave={handleSaveToCloud}
         canUndo={historyIndex > 0}
         canRedo={historyIndex < history.length - 1}
         onUndo={handleUndo}
@@ -217,13 +273,13 @@ export function ProjectContainer({
         {currentMode === 'write' && (
           <PolishedWriteView
             bookTitle={projectName}
-            project={convexProject ?? ({ _id: projectId, title: projectName, content: '', type: 'book' } as any)}
+            project={projectData ?? ({ _id: projectId, id: projectId, title: projectName, content: '', type: 'book' } as any)}
           />
         )}
 
         {currentMode === 'format' && (
           <FormattingView
-            project={convexProject || { _id: projectId, id: projectId, title: projectName }}
+            project={projectData || { _id: projectId, id: projectId, title: projectName }}
           />
         )}
 

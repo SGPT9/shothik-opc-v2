@@ -40,7 +40,37 @@ function localDevApiPlugin(): Plugin {
           return;
         }
 
-        // 2. POST /api/auth/refresh
+        // 2. POST /api/auth/convex-token
+        if (req.method === 'POST' && url === '/api/auth/convex-token') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            token: 'dev_convex_token_local',
+            user: {
+              id: 'dev_user_local',
+              name: 'Developer',
+              email: 'dev@shothik.local',
+              role: 'admin'
+            }
+          }));
+          return;
+        }
+
+        // 3. GET /api/auth/session
+        if (req.method === 'GET' && url === '/api/auth/session') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            user: {
+              id: 'dev_user_local',
+              name: 'Developer',
+              email: 'dev@shothik.local',
+              image: null
+            },
+            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          }));
+          return;
+        }
+
+        // 4. POST /api/auth/refresh
         if (req.method === 'POST' && url === '/api/auth/refresh') {
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({

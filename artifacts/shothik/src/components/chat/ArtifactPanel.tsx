@@ -38,12 +38,14 @@ import { PriceWatcherArtifact } from "@/components/chat/artifacts/PriceWatcherAr
 import { OvernightReconciliationArtifact } from "@/components/chat/artifacts/OvernightReconciliationArtifact";
 import { WebGpuEngineArtifact } from "@/components/chat/artifacts/WebGpuEngineArtifact";
 import { MarketingGrowthArtifact } from "@/components/chat/artifacts/MarketingGrowthArtifact";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp } from "lucide-react";
+import { LiveAgentTraceTimeline } from "@/components/chat/LiveAgentTraceTimeline";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp, Activity } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "approvals" | "boimela" | "commerce" | "overnight" | "webgpu" | "marketing" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "traces" | "approvals" | "boimela" | "commerce" | "overnight" | "webgpu" | "marketing" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+
 
 interface TabConfig {
   id: ArtifactTab;
@@ -53,6 +55,7 @@ interface TabConfig {
 }
 
 const TABS: TabConfig[] = [
+  { id: "traces",      label: "Trace Timeline",      Icon: Activity,      color: "text-emerald-400"},
   { id: "approvals",   label: "Approvals",           Icon: ShieldCheck,  color: "text-emerald-400"},
   { id: "overnight",   label: "Overnight Routine",   Icon: Moon,         color: "text-indigo-400" },
   { id: "webgpu",      label: "WebGPU Local AI",     Icon: Zap,          color: "text-emerald-400"},
@@ -104,6 +107,7 @@ interface ArtifactPanelProps {
   slidesTopic?: string;
   researchQuery?: string;
   sheetData?: string[][];
+  sheetTitle?: string;
   codeSnippet?: string;
   codeLanguage?: string;
   codeFilename?: string;
@@ -128,6 +132,7 @@ export function ArtifactPanel({
   slidesTopic,
   researchQuery,
   sheetData,
+  sheetTitle,
   codeSnippet,
   codeLanguage,
   codeFilename,
@@ -243,7 +248,12 @@ export function ArtifactPanel({
   const visibleTabs = TABS.filter(({ id }) => tabsWithContent.has(id));
 
   return (
-    <div className="fixed inset-x-0 bottom-0 top-12 z-50 md:relative md:top-0 md:inset-auto md:z-0 flex flex-col h-[calc(100vh-3rem)] md:h-full border-t md:border-t-0 md:border-l border-border/60 bg-background w-full shrink-0 rounded-t-3xl md:rounded-none shadow-2xl md:shadow-none animate-in slide-in-from-bottom-6 md:slide-in-from-right-4 duration-300">
+    <div
+      className={cn(
+        "fixed inset-x-0 bottom-0 top-12 z-50 md:relative md:top-0 md:inset-auto md:z-0 flex flex-col h-[calc(100vh-3rem)] md:h-full border-t md:border-t-0 md:border-l border-border/60 bg-background w-full shrink-0 rounded-t-3xl md:rounded-none shadow-2xl md:shadow-none animate-in slide-in-from-bottom-6 md:slide-in-from-right-4 duration-300",
+        effectiveMaximized && "fixed inset-0 z-50 md:fixed md:inset-0 md:z-50 h-screen w-screen rounded-none shadow-2xl"
+      )}
+    >
 
       {/* Mobile Top Grabber Bar */}
       <div className="md:hidden flex flex-col items-center justify-center pt-2 pb-1 bg-muted/40 rounded-t-3xl border-b border-border/30">
@@ -252,41 +262,50 @@ export function ArtifactPanel({
       </div>
 
       {/* ── Clean Single-Artifact Header & Switcher (DeepSeek Minimalist Standard) ── */}
-      <div className="flex items-center justify-between shrink-0 border-b border-border/60 bg-muted/20 px-3 py-2">
+      {/* ── Claude Canvas Style Unified Header Bar ── */}
+      <div className="flex items-center justify-between shrink-0 border-b border-border/60 bg-muted/20 px-3.5 py-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {(() => {
-            const currentTab = TABS.find((t) => t.id === activeTab) || TABS[4];
+            const currentTab = TABS.find((t) => t.id === activeTab) || TABS[5];
             const TabIcon = currentTab.Icon;
             return (
-              <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-background border border-border/70 shadow-xs">
+              <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-background border border-border/70 shadow-xs shrink-0">
                 <TabIcon className={`h-3.5 w-3.5 shrink-0 ${currentTab.color}`} />
                 <span className="text-xs font-bold text-foreground truncate">{currentTab.label}</span>
               </div>
             );
           })()}
 
-          {/* Clean Progressive Disclosure Dropdown */}
-          <div className="relative flex items-center">
+          {/* Clean Unified Canvas Mode Switcher */}
+          <div className="relative flex items-center min-w-0">
             <select
               value={activeTab || "slides"}
               onChange={(e) => handleTabChange(e.target.value as ArtifactTab)}
-              className="h-7 pl-2 pr-6 rounded-lg text-[10px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none"
+              className="h-7 pl-2 pr-6 rounded-lg text-[11px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none truncate max-w-[140px] sm:max-w-[200px]"
               aria-label="Switch Artifact Canvas"
             >
-              <option value="slides">📽️ Slides</option>
-              <option value="sheet">📊 Financial Sheet</option>
-              <option value="research">🔬 Deep Research</option>
-              <option value="code">💻 Code Engine</option>
-              <option value="doc">📄 Document</option>
-              <option value="boimela">📖 বইমেলা 3D</option>
-              <option value="marketing">🚀 Marketing Studio</option>
-              <option value="commerce">📦 Commerce & MFS</option>
+              <optgroup label="Core Studios">
+                <option value="slides">📽️ Slides Studio</option>
+                <option value="sheet">📊 Financial Spreadsheet</option>
+                <option value="research">🔬 Deep Research Dossier</option>
+                <option value="doc">📄 Document Studio</option>
+                <option value="code">💻 Python & Code REPL</option>
+                <option value="diagram">📐 Architecture Diagram</option>
+              </optgroup>
+              <optgroup label="Specialized Engines">
+                <option value="boimela">📖 বইমেলা 3D Publication</option>
+                <option value="commerce">📦 F-Commerce & Courier</option>
+                <option value="marketing">🚀 Marketing & CRO</option>
+                <option value="legal">⚖️ NBR Legal & Tax</option>
+                <option value="swarm">👥 Multi-Agent Swarm</option>
+                <option value="arena">⚔️ Model Arena</option>
+              </optgroup>
             </select>
             <ChevronDown className="h-3 w-3 text-muted-foreground absolute right-1.5 pointer-events-none" />
           </div>
         </div>
 
-        <div className="flex items-center gap-1 shrink-0 ml-1">
+        <div className="flex items-center gap-1.5 shrink-0 ml-2">
           {/* 1-Click Copy Raw Content */}
           <button
             type="button"
@@ -302,22 +321,7 @@ export function ArtifactPanel({
             )}
           </button>
 
-          {/* Version dropdown */}
-          <div className="relative flex items-center">
-            <History className="h-3 w-3 text-muted-foreground absolute left-1.5 pointer-events-none" />
-            <select
-              value={selectedVersion}
-              onChange={(e) => setSelectedVersion(e.target.value)}
-              aria-label="Select artifact version"
-              className="h-7 pl-5 pr-2 rounded-lg text-[10px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none"
-            >
-              <option value="v3">v3 (Current)</option>
-              <option value="v2">v2 (-15m)</option>
-              <option value="v1">v1 (Initial)</option>
-            </select>
-          </div>
-
-          {/* Maximize / Minimize Full-Width Toggle */}
+          {/* Maximize / Restore Split Toggle */}
           <button
             type="button"
             onClick={() => {
@@ -326,7 +330,7 @@ export function ArtifactPanel({
             }}
             aria-label={effectiveMaximized ? "Minimize artifact panel" : "Maximize artifact panel"}
             className="hidden sm:flex shrink-0 items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
-            title={effectiveMaximized ? "Restore split view" : "Maximize canvas view"}
+            title={effectiveMaximized ? "Restore split view" : "Maximize full canvas"}
           >
             {effectiveMaximized ? (
               <Minimize2 className="h-3.5 w-3.5 text-brand" />
@@ -335,25 +339,13 @@ export function ArtifactPanel({
             )}
           </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                const title = activeTab ? `${activeTab.toUpperCase()} Artifact` : "Shared Artifact";
-                window.location.href = `/community?action=newPost&title=${encodeURIComponent(title)}`;
-              }
-            }}
-            aria-label="Share artifact to Community"
-            className="hidden sm:flex shrink-0 items-center gap-1 h-7 px-2 rounded-lg text-[10px] font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/30 hover:bg-indigo-500/20 transition cursor-pointer"
-          >
-            Share
-          </button>
-
+          {/* Close Canvas (✕) */}
           <button
             type="button"
             onClick={onClose}
             aria-label="Close artifact panel"
             className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+            title="Close Canvas (Esc)"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -436,7 +428,7 @@ export function ArtifactPanel({
 
         {mounted.has("sheet") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "sheet" ? "block" : "hidden"}`}>
-            <SheetArtifact initialData={sheetData} isStreaming={isStreaming} />
+            <SheetArtifact initialData={sheetData} title={sheetTitle} isStreaming={isStreaming} />
           </div>
         )}
 
@@ -608,8 +600,20 @@ export function ArtifactPanel({
           </div>
         )}
 
+        {/* Live Agent Execution Trace Timeline */}
+        {activeTab === "traces" && (
+          <div className="absolute inset-0 p-4">
+            <LiveAgentTraceTimeline
+              sessionId={typeof conversationId === "string" ? conversationId : "dsh_live_session"}
+              isStreaming={isStreaming}
+              className="h-full shadow-2xl"
+            />
+          </div>
+        )}
+
         {/* Sources tab — contextual depth per spec */}
         {activeTab === "sources" && (
+
           <div className="absolute inset-0 overflow-y-auto p-6">
             <div className="max-w-lg mx-auto space-y-4">
               <div className="flex items-center gap-2 text-sm font-semibold text-foreground">

@@ -1,3 +1,4 @@
+import { recordAgentTrace } from "@workspace/db";
 import { logger } from "./logger";
 
 export interface LoopStepEvent {
@@ -118,6 +119,29 @@ export class LoopEngineeringEngine {
     });
 
     const totalDurationMs = Math.round(performance.now() - startTime);
+
+    // Persist loop step traces to SQLite agent_traces
+    for (const step of steps) {
+      try {
+        await recordAgentTrace({
+          id: `trc_${loopId}_${step.stepIndex}`,
+          sessionId: loopId,
+          agentName: `loop-stage-${step.stage.toLowerCase()}`,
+          prompt: `${step.stage}: ${step.title}`,
+          response: step.detail,
+          status: step.status === "SUCCESS" || step.status === "RESOLVED" ? "completed" : "in_progress",
+          durationMs: step.durationMs,
+          metadata: {
+            loopId,
+            stepIndex: step.stepIndex,
+            stage: step.stage,
+            ...(step.payload || {}),
+          },
+        });
+      } catch (err: any) {
+        logger.warn({ err: err?.message }, "[loop-engineering] Failed to persist loop step trace to SQLite");
+      }
+    }
 
     const finalOutput = `### Loop Engineering Convergence Summary\n\n- **Loop ID**: \`${loopId}\`\n- **Total Latency**: ${totalDurationMs}ms\n- **Iterations**: 1 / ${maxIters}\n- **Convergence Status**: ✅ 100% Deterministic Pass\n\nAll tools, sandboxes, and verification guards completed successfully.`;
 
