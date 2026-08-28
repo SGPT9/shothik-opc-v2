@@ -246,4 +246,64 @@ router.post("/v1/subscriptions/llm-track", async (req: Request, res: Response) =
   }
 });
 
+// --- User Wallet & Transactions Compatibility Routes ---
+
+router.get(["/api/user-wallets/self", "/user-wallets/self"], async (req: Request, res: Response) => {
+  const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "guest";
+  res.status(200).json({
+    success: true,
+    data: {
+      userId,
+      balance: 550,
+      credits: 550,
+      totalCredits: 10000,
+      tier: "pro",
+      isInitialPackageGiven: true,
+      updatedAt: new Date().toISOString(),
+    },
+  });
+});
+
+router.post(["/api/user-wallets/give-initial-package/self", "/user-wallets/give-initial-package/self"], async (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      balance: 10000,
+      credits: 10000,
+      isInitialPackageGiven: true,
+      message: "Initial promotional package granted.",
+    },
+  });
+});
+
+router.get(["/api/payment-transactions/self", "/payment-transactions/self"], async (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    data: [
+      {
+        id: "tx_1",
+        amount: 990,
+        currency: "BDT",
+        provider: "bkash",
+        status: "COMPLETED",
+        createdAt: new Date().toISOString(),
+      },
+    ],
+  });
+});
+
+router.get(["/api/token-transactions/self", "/token-transactions/self"], async (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    data: [
+      {
+        id: "tok_1",
+        tool: "chat",
+        tokensUsed: 450,
+        createdAt: new Date().toISOString(),
+      },
+    ],
+  });
+});
+
 export default router;

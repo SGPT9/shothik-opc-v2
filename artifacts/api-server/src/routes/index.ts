@@ -29,6 +29,7 @@ import subscriptionsRouter from "./subscriptions";
 import connectorsRouter from "./connectors";
 import filesRouter from "./files";
 import jobsRouter from "./jobs";
+import writingToolsRouter from "./writing-tools";
 
 const router: IRouter = Router();
 
@@ -62,6 +63,7 @@ router.use(subscriptionsRouter);
 router.use(connectorsRouter);
 router.use(filesRouter);
 router.use(jobsRouter);
+router.use(writingToolsRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.
