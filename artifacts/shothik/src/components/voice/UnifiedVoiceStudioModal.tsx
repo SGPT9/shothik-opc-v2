@@ -8,11 +8,11 @@ import {
 import {
   Mic,
   MicOff,
-  PhoneOff,
-  Volume2,
+  X,
   Square,
   Sparkles,
-  Zap,
+  ChevronDown,
+  Volume2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,7 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
   const [selectedLang, setSelectedLang] = useState<string>("bn-BD");
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [activeResponse, setActiveResponse] = useState<VoiceActionResponse | null>(null);
-  const [subtitleText, setSubtitleText] = useState<string>("কথা বলুন, আমি শুনছি…");
+  const [subtitleText, setSubtitleText] = useState<string>("Listening…");
 
   useEffect(() => {
     if (!isOpen) return;
@@ -48,13 +48,13 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
   const triggerVoiceAction = (actionType: VoiceExecutionActionType, role?: AvatarOrbRole) => {
     if (role) setActiveRole(role);
     setSpeechState("thinking");
-    setSubtitleText("চিন্তাভাবনা করা হচ্ছে…");
+    setSubtitleText("Thinking…");
 
     setTimeout(() => {
       const res = ChatGptVoiceAgentService.executeVoiceAction("Voice Command", actionType, selectedLang);
       setActiveResponse(res);
       setSpeechState("speaking");
-      setSubtitleText(res.speechTranscript || "আপনার নির্দেশ বাস্তবায়ন সম্পন্ন হয়েছে।");
+      setSubtitleText(res.speechTranscript || "I understand. How can I help you further?");
     }, 600);
   };
 
@@ -62,124 +62,124 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
     setIsMuted((prev) => !prev);
     if (!isMuted) {
       setSpeechState("idle");
-      setSubtitleText("মাইক্রোফোন মিউট করা হয়েছে");
+      setSubtitleText("Microphone muted");
     } else {
       setSpeechState("listening");
-      setSubtitleText("কথা বলুন, আমি শুনছি…");
+      setSubtitleText("Listening…");
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-3xl flex flex-col items-center justify-between p-6 sm:p-10 text-slate-100 animate-in fade-in duration-200 select-none">
-      {/* ── Top Header Toolbar ── */}
-      <div className="w-full max-w-2xl flex items-center justify-between border-b border-white/[0.06] pb-4">
-        {/* Left Status */}
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-          </span>
-          <span className="text-xs font-semibold text-slate-200 tracking-wider uppercase">
-            Shothik Voice Mode
+    <div className="fixed inset-0 z-50 bg-[#09090b] flex flex-col items-center justify-between p-6 sm:p-12 text-zinc-100 animate-in fade-in duration-300 select-none">
+      {/* ── Top Bar (ChatGPT Style Minimalist Model Pill & Language) ── */}
+      <div className="w-full max-w-xl flex items-center justify-between pt-2">
+        {/* Model Indicator Pill */}
+        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-900/80 border border-zinc-800/80 shadow-inner">
+          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs font-medium text-zinc-300 tracking-wide">
+            Shothik 4.5 ⚡ Advanced Voice
           </span>
         </div>
 
-        {/* Right: Language Selector */}
-        <select
-          value={selectedLang}
-          onChange={(e) => setSelectedLang(e.target.value)}
-          aria-label="Select voice language"
-          className="bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-slate-300 font-medium outline-none cursor-pointer focus:border-brand"
-        >
-          <option value="bn-BD">🇧🇩 বাংলা (ঢাকা)</option>
-          <option value="bn-BD-banglish">🇧🇩 Banglish</option>
-          <option value="en-US">🇺🇸 English (US)</option>
-          <option value="en-GB">🇬🇧 English (UK)</option>
-          <option value="hi-IN">🇮🇳 हिन्दी</option>
-        </select>
+        {/* Dialect Selector */}
+        <div className="relative">
+          <select
+            value={selectedLang}
+            onChange={(e) => setSelectedLang(e.target.value)}
+            aria-label="Select voice language"
+            className="appearance-none bg-zinc-900/80 border border-zinc-800/80 hover:border-zinc-700 text-zinc-300 text-xs font-medium rounded-full px-3.5 py-1.5 pr-7 outline-none cursor-pointer transition-colors"
+          >
+            <option value="bn-BD">🇧🇩 বাংলা (ঢাকা)</option>
+            <option value="bn-BD-banglish">🇧🇩 Banglish</option>
+            <option value="en-US">🇺🇸 English (US)</option>
+            <option value="en-GB">🇬🇧 English (UK)</option>
+            <option value="hi-IN">🇮🇳 हिन्दी</option>
+          </select>
+          <ChevronDown className="w-3.5 h-3.5 text-zinc-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+        </div>
       </div>
 
       {/* ── Main Center: ChatGPT Organic Breathing Voice Orb ── */}
-      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-xl my-auto relative">
+      <div className="flex-1 flex flex-col items-center justify-center w-full max-w-lg my-auto relative">
         <div className="relative flex items-center justify-center">
-          {/* Subtle Ambient Glow Aura */}
-          <div className="absolute -inset-10 rounded-full bg-emerald-500/10 blur-3xl animate-pulse pointer-events-none" />
+          {/* Dynamic Audio Ripple Waves */}
+          <div
+            className={cn(
+              "absolute rounded-full transition-all duration-700 pointer-events-none",
+              speechState === "speaking"
+                ? "-inset-16 bg-gradient-to-tr from-cyan-500/20 via-indigo-500/20 to-purple-500/20 blur-3xl scale-110 opacity-90 animate-pulse"
+                : speechState === "listening"
+                ? "-inset-10 bg-emerald-500/15 blur-2xl scale-100 opacity-70"
+                : "-inset-6 bg-zinc-700/10 blur-xl opacity-40"
+            )}
+          />
 
-          {/* 3D Neural Fluid Orb */}
-          <div className="w-56 h-56 sm:w-72 sm:h-72 flex items-center justify-center relative">
+          {/* 3D Living Neural Voice Orb */}
+          <div className="w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center relative cursor-pointer" onClick={() => triggerVoiceAction("create_order")}>
             <AvatarOrb3D
               role={activeRole}
               state={speechState}
-              size={240}
-              className="scale-100 hover:scale-105 transition-transform duration-300"
+              size={280}
+              className="scale-100 hover:scale-105 transition-transform duration-500"
             />
           </div>
         </div>
 
-        {/* Audio Engine Status */}
-        <div className="mt-6 flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-900/60 border border-white/[0.06] px-3.5 py-1.5 rounded-full">
-          <Volume2 className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
-          <span>Low-Latency Neural Speech Engine</span>
-        </div>
-
-        {/* Live Subtitle Transcript Banner */}
-        <div className="mt-6 w-full max-w-md bg-slate-900/80 border border-white/[0.08] backdrop-blur-xl rounded-2xl p-4 text-center shadow-2xl animate-fade-in">
-          <p className="text-sm text-slate-200 leading-relaxed font-medium">
-            "{subtitleText}"
+        {/* Live Floating Transcript Subtitles (ChatGPT Style Calm Typography) */}
+        <div className="mt-10 px-4 text-center max-w-md min-h-[60px] flex items-center justify-center">
+          <p className="text-base sm:text-lg text-zinc-300 font-light tracking-wide leading-relaxed animate-fade-in">
+            {subtitleText}
           </p>
         </div>
       </div>
 
-      {/* ── Bottom Floating Dock (ChatGPT Style 3-Control Bar) ── */}
-      <div className="w-full max-w-md flex items-center justify-center gap-5 border-t border-white/[0.06] pt-6">
-        {/* Mute Mic */}
+      {/* ── Bottom Control Dock (ChatGPT Exact 3-Circle Layout) ── */}
+      <div className="w-full max-w-sm flex items-center justify-center gap-6 pb-4">
+        {/* 1. Mute / Unmute Button */}
         <button
           type="button"
           onClick={handleToggleMute}
           className={cn(
-            "flex items-center justify-center w-12 h-12 rounded-2xl border transition cursor-pointer active:scale-95",
+            "flex items-center justify-center w-14 h-14 rounded-full border transition-all duration-150 cursor-pointer active:scale-90 shadow-lg",
             isMuted
               ? "bg-rose-500/20 text-rose-400 border-rose-500/40"
-              : "bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700/80"
+              : "bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
           )}
           title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
         >
           {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
         </button>
 
-        {/* Interrupt / Stop Speaking (Appears when AI is speaking) */}
-        {speechState === "speaking" && (
-          <button
-            type="button"
-            onClick={() => {
-              setSpeechState("listening");
-              setSubtitleText("কথা থামানো হয়েছে। আমি শুনছি…");
-            }}
-            className="flex items-center justify-center w-12 h-12 rounded-2xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/40 transition cursor-pointer active:scale-95"
-            title="Interrupt AI Speech"
-          >
-            <Square className="w-5 h-5 fill-current" />
-          </button>
-        )}
-
-        {/* End Voice Call (Clean Close) */}
+        {/* 2. End Call / Exit (Large Center X Button) */}
         <button
           type="button"
           onClick={onClose}
-          className="flex items-center justify-center w-14 h-14 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white shadow-xl shadow-rose-600/30 transition cursor-pointer active:scale-95 font-bold"
+          className="flex items-center justify-center w-16 h-16 rounded-full bg-zinc-800/90 hover:bg-rose-600 text-white border border-zinc-700/60 shadow-2xl transition-all duration-150 cursor-pointer active:scale-90"
           title="End Voice Session"
         >
-          <PhoneOff className="w-6 h-6" />
+          <X className="w-6 h-6" />
         </button>
 
-        {/* Quick Action Trigger */}
+        {/* 3. Interrupt / Stop Speaking Button */}
         <button
           type="button"
-          onClick={() => triggerVoiceAction("create_order")}
-          className="flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700/80 transition cursor-pointer active:scale-95"
-          title="Test Voice Action"
+          onClick={() => {
+            if (speechState === "speaking") {
+              setSpeechState("listening");
+              setSubtitleText("Listening…");
+            } else {
+              triggerVoiceAction("create_order");
+            }
+          }}
+          className={cn(
+            "flex items-center justify-center w-14 h-14 rounded-full border transition-all duration-150 cursor-pointer active:scale-90 shadow-lg",
+            speechState === "speaking"
+              ? "bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse"
+              : "bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
+          )}
+          title={speechState === "speaking" ? "Interrupt AI" : "Tap to Speak"}
         >
-          <Zap className="w-5 h-5 text-amber-400" />
+          {speechState === "speaking" ? <Square className="w-4 h-4 fill-current" /> : <Sparkles className="w-5 h-5 text-zinc-400" />}
         </button>
       </div>
     </div>
