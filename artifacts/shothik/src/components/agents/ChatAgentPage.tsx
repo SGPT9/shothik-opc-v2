@@ -24,8 +24,7 @@ import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
-import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
-import { ChatGPTVoiceOrbModal } from "@/components/voice/ChatGPTVoiceOrbModal";
+import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal";
@@ -1308,17 +1307,13 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           </div>
         )}
 
-        {/* VTuber 3D Interactive Voice Avatar Overlay */}
-        <VTuberVoiceAvatarOverlay
-          avatarName="Shothik 3D Avatar Presenter"
-          isActive={voiceActive}
-          onClose={() => setVoiceActive(false)}
-        />
-
-        {/* 🔮 Conversational Voice Mode Orb Modal */}
-        <ChatGPTVoiceOrbModal
-          isOpen={isVoiceOrbOpen}
-          onClose={() => setIsVoiceOrbOpen(false)}
+        {/* 🎙️ Unified Voice Studio Modal (Neural Orb + 3D Avatar Presenter in One UI) */}
+        <UnifiedVoiceStudioModal
+          isOpen={isVoiceOrbOpen || voiceActive}
+          onClose={() => {
+            setIsVoiceOrbOpen(false);
+            setVoiceActive(false);
+          }}
         />
 
         {/* 🐝 Agent Swarm Adversarial Debate Modal */}
