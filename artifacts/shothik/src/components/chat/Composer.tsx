@@ -741,7 +741,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               disabled={disabled || activeStreaming}
               placeholder={placeholder}
               rows={isExpanded ? 2 : 1}
-              className="w-full bg-transparent resize-none outline-none text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/60 custom-scrollbar max-h-36 transition-all duration-200"
+              className="w-full bg-transparent resize-none outline-none text-base sm:text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/60 custom-scrollbar max-h-36 transition-all duration-200"
             />
           </div>
 
@@ -851,15 +851,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
                 {toolsMenuOpen && (
                   <div className="absolute bottom-full left-0 mb-1.5 z-50 w-72 sm:w-80 max-w-[calc(100vw-24px)] max-h-[65vh] overflow-y-auto custom-scrollbar rounded-2xl border border-border/80 bg-popover shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 text-left">
-                    <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold flex items-center justify-between">
-                      <span>Active AI Skills</span>
-                      <span className="text-[9px] text-brand font-semibold">8 Skills Available</span>
+                    <div className="px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center justify-between">
+                      <span>Available AI Tools</span>
+                      <span className="text-[9px] text-brand font-semibold">8 Ready</span>
                     </div>
 
-                    {/* Automation & Browser Section */}
+                    {/* Automation & Search Section */}
                     <div className="mt-1 space-y-0.5">
                       <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Browser & Autonomous
+                        Search & Exploration
                       </div>
                       <button
                         type="button"
@@ -872,10 +872,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         <Globe className="w-4 h-4 text-sky-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-foreground">Browser Agent</span>
-                            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30">BrowserOS / Gobii</span>
+                            <span className="font-semibold text-foreground">Web Browser</span>
+                            <span className="text-[9px] font-medium px-1 py-0.2 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30">Live Web</span>
                           </div>
-                          <span className="text-[10px] text-muted-foreground truncate block">Headless web automation, tracking & scraping</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Browse live websites, extract info & compare</span>
                         </div>
                       </button>
                       <button
@@ -889,7 +889,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         <Search className="w-4 h-4 text-violet-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <span className="font-medium text-foreground block">Deep Research</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Multi-source web & academic intelligence</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Comprehensive reports with citations</span>
                         </div>
                       </button>
                       <button
@@ -902,16 +902,16 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       >
                         <Zap className="w-4 h-4 text-purple-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Swarm Fleet</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">3-agent adversarial debate & strategy</span>
+                          <span className="font-medium text-foreground block">AI Brainstorming</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Multi-perspective debate & critical analysis</span>
                         </div>
                       </button>
                     </div>
 
-                    {/* Commerce & Demographic Section */}
+                    {/* Commerce & Finance Section */}
                     <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
                       <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Commerce & Taxation
+                        Business & Delivery
                       </div>
                       <button
                         type="button"
@@ -924,10 +924,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         <Truck className="w-4 h-4 text-emerald-400 shrink-0" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-foreground">Commerce & MFS</span>
-                            <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">bKash + RouteXpress</span>
+                            <span className="font-semibold text-foreground">Courier & Logistics</span>
+                            <span className="text-[9px] font-medium px-1 py-0.2 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Steadfast + Pathao</span>
                           </div>
-                          <span className="text-[10px] text-muted-foreground truncate block">Steadfast / Pathao / REDX rate routing</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Check delivery rates and book parcels</span>
                         </div>
                       </button>
                       <button
@@ -940,8 +940,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       >
                         <FileCheck className="w-4 h-4 text-teal-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">NBR VAT & Tax</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Mushak-6.3 statutory challans & Sec 78 rebates</span>
+                          <span className="font-medium text-foreground block">Tax & Invoicing</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Calculate VAT and generate invoices</span>
                         </div>
                       </button>
                     </div>
@@ -949,7 +949,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     {/* Create Section */}
                     <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
                       <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Create & Code
+                        Creation & Studio
                       </div>
                       <button
                         type="button"
@@ -961,8 +961,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       >
                         <Presentation className="w-4 h-4 text-indigo-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Slide Studio</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">16:9 investor pitch deck assembly</span>
+                          <span className="font-medium text-foreground block">Presentation Studio</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Create beautiful 16:9 slide decks</span>
                         </div>
                       </button>
                       <button
@@ -975,8 +975,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       >
                         <Table2 className="w-4 h-4 text-cyan-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Financial Sheet</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Unit economics & scenario models</span>
+                          <span className="font-medium text-foreground block">Smart Spreadsheet</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Formulas, calculations & financial models</span>
                         </div>
                       </button>
                       <button
@@ -989,8 +989,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       >
                         <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Code Engine</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Fullstack engineering & sandbox runner</span>
+                          <span className="font-medium text-foreground block">Code Assistant</span>
+                          <span className="text-[10px] text-muted-foreground truncate block">Write, debug & explain code cleanly</span>
                         </div>
                       </button>
                     </div>
@@ -1131,22 +1131,22 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-8 w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition cursor-pointer"
+                  className="h-9 w-9 sm:h-8 sm:w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition cursor-pointer"
                   onClick={dispatchStop}
                   aria-label="Stop generating"
                 >
-                  <Square className="h-3.5 w-3.5 fill-current" />
+                  <Square className="h-4 w-4 sm:h-3.5 sm:w-3.5 fill-current" />
                 </Button>
               ) : textValue.trim() || attachments.length > 0 ? (
                 <Button
                   type="button"
                   size="icon"
-                  className="h-8 w-8 rounded-xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/25 scale-100 hover:scale-105 transition-all duration-150 cursor-pointer animate-in zoom-in-95 font-bold"
+                  className="h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/25 scale-100 active:scale-95 transition-all duration-150 cursor-pointer animate-in zoom-in-95 font-bold"
                   onClick={handleTextSubmit}
                   disabled={disabled}
                   aria-label="Send message"
                 >
-                  <Send className="h-3.5 w-3.5" />
+                  <Send className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
                 </Button>
               ) : (
                 <button
@@ -1158,10 +1158,10 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   disabled={disabled}
                   aria-label="Start Voice Mode"
                   title="Start Realtime Conversational Voice Mode"
-                  className="group relative flex items-center justify-center h-8 w-8 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 shadow-xs transition-all duration-200 cursor-pointer hover:scale-105"
+                  className="group relative flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
                 >
                   <span className="absolute inset-0 rounded-xl bg-emerald-500/10 animate-ping opacity-30 pointer-events-none" />
-                  <Phone className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                  <Phone className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
                 </button>
               )}
             </div>
