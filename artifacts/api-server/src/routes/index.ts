@@ -30,6 +30,7 @@ import connectorsRouter from "./connectors";
 import filesRouter from "./files";
 import jobsRouter from "./jobs";
 import writingToolsRouter from "./writing-tools";
+import aiToolsExtendedRouter from "./ai-tools-extended";
 
 const router: IRouter = Router();
 
@@ -64,6 +65,7 @@ router.use(connectorsRouter);
 router.use(filesRouter);
 router.use(jobsRouter);
 router.use(writingToolsRouter);
+router.use(aiToolsExtendedRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.
