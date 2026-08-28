@@ -159,7 +159,7 @@ describe("Agent Traces API & Engine Integration", () => {
 
     const traces = await getAgentTracesBySession(session.id);
     expect(traces.length).toBeGreaterThanOrEqual(1);
-    const thoughtTrace = traces.find((t) => t.agentName === "commander");
+    const thoughtTrace = traces.find((t: any) => t.agentName === "commander");
     expect(thoughtTrace).toBeDefined();
     expect(thoughtTrace?.prompt).toBe("Analyzing graph topology");
   });
@@ -173,8 +173,8 @@ describe("Agent Traces API & Engine Integration", () => {
     expect(loopResult.success).toBe(true);
     const traces = await getAgentTracesBySession(loopResult.loopId);
     expect(traces.length).toBe(5); // PERCEIVE, PLAN, EXECUTE, VERIFY/HEAL, CONVERGE
-    expect(traces.map((t) => t.agentName)).toContain("loop-stage-perceive");
-    expect(traces.map((t) => t.agentName)).toContain("loop-stage-plan");
-    expect(traces.map((t) => t.agentName)).toContain("loop-stage-execute");
+    expect(traces.map((t: any) => t.agentName)).toContain("loop-stage-perceive");
+    expect(traces.map((t: any) => t.agentName)).toContain("loop-stage-plan");
+    expect(traces.map((t: any) => t.agentName)).toContain("loop-stage-execute");
   });
 });

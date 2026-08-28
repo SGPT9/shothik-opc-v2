@@ -89,8 +89,9 @@ router.get("/v1/files", async (req: Request, res: Response): Promise<void> => {
  */
 router.delete("/v1/files/:docId", async (req: Request, res: Response): Promise<void> => {
   try {
+    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
     const { docId } = req.params;
-    await ragEngine.deleteDocument(docId);
+    await ragEngine.deleteDocument(userId, docId as string);
     res.status(200).json({
       success: true,
       docId,

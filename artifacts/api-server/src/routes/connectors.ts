@@ -140,7 +140,7 @@ router.delete("/v1/connectors/:provider", async (req: Request, res: Response) =>
   const { provider } = req.params;
 
   try {
-    await userKeyVault.deleteKey(userId, provider);
+    await userKeyVault.deleteKey(userId, provider as string);
     return res.status(200).json({
       success: true,
       provider,

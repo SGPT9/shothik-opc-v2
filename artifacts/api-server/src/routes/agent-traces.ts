@@ -11,7 +11,7 @@ import { logger } from "../lib/logger";
 const router = Router();
 
 // Ensure SQLite tables are ready
-initSqliteTables().catch((err) => {
+initSqliteTables().catch((err: any) => {
   logger.warn({ err: err?.message }, "[agent-traces] Failed to initialize SQLite tables");
 });
 

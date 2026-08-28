@@ -24,9 +24,10 @@ export interface NeedleToolCallResult {
   reasoning: string;
   output: string;
   artifact?: {
-    type: 'slides' | 'sheet' | 'research' | 'code';
+    type: 'slides' | 'sheet' | 'research' | 'code' | 'doc';
     title: string;
     subtitle: string;
+    content?: string;
   };
 }
 
