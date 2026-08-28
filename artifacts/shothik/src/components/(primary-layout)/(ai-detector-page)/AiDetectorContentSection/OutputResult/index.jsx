@@ -114,6 +114,9 @@ const OutputResult = ({ handleOpen, result, history, isDark }) => {
     }
   };
 
+  const aiPercentage = parseInt(result?.ai_percentage ?? result?.fake_percentage ?? 85);
+  const assessmentText = result?.assessment || (aiPercentage > 50 ? "AI Generated" : "Human Written");
+
   return (
     <div className="bg-background text-foreground flex h-full flex-1 flex-col" aria-live="polite">
       {/* Header */}
@@ -153,15 +156,15 @@ const OutputResult = ({ handleOpen, result, history, isDark }) => {
                 className="absolute h-full w-full rounded-full border-8"
                 style={{
                   borderColor: colorDefinitions.aiHigh,
-                  clipPath: `inset(${100 - result.ai_percentage}% 0 0 0)`,
+                  clipPath: `inset(${100 - aiPercentage}% 0 0 0)`,
                 }}
               />
               <p
                 className={`text-lg font-semibold ${
-                  result.ai_percentage > 50 ? "text-warning" : "text-primary"
+                  aiPercentage > 50 ? "text-warning" : "text-primary"
                 }`}
               >
-                {result.ai_percentage > 50 ? "AI" : "Human"}
+                {aiPercentage > 50 ? "AI" : "Human"}
               </p>
             </div>
 
@@ -179,13 +182,13 @@ const OutputResult = ({ handleOpen, result, history, isDark }) => {
               </div>
               <div className="flex justify-start">
                 <div className="bg-primary/10 text-primary rounded-full px-2 py-1 text-sm font-bold">
-                  {result.assessment}
+                  {assessmentText}
                 </div>
               </div>
               <div className="border-border text-muted-foreground flex items-center gap-2 rounded-md border px-4 py-1">
                 <Info className="h-4 w-4" />
                 <p>
-                  <span role="status">{parseInt(result.ai_percentage ?? 0)}% Probability AI
+                  <span role="status">{aiPercentage}% Probability AI
                   generated</span>
                 </p>
               </div>
