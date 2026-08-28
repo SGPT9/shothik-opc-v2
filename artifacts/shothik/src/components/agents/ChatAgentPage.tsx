@@ -1384,38 +1384,14 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="grid grid-cols-2 gap-2.5 text-xs">
                 {[
-                  { id: "slides", label: "Slides 16:9", icon: "🎴" },
-                  { id: "sheet", label: "Financial Sheet", icon: "📊" },
-                  { id: "research", label: "Deep Research", icon: "🔍" },
-                  { id: "commerce", label: "F-Commerce & MFS", icon: "⚡" },
-                  { id: "whatsapp", label: "WhatsApp Bot", icon: "💬" },
-                  { id: "career", label: "Career & CV", icon: "💼" },
-                  { id: "swarm", label: "Swarm Fleet", icon: "🐝" },
-                  { id: "boimela", label: "বইমেলা 3D", icon: "📖" },
-                  { id: "community", label: "Community Hub", icon: "👥" },
-                  { id: "approvals", label: "Gatekeeper Approvals", icon: "🛡️" },
-                  { id: "code", label: "Python REPL", icon: "🐍" },
-                  { id: "diagram", label: "Architecture Diagram", icon: "📐" },
-                  { id: "doc", label: "Document Editor", icon: "📄" },
-                  { id: "synthesizer", label: "Venture Synthesizer", icon: "🪄" },
-                  { id: "voicepitch", label: "Voice Pitch Deck", icon: "🎙️" },
-                  { id: "promptlab", label: "Prompt Lab", icon: "⚡" },
-                  { id: "legal", label: "Legal Contract", icon: "⚖️" },
-                  { id: "arena", label: "Model Arena", icon: "⚔️" },
-                  { id: "twin", label: "Twin Founder", icon: "🤖" },
-                  { id: "leads", label: "B2B Leads", icon: "🎯" },
-                  { id: "seo", label: "SEO & SERP", icon: "🌐" },
-                  { id: "flows", label: "Chatbot Flows", icon: "⚡" },
-                  { id: "video", label: "Video Scripts", icon: "🎬" },
-                  { id: "vattax", label: "NBR VAT & Tax", icon: "🏛️" },
-                  { id: "photo", label: "Product Studio", icon: "📸" },
-                  { id: "inventory", label: "Inventory Forecaster", icon: "📦" },
-                  { id: "dubbing", label: "Voice Dubbing", icon: "🎙️" },
-                  { id: "broadcast", label: "Broadcast Hub", icon: "🚀" },
-                  { id: "disputes", label: "Dispute & Refund", icon: "🛡️" },
-                  { id: "pricewatcher", label: "Price Watcher", icon: "📉" },
+                  { id: "doc", label: "Document Canvas", icon: "📄", desc: "Writing & Formats" },
+                  { id: "slides", label: "Slides 16:9", icon: "🎴", desc: "Presentations" },
+                  { id: "sheet", label: "Smart Spreadsheet", icon: "📊", desc: "Tables & Formulas" },
+                  { id: "research", label: "Deep Research", icon: "🔍", desc: "Citations & Web" },
+                  { id: "code", label: "Code Assistant", icon: "💻", desc: "Scripts & Python" },
+                  { id: "boimela", label: "বই ও প্রকাশনা", icon: "📖", desc: "Publishing & Print" },
                 ].map((t) => (
                   <button
                     key={t.id}
