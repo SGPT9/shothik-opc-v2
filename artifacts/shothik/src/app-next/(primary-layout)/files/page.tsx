@@ -100,6 +100,25 @@ export default function FilesPage() {
           extractedResult: parsed,
         };
 
+        // Auto-sync to backend OpenDataLoader Vector RAG engine
+        try {
+          await fetch("/api/v1/files/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              filename: file.name,
+              rawContent: parsed.extractedMarkdown,
+              sourceType: "pdf",
+              metadata: {
+                pageCount: parsed.pageCount,
+                chunkCount: parsed.chunks.length,
+              },
+            }),
+          });
+        } catch (syncErr) {
+          console.warn("Backend RAG sync warning:", syncErr);
+        }
+
         // Auto-save companion markdown to offline Knowledge Vault
         saveOfflineManuscript({
           id: `rag-${parsed.id}`,
