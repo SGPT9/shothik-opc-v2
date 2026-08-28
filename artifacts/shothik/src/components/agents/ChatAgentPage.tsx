@@ -25,7 +25,6 @@ import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
-import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal";
 import { ShareArtifactModal } from "@/components/chat/ShareArtifactModal";
@@ -1314,13 +1313,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             setIsVoiceOrbOpen(false);
             setVoiceActive(false);
           }}
-        />
-
-        {/* 🐝 Agent Swarm Adversarial Debate Modal */}
-        <SwarmAdversarialDebateModal
-          isOpen={isSwarmDebateOpen}
-          onClose={() => setIsSwarmDebateOpen(false)}
-          onOpenSource={(sourceKey) => handleOpenArtifact("research", sourceKey)}
         />
 
         {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}
