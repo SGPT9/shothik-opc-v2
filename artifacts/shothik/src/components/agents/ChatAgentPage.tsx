@@ -82,14 +82,14 @@ export interface FleetAgent {
 }
 
 export const FLEET_AGENTS: FleetAgent[] = [
-  { id: "core", name: "Shothik Core", badge: "General AI", icon: Sparkles, color: "text-blue-600 dark:text-blue-400", bgLight: "bg-blue-500/10", desc: "All-purpose intelligent assistant, reasoning & daily tasks" },
-  { id: "planner", name: "Planner & Strategist", badge: "ECC Planner", icon: Compass, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Implementation planning, multi-phase execution & dependency mapping" },
-  { id: "architect", name: "System Architect", badge: "ECC Architect", icon: Layers, color: "text-purple-400", bgLight: "bg-purple-500/10", desc: "System design, deep module boundaries, API topology & scalability" },
-  { id: "security", name: "Security Reviewer", badge: "ECC Security", icon: ShieldCheck, color: "text-red-400", bgLight: "bg-red-500/10", desc: "Vulnerability detection, SQL/XSS prevention & secret leakage guardrails" },
-  { id: "tdd", name: "TDD & Quality Guide", badge: "ECC TDD Guide", icon: CheckCircle2, color: "text-emerald-400", bgLight: "bg-emerald-500/10", desc: "Test-driven verification, red-green refactoring & 80%+ test coverage" },
-  { id: "analyst", name: "Deep Research Analyst", badge: "Research & Citations", icon: Search, color: "text-cyan-400", bgLight: "bg-cyan-500/10", desc: "Market sizing, TAM analysis, competitor telemetry & grounded citations" },
-  { id: "business", name: "Venture & Pitch Partner", badge: "Slides & Models", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Investor pitch decks, 3-scenario financial models & unit economics" },
-  { id: "writer", name: "Manuscript & Book Studio", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Scene beat expansion, Story Bible linking & longform manuscript polish" },
+  { id: "core", name: "Shothik Smart AI", badge: "Assistant", icon: Sparkles, color: "text-blue-600 dark:text-blue-400", bgLight: "bg-blue-500/10", desc: "All-purpose intelligent writing, reasoning & problem solving" },
+  { id: "planner", name: "Project & Task Planner", badge: "Planner", icon: Compass, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Step-by-step roadmap, goal tracking & execution strategy" },
+  { id: "architect", name: "System & Logic Designer", badge: "Architecture", icon: Layers, color: "text-purple-400", bgLight: "bg-purple-500/10", desc: "Structured design, database modeling & technical blueprints" },
+  { id: "security", name: "Security & Privacy Checker", badge: "Safety", icon: ShieldCheck, color: "text-red-400", bgLight: "bg-red-500/10", desc: "Data protection, leak prevention & safe practices" },
+  { id: "tdd", name: "Accuracy & Verification Guide", badge: "Verified", icon: CheckCircle2, color: "text-emerald-400", bgLight: "bg-emerald-500/10", desc: "Fact-checking, code testing & accuracy audits" },
+  { id: "analyst", name: "Deep Web & Market Research", badge: "Research", icon: Search, color: "text-cyan-400", bgLight: "bg-cyan-500/10", desc: "Live web citations, market intelligence & academic synthesis" },
+  { id: "business", name: "Pitch Decks & Financials", badge: "Business", icon: Scale, color: "text-amber-400", bgLight: "bg-amber-500/10", desc: "Investor slides, cash flow calculations & financial spreadsheets" },
+  { id: "writer", name: "Book & Manuscript Studio", badge: "Publishing", icon: BookOpen, color: "text-indigo-400", bgLight: "bg-indigo-500/10", desc: "Chapter drafting, character arcs & Boi Mela book publishing" },
 ];
 
 export interface ChatAgentPageProps {
