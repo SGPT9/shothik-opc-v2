@@ -752,7 +752,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           )}>
             {/* Left Controls: Attach + Voice Input + Tools Dropdown + Focus Selector */}
             <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-              {/* 📎 Attach Button & Dropdown */}
+              {/* ➕ Unified ChatGPT-Style Action & Attachment Menu */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
@@ -763,18 +763,22 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setFocusMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
-                  aria-label="Attach files"
-                  className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                  aria-label="Add attachment or open workspace"
+                  title="Attach file or open workspace (+)"
+                  className="flex items-center justify-center h-8 w-8 rounded-full border border-border/60 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
                 >
-                  <Paperclip className="h-4 w-4" />
+                  <Plus className={cn("h-4 w-4 transition-transform duration-200", attachMenuOpen && "rotate-45")} />
                 </button>
 
                 {attachMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-48 max-w-[calc(100vw-24px)] rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute bottom-full left-0 mb-2 z-50 w-64 max-w-[calc(100vw-24px)] rounded-2xl border border-border/80 bg-popover/95 shadow-2xl p-1.5 backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 text-left">
+                    <div className="px-2.5 py-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      Upload
+                    </div>
                     {[
                       { Icon: FileText, label: "Document (.pdf, .docx, .md)", action: () => pdfInputRef.current?.click() },
                       { Icon: Image, label: "Image / Screenshot", action: () => imageInputRef.current?.click() },
-                      { Icon: FolderOpen, label: "Local Project Folder", action: () => folderInputRef.current?.click() },
+                      { Icon: FolderOpen, label: "Project Folder", action: () => folderInputRef.current?.click() },
                       {
                         Icon: Link,
                         label: "URL / GitHub Link",
@@ -795,9 +799,33 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                           action();
                           setAttachMenuOpen(false);
                         }}
-                        className="flex w-full items-center gap-2.5 px-3 py-2 text-xs text-foreground hover:bg-muted/70 transition cursor-pointer"
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 text-xs text-foreground hover:bg-muted/70 rounded-xl transition cursor-pointer"
                       >
-                        <Icon className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                        <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span>{label}</span>
+                      </button>
+                    ))}
+
+                    <div className="px-2.5 pt-2 pb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-t border-border/50 mt-1">
+                      Canvas Workspaces
+                    </div>
+                    {[
+                      { Icon: Presentation, label: "Presentation Slides (16:9)", action: () => dispatchArtifact("slides"), color: "text-indigo-400" },
+                      { Icon: Table2, label: "Smart Spreadsheet", action: () => dispatchArtifact("sheet"), color: "text-cyan-400" },
+                      { Icon: Search, label: "Deep Research", action: () => dispatchArtifact("research"), color: "text-violet-400" },
+                      { Icon: Code2, label: "Code Assistant", action: () => dispatchArtifact("code"), color: "text-emerald-400" },
+                      { Icon: BookOpen, label: "বই ও প্রকাশনা", action: () => dispatchArtifact("boimela"), color: "text-rose-400" },
+                    ].map(({ Icon, label, action, color }) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => {
+                          action();
+                          setAttachMenuOpen(false);
+                        }}
+                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 text-xs text-foreground hover:bg-muted/70 rounded-xl transition cursor-pointer"
+                      >
+                        <Icon className={cn("h-4 w-4 shrink-0", color)} />
                         <span>{label}</span>
                       </button>
                     ))}
@@ -813,7 +841,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 aria-label={isListening ? "Stop voice dictation" : "Start voice dictation"}
                 title={isListening ? "Listening... Click to stop voice typing" : "Voice Input (Speech-to-Text)"}
                 className={cn(
-                  "relative flex items-center justify-center h-8 w-8 rounded-lg transition cursor-pointer",
+                  "relative flex items-center justify-center h-8 w-8 rounded-full transition cursor-pointer",
                   isListening
                     ? "bg-blue-500/20 text-blue-500 border border-blue-500/40 shadow-xs ring-2 ring-blue-500/30"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -821,182 +849,13 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               >
                 {isListening ? (
                   <>
-                    <span className="absolute inset-0 rounded-lg bg-blue-500/30 animate-ping opacity-60 pointer-events-none" />
+                    <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping opacity-60 pointer-events-none" />
                     <MicOff className="h-4 w-4 text-blue-500 relative z-10" />
                   </>
                 ) : (
                   <Mic className="h-4 w-4" />
                 )}
               </button>
-
-              {/* 🧰 Skills & Tools Menu (Unified Launcher for Advanced Workflows) */}
-              <div className="relative" onClick={(e) => e.stopPropagation()}>
-                <button
-                  type="button"
-                  aria-label="Tools"
-                  onClick={() => {
-                    setToolsMenuOpen((o) => !o);
-                    setAttachMenuOpen(false);
-                    setModelMenuOpen(false);
-                    setFocusMenuOpen(false);
-                  }}
-                  disabled={disabled || activeStreaming}
-                  className="flex items-center gap-1 sm:gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/70 text-xs font-semibold text-foreground/90 transition cursor-pointer"
-                  title="Open Tools & AI Skills (+)"
-                >
-                  <Plus className="h-3.5 w-3.5 text-brand" />
-                  <span className="hidden xs:inline">Tools</span>
-                  <ChevronDown className="h-3 w-3 opacity-60" />
-                </button>
-
-                {toolsMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-72 sm:w-80 max-w-[calc(100vw-24px)] max-h-[65vh] overflow-y-auto custom-scrollbar rounded-2xl border border-border/80 bg-popover shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 text-left">
-                    <div className="px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground flex items-center justify-between">
-                      <span>Available AI Tools</span>
-                      <span className="text-[9px] text-brand font-semibold">8 Ready</span>
-                    </div>
-
-                    {/* Automation & Search Section */}
-                    <div className="mt-1 space-y-0.5">
-                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Search & Exploration
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchTool("browser");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Globe className="w-4 h-4 text-sky-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-foreground">Web Browser</span>
-                            <span className="text-[9px] font-medium px-1 py-0.2 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30">Live Web</span>
-                          </div>
-                          <span className="text-[10px] text-muted-foreground truncate block">Browse live websites, extract info & compare</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchArtifact("research");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Search className="w-4 h-4 text-violet-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Deep Research</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Comprehensive reports with citations</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchTool("swarm");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Zap className="w-4 h-4 text-purple-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">AI Brainstorming</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Multi-perspective debate & critical analysis</span>
-                        </div>
-                      </button>
-                    </div>
-
-                    {/* Commerce & Finance Section */}
-                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
-                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Business & Delivery
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onOpenArtifact) onOpenArtifact("synthesizer");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Truck className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-1.5">
-                            <span className="font-semibold text-foreground">Courier & Logistics</span>
-                            <span className="text-[9px] font-medium px-1 py-0.2 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">Steadfast + Pathao</span>
-                          </div>
-                          <span className="text-[10px] text-muted-foreground truncate block">Check delivery rates and book parcels</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (onOpenArtifact) onOpenArtifact("synthesizer");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <FileCheck className="w-4 h-4 text-teal-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Tax & Invoicing</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Calculate VAT and generate invoices</span>
-                        </div>
-                      </button>
-                    </div>
-
-                    {/* Create Section */}
-                    <div className="mt-2 space-y-0.5 border-t border-border/40 pt-1">
-                      <div className="px-2 pt-1 pb-0.5 text-[10px] font-semibold text-brand uppercase tracking-wider">
-                        Creation & Studio
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchArtifact("slides");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Presentation className="w-4 h-4 text-indigo-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Presentation Studio</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Create beautiful 16:9 slide decks</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchArtifact("sheet");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Table2 className="w-4 h-4 text-cyan-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Smart Spreadsheet</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Formulas, calculations & financial models</span>
-                        </div>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          dispatchArtifact("code");
-                          setToolsMenuOpen(false);
-                        }}
-                        className="flex w-full items-center gap-2.5 px-2.5 py-1.5 rounded-xl text-xs hover:bg-muted/70 transition cursor-pointer"
-                      >
-                        <Code2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <span className="font-medium text-foreground block">Code Assistant</span>
-                          <span className="text-[10px] text-muted-foreground truncate block">Write, debug & explain code cleanly</span>
-                        </div>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
 
               {/* 🌐 Focus Mode Selector (Clean Bottom Toolbar Dropdown) */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
