@@ -219,19 +219,28 @@ export default function HumanizeGPTClient() {
             isMobile && mobileTab !== "editor" ? "hidden" : "flex"
           )}>
             <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
+              <label htmlFor="humanize-input-text" className="sr-only">
+                Paste AI-generated text to humanize
+              </label>
               {enableEdit ? (
                 <textarea
                   id="humanize-input-text"
                   name="humanizeInputText"
-                  aria-label="Paste AI-generated text here"
+                  aria-label="Paste AI-generated text to humanize"
+                  role="textbox"
                   placeholder="Paste AI-generated text here (from ChatGPT, Claude, DeepSeek, etc.)..."
-                  className="placeholder:text-muted-foreground/60 h-full w-full flex-1 resize-none overflow-y-auto bg-transparent text-sm md:text-base leading-relaxed break-words outline-none font-normal custom-scrollbar"
+                  className="placeholder:text-muted-foreground/60 h-full w-full flex-1 resize-none overflow-y-auto bg-transparent text-sm md:text-base leading-relaxed break-words outline-none font-normal custom-scrollbar focus-visible:ring-1 focus-visible:ring-brand/40"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   disabled={isLoading}
                 />
               ) : (
-                <div className="h-full w-full flex-1 overflow-y-auto text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap text-foreground/80 font-normal custom-scrollbar">
+                <div
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Original source text"
+                  className="h-full w-full flex-1 overflow-y-auto text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap text-foreground/80 font-normal custom-scrollbar focus-visible:outline-none"
+                >
                   {text}
                 </div>
               )}

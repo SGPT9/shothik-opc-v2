@@ -177,19 +177,28 @@ export default function GrammarCheckerClient() {
             isMobile && mobileTab !== "editor" ? "hidden" : "flex"
           )}>
             <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
+              <label htmlFor="grammar-input-text" className="sr-only">
+                Enter or paste text to check for grammar, punctuation, and spelling errors
+              </label>
               {enableEdit ? (
                 <textarea
                   id="grammar-input-text"
                   name="grammarInputText"
-                  aria-label="Text to Check for Grammar and Spelling"
+                  aria-label="Enter or paste text for grammar and spelling check"
+                  role="textbox"
                   placeholder="Paste or type text here to detect grammar, punctuation, and spelling errors..."
-                  className="placeholder:text-muted-foreground/60 h-full w-full flex-1 resize-none overflow-y-auto bg-transparent text-sm md:text-base leading-relaxed break-words outline-none font-normal custom-scrollbar"
+                  className="placeholder:text-muted-foreground/60 h-full w-full flex-1 resize-none overflow-y-auto bg-transparent text-sm md:text-base leading-relaxed break-words outline-none font-normal custom-scrollbar focus-visible:ring-1 focus-visible:ring-brand/40"
                   value={text}
                   onChange={(e) => setText(e.target.value)}
                   disabled={isChecking}
                 />
               ) : (
-                <div className="h-full w-full flex-1 overflow-y-auto text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap text-foreground/80 font-normal custom-scrollbar">
+                <div
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Original text being checked"
+                  className="h-full w-full flex-1 overflow-y-auto text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap text-foreground/80 font-normal custom-scrollbar focus-visible:outline-none"
+                >
                   {text}
                 </div>
               )}
