@@ -185,6 +185,7 @@ export class OllamaService {
     const isGreeting = /^(h+e+l+l*o+|h+e+y+|h+i+|h+o+w+d+y+|h+o+l+a+|s+u+p+|y+o+|greetings|good\s*(morning|afternoon|evening|day)|assalamu\s*alaikum|salam|kemon\s*(acho|achen))[\s!.]*$/i.test(cleanPrompt);
     const isIdentity = /(what('s| is|s)?\s*(your|yoiur|ur|yo|yur)?\s*(name|identity|id)|who\s*(are|r)\s*(you|u)|who\s*(made|built|created)\s*(you|u)|what\s*(are|r)\s*(you|u)|introduce\s*yourself|tell\s*me\s*about\s*yourself)/i.test(cleanPrompt);
     const isTimeQuery = /(time in bangladesh|bangladesh time|time in dhaka|dhaka time|current time|what time is it|what is the time|today'?s date|what is today'?s date)/i.test(cleanPrompt);
+    const wordMath = cleanPrompt.match(/(\d+(?:\.\d+)?)\s*mph.*for\s*(\d+(?:\.\d+)?)\s*hours?/i);
 
     if (isGreeting) {
       synthesisText = "Hello! How can I help you today? Whether you're building a project, analyzing data, or drafting a plan, feel free to ask.";

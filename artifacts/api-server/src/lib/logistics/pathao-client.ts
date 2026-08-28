@@ -88,7 +88,7 @@ export class PathaoClient {
 
       this.accessToken = data.access_token;
       this.tokenExpiresAt = Date.now() + (data.expires_in || 3600) * 1000;
-      return this.accessToken;
+      return this.accessToken as string;
     } catch (error: any) {
       logger.error({ error: error.message }, "[PathaoClient] getAccessToken failed");
       throw error;

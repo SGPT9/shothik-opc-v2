@@ -47,7 +47,7 @@ router.post("/v1/jobs/submit", (req: Request, res: Response): void => {
  */
 router.get("/v1/jobs/:jobId", (req: Request, res: Response): void => {
   const { jobId } = req.params;
-  const job = taskQueue.getJob(jobId);
+  const job = taskQueue.getJob(jobId as string);
 
   if (!job) {
     res.status(404).json({ success: false, error: "Job not found" });
