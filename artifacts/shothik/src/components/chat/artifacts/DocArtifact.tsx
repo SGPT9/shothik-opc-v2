@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   FileText,
   Download,
@@ -13,6 +13,8 @@ import {
   Crosshair,
   Search,
   Sparkles,
+  Printer,
+  Type,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -83,28 +85,58 @@ Fully compliant with Bangladesh Bank Form C remittances and NBR SRO 0% tax exemp
 ];
 
 export function DocArtifact({
-  initialTitle = "Shothik Executive Business Briefing",
+  initialTitle = "Document Canvas",
   initialContent,
   targetPage = 1,
   targetBbox,
   sourceRef,
-  pages = DEFAULT_PAGES,
+  pages,
   isStreaming = false,
 }: DocArtifactProps) {
+  const dynamicPages: DocumentPage[] = useMemo(() => {
+    if (pages && pages.length > 0) return pages;
+    if (initialContent) {
+      const sections = initialContent.split(/\n\s*---\s*\n/);
+      if (sections.length > 1) {
+        return sections.map((sec, idx) => {
+          const firstLine = sec.trim().split("\n")[0].replace(/^[#\s*]+/, "").trim();
+          return {
+            pageNumber: idx + 1,
+            title: firstLine || `Section ${idx + 1}`,
+            content: sec.trim(),
+          };
+        });
+      }
+      return [
+        {
+          pageNumber: 1,
+          title: initialTitle || "Executive Document",
+          content: initialContent,
+        },
+      ];
+    }
+    return DEFAULT_PAGES;
+  }, [pages, initialContent, initialTitle]);
+
   const [currentPage, setCurrentPage] = useState<number>(targetPage);
   const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [typographyMode, setTypographyMode] = useState<"sans" | "serif" | "mono">("serif");
   const [activeBbox, setActiveBbox] = useState<[number, number, number, number] | undefined>(targetBbox);
   const [copied, setCopied] = useState<boolean>(false);
   const [highlightPulse, setHighlightPulse] = useState<boolean>(true);
   const pageContainerRef = useRef<HTMLDivElement>(null);
 
+  const handlePrint = () => {
+    window.print();
+  };
+
   // Sync targetPage or targetBbox whenever parent props change
   useEffect(() => {
-    if (targetPage && targetPage >= 1 && targetPage <= pages.length) {
+    if (targetPage && targetPage >= 1 && targetPage <= dynamicPages.length) {
       setCurrentPage(targetPage);
     }
-  }, [targetPage, pages.length]);
+  }, [targetPage, dynamicPages.length]);
 
   useEffect(() => {
     if (targetBbox) {
@@ -121,7 +153,7 @@ export function DocArtifact({
       const parts = sourceRef.split(":");
       if (parts[1]?.startsWith("p")) {
         const pageNum = parseInt(parts[1].replace(/\D/g, ""), 10);
-        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= pages.length) {
+        if (!isNaN(pageNum) && pageNum >= 1 && pageNum <= dynamicPages.length) {
           setCurrentPage(pageNum);
         }
       }
@@ -133,12 +165,12 @@ export function DocArtifact({
         }
       }
     }
-  }, [sourceRef, pages.length, targetBbox]);
+  }, [sourceRef, dynamicPages.length, targetBbox]);
 
-  const activeDocPage = pages.find((p) => p.pageNumber === currentPage) || pages[0];
+  const activeDocPage = dynamicPages.find((p) => p.pageNumber === currentPage) || dynamicPages[0];
 
   const handleExport = () => {
-    const fullText = `# ${initialTitle}\n\n` + pages.map((p) => `## Page ${p.pageNumber}: ${p.title || ""}\n\n${p.content}`).join("\n\n---\n\n");
+    const fullText = `# ${initialTitle}\n\n` + dynamicPages.map((p) => `## Page ${p.pageNumber}: ${p.title || ""}\n\n${p.content}`).join("\n\n---\n\n");
     const blob = new Blob([fullText], { type: "text/markdown;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -156,7 +188,7 @@ export function DocArtifact({
   };
 
   const handleNextPage = () => {
-    if (currentPage < pages.length) setCurrentPage((prev) => prev + 1);
+    if (currentPage < dynamicPages.length) setCurrentPage((prev) => prev + 1);
   };
 
   // Keyboard Navigation: ←, →, Space, PgUp/PgDn, Home/End to flip document pages
@@ -170,18 +202,18 @@ export function DocArtifact({
         if (currentPage > 1) setCurrentPage((prev) => prev - 1);
       } else if (e.key === "ArrowRight" || e.key === " " || e.key === "PageDown") {
         e.preventDefault();
-        if (currentPage < pages.length) setCurrentPage((prev) => prev + 1);
+        if (currentPage < dynamicPages.length) setCurrentPage((prev) => prev + 1);
       } else if (e.key === "Home") {
         e.preventDefault();
         setCurrentPage(1);
       } else if (e.key === "End") {
         e.preventDefault();
-        setCurrentPage(pages.length);
+        setCurrentPage(dynamicPages.length);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [currentPage, pages.length]);
+  }, [currentPage, dynamicPages.length]);
 
   // Compute SVG highlight bounding box coordinates in normalized percentage space
   const currentBbox = activeBbox || activeDocPage?.bbox;
@@ -204,7 +236,7 @@ export function DocArtifact({
             {initialTitle}
           </span>
           <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 text-[10px] font-mono shrink-0">
-            Page {currentPage} of {pages.length}
+            Page {currentPage} of {dynamicPages.length}
           </span>
         </div>
 
@@ -228,7 +260,7 @@ export function DocArtifact({
               size="icon"
               variant="ghost"
               onClick={handleNextPage}
-              disabled={currentPage >= pages.length}
+              disabled={currentPage >= dynamicPages.length}
               aria-label="Next Page"
               className="h-6 w-6 text-slate-300 hover:text-white disabled:opacity-30"
             >
@@ -258,6 +290,42 @@ export function DocArtifact({
             </Button>
           </div>
 
+          {/* Typography Mode Switcher */}
+          <div className="hidden md:flex items-center border border-slate-800 rounded-lg bg-slate-900/60 p-0.5">
+            <button
+              type="button"
+              onClick={() => setTypographyMode("sans")}
+              className={cn("px-2 py-0.5 text-[10px] font-sans rounded transition", typographyMode === "sans" ? "bg-amber-500/20 text-amber-300 font-bold" : "text-slate-400 hover:text-white")}
+            >
+              Sans
+            </button>
+            <button
+              type="button"
+              onClick={() => setTypographyMode("serif")}
+              className={cn("px-2 py-0.5 text-[10px] font-serif rounded transition", typographyMode === "serif" ? "bg-amber-500/20 text-amber-300 font-bold" : "text-slate-400 hover:text-white")}
+            >
+              Serif
+            </button>
+            <button
+              type="button"
+              onClick={() => setTypographyMode("mono")}
+              className={cn("px-2 py-0.5 text-[10px] font-mono rounded transition", typographyMode === "mono" ? "bg-amber-500/20 text-amber-300 font-bold" : "text-slate-400 hover:text-white")}
+            >
+              Mono
+            </button>
+          </div>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={handlePrint}
+            className="h-7 px-2 text-[11px] font-semibold border-slate-800 text-slate-300 hover:bg-slate-800 gap-1"
+            title="Print / Save as PDF"
+          >
+            <Printer className="h-3 w-3 text-slate-300" />
+            <span className="hidden sm:inline">Print / PDF</span>
+          </Button>
+
           <Button
             size="sm"
             variant="outline"
@@ -273,34 +341,41 @@ export function DocArtifact({
       {/* ── Document Canvas Stage ── */}
       <div
         ref={pageContainerRef}
-        className="flex-1 min-h-0 p-4 sm:p-6 overflow-auto bg-slate-950/90 flex flex-col items-center custom-scrollbar"
+        className="flex-1 min-h-0 p-4 sm:p-6 overflow-auto bg-slate-950/90 flex flex-col items-center custom-scrollbar print:p-0 print:bg-white print:text-black"
       >
         <div
           style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
-          className="relative w-full max-w-2xl rounded-xl border border-slate-800 bg-slate-900/90 p-6 sm:p-8 shadow-2xl transition-transform duration-200"
+          className="relative w-full max-w-2xl rounded-xl border border-slate-800 bg-slate-900/90 p-6 sm:p-8 shadow-2xl transition-transform duration-200 print:shadow-none print:border-0 print:bg-white print:p-0 print:max-w-none"
         >
           {/* Document Page Header */}
-          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-5">
+          <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-5 print:border-black">
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono text-amber-400 uppercase font-bold tracking-wider">
+              <span className="text-[10px] font-mono text-amber-400 uppercase font-bold tracking-wider print:text-black">
                 {activeDocPage.title || `Document Section ${currentPage}`}
               </span>
             </div>
             <div className="flex items-center gap-2">
               {currentBbox && (
-                <span className="flex items-center gap-1 text-[10px] font-mono text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                <span className="flex items-center gap-1 text-[10px] font-mono text-amber-400/90 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30 print:hidden">
                   <Crosshair className="h-3 w-3 text-amber-400" />
                   <span>Grounding Box Active</span>
                 </span>
               )}
-              <span className="text-[10px] font-mono text-slate-500">
-                Sheet {currentPage}/{pages.length}
+              <span className="text-[10px] font-mono text-slate-500 print:text-black">
+                Section {currentPage} of {dynamicPages.length}
               </span>
             </div>
           </div>
 
           {/* Document Content View */}
-          <div className="relative font-sans text-xs sm:text-sm text-slate-200 leading-relaxed space-y-4 whitespace-pre-wrap">
+          <div
+            className={cn(
+              "relative space-y-4 whitespace-pre-wrap print:text-black",
+              typographyMode === "serif" && "font-serif text-sm text-slate-100 leading-relaxed sm:text-base",
+              typographyMode === "mono" && "font-mono text-xs text-slate-200 leading-relaxed",
+              typographyMode === "sans" && "font-sans text-xs sm:text-sm text-slate-200 leading-relaxed"
+            )}
+          >
             {activeDocPage.content}
 
             {/* ── Pulsing Bounding Box Grounding Highlight ── */}
@@ -308,7 +383,7 @@ export function DocArtifact({
               <div
                 style={highlightStyle}
                 className={cn(
-                  "absolute pointer-events-none rounded-lg border-2 border-amber-400 bg-amber-400/10",
+                  "absolute pointer-events-none rounded-lg border-2 border-amber-400 bg-amber-400/10 print:hidden",
                   "shadow-[0_0_20px_rgba(251,191,36,0.35)] transition-all duration-300",
                   highlightPulse ? "animate-pulse ring-2 ring-amber-400/40" : "opacity-85"
                 )}
@@ -323,27 +398,23 @@ export function DocArtifact({
       </div>
 
       {/* ── Bottom Page Strip ── */}
-      <div className="flex items-center justify-center gap-1.5 px-4 py-2 border-t border-slate-800 bg-slate-900/60 shrink-0 overflow-x-auto no-scrollbar">
-        {pages.map((p) => (
+      <div className="flex items-center justify-center gap-1.5 px-4 py-2 border-t border-slate-800 bg-slate-900/60 shrink-0 overflow-x-auto no-scrollbar print:hidden">
+        {dynamicPages.map((p) => (
           <button
             key={p.pageNumber}
             type="button"
-            onClick={() => {
-              setCurrentPage(p.pageNumber);
-              setActiveBbox(p.bbox);
-            }}
+            onClick={() => setCurrentPage(p.pageNumber)}
             className={cn(
-              "px-3 py-1 rounded-md text-[10px] font-mono font-semibold transition cursor-pointer",
+              "px-3 py-1 rounded-lg text-xs font-mono transition cursor-pointer border",
               currentPage === p.pageNumber
-                ? "bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs"
-                : "bg-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800"
+                ? "bg-amber-500/20 text-amber-300 border-amber-500/50 font-bold shadow-xs"
+                : "bg-slate-900 text-slate-400 border-slate-800 hover:text-slate-200"
             )}
           >
-            Page {p.pageNumber}
+            Section {p.pageNumber}
           </button>
         ))}
       </div>
     </div>
   );
 }
-

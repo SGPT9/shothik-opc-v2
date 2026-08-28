@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect, useId } from "react";
-import { Plus, Trash2, Download, Table2, Calculator, BarChart3, Copy, Check } from "lucide-react";
+import { useState, useCallback, useEffect, useId, useRef } from "react";
+import { Plus, Trash2, Download, Table2, Calculator, BarChart3, Copy, Check, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -62,6 +62,46 @@ export function buildDynamicSheet(title?: string): { headers: string[]; rows: Gr
     };
   }
 
+  if (lower.includes("dollar") || lower.includes("currency") || lower.includes("forex") || lower.includes("fx") || lower.includes("exchange")) {
+    return {
+      headers: ["Currency Pair & Instrument", "Spot Rate (BDT)", "30-Day Forward", "90-Day Hedged"],
+      rows: [
+        ["USD / BDT Interbank Spot", "121.50", "122.20", "123.40"],
+        ["EUR / BDT Indicative", "131.80", "132.50", "133.90"],
+        ["GBP / BDT Remittance Wire", "156.40", "157.10", "158.60"],
+        ["AED / BDT Middle East Flow", "33.10", "33.30", "33.65"],
+        ["Forward Hedging Premium", "0.00", "+0.58%", "+1.56%"],
+        ["Import Letter of Credit Settlement", "121.80", "122.50", "123.85"],
+      ],
+      kpis: [
+        { label: "USD/BDT Spot", value: "৳121.50", color: "text-cyan-400" },
+        { label: "EUR/BDT Spot", value: "৳131.80", color: "text-purple-400" },
+        { label: "GBP/BDT Spot", value: "৳156.40", color: "text-emerald-400" },
+        { label: "BB Basket Variance", value: "±0.15%", color: "text-amber-400" },
+      ],
+    };
+  }
+
+  if (lower.includes("energy") || lower.includes("solar") || lower.includes("ev") || lower.includes("power") || lower.includes("station")) {
+    return {
+      headers: ["Asset & Capex Parameter", "Base 50kW Unit", "Aggressive 250kW Farm", "Defensive 20kW Micro"],
+      rows: [
+        ["Initial Hardware & Installation Capex", "3,500,000", "14,800,000", "1,600,000"],
+        ["Monthly Generation Throughput (kWh)", "6,500", "32,500", "2,600"],
+        ["Net Metering Tariff Revenue", "65,000", "325,000", "26,000"],
+        ["Commercial Fleet EV Charging Revenue", "145,000", "780,000", "58,000"],
+        ["Total Monthly Realization (MRR)", "210,000", "1,105,000", "84,000"],
+        ["Payback Period (Months)", "16.7", "13.4", "19.0"],
+      ],
+      kpis: [
+        { label: "Base Monthly Yield", value: "৳210,000", color: "text-cyan-400" },
+        { label: "Aggressive MRR", value: "৳1.105M", color: "text-purple-400" },
+        { label: "Avg Payback", value: "14.8 Mo", color: "text-emerald-400" },
+        { label: "Green Tax Incentive", value: "10% Net", color: "text-amber-400" },
+      ],
+    };
+  }
+
   // Default SaaS 3-Scenario Model
   return {
     headers: DEFAULT_HEADERS,
@@ -73,6 +113,189 @@ export function buildDynamicSheet(title?: string): { headers: string[]; rows: Gr
       { label: "Gross Margin", value: "76.6%", color: "text-amber-400" },
     ],
   };
+}
+
+// ── Lightweight Zero-Dependency Spreadsheet Formula Engine ──
+export function evaluateFormula(rawVal: string, grid: Grid): string {
+  if (!rawVal || !rawVal.startsWith("=")) return rawVal;
+  const expr = rawVal.slice(1).trim().toUpperCase();
+
+  try {
+    // 1. Helper to resolve cell ref (e.g. A1, B2, C3) into numeric value
+    const resolveRef = (ref: string): number => {
+      const match = ref.trim().match(/^([A-Z])(\d+)$/);
+      if (!match) return 0;
+      const c = match[1].charCodeAt(0) - 65;
+      const r = parseInt(match[2], 10) - 1;
+      if (r < 0 || r >= grid.length || c < 0 || c >= (grid[0]?.length || 0)) return 0;
+      const cellText = grid[r][c]?.replace(/[^0-9.-]+/g, "") || "0";
+      return parseFloat(cellText) || 0;
+    };
+
+    // 2. Range solver (e.g. B1:B5)
+    const resolveRange = (rangeStr: string): number[] => {
+      const parts = rangeStr.split(":").map((p) => p.trim());
+      if (parts.length !== 2) return [resolveRef(rangeStr)];
+      const startMatch = parts[0].match(/^([A-Z])(\d+)$/);
+      const endMatch = parts[1].match(/^([A-Z])(\d+)$/);
+      if (!startMatch || !endMatch) return [];
+
+      const startCol = startMatch[1].charCodeAt(0) - 65;
+      const startRow = parseInt(startMatch[2], 10) - 1;
+      const endCol = endMatch[1].charCodeAt(0) - 65;
+      const endRow = parseInt(endMatch[2], 10) - 1;
+
+      const nums: number[] = [];
+      for (let r = Math.min(startRow, endRow); r <= Math.max(startRow, endRow); r++) {
+        for (let c = Math.min(startCol, endCol); c <= Math.max(startCol, endCol); c++) {
+          if (r >= 0 && r < grid.length && c >= 0 && c < (grid[0]?.length || 0)) {
+            const num = parseFloat(grid[r][c]?.replace(/[^0-9.-]+/g, "") || "0");
+            if (!isNaN(num)) nums.push(num);
+          }
+        }
+      }
+      return nums;
+    };
+
+    // SUM(range)
+    if (expr.startsWith("SUM(") && expr.endsWith(")")) {
+      const inner = expr.slice(4, -1);
+      const nums = resolveRange(inner);
+      const sum = nums.reduce((acc, n) => acc + n, 0);
+      return sum.toLocaleString();
+    }
+
+    // AVERAGE(range)
+    if (expr.startsWith("AVERAGE(") && expr.endsWith(")")) {
+      const inner = expr.slice(8, -1);
+      const nums = resolveRange(inner);
+      if (nums.length === 0) return "0";
+      const avg = nums.reduce((acc, n) => acc + n, 0) / nums.length;
+      return Number(avg.toFixed(2)).toLocaleString();
+    }
+
+    // MIN(range)
+    if (expr.startsWith("MIN(") && expr.endsWith(")")) {
+      const inner = expr.slice(4, -1);
+      const nums = resolveRange(inner);
+      return Math.min(...nums).toLocaleString();
+    }
+
+    // MAX(range)
+    if (expr.startsWith("MAX(") && expr.endsWith(")")) {
+      const inner = expr.slice(4, -1);
+      const nums = resolveRange(inner);
+      return Math.max(...nums).toLocaleString();
+    }
+
+    // CAGR(startRef, endRef, years) e.g. =CAGR(B1, B3, 3)
+    if (expr.startsWith("CAGR(") && expr.endsWith(")")) {
+      const parts = expr.slice(5, -1).split(",").map((p) => p.trim());
+      if (parts.length === 3) {
+        const startVal = resolveRef(parts[0]) || parseFloat(parts[0]);
+        const endVal = resolveRef(parts[1]) || parseFloat(parts[1]);
+        const years = parseFloat(parts[2]);
+        if (startVal > 0 && endVal > 0 && years > 0) {
+          const cagr = (Math.pow(endVal / startVal, 1 / years) - 1) * 100;
+          return `${cagr >= 0 ? "+" : ""}${cagr.toFixed(2)}%`;
+        }
+      }
+      return "#VALUE!";
+    }
+
+    // GROWTH(prevRef, nextRef) e.g. =GROWTH(B1, B2)
+    if (expr.startsWith("GROWTH(") && expr.endsWith(")")) {
+      const parts = expr.slice(7, -1).split(",").map((p) => p.trim());
+      if (parts.length === 2) {
+        const prevVal = resolveRef(parts[0]) || parseFloat(parts[0]);
+        const nextVal = resolveRef(parts[1]) || parseFloat(parts[1]);
+        if (prevVal !== 0) {
+          const growth = ((nextVal - prevVal) / Math.abs(prevVal)) * 100;
+          return `${growth >= 0 ? "+" : ""}${growth.toFixed(1)}%`;
+        }
+      }
+      return "#VALUE!";
+    }
+
+    // Simple arithmetic e.g. B1 * 1.15 or B2 + B3
+    const arithmeticExpr = expr.replace(/([A-Z]\d+)/g, (m) => String(resolveRef(m)));
+    if (/^[0-9.+\-*/\s()]+$/.test(arithmeticExpr)) {
+      // Safe arithmetic evaluator
+      const result = Function(`"use strict"; return (${arithmeticExpr});`)();
+      return typeof result === "number" ? Number(result.toFixed(2)).toLocaleString() : String(result);
+    }
+
+    return rawVal;
+  } catch {
+    return "#VALUE!";
+  }
+}
+
+export function computeDynamicKPIs(grid: Grid, title?: string): { label: string; value: string; color: string }[] {
+  const clean = (title || "").toLowerCase();
+
+  // Helper to extract clean number from cell
+  const getNum = (r: number, c: number): number => {
+    if (r < 0 || r >= grid.length || c < 0 || c >= (grid[0]?.length || 0)) return 0;
+    const text = grid[r][c]?.replace(/[^0-9.-]+/g, "") || "0";
+    return parseFloat(text) || 0;
+  };
+
+  const fmtCurrency = (n: number) => {
+    if (Math.abs(n) >= 1_000_000) return `৳${(n / 1_000_000).toFixed(2)}M`;
+    if (Math.abs(n) >= 1_000) return `৳${(n / 1_000).toFixed(1)}K`;
+    return `৳${n.toLocaleString()}`;
+  };
+
+  if (clean.includes("dollar") || clean.includes("forex") || clean.includes("exchange")) {
+    const spotUSD = getNum(0, 1) || 121.50;
+    const spotEUR = getNum(1, 1) || 131.80;
+    const spotGBP = getNum(2, 1) || 156.40;
+    return [
+      { label: "USD/BDT Spot", value: `৳${spotUSD.toFixed(2)}`, color: "text-cyan-400" },
+      { label: "EUR/BDT Spot", value: `৳${spotEUR.toFixed(2)}`, color: "text-purple-400" },
+      { label: "GBP/BDT Spot", value: `৳${spotGBP.toFixed(2)}`, color: "text-emerald-400" },
+      { label: "BB Basket Variance", value: "±0.15%", color: "text-amber-400" },
+    ];
+  }
+
+  if (clean.includes("logistics") || clean.includes("courier") || clean.includes("delivery")) {
+    const totalParcels = (getNum(0, 1) + getNum(0, 2) + getNum(0, 3)) || 37700;
+    const grossFlow = (getNum(2, 1) + getNum(2, 2) + getNum(2, 3)) || 56590000;
+    const netPayout = (getNum(6, 1) + getNum(6, 2) + getNum(6, 3)) || 51999600;
+    return [
+      { label: "Total Parcels/Mo", value: totalParcels.toLocaleString(), color: "text-cyan-400" },
+      { label: "Gross Flow", value: fmtCurrency(grossFlow), color: "text-purple-400" },
+      { label: "Net Payout", value: fmtCurrency(netPayout), color: "text-emerald-400" },
+      { label: "Avg Delivery Success", value: "94.8%", color: "text-amber-400" },
+    ];
+  }
+
+  if (clean.includes("tax") || clean.includes("nbr") || clean.includes("section 78")) {
+    const grossTurnover = getNum(0, 1) || 45000000;
+    const taxableNet = getNum(2, 1) || 16500000;
+    const rebateSavings = Math.abs(getNum(4, 2)) || 680625;
+    const effectiveRate = grossTurnover > 0 ? ((taxableNet * 0.275 - rebateSavings) / grossTurnover) * 100 : 8.57;
+    return [
+      { label: "Gross Turnover", value: fmtCurrency(grossTurnover), color: "text-cyan-400" },
+      { label: "Taxable Income", value: fmtCurrency(taxableNet), color: "text-purple-400" },
+      { label: "Sec 78 Savings", value: fmtCurrency(rebateSavings), color: "text-emerald-400" },
+      { label: "Effective Tax Rate", value: `${Math.max(0, effectiveRate).toFixed(2)}%`, color: "text-amber-400" },
+    ];
+  }
+
+  // Default SaaS Financial Model (MRR, Aggressive MRR, Net Operating Profit, Margin)
+  const baseMRR = getNum(2, 1) || 22500000;
+  const aggMRR = getNum(2, 2) || 83250000;
+  const netProfit = getNum(5, 1) || 16900000;
+  const marginPct = baseMRR > 0 ? (netProfit / baseMRR) * 100 : 76.6;
+
+  return [
+    { label: "Base MRR", value: fmtCurrency(baseMRR), color: "text-cyan-400" },
+    { label: "Aggressive MRR", value: fmtCurrency(aggMRR), color: "text-purple-400" },
+    { label: "Net Operating Profit", value: `+${fmtCurrency(netProfit)}`, color: "text-emerald-400" },
+    { label: "Gross Margin", value: `${marginPct.toFixed(1)}%`, color: "text-amber-400" },
+  ];
 }
 
 interface SheetArtifactProps {
@@ -118,6 +341,30 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
   const setHeader = useCallback((c: number, value: string) => {
     setHeaders((prev) => { const n = [...prev]; n[c] = value; return n; });
   }, []);
+
+  const csvFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCSVImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const text = event.target?.result as string;
+      if (!text) return;
+      const delimiter = text.includes("\t") ? "\t" : ",";
+      const rawRows = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      if (rawRows.length > 0) {
+        const parsedHeaders = rawRows[0].split(delimiter).map((c) => c.replace(/^["']|["']$/g, "").trim());
+        const parsedGrid = rawRows.slice(1).map((row) =>
+          row.split(delimiter).map((c) => c.replace(/^["']|["']$/g, "").trim())
+        );
+        if (parsedHeaders.length > 0) setHeaders(parsedHeaders);
+        if (parsedGrid.length > 0) setGrid(parsedGrid);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  };
 
   const addRow = () => setGrid((prev) => [...prev, Array(colCount).fill("")]);
   const deleteRow = (r: number) => setGrid((prev) => prev.filter((_, i) => i !== r));
@@ -262,6 +509,25 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
             <Plus className="h-3 w-3" /> Col
           </Button>
 
+          {/* Hidden CSV File Input */}
+          <input
+            ref={csvFileInputRef}
+            type="file"
+            accept=".csv,.tsv,.txt"
+            className="hidden"
+            onChange={handleCSVImport}
+          />
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => csvFileInputRef.current?.click()}
+            className="h-7 px-2 text-[11px] font-semibold gap-1"
+            title="Import CSV or TSV spreadsheet"
+          >
+            <Upload className="h-3 w-3" /> Import CSV
+          </Button>
+
           <Button
             size="sm"
             onClick={exportCSV}
@@ -321,9 +587,9 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
         </div>
       </div>
 
-      {/* ── KPI Summary Cards (GenSpark Sheet Metric Bar) ── */}
+      {/* ── KPI Summary Cards (Dynamic Live Recomputed) ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border-b border-border/60 bg-muted/10 p-2.5 shrink-0">
-        {dynamic.kpis.map((kpi, idx) => (
+        {computeDynamicKPIs(grid, title).map((kpi, idx) => (
           <div key={idx} className="rounded-lg border border-border/60 bg-background p-2 text-center space-y-0.5 shadow-xs">
             <span className="text-[10px] text-muted-foreground">{kpi.label}</span>
             <p className={cn("text-xs font-bold font-mono", kpi.color)}>{kpi.value}</p>
@@ -351,11 +617,11 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
         </span>
         <input
           type="text"
-          value={selectedVal}
+          value={selectedCell && grid[selectedCell.r] ? grid[selectedCell.r][selectedCell.c] || "" : ""}
           onChange={(e) => {
             if (selectedCell) setCell(selectedCell.r, selectedCell.c, e.target.value);
           }}
-          placeholder="Enter text, value, or formula..."
+          placeholder="Enter text, value, or formula (e.g. =SUM(B1:B5) or =B1*1.2)..."
           className="flex-1 bg-transparent text-foreground outline-none border-0 font-mono text-xs"
         />
       </div>
@@ -473,6 +739,7 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
                     </td>
                     {row.map((cell, c) => {
                       const isSelected = selectedCell?.r === r && selectedCell?.c === c;
+                      const displayVal = !isSelected && cell.startsWith("=") ? evaluateFormula(cell, grid) : cell;
                       return (
                         <td
                           key={c}
@@ -485,7 +752,7 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
                           <input
                             id={`${uid}-cell-${r}-${c}`}
                             type="text"
-                            value={cell}
+                            value={displayVal}
                             onChange={(e) => setCell(r, c, e.target.value)}
                             onKeyDown={(e) => handleCellKeyDown(e, r, c)}
                             onFocus={() => setSelectedCell({ r, c })}

@@ -19,7 +19,7 @@ router.get("/v1/whatsapp/webhook", (req: Request, res: Response) => {
     return res.status(200).send(challenge);
   }
 
-  logger.warn("[whatsapp-webhook] Verification failed - token mismatch", { mode, token });
+  logger.warn({ mode, token }, "[whatsapp-webhook] Verification failed - token mismatch");
   return res.status(403).json({ error: "Verification token mismatch" });
 });
 
@@ -45,11 +45,14 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
             const messageText = msg.text?.body || msg.button?.text || "";
             const messageId = msg.id;
 
-            logger.info("[whatsapp-webhook] Inbound customer message received", {
-              senderPhone,
-              messageId,
-              textSnippet: messageText.slice(0, 40),
-            });
+            logger.info(
+              {
+                senderPhone,
+                messageId,
+                textSnippet: messageText.slice(0, 40),
+              },
+              "[whatsapp-webhook] Inbound customer message received"
+            );
 
             // Autonomous Merchant Twin Trigger:
             // Detects order intent, product availability, or bKash TrxID verification
@@ -62,7 +65,7 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
 
     return res.status(404).json({ error: "Not a WhatsApp Business Account payload" });
   } catch (err: any) {
-    logger.error("[whatsapp-webhook] Processing error", { error: err.message });
+    logger.error({ error: err.message }, "[whatsapp-webhook] Processing error");
     return res.status(500).json({ error: "Webhook processing failure" });
   }
 });
@@ -79,7 +82,7 @@ router.post("/v1/whatsapp/send", async (req: Request, res: Response) => {
   }
 
   // Simulated or live outbound dispatch via Meta Graph API
-  logger.info("[whatsapp-outbound] Dispatched reply to customer", { recipientPhone });
+  logger.info({ recipientPhone }, "[whatsapp-outbound] Dispatched reply to customer");
   return res.status(200).json({
     success: true,
     messageId: `wamid_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,

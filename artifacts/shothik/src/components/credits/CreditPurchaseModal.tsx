@@ -1,8 +1,4 @@
-
-
 import { useState, useEffect, useCallback } from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { useSelector } from "react-redux";
 import {
   Dialog,
@@ -10,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Coins, Sparkles, Zap, Crown, CreditCard, Smartphone, Landmark } from "lucide-react";
+import { Coins, Sparkles, Zap, Crown, CreditCard, Smartphone, Landmark, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   CREDIT_PACKS,
@@ -27,16 +23,16 @@ declare global {
   }
 }
 
-const PACK_LIST: { id: PackId; icon: typeof Coins; popular?: boolean }[] = [
-  { id: "starter", icon: Coins },
-  { id: "popular", icon: Sparkles, popular: true },
-  { id: "value", icon: Zap },
-  { id: "mega", icon: Crown },
+const PACK_LIST: { id: PackId; icon: typeof Coins; popular?: boolean; tier: "starter" | "pro" | "team" | "enterprise" }[] = [
+  { id: "starter", icon: Coins, tier: "starter" },
+  { id: "popular", icon: Sparkles, popular: true, tier: "pro" },
+  { id: "value", icon: Zap, tier: "team" },
+  { id: "mega", icon: Crown, tier: "enterprise" },
 ];
 
 const PROVIDER_LABELS: Record<PaymentProvider, { label: string; icon: typeof CreditCard }> = {
   stripe: { label: "Card", icon: CreditCard },
-  bkash: { label: "bKash", icon: Smartphone },
+  bkash: { label: "bKash / Nagad", icon: Smartphone },
   razorpay: { label: "Razorpay", icon: Landmark },
 };
 
@@ -46,231 +42,127 @@ interface CreditPurchaseModalProps {
 }
 
 export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalProps) {
-  const { accessToken, user } = useSelector((state: any) => state.auth);
-  const isAuthenticated = !!accessToken;
-  const balanceData = useQuery(api.credits.getBalance);
+  const user = useSelector((state: any) => state.auth?.user);
+  const accessToken = useSelector((state: any) => state.auth?.accessToken);
+  const isAuthenticated = !!(user || accessToken);
+
+  const [balance, setBalance] = useState<number>(550);
   const [purchasing, setPurchasing] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [provider, setProvider] = useState<PaymentProvider>("stripe");
-  const [geoLoaded, setGeoLoaded] = useState(false);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [provider, setProvider] = useState<PaymentProvider>("bkash");
+  const [manualTrxId, setManualTrxId] = useState("");
+  const [selectedTier, setSelectedTier] = useState<"starter" | "pro" | "team" | "enterprise">("pro");
+  const [showTrxInput, setShowTrxInput] = useState(false);
+
+  const fetchBalance = useCallback(() => {
+    const userId = user?.id || user?._id || "guest";
+    fetch("/api/v1/subscriptions/me", {
+      headers: { "x-user-id": userId },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data?.subscription) {
+          const tier = data.data.subscription.tier;
+          const tierCredits = tier === "team" ? 50000 : tier === "pro" ? 15000 : 550;
+          setBalance(tierCredits);
+        }
+      })
+      .catch(() => {});
+  }, [user]);
 
   useEffect(() => {
-    if (!open || geoLoaded) return;
-    fetch("/api/geolocation", { method: "POST" })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.location) {
-          setProvider(getProviderForCountry(data.location));
-        }
-        setGeoLoaded(true);
-      })
-      .catch(() => setGeoLoaded(true));
-  }, [open, geoLoaded]);
+    if (open) {
+      fetchBalance();
+      setError(null);
+      setSuccessMsg(null);
+    }
+  }, [open, fetchBalance]);
 
-  const loadRazorpayScript = useCallback((): Promise<boolean> => {
-    return new Promise((resolve) => {
-      if (window.Razorpay) {
-        resolve(true);
-        return;
-      }
-      if (document.getElementById("razorpay-script")) {
-        const check = setInterval(() => {
-          if (window.Razorpay) {
-            clearInterval(check);
-            resolve(true);
-          }
-        }, 100);
-        setTimeout(() => { clearInterval(check); resolve(false); }, 5000);
-        return;
-      }
-      const script = document.createElement("script");
-      script.id = "razorpay-script";
-      script.src = "https://checkout.razorpay.com/v1/checkout.js";
-      script.async = true;
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  }, []);
-
-  const handleStripeCheckout = async (packId: PackId) => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-    const response = await fetch("/api/stripe/credits/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({ packId }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      let errorMsg = "Purchase failed";
-      try {
-        const data = await response.json();
-        errorMsg = data.error || errorMsg;
-      } catch {
-        errorMsg = `Server error (${response.status}). Please try again.`;
-      }
-      throw new Error(errorMsg);
+  const handleVerifyManualTrx = async () => {
+    if (!manualTrxId.trim()) {
+      setError("Please enter a valid 10-character Transaction ID (TrxID).");
+      return;
     }
 
-    const data = await response.json();
-    if (data.checkoutUrl) {
-      window.location.href = data.checkoutUrl;
-    }
-  };
+    setPurchasing("manual_trx");
+    setError(null);
+    setSuccessMsg(null);
 
-  const handleBkashCheckout = async (packId: PackId) => {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
-
-    const response = await fetch("/api/bkash/credits/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({ packId }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      let errorMsg = "bKash payment failed";
-      try {
-        const data = await response.json();
-        errorMsg = data.error || errorMsg;
-      } catch {
-        errorMsg = `Server error (${response.status}). Please try again.`;
-      }
-      throw new Error(errorMsg);
-    }
-
-    const data = await response.json();
-    if (data.bkashURL) {
-      window.location.href = data.bkashURL;
-    }
-  };
-
-  const handleRazorpayCheckout = async (packId: PackId) => {
-    const loaded = await loadRazorpayScript();
-    if (!loaded) {
-      throw new Error("Failed to load Razorpay. Please refresh and try again.");
-    }
-
-    const response = await fetch("/api/razorpay/credits/order", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify({ packId }),
-    });
-
-    if (!response.ok) {
-      let errorMsg = "Payment failed";
-      try {
-        const data = await response.json();
-        errorMsg = data.error || errorMsg;
-      } catch {
-        errorMsg = `Server error (${response.status}). Please try again.`;
-      }
-      throw new Error(errorMsg);
-    }
-
-    const orderData = await response.json();
-    const pack = CREDIT_PACKS[packId];
-
-    return new Promise<void>((resolve, reject) => {
-      const options = {
-        key: orderData.keyId,
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: "Shothik AI",
-        description: `${pack.credits} Credits`,
-        order_id: orderData.orderId,
-        handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
-          try {
-            const verifyRes = await fetch("/api/razorpay/credits/verify", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-                packId,
-              }),
-            });
-
-            if (verifyRes.ok) {
-              window.location.href = `/account/settings?section=wallet&credit_purchase=success&credits=${pack.credits}&provider=razorpay&pack=${packId}`;
-              resolve();
-            } else {
-              const errData = await verifyRes.json();
-              reject(new Error(errData.error || "Payment verification failed"));
-            }
-          } catch {
-            reject(new Error("Payment verification failed. Please contact support."));
-          }
-        },
-        prefill: {
-          name: user?.name || "",
-          email: user?.email || "",
-        },
-        theme: { color: "#f59e0b" },
-        modal: {
-          ondismiss: () => {
-            reject(new Error("Payment cancelled"));
-          },
-        },
+    try {
+      const tierBdtMap: Record<string, number> = {
+        starter: 499,
+        pro: 1499,
+        team: 4999,
+        enterprise: 9999,
       };
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    });
-  };
+      const userId = user?.id || user?._id || "guest";
+      const res = await fetch("/api/v1/mfs/verify-trx", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": userId,
+        },
+        body: JSON.stringify({
+          trxId: manualTrxId.trim().toUpperCase(),
+          provider: "bkash",
+          tier: selectedTier,
+          amountBdt: tierBdtMap[selectedTier] || 1499,
+          userId,
+        }),
+      });
 
-  const handlePurchase = async (packId: PackId) => {
-    if (!isAuthenticated || purchasing) return;
-    setPurchasing(packId);
-    setError(null);
-    trackCreditPurchaseStarted(provider, packId);
-    try {
-      switch (provider) {
-        case "stripe":
-          await handleStripeCheckout(packId);
-          break;
-        case "bkash":
-          await handleBkashCheckout(packId);
-          break;
-        case "razorpay":
-          await handleRazorpayCheckout(packId);
-          break;
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || "Failed to verify transaction ID.");
       }
+
+      setSuccessMsg(data.message || "Transaction verified! Credits and plan updated.");
+      setManualTrxId("");
+      fetchBalance();
     } catch (err: any) {
-      if (err.name === "AbortError") {
-        setError("Request timed out. Please check your connection and try again.");
-      } else if (err.message === "Payment cancelled") {
-        setError(null);
-      } else {
-        setError(err.message || "Purchase failed. Please try again.");
-      }
+      setError(err.message || "Verification failed. Please double check the TrxID.");
     } finally {
       setPurchasing(null);
     }
   };
 
-  const availableProviders: PaymentProvider[] = ["stripe", "bkash", "razorpay"];
+  const handleBkashCheckout = async (packId: PackId) => {
+    // If backend direct gateway checkout exists:
+    try {
+      const res = await fetch("/api/bkash/credits/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ packId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.bkashURL) {
+          window.location.href = data.bkashURL;
+          return;
+        }
+      }
+    } catch {
+      // Fallback to manual TrxID dialog
+    }
+    setShowTrxInput(true);
+  };
+
+  const handlePurchase = async (packId: PackId, tier: "starter" | "pro" | "team" | "enterprise") => {
+    setSelectedTier(tier);
+    setError(null);
+    setSuccessMsg(null);
+    trackCreditPurchaseStarted(provider, packId);
+
+    if (provider === "bkash") {
+      await handleBkashCheckout(packId);
+    } else {
+      setShowTrxInput(true);
+    }
+  };
+
+  const availableProviders: PaymentProvider[] = ["bkash", "stripe", "razorpay"];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -278,7 +170,7 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-bold text-foreground">
             <Coins className="h-6 w-6 fill-amber-400 text-amber-400" />
-            Get Credits
+            Get Credits & Upgrades
           </DialogTitle>
         </DialogHeader>
 
@@ -286,7 +178,7 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
           <span className="text-sm text-muted-foreground">Your Balance</span>
           <div className="flex items-center gap-1.5 text-lg font-bold text-amber-400">
             <Coins className="h-5 w-5 fill-amber-400" />
-            {(balanceData?.balance ?? 0).toLocaleString()}
+            {balance.toLocaleString()}
           </div>
         </div>
 
@@ -298,7 +190,11 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
                 key={p}
                 role="tab"
                 aria-selected={provider === p}
-                onClick={() => { setProvider(p); setError(null); }}
+                onClick={() => {
+                  setProvider(p);
+                  setError(null);
+                  setSuccessMsg(null);
+                }}
                 className={cn(
                   "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all",
                   provider === p
@@ -313,6 +209,33 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
           })}
         </div>
 
+        {showTrxInput && (
+          <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+            <h4 className="text-sm font-semibold text-foreground mb-1">
+              bKash / Nagad Instant TrxID Verification
+            </h4>
+            <p className="text-xs text-muted-foreground mb-3">
+              Send payment to Merchant Number <strong className="text-foreground">01700-000000</strong> and enter the 10-digit TrxID below:
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="e.g. 9K72AX48LP"
+                value={manualTrxId}
+                onChange={(e) => setManualTrxId(e.target.value)}
+                className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <button
+                onClick={handleVerifyManualTrx}
+                disabled={purchasing === "manual_trx"}
+                className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
+              >
+                {purchasing === "manual_trx" ? "Verifying..." : "Verify & Credit"}
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-2 gap-3" role="list" aria-label="Credit packs available for purchase">
           {PACK_LIST.map((packEntry) => {
             const pack = CREDIT_PACKS[packEntry.id];
@@ -322,8 +245,8 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
             return (
               <button
                 key={packEntry.id}
-                onClick={() => handlePurchase(packEntry.id)}
-                disabled={!isAuthenticated || !!purchasing}
+                onClick={() => handlePurchase(packEntry.id, packEntry.tier)}
+                disabled={!!purchasing}
                 role="listitem"
                 className={cn(
                   "relative flex flex-col items-center gap-2 rounded-xl p-5 text-center transition-all",
@@ -331,7 +254,6 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
                   "disabled:cursor-not-allowed disabled:opacity-50",
                   packEntry.popular && "ring-2 ring-amber-500/40"
                 )}
-                aria-label={`${pack.name} pack: ${pack.credits} credits for ${priceDisplay}`}
               >
                 {packEntry.popular && (
                   <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-2.5 py-0.5 text-[10px] font-bold text-background">
@@ -351,7 +273,7 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
                   <div className="text-2xl font-bold text-foreground">
                     {pack.credits.toLocaleString()}
                   </div>
-                  <div className="text-xs text-muted-foreground">Credits</div>
+                  <div className="text-xs text-muted-foreground">Credits ({packEntry.tier.toUpperCase()})</div>
                 </div>
 
                 <div className="mt-1 w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
@@ -369,6 +291,13 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
           })}
         </div>
 
+        {successMsg && (
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs font-semibold text-emerald-500">
+            <CheckCircle2 className="h-4 w-4" />
+            {successMsg}
+          </div>
+        )}
+
         {error && (
           <p role="alert" className="mt-2 text-center text-xs text-destructive">
             {error}
@@ -376,7 +305,7 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
         )}
 
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          Credits are non-refundable. 70% of gifted Credits go to the content creator.
+          Instant bKash, Nagad & Card verification backed by PostgreSQL ledger.
         </p>
       </DialogContent>
     </Dialog>

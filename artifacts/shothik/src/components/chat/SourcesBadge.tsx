@@ -29,7 +29,7 @@ function getDomain(url?: string): string {
 
 function getFavicon(url?: string): string {
   const domain = getDomain(url);
-  return domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=16` : '';
+  return domain ? `https://www.google.com/s2/favicons?domain=${domain}&sz=32` : '';
 }
 
 export function SourcesBadge({ sources, className, variant = 'row' }: SourcesBadgeProps) {

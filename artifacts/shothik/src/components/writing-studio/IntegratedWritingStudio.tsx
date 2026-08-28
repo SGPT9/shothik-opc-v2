@@ -1,9 +1,6 @@
 
 
 import { useState, useEffect, useCallback } from 'react';
-import { useQuery, useMutation } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import type { Id } from '@/convex/_generated/dataModel';
 
 import { ModeSwitcherHeader } from '@/components/writing-studio/navigation/ModeSwitcherHeader';
 import { PolishedWriteView } from '@/components/writing-studio/PolishedWriteView';
@@ -15,40 +12,66 @@ import { FeatureGate } from '@/components/subscription/FeatureGate';
 type Mode = 'write' | 'format' | 'publish';
 
 interface IntegratedWritingStudioProps {
-  projectId: Id<'projects'>;
+  projectId: string;
   userId?: string;
 }
 
-export function IntegratedWritingStudio({ projectId }: IntegratedWritingStudioProps) {
+export function IntegratedWritingStudio({ projectId, userId }: IntegratedWritingStudioProps) {
   const [currentMode, setCurrentMode] = useState<Mode>('write');
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [project, setProject] = useState<any>(null);
 
-  // Fetch project data
-  const project = useQuery(api.projects.get, { id: projectId });
-  
-  // Mutations
-  const saveVersion = useMutation(api.projects.saveVersion);
+  // Fetch project data via REST
+  useEffect(() => {
+    if (!projectId) return;
+    let active = true;
 
-  // Save handler
+    (async () => {
+      try {
+        const res = await fetch(`/api/v1/projects/${encodeURIComponent(projectId)}`, {
+          headers: userId ? { 'x-user-id': userId } : {},
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.success && json.data && active) {
+            setProject(json.data);
+          }
+        }
+      } catch (err) {
+        console.warn('[IntegratedWritingStudio] Failed to load project:', err);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [projectId, userId]);
+
+  // Save handler via REST
   const handleSave = useCallback(async () => {
-    if (isSaving) return;
-    if (!project) return;
+    if (isSaving || !project || !projectId) return;
 
     setIsSaving(true);
     try {
-      await saveVersion({
-        projectId,
-        content: project.content ?? "",
-        sections: (project as any).sections,
-        label: "manual-save",
+      await fetch(`/api/v1/projects/${encodeURIComponent(projectId)}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(userId ? { 'x-user-id': userId } : {}),
+        },
+        body: JSON.stringify({
+          content: project.content ?? '',
+          sections: project.sections,
+        }),
       });
       setLastSaved(new Date());
     } catch (error) {
+      console.error('[IntegratedWritingStudio] Save failed:', error);
     } finally {
       setIsSaving(false);
     }
-  }, [project, projectId, isSaving, saveVersion]);
+  }, [project, projectId, isSaving, userId]);
 
   if (!project) {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;

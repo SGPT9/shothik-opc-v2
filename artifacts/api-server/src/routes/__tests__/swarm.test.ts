@@ -25,11 +25,23 @@ describe("Swarm Multi-Agent Deliberation Suite (/api/v1/swarm)", () => {
     expect(res.status).toBe(200);
     const json = (await res.json()) as any;
     expect(json.success).toBe(true);
-    expect(json.agents.length).toBe(5);
+    expect(json.agents.length).toBe(10);
 
     const commander = json.agents.find((a: any) => a.id === "commander");
     expect(commander).toBeDefined();
     expect(commander.name).toBe("Commander Agent");
+
+    const architect = json.agents.find((a: any) => a.id === "architect");
+    expect(architect).toBeDefined();
+
+    const security = json.agents.find((a: any) => a.id === "security_sentinel");
+    expect(security).toBeDefined();
+
+    const taxAuditor = json.agents.find((a: any) => a.id === "tax_auditor");
+    expect(taxAuditor).toBeDefined();
+
+    const devops = json.agents.find((a: any) => a.id === "devops_deployer");
+    expect(devops).toBeDefined();
   });
 
   it("POST /api/v1/swarm/deliberate executes multi-agent DAG plan and creates DSH trace", async () => {
@@ -47,7 +59,8 @@ describe("Swarm Multi-Agent Deliberation Suite (/api/v1/swarm)", () => {
     const json = (await res.json()) as any;
     expect(json.success).toBe(true);
     expect(json.sessionId).toMatch(/^dsh_/);
-    expect(json.summary.totalNodes).toBeGreaterThan(0);
-    expect(json.perspectives.length).toBe(5);
+    expect(json.summary.totalNodes).toBe(10);
+    expect(json.perspectives.length).toBe(10);
   });
+
 });

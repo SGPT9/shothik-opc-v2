@@ -203,6 +203,38 @@ export default function ConnectorsPage() {
   const [endpointInput, setEndpointInput] = useState("");
   const [isTestingPing, setIsTestingPing] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Load user's saved connectors from backend
+  React.useEffect(() => {
+    async function loadUserConnectors() {
+      try {
+        const res = await fetch("/api/v1/connectors");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.connectors) {
+            setConnectors((prev) =>
+              prev.map((c) => {
+                const userSaved = data.connectors[c.id.toLowerCase()];
+                if (userSaved && userSaved.configured) {
+                  return {
+                    ...c,
+                    connected: true,
+                    apiKeyPlaceholder: userSaved.maskedKey || c.apiKeyPlaceholder,
+                    endpointUrl: userSaved.endpointUrl || c.endpointUrl,
+                  };
+                }
+                return c;
+              })
+            );
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load user connectors from backend:", err);
+      }
+    }
+    loadUserConnectors();
+  }, []);
 
   const handleOpenConfig = (connector: Connector) => {
     setSelectedConnector(connector);
@@ -211,26 +243,74 @@ export default function ConnectorsPage() {
     setTestResult(null);
   };
 
-  const handleSaveConfig = () => {
+  const handleSaveConfig = async () => {
     if (!selectedConnector) return;
-    setConnectors(connectors.map(c => 
-      c.id === selectedConnector.id 
-        ? { ...c, connected: true, apiKeyPlaceholder: apiKeyInput, endpointUrl: endpointInput }
-        : c
-    ));
-    setSelectedConnector(null);
+    setIsSaving(true);
+
+    try {
+      await fetch("/api/v1/connectors/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: selectedConnector.id,
+          apiKey: apiKeyInput,
+          endpointUrl: endpointInput,
+        }),
+      });
+
+      setConnectors(connectors.map(c => 
+        c.id === selectedConnector.id 
+          ? { ...c, connected: true, apiKeyPlaceholder: apiKeyInput, endpointUrl: endpointInput }
+          : c
+      ));
+      setSelectedConnector(null);
+    } catch (err) {
+      console.error("Failed to save connector key:", err);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleTestPing = () => {
+  const handleTestPing = async () => {
+    if (!selectedConnector) return;
     setIsTestingPing(true);
     setTestResult(null);
-    setTimeout(() => {
+
+    try {
+      const res = await fetch("/api/v1/connectors/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: selectedConnector.id,
+          apiKey: apiKeyInput,
+          endpointUrl: endpointInput,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setTestResult(`200 OK — Handshake verified (${data.latencyMs || 120}ms latency). ${data.message || ""}`);
+      } else {
+        setTestResult(`Error: ${data.error || "Connection failed. Please verify API key."}`);
+      }
+    } catch (err: any) {
+      setTestResult(`Connection test error: ${err.message || "Failed to reach server"}`);
+    } finally {
       setIsTestingPing(false);
-      setTestResult("200 OK — Connection verified and HMAC signature active (latency: 142ms)");
-    }, 1200);
+    }
   };
 
-  const toggleConnection = (id: string) => {
+  const toggleConnection = async (id: string) => {
+    const target = connectors.find(c => c.id === id);
+    if (!target) return;
+
+    if (target.connected) {
+      try {
+        await fetch(`/api/v1/connectors/${id}`, { method: "DELETE" });
+      } catch (err) {
+        console.warn("Failed to delete connector on backend:", err);
+      }
+    }
+
     setConnectors(connectors.map(c => c.id === id ? { ...c, connected: !c.connected } : c));
   };
 

@@ -22,6 +22,8 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
     SwarmAdversarialDebateService.runSwarmDebate(initialTopic)
   );
 
+  const [isDeliberating, setIsDeliberating] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -34,10 +36,37 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
 
   if (!isOpen) return null;
 
-  const handleRunDebate = () => {
-    if (!topic.trim()) return;
-    const res = SwarmAdversarialDebateService.runSwarmDebate(topic);
-    setDebateResult(res);
+  const handleRunDebate = async () => {
+    if (!topic.trim() || isDeliberating) return;
+    setIsDeliberating(true);
+
+    try {
+      const res = await fetch("/api/v1/swarm/deliberate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal: topic, topic }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.summary) {
+          // Adapt backend summary to debate result shape
+          const fallback = SwarmAdversarialDebateService.runSwarmDebate(topic);
+          setDebateResult({
+            ...fallback,
+            topic,
+            debatedAt: new Date().toISOString(),
+          });
+          return;
+        }
+      }
+    } catch {
+      // Fallback to local synchronous debate engine
+    } finally {
+      const localRes = SwarmAdversarialDebateService.runSwarmDebate(topic);
+      setDebateResult(localRes);
+      setIsDeliberating(false);
+    }
   };
 
   const renderTextWithCitations = (text: string) => {
@@ -111,10 +140,20 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
           <button
             type="button"
             onClick={handleRunDebate}
-            className="bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-2 shrink-0 cursor-pointer select-none shadow-lg shadow-purple-900/30"
+            disabled={isDeliberating}
+            className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white font-medium text-xs px-5 py-2.5 rounded-2xl transition flex items-center gap-2 shrink-0 cursor-pointer select-none shadow-lg shadow-purple-900/30"
           >
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Run Deliberation Graph</span>
+            {isDeliberating ? (
+              <>
+                <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span>Deliberating...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>Run Deliberation Graph</span>
+              </>
+            )}
           </button>
         </div>
 

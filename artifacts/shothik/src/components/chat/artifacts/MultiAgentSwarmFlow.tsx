@@ -165,26 +165,60 @@ export function MultiAgentSwarmFlow({
       },
     ];
 
-    for (let i = 0; i < 3; i++) {
-      await new Promise((r) => setTimeout(r, 600));
-      setAgents((prev) =>
-        prev.map((agent) => {
-          const config = stepStages.find((s) => s.id === agent.id);
-          const stage = config?.steps[i];
-          if (!stage) return agent;
-          return {
-            ...agent,
-            progress: stage.p,
-            currentStep: stage.s,
-            status: stage.p === 100 ? "completed" : "running",
-            outputPreview: stage.out || agent.outputPreview,
-          };
-        })
-      );
-    }
+    try {
+      // Trigger live backend swarm deliberation in parallel
+      const backendPromise = fetch("/api/v1/swarm/deliberate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ goal: topic, topic, userId: "usr_web_client" }),
+      }).then((res) => res.ok ? res.json() : null).catch(() => null);
 
-    setIsSwarmRunning(false);
+      for (let i = 0; i < 3; i++) {
+        await new Promise((r) => setTimeout(r, 600));
+        setAgents((prev) =>
+          prev.map((agent) => {
+            const config = stepStages.find((s) => s.id === agent.id);
+            const stage = config?.steps[i];
+            if (!stage) return agent;
+            return {
+              ...agent,
+              progress: stage.p,
+              currentStep: stage.s,
+              status: stage.p === 100 ? "completed" : "running",
+              outputPreview: stage.out || agent.outputPreview,
+            };
+          })
+        );
+      }
+
+      // Await backend response to enrich outputs if available
+      const backendData = await backendPromise;
+      if (backendData?.perspectives && Array.isArray(backendData.perspectives)) {
+        setAgents((prev) =>
+          prev.map((agent) => {
+            const matchedPerspective = backendData.perspectives.find((p: any) =>
+              p.agent.toLowerCase().includes(agent.name.toLowerCase().split(" ")[0]) ||
+              p.role.toLowerCase().includes(agent.role.toLowerCase().split(" ")[0])
+            );
+            if (matchedPerspective?.output) {
+              return {
+                ...agent,
+                status: "completed",
+                progress: 100,
+                outputPreview: matchedPerspective.output,
+              };
+            }
+            return agent;
+          })
+        );
+      }
+    } catch {
+      // Graceful fallback
+    } finally {
+      setIsSwarmRunning(false);
+    }
   };
+
 
   const handleCopyText = (key: string, text: string) => {
     navigator.clipboard.writeText(text);

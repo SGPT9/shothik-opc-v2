@@ -412,21 +412,6 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       }
     }, [onAction, onRemoveContextChip]);
 
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      // Up-arrow prompt history recall when textarea is empty
-      if (e.key === "ArrowUp" && !textValue && lastPromptRef.current) {
-        e.preventDefault();
-        if (onChangeProp) onChangeProp(lastPromptRef.current);
-        else setLocalValue(lastPromptRef.current);
-        return;
-      }
-
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        handleTextSubmit();
-      }
-    };
-
     const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
       if (e.clipboardData.files && e.clipboardData.files.length > 0) {
         dispatchAttachFiles(e.clipboardData.files);
@@ -461,8 +446,13 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       }
     };
 
+    const [paletteIndex, setPaletteIndex] = useState(0);
+
     const isSlashMenuVisible = textValue.startsWith("/") && !textValue.includes(" ");
+    const isMentionMenuVisible = textValue.startsWith("@") && !textValue.includes(" ");
+
     const matchingSlashCommands = [
+      { cmd: "/doc", label: "Draft Document / Agreement", desc: "Multi-section legal agreement, PRD, or executive briefing", Icon: FileText, tab: "doc" as const },
       { cmd: "/research", label: "Deep Research", desc: "Comprehensive web & academic investigation", Icon: Search, tab: "research" as const },
       { cmd: "/slides", label: "Slide Studio", desc: "Investor pitch decks & Marp visual slides", Icon: Presentation, tab: "slides" as const },
       { cmd: "/sheet", label: "Financial Model", desc: "Interactive revenue forecasting & spreadsheets", Icon: Table2, tab: "sheet" as const },
@@ -476,6 +466,71 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       { cmd: "/commerce", label: "Commerce & MFS", desc: "Steadfast & Pathao courier logistics and bKash/Nagad", Icon: Truck, action: () => { if (onSend) onSend("Track courier status across Steadfast and Pathao, and calculate bKash/Nagad MFS settlement fees."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Track courier status across Steadfast and Pathao, and calculate bKash/Nagad MFS settlement fees." } }); } },
       { cmd: "/learn", label: "Rule Learning", desc: "Persist custom agent behavior and architectural rules", Icon: Brain, action: () => { if (onSend) onSend("Please analyze our recent work and propose a new persistent rule/skill for future sessions."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Please analyze our recent work and propose a new persistent rule/skill for future sessions." } }); } },
     ].filter((c) => c.cmd.toLowerCase().startsWith(textValue.toLowerCase()));
+
+    const matchingMentions = [
+      { tag: "@researcher", name: "Deep Research Specialist", desc: "Grounded web index & academic search", Icon: Search, persona: "researcher" },
+      { tag: "@architect", name: "System Architect", desc: "Distributed systems & scalable design", Icon: Cpu, persona: "architect" },
+      { tag: "@financial-analyst", name: "Financial Modeler", desc: "DCF valuations, unit economics & runway", Icon: Table2, persona: "financial-analyst" },
+      { tag: "@legal-counsel", name: "Legal & Regulatory Counsel", desc: "Contracts, NDAs & compliance policies", Icon: FileText, persona: "legal-counsel" },
+      { tag: "@designer", name: "Slide & UI Designer", desc: "Presentations, branding & design systems", Icon: Presentation, persona: "designer" },
+      { tag: "@twin", name: "SecondMe Digital Twin", desc: "Autonomous co-founder cognitive persona", Icon: Sparkles, persona: "twin" },
+    ].filter((m) => m.tag.toLowerCase().startsWith(textValue.toLowerCase()));
+
+    const activeListLength = isSlashMenuVisible ? matchingSlashCommands.length : isMentionMenuVisible ? matchingMentions.length : 0;
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Slash or Mention palette navigation
+      if ((isSlashMenuVisible || isMentionMenuVisible) && activeListLength > 0) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setPaletteIndex((prev) => (prev + 1) % activeListLength);
+          return;
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setPaletteIndex((prev) => (prev - 1 + activeListLength) % activeListLength);
+          return;
+        }
+        if (e.key === "Enter" || e.key === "Tab") {
+          e.preventDefault();
+          if (isSlashMenuVisible && matchingSlashCommands[paletteIndex]) {
+            const selected = matchingSlashCommands[paletteIndex];
+            if (selected.action) selected.action();
+            else if (selected.tab) dispatchArtifact(selected.tab);
+            else if (selected.tool) dispatchTool(selected.tool);
+            if (onChangeProp) onChangeProp("");
+            else setLocalValue("");
+            return;
+          }
+          if (isMentionMenuVisible && matchingMentions[paletteIndex]) {
+            const selected = matchingMentions[paletteIndex];
+            const updated = `${selected.tag} `;
+            if (onChangeProp) onChangeProp(updated);
+            else setLocalValue(updated);
+            return;
+          }
+        }
+        if (e.key === "Escape") {
+          e.preventDefault();
+          if (onChangeProp) onChangeProp("");
+          else setLocalValue("");
+          return;
+        }
+      }
+
+      // Up-arrow prompt history recall when textarea is empty
+      if (e.key === "ArrowUp" && !textValue && lastPromptRef.current) {
+        e.preventDefault();
+        if (onChangeProp) onChangeProp(lastPromptRef.current);
+        else setLocalValue(lastPromptRef.current);
+        return;
+      }
+
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        handleTextSubmit();
+      }
+    };
 
     const activeModel = MODELS.find((m) => m.value === modelHandle) || MODELS[0];
 
@@ -512,8 +567,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 <span className="text-[9px] text-brand font-normal">{matchingSlashCommands.length} skills</span>
               </div>
               <div className="space-y-0.5 mt-0.5">
-                {matchingSlashCommands.map((c) => {
+                {matchingSlashCommands.map((c, idx) => {
                   const Icon = c.Icon;
+                  const isSelected = idx === paletteIndex;
                   return (
                     <button
                       key={c.cmd}
@@ -529,15 +585,58 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                         if (onChangeProp) onChangeProp("");
                         else setLocalValue("");
                       }}
-                      className="flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 transition cursor-pointer"
+                      className={cn(
+                        "flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-xl text-left transition cursor-pointer",
+                        isSelected ? "bg-brand/15 text-brand font-semibold shadow-xs border border-brand/30" : "hover:bg-muted/70 text-foreground"
+                      )}
                     >
-                      <Icon className="w-4 h-4 text-brand shrink-0" />
+                      <Icon className={cn("w-4 h-4 shrink-0", isSelected ? "text-brand" : "text-muted-foreground")} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <span className="font-mono text-xs font-bold text-foreground">{c.cmd}</span>
+                          <span className="font-mono text-xs font-bold">{c.cmd}</span>
                           <span className="text-[10px] text-muted-foreground font-medium">· {c.label}</span>
                         </div>
                         <p className="text-[10px] text-muted-foreground truncate">{c.desc}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Agent Mentions (@) Autocomplete Popup */}
+          {isMentionMenuVisible && matchingMentions.length > 0 && (
+            <div className="absolute bottom-full left-4 mb-2 z-50 w-80 max-h-72 overflow-y-auto custom-scrollbar rounded-2xl border border-border/80 bg-popover shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="px-2.5 py-1 text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-bold flex items-center justify-between">
+                <span>Agent Roles & Personas</span>
+                <span className="text-[9px] text-brand font-normal">{matchingMentions.length} agents</span>
+              </div>
+              <div className="space-y-0.5 mt-0.5">
+                {matchingMentions.map((m, idx) => {
+                  const Icon = m.Icon;
+                  const isSelected = idx === paletteIndex;
+                  return (
+                    <button
+                      key={m.tag}
+                      type="button"
+                      onClick={() => {
+                        const updated = `${m.tag} `;
+                        if (onChangeProp) onChangeProp(updated);
+                        else setLocalValue(updated);
+                      }}
+                      className={cn(
+                        "flex items-center gap-2.5 w-full px-2.5 py-1.5 rounded-xl text-left transition cursor-pointer",
+                        isSelected ? "bg-brand/15 text-brand font-semibold shadow-xs border border-brand/30" : "hover:bg-muted/70 text-foreground"
+                      )}
+                    >
+                      <Icon className={cn("w-4 h-4 shrink-0", isSelected ? "text-brand" : "text-muted-foreground")} />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-mono text-xs font-bold">{m.tag}</span>
+                          <span className="text-[10px] text-muted-foreground font-medium">· {m.name}</span>
+                        </div>
+                        <p className="text-[10px] text-muted-foreground truncate">{m.desc}</p>
                       </div>
                     </button>
                   );
@@ -648,11 +747,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
           {/* ── Bottom Toolbar (Progressive Disclosure) ── */}
           <div className={cn(
-            "flex items-center justify-between px-3 py-2 border-t border-border/40 mt-1 transition-all duration-300",
-            isExpanded ? "opacity-100 max-h-20" : "opacity-0 max-h-0 overflow-hidden py-0 border-transparent mt-0"
+            "flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 border-t border-border/40 mt-1 transition-all duration-300 gap-1.5",
+            isExpanded ? "opacity-100 max-h-32 sm:max-h-20" : "opacity-0 max-h-0 overflow-hidden py-0 border-transparent mt-0"
           )}>
             {/* Left Controls: Attach + Voice Input + Tools Dropdown + Focus Selector */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
               {/* 📎 Attach Button & Dropdown */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
@@ -671,7 +770,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 </button>
 
                 {attachMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-48 rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-48 max-w-[calc(100vw-24px)] rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-150">
                     {[
                       { Icon: FileText, label: "Document (.pdf, .docx, .md)", action: () => pdfInputRef.current?.click() },
                       { Icon: Image, label: "Image / Screenshot", action: () => imageInputRef.current?.click() },
@@ -742,16 +841,16 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setFocusMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
-                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/70 text-xs font-semibold text-foreground/90 transition cursor-pointer"
+                  className="flex items-center gap-1 sm:gap-1.5 h-8 px-2 sm:px-2.5 rounded-lg border border-border/70 bg-muted/40 hover:bg-muted/70 text-xs font-semibold text-foreground/90 transition cursor-pointer"
                   title="Open Tools & AI Skills (+)"
                 >
                   <Plus className="h-3.5 w-3.5 text-brand" />
-                  <span>Tools</span>
+                  <span className="hidden xs:inline">Tools</span>
                   <ChevronDown className="h-3 w-3 opacity-60" />
                 </button>
 
                 {toolsMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-80 rounded-2xl border border-border/80 bg-popover shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 text-left">
+                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-72 sm:w-80 max-w-[calc(100vw-24px)] max-h-[65vh] overflow-y-auto custom-scrollbar rounded-2xl border border-border/80 bg-popover shadow-2xl p-2 animate-in fade-in zoom-in-95 duration-150 text-left">
                     <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold flex items-center justify-between">
                       <span>Active AI Skills</span>
                       <span className="text-[9px] text-brand font-semibold">8 Skills Available</span>
@@ -910,18 +1009,18 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setModelMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
-                  className="flex items-center gap-1 h-8 px-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                  className="flex items-center gap-1 h-8 px-1.5 sm:px-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
                   title="Select web reasoning & research focus mode"
                 >
                   <Globe className="h-3.5 w-3.5 text-brand shrink-0" />
-                  <span className="text-[11px] font-medium hidden sm:inline">
+                  <span className="text-[11px] font-medium hidden md:inline">
                     {PERPLEXITY_FOCUS_OPTIONS.find((f) => f.value === perplexityFocus)?.label || "Web & AI"}
                   </span>
                   <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
                 </button>
 
                 {focusMenuOpen && (
-                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-64 rounded-2xl border border-border/80 bg-popover shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
+                  <div className="absolute bottom-full left-0 mb-1.5 z-50 w-60 sm:w-64 max-w-[calc(100vw-24px)] max-h-[60vh] overflow-y-auto custom-scrollbar rounded-2xl border border-border/80 bg-popover shadow-2xl p-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
                     <div className="px-2 py-1 text-[10px] font-mono uppercase tracking-wider text-muted-foreground font-bold">
                       Reasoning Focus Mode
                     </div>
@@ -955,7 +1054,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             </div>
 
             {/* Right Controls: Model Selector + Send/Stop Button */}
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
               {/* Token / Character Count for Long Documents */}
               {textValue.length > 500 && (
                 <span className="hidden md:inline text-[9px] font-mono text-muted-foreground/60 mr-1 select-none" title="Estimated character and token length">
@@ -976,24 +1075,25 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setModelMenuOpen((o) => !o);
                     setAttachMenuOpen(false);
                     setToolsMenuOpen(false);
+                    setFocusMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
-                  className="flex items-center gap-1 h-8 px-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                  className="flex items-center gap-1 h-8 px-1.5 sm:px-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
                 >
                   <span className="hidden sm:inline">{activeModel.label}</span>
                   <span className="sm:hidden text-xs">⚡</span>
-                  <ChevronDown className="h-3 w-3 opacity-60" />
+                  <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
                 </button>
 
                 {modelMenuOpen && (
-                  <div className="absolute bottom-full right-0 mb-1.5 z-50 w-64 rounded-2xl border border-border/80 bg-popover shadow-xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
+                  <div className="absolute bottom-full right-0 mb-1.5 z-50 w-60 sm:w-64 max-w-[calc(100vw-24px)] max-h-[60vh] overflow-y-auto custom-scrollbar rounded-2xl border border-border/80 bg-popover shadow-xl py-1.5 animate-in fade-in zoom-in-95 duration-150 text-left">
                     <div className="px-3 py-1.5 border-b border-border/50 text-[10px] font-mono text-muted-foreground font-semibold flex items-center justify-between">
                       <span className="flex items-center gap-1.5">
                         <span className={cn("w-2 h-2 rounded-full", ollamaInfo.online ? "bg-emerald-400 animate-pulse" : "bg-cyan-400")} />
-                        {ollamaInfo.online ? "OLLAMA GPU (11434)" : "HYBRID MOE GATEWAY"}
+                        {ollamaInfo.online ? "OLLAMA GPU" : "HYBRID MOE"}
                       </span>
                       <span className="text-emerald-400 text-[9px] font-mono">
-                        {ollamaInfo.online ? `${ollamaInfo.models.length} Local Weights` : "⚡ 1.8¢/job"}
+                        {ollamaInfo.online ? `${ollamaInfo.models.length} Local` : "⚡ Fast"}
                       </span>
                     </div>
                     {MODELS.map((m) => (

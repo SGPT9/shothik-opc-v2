@@ -79,10 +79,11 @@
     "typescript": "^5.9.3"
   },
   "pnpm": {
-    "builtDependencies": [
+    "onlyBuiltDependencies": [
       "@prisma/engines",
       "@scarf/scarf",
       "@tree-sitter-grammars/tree-sitter-yaml",
+      "better-sqlite3",
       "core-js-pure",
       "core-js",
       "esbuild",

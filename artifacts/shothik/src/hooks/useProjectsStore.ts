@@ -1,10 +1,5 @@
-
-
 import { useState, useEffect, useCallback } from "react";
-import { useMutation, useQuery } from "convex/react";
 import { useSelector } from "react-redux";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import {
   getProjects as getLocalProjects,
   createProject as createLocalProject,
@@ -20,13 +15,13 @@ interface AuthState {
   auth: {
     user: {
       id?: string;
-      clerkId?: string;
+      _id?: string;
       [key: string]: unknown;
     } | null;
   };
 }
 
-interface ProjectParams {
+export interface ProjectParams {
   title: string;
   type: string;
   template?: string;
@@ -36,8 +31,9 @@ interface ProjectParams {
   agentChapters?: unknown;
 }
 
-interface ProjectData {
-  _id: string | Id<"projects">;
+export interface ProjectData {
+  _id: string;
+  id?: string;
   title: string;
   type: string;
   template?: string | null;
@@ -52,7 +48,7 @@ interface ProjectData {
   _creationTime: number;
 }
 
-interface ProjectUpdates {
+export interface ProjectUpdates {
   title?: string;
   description?: string;
   content?: string;
@@ -63,117 +59,170 @@ interface ProjectUpdates {
   settings?: Record<string, unknown>;
 }
 
+function mapPgProjectToProjectData(item: any): ProjectData {
+  return {
+    _id: item.id,
+    id: item.id,
+    title: item.title,
+    type: item.type,
+    template: item.template ?? null,
+    description: item.description ?? "",
+    content: item.content ?? "",
+    sections: Array.isArray(item.sections) ? item.sections : [],
+    settings: (item.settings as Record<string, unknown>) ?? {},
+    wordCount: item.wordCount ?? 0,
+    progress: item.progress ?? 0,
+    starred: !!item.starred,
+    lastEditedAt: item.updatedAt ? new Date(item.updatedAt).getTime() : Date.now(),
+    _creationTime: item.createdAt ? new Date(item.createdAt).getTime() : Date.now(),
+  };
+}
+
 export function useProjectsStore() {
-  const user = useSelector((state: AuthState) => state.auth.user);
-  const clerkUserId = user?.id || user?.clerkId || null;
+  const user = useSelector((state: AuthState) => state.auth?.user);
+  const userId = user?.id || user?._id || null;
 
-  const convexProjects = useQuery(
-    api.projects.list,
-    clerkUserId ? {} : "skip"
-  );
-
-  const createConvex = useMutation(api.projects.create);
-  const updateConvex = useMutation(api.projects.update);
-  const removeConvex = useMutation(api.projects.remove);
-
-  const [localProjects, setLocalProjects] = useState<ProjectData[]>([]);
+  const [projects, setProjects] = useState<ProjectData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (!clerkUserId) {
-      setLocalProjects(getLocalProjects() as ProjectData[]);
-      setIsLoading(false);
-    } else if (convexProjects !== undefined) {
-      setIsLoading(false);
-    }
-  }, [clerkUserId, convexProjects]);
-
-  const projects = clerkUserId && convexProjects
-    ? (convexProjects as ProjectData[])
-    : localProjects;
-
-  const createProject = useCallback(async (params: ProjectParams): Promise<ProjectData> => {
-    const defaultSections = getDefaultSections(params.type);
-
-    if (clerkUserId) {
-      const id = await createConvex({
-        title: params.title,
-        type: params.type as "book" | "research" | "assignment",
-        template: params.template || undefined,
-        description: params.description || "",
-        sections: defaultSections as any,
-        settings: params.settings as any,
+  const fetchCloudProjects = useCallback(async (uid: string) => {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/v1/projects", {
+        headers: {
+          "x-user-id": uid,
+        },
       });
-      return {
-        _id: id,
-        title: params.title,
-        type: params.type,
-        template: params.template || null,
-        description: params.description || "",
-        content: "",
-        sections: defaultSections,
-        settings: (params.settings || {}) as Record<string, unknown>,
-        wordCount: 0,
-        progress: 0,
-        lastEditedAt: Date.now(),
-        _creationTime: Date.now(),
-        starred: false,
-      };
-    } else {
-      const project = createLocalProject(params as any);
-      setLocalProjects(getLocalProjects() as ProjectData[]);
-      return project as ProjectData;
-    }
-  }, [clerkUserId, createConvex]);
-
-  const updateProject = useCallback(async (
-    id: string,
-    updates: ProjectUpdates
-  ) => {
-    if (clerkUserId) {
-      const convexId = id as Id<"projects">;
-      try {
-        await updateConvex({
-          id: convexId,
-          ...(updates.title !== undefined && { title: updates.title }),
-          ...(updates.content !== undefined && { content: updates.content }),
-          ...(updates.wordCount !== undefined && { wordCount: updates.wordCount }),
-          ...(updates.progress !== undefined && { progress: updates.progress }),
-          ...(updates.starred !== undefined && { starred: updates.starred }),
-          ...(updates.sections !== undefined && { sections: updates.sections as any }),
-          ...(updates.settings !== undefined && { settings: updates.settings as any }),
-        });
-      } catch (err) {
-        console.error("[useProjectsStore] update failed:", err);
-        throw err;
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (json.success && Array.isArray(json.data)) {
+        const mapped = json.data.map(mapPgProjectToProjectData);
+        setProjects(mapped);
       }
-    } else {
-      updateLocalProject(id, updates);
-      setLocalProjects(getLocalProjects() as ProjectData[]);
+    } catch (err) {
+      console.error("[useProjectsStore] Failed to fetch cloud projects, using local cache:", err);
+      setProjects(getLocalProjects() as ProjectData[]);
+    } finally {
+      setIsLoading(false);
     }
-  }, [clerkUserId, updateConvex]);
+  }, []);
 
-  const deleteProject = useCallback(async (id: string) => {
-    if (clerkUserId) {
-      const convexId = id as Id<"projects">;
-      try {
-        await removeConvex({ id: convexId });
-      } catch (err) {
-        console.error("[useProjectsStore] delete failed:", err);
-        throw err;
-      }
+  useEffect(() => {
+    if (!userId) {
+      setProjects(getLocalProjects() as ProjectData[]);
+      setIsLoading(false);
     } else {
-      deleteLocalProject(id);
-      setLocalProjects(getLocalProjects() as ProjectData[]);
+      fetchCloudProjects(userId);
     }
-  }, [clerkUserId, removeConvex]);
+  }, [userId, fetchCloudProjects]);
+
+  const createProject = useCallback(
+    async (params: ProjectParams): Promise<ProjectData> => {
+      const defaultSections = getDefaultSections(params.type);
+
+      if (userId) {
+        try {
+          const res = await fetch("/api/v1/projects", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-user-id": userId,
+            },
+            body: JSON.stringify({
+              title: params.title,
+              type: params.type,
+              template: params.template || null,
+              description: params.description || "",
+              sections: defaultSections,
+              settings: params.settings || {},
+            }),
+          });
+          if (!res.ok) throw new Error(`Failed to create project: HTTP ${res.status}`);
+          const json = await res.json();
+          if (!json.success || !json.data) throw new Error(json.error || "Failed to create project");
+          const created = mapPgProjectToProjectData(json.data);
+          setProjects((prev) => [created, ...prev]);
+          return created;
+        } catch (err) {
+          console.error("[useProjectsStore] Cloud create failed, fallback to local:", err);
+          const project = createLocalProject(params as any);
+          setProjects(getLocalProjects() as ProjectData[]);
+          return project as ProjectData;
+        }
+      } else {
+        const project = createLocalProject(params as any);
+        setProjects(getLocalProjects() as ProjectData[]);
+        return project as ProjectData;
+      }
+    },
+    [userId]
+  );
+
+  const updateProject = useCallback(
+    async (id: string, updates: ProjectUpdates) => {
+      if (userId) {
+        try {
+          const res = await fetch(`/api/v1/projects/${encodeURIComponent(id)}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              "x-user-id": userId,
+            },
+            body: JSON.stringify(updates),
+          });
+          if (!res.ok) throw new Error(`Failed to update project: HTTP ${res.status}`);
+          const json = await res.json();
+          if (json.success && json.data) {
+            const updatedItem = mapPgProjectToProjectData(json.data);
+            setProjects((prev) =>
+              prev.map((p) => (p._id === id || p.id === id ? updatedItem : p))
+            );
+          }
+        } catch (err) {
+          console.error("[useProjectsStore] Cloud update failed, updating local:", err);
+          updateLocalProject(id, updates);
+          setProjects(getLocalProjects() as ProjectData[]);
+        }
+      } else {
+        updateLocalProject(id, updates);
+        setProjects(getLocalProjects() as ProjectData[]);
+      }
+    },
+    [userId]
+  );
+
+  const deleteProject = useCallback(
+    async (id: string) => {
+      if (userId) {
+        try {
+          const res = await fetch(`/api/v1/projects/${encodeURIComponent(id)}`, {
+            method: "DELETE",
+            headers: {
+              "x-user-id": userId,
+            },
+          });
+          if (!res.ok) throw new Error(`Failed to delete project: HTTP ${res.status}`);
+          setProjects((prev) => prev.filter((p) => p._id !== id && p.id !== id));
+        } catch (err) {
+          console.error("[useProjectsStore] Cloud delete failed, deleting local:", err);
+          deleteLocalProject(id);
+          setProjects(getLocalProjects() as ProjectData[]);
+        }
+      } else {
+        deleteLocalProject(id);
+        setProjects(getLocalProjects() as ProjectData[]);
+      }
+    },
+    [userId]
+  );
 
   return {
     projects,
     isLoading,
-    isAuthenticated: !!clerkUserId,
+    isAuthenticated: !!userId,
     createProject,
     updateProject,
     deleteProject,
+    refreshProjects: () => userId ? fetchCloudProjects(userId) : setProjects(getLocalProjects() as ProjectData[]),
   };
 }

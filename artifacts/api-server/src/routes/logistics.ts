@@ -1,5 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { ParcelBookingRequestSchema } from "@workspace/hermes/contracts";
+import { steadfastClient } from "../lib/logistics/steadfast-client";
+import { pathaoClient } from "../lib/logistics/pathao-client";
 
 const router = Router();
 
@@ -47,11 +49,45 @@ router.post("/v1/logistics/steadfast/book", async (req: Request, res: Response) 
     }
 
     const { provider, order, autoSendWhatsAppConfirmation } = parseResult.data;
-    const trackingCode = `BD_${provider.toUpperCase()}_${Math.floor(100000 + Math.random() * 900000)}`;
-    const consignmentId = `CN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const isInsideDhaka = order.city.toLowerCase().includes("dhaka");
     const deliveryFeeBdt = isInsideDhaka ? 60 : 120;
     const codFeeBdt = Math.round(order.codAmountBdt * 0.01); // 1% COD fee
+
+    let trackingCode = `BD_${provider.toUpperCase()}_${Math.floor(100000 + Math.random() * 900000)}`;
+    let consignmentId = `CN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+
+    if (provider === "steadfast") {
+      const sfResult = await steadfastClient.createOrder({
+        invoice: `INV_${Date.now()}`,
+        recipientName: order.customerName,
+        recipientPhone: order.customerPhone,
+        recipientAddress: `${order.deliveryAddress}, ${order.city}`,
+        codAmount: order.codAmountBdt,
+        note: "Nilkhet Print-on-Demand Book Order",
+      });
+      if (sfResult.consignment) {
+        trackingCode = sfResult.consignment.tracking_code;
+        consignmentId = String(sfResult.consignment.consignment_id);
+      }
+    } else if (provider === "pathao") {
+      const pthResult = await pathaoClient.createOrder({
+        storeId: 1,
+        merchantOrderId: `ORD_${Date.now()}`,
+        recipientName: order.customerName,
+        recipientPhone: order.customerPhone,
+        recipientAddress: order.deliveryAddress,
+        recipientCity: 1, // Dhaka
+        recipientZone: 1,
+        amountToCollect: order.codAmountBdt,
+        itemQuantity: 1,
+        itemWeight: 0.5,
+        itemDescription: "Shothik AI Book Manuscript",
+      });
+      if (pthResult.data) {
+        trackingCode = pthResult.data.merchant_order_id;
+        consignmentId = pthResult.data.consignment_id;
+      }
+    }
 
     const parcelRecord = {
       consignmentId,
@@ -67,7 +103,7 @@ router.post("/v1/logistics/steadfast/book", async (req: Request, res: Response) 
       status: "BOOKED",
       statusBangla: "বুকিং সম্পন্ন",
       timeline: [
-        { status: "BOOKED", time: new Date().toISOString(), note: "Parcel booked via Steadfast API" },
+        { status: "BOOKED", time: new Date().toISOString(), note: `Parcel booked via ${provider.toUpperCase()} API` },
       ],
       whatsappNotificationSent: autoSendWhatsAppConfirmation,
     };

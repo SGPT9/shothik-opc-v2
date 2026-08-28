@@ -65,24 +65,46 @@ export function DshExecutionDrawer({
 
     const fetchData = async () => {
       try {
-        // 1. Fetch DSH Session Replay
-        const traceRes = await fetch(`/api/v1/dsh/sessions/${sessionId}/replay`);
-        if (traceRes.ok) {
-          const json = await traceRes.json();
-          if (isMounted && json.replay?.timeline) {
-            setTimeline(json.replay.timeline);
+        // 1. Fetch DSH Session Replay or SQLite Agent Traces
+        let loaded = false;
+        try {
+          const traceRes = await fetch(`/api/v1/dsh/sessions/${sessionId}/replay`);
+          if (traceRes.ok) {
+            const json = await traceRes.json();
+            if (isMounted && json.replay?.timeline && json.replay.timeline.length > 0) {
+              setTimeline(json.replay.timeline);
+              loaded = true;
+            }
           }
-        } else {
-          // Fallback mock timeline
-          if (isMounted) {
-            setTimeline([
-              { step: 0, type: "session_init", timeDeltaMs: 0, summary: "Session initialized with DeepSeek Shell" },
-              { step: 1, type: "model_call", timeDeltaMs: 140, summary: "Model invoked: deepseek-r1 (TTFT: 78ms)" },
-              { step: 2, type: "thought_block", timeDeltaMs: 320, summary: "Agent reasoning: Recalled Steadfast & bKash preferences" },
-              { step: 3, type: "tool_call", timeDeltaMs: 580, summary: "Tool [mfs-verify] checked bKash transaction status" },
-              { step: 4, type: "session_done", timeDeltaMs: 910, summary: "Execution verified and response streamed" },
-            ]);
-          }
+        } catch {}
+
+        if (!loaded) {
+          try {
+            const sqliteRes = await fetch(`/api/v1/agent/traces/${sessionId}`);
+            if (sqliteRes.ok) {
+              const sqliteJson = await sqliteRes.json();
+              if (isMounted && sqliteJson.traces && sqliteJson.traces.length > 0) {
+                const adapted = sqliteJson.traces.map((t: any, idx: number) => ({
+                  step: idx,
+                  type: t.status === "completed" ? "tool_call" : "model_call",
+                  timeDeltaMs: t.durationMs || (idx * 120),
+                  summary: `[${t.agentName || "Agent"}] ${t.prompt?.slice(0, 80) || "Action"} (${t.status || "done"})`,
+                }));
+                setTimeline(adapted);
+                loaded = true;
+              }
+            }
+          } catch {}
+        }
+
+        if (!loaded && isMounted) {
+          setTimeline([
+            { step: 0, type: "session_init", timeDeltaMs: 0, summary: "Session initialized with DeepSeek Shell" },
+            { step: 1, type: "model_call", timeDeltaMs: 140, summary: "Model invoked: deepseek-r1 (TTFT: 78ms)" },
+            { step: 2, type: "thought_block", timeDeltaMs: 320, summary: "Agent reasoning: Recalled Steadfast & bKash preferences" },
+            { step: 3, type: "tool_call", timeDeltaMs: 580, summary: "Tool [mfs-verify] checked bKash transaction status" },
+            { step: 4, type: "session_done", timeDeltaMs: 910, summary: "Execution verified and response streamed" },
+          ]);
         }
 
         // 2. Fetch Memori Profile

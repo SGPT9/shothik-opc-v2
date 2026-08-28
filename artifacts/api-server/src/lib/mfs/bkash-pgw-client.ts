@@ -106,11 +106,11 @@ export class BkashPgwClient {
       if (data.id_token) {
         this.idToken = data.id_token;
         this.tokenExpiresAt = Date.now() + (parseInt(data.expires_in, 10) || 3600) * 1000;
-        return this.idToken;
+        return this.idToken as string;
       }
       throw new Error(`bKash token grant failed: ${data.statusMessage || "Unknown"}`);
     } catch (err: any) {
-      logger.error("[bkash-pgw] Grant token error", { error: err.message });
+      logger.error({ error: err.message }, "[bkash-pgw] Grant token error");
       // Fallback for offline testing
       this.idToken = "mock_bkash_fallback_token";
       return this.idToken;

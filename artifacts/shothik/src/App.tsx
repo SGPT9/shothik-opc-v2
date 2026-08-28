@@ -350,6 +350,7 @@ function AppRoutes() {
         
         <Route path="/files" component={FilesPageWithLayout} />
         <Route path="/connectors" component={ConnectorsPageWithLayout} />
+        <Route path="/connector" component={ConnectorsPageWithLayout} />
         <Route path="/saved-reports" component={SavedReportsPageWithLayout} />
         <Route path="/deep-research" component={DeepResearchPageWithLayout} />
         <Route path="/settings" component={SettingsWorkspacePageWithLayout} />

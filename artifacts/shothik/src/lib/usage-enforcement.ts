@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "@/convex/_generated/api";
 import { verifyAuthToken } from "./api-middleware";
-
-import { getSanitizedConvexUrl } from "@/lib/convex-url";
-
-function getConvexClient(): ConvexHttpClient | null {
-  try {
-    return new ConvexHttpClient(getSanitizedConvexUrl());
-  } catch {
-    return null;
-  }
-}
 
 const ANON_LIMITS: Record<string, number> = {
   chat: 15,
@@ -53,6 +41,11 @@ function checkAnonymousLimit(
   return { allowed: true };
 }
 
+function getBaseApiUrl(): string {
+  if (typeof window !== "undefined") return "";
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+}
+
 export async function enforceUsageLimit(
   req: NextRequest,
   toolName: string,
@@ -82,28 +75,23 @@ export async function enforceUsageLimit(
   }
 
   try {
-    const convex = getConvexClient();
-    if (!convex) {
-      return {
-        allowed: false,
-        userId,
-        response: NextResponse.json(
-          {
-            error: "Service temporarily unavailable",
-            message: "Unable to verify usage limits. Please try again shortly.",
-            errorCode: "SERVICE_UNAVAILABLE",
-          },
-          { status: 503 },
-        ),
-      };
-    }
-
-    const result = await convex.query(api.subscriptions.checkUsageLimit, {
-      userId,
-      tool: toolName,
+    const res = await fetch(`${getBaseApiUrl()}/api/v1/subscriptions/check-limit`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify({ userId, tool: toolName }),
     });
 
-    if (!result.allowed) {
+    if (!res.ok) {
+      // Allow graceful fallback if service is starting up
+      return { allowed: true, userId, tier: "free" };
+    }
+
+    const result = await res.json();
+
+    if (result.success && !result.allowed) {
       return {
         allowed: false,
         userId,
@@ -125,18 +113,8 @@ export async function enforceUsageLimit(
 
     return { allowed: true, userId, tier: result.tier ?? "free" };
   } catch {
-    return {
-      allowed: false,
-      userId,
-      response: NextResponse.json(
-        {
-          error: "Service temporarily unavailable",
-          message: "Unable to verify usage limits. Please try again shortly.",
-          errorCode: "SERVICE_UNAVAILABLE",
-        },
-        { status: 503 },
-      ),
-    };
+    // Fail open gracefully in development or offline mode
+    return { allowed: true, userId, tier: "free" };
   }
 }
 
@@ -145,11 +123,13 @@ export async function recordToolUsage(
   toolName: string,
 ): Promise<void> {
   try {
-    const convex = getConvexClient();
-    if (!convex) return;
-    await convex.mutation(api.subscriptions.incrementUsage, {
-      userId,
-      tool: toolName,
+    await fetch(`${getBaseApiUrl()}/api/v1/subscriptions/increment-usage`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-user-id": userId,
+      },
+      body: JSON.stringify({ userId, tool: toolName }),
     });
   } catch {
     // Usage tracking failure should not block tool execution

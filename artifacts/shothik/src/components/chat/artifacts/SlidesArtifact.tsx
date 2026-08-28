@@ -522,6 +522,106 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
     URL.revokeObjectURL(url);
   };
 
+  const handleExportMarp = () => {
+    const marpHeader = `---
+marp: true
+theme: uncover
+class: invert
+paginate: true
+header: '${topicTitle} — Shothik Studio'
+footer: 'CONFIDENTIAL & PROPRIETARY'
+---
+`;
+    const marpSlides = slideList
+      .map(
+        (s, i) =>
+          `<!-- _class: lead -->\n` +
+          `# ${s.title}\n` +
+          `### ${s.subtitle}\n\n` +
+          (s.bullets || []).map((b) => `- ${b}`).join("\n") +
+          `\n\n<!--\nSpeaker Notes:\n${s.speakerNotes}\n-->`
+      )
+      .join("\n\n---\n\n");
+
+    const fullMarp = marpHeader + marpSlides;
+    const blob = new Blob([fullMarp], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${topicTitle.toLowerCase().replace(/[^a-z0-9]/g, "-")}.marp.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportPPTX = async () => {
+    try {
+      const PptxGenJS = (await import("pptxgenjs")).default;
+      const pptx = new PptxGenJS();
+      pptx.layout = "LAYOUT_16x9";
+      pptx.title = topicTitle;
+
+      slideList.forEach((s) => {
+        const slide = pptx.addSlide();
+        slide.background = { color: "090D16" };
+
+        slide.addText((s.tag || "SLIDE").toUpperCase(), {
+          x: 0.8,
+          y: 0.6,
+          fontSize: 10,
+          color: "818CF8",
+          bold: true,
+          fontFace: "Arial",
+        });
+
+        slide.addText(s.title, {
+          x: 0.8,
+          y: 1.1,
+          w: 8.4,
+          fontSize: 22,
+          color: "FFFFFF",
+          bold: true,
+          fontFace: "Arial",
+        });
+
+        if (s.subtitle) {
+          slide.addText(s.subtitle, {
+            x: 0.8,
+            y: 1.8,
+            w: 8.4,
+            fontSize: 13,
+            color: "94A3B8",
+            fontFace: "Arial",
+          });
+        }
+
+        if (s.bullets && s.bullets.length > 0) {
+          const bulletList = s.bullets.map((b) => ({
+            text: b,
+            options: { bullet: true, color: "CBD5E1", fontSize: 13, breakLine: true },
+          }));
+          slide.addText(bulletList, {
+            x: 0.8,
+            y: 2.6,
+            w: 8.4,
+            h: 3.0,
+            fontFace: "Arial",
+          });
+        }
+
+        if (s.speakerNotes) {
+          slide.addNotes(s.speakerNotes);
+        }
+      });
+
+      await pptx.writeFile({
+        fileName: `${topicTitle.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pptx`,
+      });
+    } catch (err) {
+      console.error("PPTX export fallback:", err);
+      handleExportHTML();
+    }
+  };
+
   const handleCopyMarkdown = () => {
     const md = slideList
       .map(
@@ -648,7 +748,7 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
             <span>Present</span>
           </button>
 
-          {/* Quick Actions (Add Slide, Fullscreen, Download) */}
+          {/* Quick Actions (Add Slide, Fullscreen, PPTX, Marp, Download) */}
           <button
             type="button"
             onClick={handleAddSlide}
@@ -656,6 +756,25 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
             title="Add a new slide"
           >
             <span>+ Slide</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportPPTX}
+            className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[11px] font-bold transition cursor-pointer"
+            title="Export native 16:9 PowerPoint Presentation (.pptx)"
+          >
+            <Download className="h-3 w-3" />
+            <span>PPTX</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleExportMarp}
+            className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg border border-purple-500/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-[11px] font-bold transition cursor-pointer"
+            title="Export Marp Markdown Slide Deck (.marp.md)"
+          >
+            <span>Marp</span>
           </button>
 
           <button

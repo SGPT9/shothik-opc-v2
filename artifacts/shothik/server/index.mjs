@@ -26,67 +26,74 @@ app.get('/health', (req, res) => {
   })
 })
 
-// DeepSeek V4 / V4 Pro Streaming Chat Proxy
-app.post('/api/chat', async (req, res) => {
-  const { messages, model = 'deepseek-chat', stream = true, temperature = 0.7 } = req.body
-  const apiKey = process.env.DEEPSEEK_API_KEY || process.env.OPENROUTER_API_KEY
+const API_SERVER_URL = process.env.API_SERVER_URL || 'http://api-server:4000'
 
-  if (!apiKey) {
-    return res.status(500).json({ error: 'DEEPSEEK_API_KEY or OPENROUTER_API_KEY is not configured on server.' })
-  }
-
-  const endpoint = process.env.DEEPSEEK_API_URL || 'https://api.deepseek.com/v1/chat/completions'
-
+// Proxy all /api requests to the API Server Gateway
+app.use('/api', async (req, res) => {
   try {
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: model.includes('deepseek') ? model : 'deepseek-chat',
-        messages,
-        temperature,
-        stream
-      })
-    })
+    const targetUrl = `${API_SERVER_URL}/api${req.url}`
+    const headers = { ...req.headers }
+    delete headers.host
 
-    if (!response.ok) {
-      const errText = await response.text()
-      return res.status(response.status).json({ error: errText })
+    const fetchOptions = {
+      method: req.method,
+      headers,
     }
 
-    if (stream) {
-      res.setHeader('Content-Type', 'text/event-stream')
-      res.setHeader('Cache-Control', 'no-cache')
-      res.setHeader('Connection', 'keep-alive')
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method) && req.body && Object.keys(req.body).length > 0) {
+      fetchOptions.body = JSON.stringify(req.body)
+      fetchOptions.headers['content-type'] = 'application/json'
+    }
 
+    const response = await fetch(targetUrl, fetchOptions)
+
+    res.status(response.status)
+    response.headers.forEach((val, key) => {
+      res.setHeader(key, val)
+    })
+
+    if (response.body) {
       const reader = response.body.getReader()
-      const decoder = new TextDecoder('utf-8')
-
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
-        res.write(decoder.decode(value, { stream: true }))
+        res.write(value)
       }
       res.end()
     } else {
-      const data = await response.json()
-      res.json(data)
+      res.end()
     }
   } catch (error) {
-    console.error('Error proxying to DeepSeek API:', error)
-    res.status(500).json({ error: error.message })
+    console.error(`[API Proxy Error] Failed to proxy to ${targetUrl || API_SERVER_URL}:`, error?.message)
+    res.status(502).json({
+      success: false,
+      error: 'Bad Gateway: API Server unreachable',
+      details: error?.message,
+    })
   }
 })
 
+import fs from 'fs'
+
 // Serve static Vite frontend in production
-const distPath = path.join(__dirname, '..', 'dist')
+const possibleDistPaths = [
+  path.join(__dirname, '..', 'dist', 'public'),
+  path.join(__dirname, '..', 'dist'),
+  path.join(__dirname, 'dist', 'public'),
+  path.join(__dirname, 'dist'),
+]
+const distPath = possibleDistPaths.find((p) => fs.existsSync(path.join(p, 'index.html'))) || path.join(__dirname, '..', 'dist')
+
+console.log(`📁 Serving static frontend assets from: ${distPath}`)
 app.use(express.static(distPath))
 
 app.use((req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'))
+  const indexPath = path.join(distPath, 'index.html')
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath)
+  } else {
+    res.status(404).send('Frontend bundle index.html not found. Please verify build output.')
+  }
 })
 
 app.listen(PORT, '0.0.0.0', () => {

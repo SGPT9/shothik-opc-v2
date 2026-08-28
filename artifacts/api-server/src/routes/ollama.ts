@@ -4,8 +4,8 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-// GET /api/ollama/status
-router.get("/ollama/status", async (_req: Request, res: Response) => {
+// GET /api/ollama/status or /api/v1/ollama/status
+router.get(["/ollama/status", "/v1/ollama/status"], async (_req: Request, res: Response) => {
   try {
     const status = await OllamaService.checkStatus();
     res.json(status);
@@ -15,8 +15,8 @@ router.get("/ollama/status", async (_req: Request, res: Response) => {
   }
 });
 
-// GET /api/ollama/models
-router.get("/ollama/models", async (_req: Request, res: Response) => {
+// GET /api/ollama/models or /api/v1/ollama/models
+router.get(["/ollama/models", "/v1/ollama/models"], async (_req: Request, res: Response) => {
   try {
     const status = await OllamaService.checkStatus();
     res.json({ models: status.models, activeModel: status.activeModel, mode: status.mode });
@@ -25,8 +25,8 @@ router.get("/ollama/models", async (_req: Request, res: Response) => {
   }
 });
 
-// POST /api/ollama/chat
-router.post("/ollama/chat", async (req: Request, res: Response) => {
+// POST /api/ollama/chat or /api/v1/ollama/chat
+router.post(["/ollama/chat", "/v1/ollama/chat"], async (req: Request, res: Response) => {
   const { messages, model, temperature, stream = true } = req.body;
 
   if (!messages || !Array.isArray(messages)) {

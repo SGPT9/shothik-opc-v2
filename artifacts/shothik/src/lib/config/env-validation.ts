@@ -6,22 +6,21 @@ import { z } from 'zod';
  */
 
 const envSchema = z.object({
-  // Convex
-  CONVEX_DEPLOYMENT: z.string().min(1),
-  CONVEX_URL: z.string().url(),
-  
-  // Clerk Auth
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().startsWith('pk_'),
-  CLERK_SECRET_KEY: z.string().startsWith('sk_'),
+  // Database — PostgreSQL + SQLite
+  DATABASE_URL: z.string().optional(),
+  CONVEX_DEPLOYMENT: z.string().optional(),
+  CONVEX_URL: z.string().optional(),
   
   // LLM - At least one required
   KIMI_API_KEY: z.string().optional(),
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  GEMINI_API_KEY: z.string().optional(),
   
-  // Stripe
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().startsWith('pk_'),
-  STRIPE_SECRET_KEY: z.string().startsWith('sk_'),
+  // Stripe (optional — not all environments use Stripe)
+  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+  STRIPE_SECRET_KEY: z.string().optional(),
   
   // Optional
   NEXT_PUBLIC_MCP_SERVER_URL: z.string().url().default('http://localhost:3001'),
@@ -64,8 +63,8 @@ export function validateEnv() {
   }
   
   // Check at least one LLM provider is configured
-  if (!process.env.KIMI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY) {
-    throw new Error('At least one LLM provider (KIMI, OPENAI, or ANTHROPIC) must be configured');
+  if (!process.env.KIMI_API_KEY && !process.env.OPENAI_API_KEY && !process.env.ANTHROPIC_API_KEY && !process.env.OPENROUTER_API_KEY && !process.env.GEMINI_API_KEY) {
+    throw new Error('At least one LLM provider (KIMI, OPENAI, ANTHROPIC, OPENROUTER, or GEMINI) must be configured');
   }
   
   console.log('✅ Environment variables validated');

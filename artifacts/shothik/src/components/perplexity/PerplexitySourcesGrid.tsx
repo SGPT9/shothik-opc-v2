@@ -38,7 +38,7 @@ export const DEFAULT_MOCK_SOURCES: PerplexitySource[] = [
 ];
 
 export const PerplexitySourcesGrid: React.FC<PerplexitySourcesGridProps> = ({
-  sources = DEFAULT_MOCK_SOURCES,
+  sources,
 }) => {
   if (!sources || sources.length === 0) return null;
 

@@ -1,654 +1,158 @@
-# Shothik AI — Frontend Monorepo
+# Shothik AI — Full-Stack Production Monorepo
 
-A **pnpm workspace monorepo** containing the Vite + React frontend, Express API gateway, and supporting tooling for [Shothik AI](https://app.shothikgpt.com) — an AI-powered writing and productivity platform.
+[![Architecture: PostgreSQL + SQLite](https://img.shields.io/badge/Architecture-PostgreSQL%20%2B%20SQLite-0284c7.svg)](#architecture)
+[![Auth: Better Auth](https://img.shields.io/badge/Auth-Better%20Auth-10b981.svg)](#authentication)
+[![Monetization: bKash & Nagad](https://img.shields.io/badge/MFS-bKash%20%26%20Nagad-e11d48.svg)](#monetization--mfs-payments)
+[![Logistics: Steadfast & Pathao](https://img.shields.io/badge/Logistics-Steadfast%20%26%20Pathao-f59e0b.svg)](#physical-book-courier-dispatch)
+[![Local NLP: 4-Tier Gateway](https://img.shields.io/badge/Inference-Zero--Cost%20Local%20NLP-8b5cf6.svg)](#zero-cost-local-nlp--inference)
+
+A production-grade **pnpm workspace monorepo** powering [Shothik AI](https://app.shothikgpt.com) — an advanced Bengali & multilingual writing studio, autonomous multi-agent swarm platform, and publishing engine.
 
 ---
 
-## Monorepo layout
+## 🏛️ Monorepo Architecture
 
 ```
 /
 ├── artifacts/
-│   ├── shothik/          # Main web frontend (React + Vite)
-│   ├── api-server/       # Express API gateway (proxies /api → shothik.work)
-│   └── mockup-sandbox/   # Design canvas / component preview server
-├── packages/
-│   └── db/               # Shared Convex schema & generated types
-├── deploy/               # Docker Compose files for VPS / local deployment
-├── scripts/              # Post-merge and utility scripts
+│   ├── shothik/          # Vite + React Web Frontend (Amar Ekushey Studio, Chat, Swarm)
+│   └── api-server/       # Express Backend API Gateway (Port 3001 / 4000)
+├── lib/
+│   ├── db/               # PostgreSQL & SQLite Drizzle ORM Schemas and Migrations
+│   └── hermes/           # Shared Zod Contracts, Types & Core Utilities
+├── data/                 # Embedded SQLite LibSQL Database (shothik_local.db)
+├── scripts/              # Verification, Build & Deployment Automation
+├── docker-compose.prod.yml
+├── wrangler.toml         # Cloudflare Workers Edge SPA Routing
 └── pnpm-workspace.yaml
 ```
 
-### `artifacts/shothik` — Web frontend
-
-React 18 + Vite SPA, ported from Next.js. Key libraries:
-
-| Area | Library |
-|---|---|
-| Routing | [wouter](https://github.com/molefrog/wouter) + shims at `src/lib/navigation` |
-| State | Redux Toolkit + TanStack Query |
-| Real-time | [Convex](https://convex.dev) (`VITE_CONVEX_URL`) |
-| Auth | [InsForge](https://insforge.app) browser SDK (`VITE_INSFORGE_URL`, `VITE_INSFORGE_ANON_KEY`) |
-| Styling | Tailwind CSS v4 + shadcn/ui |
-| i18n | Custom hook at `src/i18n` — English + Bengali |
-
-### `artifacts/api-server` — API gateway
-
-Express server mounted at `/api`. Proxies chat, twin, and tool endpoints to the main Hermes backend at `CHAT_API_ORIGIN` (default `https://www.shothikgpt.com`). Owns Convex JWT signing and the Tonight Engine (agent swarm) routes.
-
 ---
 
-## Running locally (Replit)
+## 🗄️ 2-Tier Consolidated Database Architecture
 
-Workflows are managed by the Replit platform:
+Shothik operates on an ultra-fast, cost-effective 2-tier database architecture completely free of third-party vendor lock-in (0% Convex / 0% Clerk):
 
 ```
-artifacts/shothik: web       →  pnpm --filter @workspace/shothik run dev
-artifacts/api-server: ...    →  pnpm --filter @workspace/api-server run dev
+┌────────────────────────────────────────────────────────────────────────┐
+│                              Shothik Web                               │
+└──────────────────┬──────────────────────────────────┬──────────────────┘
+                   │                                  │
+                   ▼                                  ▼
+     ┌───────────────────────────┐      ┌───────────────────────────┐
+     │   SQLite (Local / LibSQL) │      │  PostgreSQL (InsForge DB) │
+     │  - Local KV Cache         │      │  - Better Auth & Users    │
+     │  - DSH Execution Traces   │      │  - Projects & Autosaves   │
+     │  - Guest Offline Buffer   │      │  - Subscriptions & Quotas │
+     │  - Zero-latency WAL mode  │      │  - Twin & SecondMe Memory │
+     └───────────────────────────┘      │  - 18 RLS Protected Tables│
+                                        └───────────────────────────┘
 ```
 
-### Required environment variables
+1. **PostgreSQL (InsForge Cloud Database)**:
+   - Tables: `projects`, `writing_autosave`, `user_subscriptions`, `tool_usage`, `llm_usage`, `key_custody`, `writing_profiles`, `twins`, `twin_tasks`, `twin_activity_log`, `twin_pending_approvals`.
+   - Connected via Drizzle ORM with automatic `.env.local` fallback parsing.
+   - Superuser Row-Level Security (RLS) policies configured in `fix_insforge_rls.mjs`.
 
-| Variable | Description |
-|---|---|
-| `VITE_CONVEX_URL` | Convex deployment URL (`https://<name>.convex.cloud`) |
-| `VITE_INSFORGE_URL` | InsForge project base URL |
-| `VITE_INSFORGE_ANON_KEY` | InsForge browser-safe anonymous key |
-| `CHAT_API_ORIGIN` | Hermes backend origin (default `https://www.shothikgpt.com`) |
-| `GEMINI_API_KEY` | Google Gemini API key (used by api-server) |
-| `SESSION_SECRET` | Express session secret |
-| `CONVEX_DEPLOY_KEY` | Convex deploy key for schema pushes |
-
-> **Never commit actual values.** Set them as Replit Secrets or in a local `.env` (already gitignored).
+2. **SQLite (Embedded LibSQL Edge Database)**:
+   - Path: `data/shothik_local.db`
+   - Tables: `agentTracesTable`, `localCacheTable`.
+   - Purpose: Millisecond-level agent trace replay, DSH telemetry, and local caching.
 
 ---
 
-## Docker deployment
+## 🚀 Key Platform Features
 
-See [`deploy/README.md`](./deploy/README.md) for Docker Compose instructions for the VPS at `app.shothikgpt.com` and the Hermes engine.
+### 1. ✍️ Amar Ekushey Writing Studio
+- **Nilkhet 6×9 Format**: Standard layout for Bengali novels, poetry, and academic books.
+- **Real-Time Autosave**: Debounced snapshotting to PostgreSQL `writing_autosave` (`/api/v1/writing/autosave`).
+- **1-Click Manuscript Packaging**: Client-side JSON & print-ready packaging.
+
+### 2. 🎨 AI Book Cover Generator (300 DPI Vector)
+- **Styles**: Amar Ekushey, Sci-Fi, Thriller, Academic, and Poetry themes.
+- **Typography**: Native `SolaimanLipi` Bangla font rendering with ornamental borders.
+- **Export**: Instant 300 DPI print-ready SVG downloads for Nilkhet offset presses and Amazon KDP.
+
+### 3. 🚚 Steadfast & Pathao Physical Courier Dispatch
+- **Ordering Modal**: Select 5, 20, 50, or 100 printed book copies.
+- **Automated Pricing**: Dynamic Dhaka Metro (৳60) vs. Inter-city (৳120) fee calculations and Cash on Delivery (COD).
+- **Backend Booking**: Direct API dispatch via `POST /api/v1/logistics/steadfast/book` generating tracking codes (`BD_STEADFAST_...`) and automated WhatsApp customer delivery alerts.
+
+### 4. 🤖 Multi-Agent Swarm Deliberation & DSH
+- **4-Agent Graph Debate**: Deliberation between Strategist, Fact Checker, Creative Writer, and Ethics Guard with citation grounding (`/api/v1/swarm/deliberate`).
+- **DSH Execution Drawer**: Replay agent thoughts, tool invocations, and time-to-first-token (TTFT) metrics directly from SQLite traces.
+
+### 5. 💳 bKash & Nagad MFS Monetization
+- **Direct TrxID Verification**: Input 10-digit bKash/Nagad Transaction IDs to instantly upgrade subscriptions and add platform credits (`/api/v1/mfs/verify-trx`).
+
+### 6. ⚡ 4-Tier Zero-Cost Local NLP Routing
+1. **FreeToken / Colibri C Daemon** (<35MB RAM edge execution)
+2. **Local Ollama / Ornith-9B** (Local Small Language Models)
+3. **Cloud Models** (Gemini 2.5 Flash / Claude / DeepSeek)
+4. **Offline Synthetic Fallback** (Zero downtime resilience)
 
 ---
 
-## Key design decisions
+## 🛠️ Local Development Setup
 
-<<<<<<< HEAD
-- Convex
-- Redux Toolkit
-- TanStack Query
+### 1. Prerequisites
+- **Node.js**: `v20+` or `v22+`
+- **pnpm**: `v9+` or `v10+`
+- **PostgreSQL**: Local PostgreSQL or InsForge Cloud URL
 
-### UI
-
-- Tailwind CSS `4.x`
-- Radix UI
-- TipTap
-- Framer Motion
-
-### Tooling
-
-- Vitest
-- Playwright
-- ESLint
-- Prettier
-- pnpm `10.x`
-
-### External Integrations
-
-- Stripe
-- Razorpay
-- bKash
-- Upstash Redis / Redis
-- PostHog
-- MCP / LiteParse / document parsing integrations
-
-## Local Development Setup
-
-### Prerequisites
-
-- Node.js `20.x` LTS
-- pnpm `10.x`
-- Docker Desktop or compatible container runtime
-- Access to required external services for full integration testing:
-  - Convex deployment
-  - payment provider sandbox credentials
-  - Redis / Upstash
-  - external microservice endpoints
-
-### Install
-
+### 2. Installation
 ```bash
 pnpm install
 ```
 
-### Configure Environment
+### 3. Environment Configuration
+Create a `.env.local` file in the root:
+```env
+DATABASE_URL="postgresql://postgres:password@ers8j28a.ap-southeast.database.insforge.app:5432/insforge?sslmode=require"
+BETTER_AUTH_SECRET="your-better-auth-secret-key-32-chars"
+OLLAMA_HOST="http://127.0.0.1:11434"
+PORT=3001
+VITE_API_URL="http://localhost:3001"
+```
 
+### 4. Run Development Servers
 ```bash
-cp .env.example .env.local
+# Start API Gateway (Port 3001)
+pnpm --filter @workspace/api-server run dev
+
+# Start Frontend (Port 5173 / 3000)
+pnpm --filter @workspace/shothik run dev
 ```
 
-At minimum for most local flows, set:
+---
 
-- `NEXT_PUBLIC_CONVEX_URL`
-- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`
-- `CLERK_SECRET_KEY`
-- `STRIPE_SECRET_KEY` if testing payment routes
-- backend service URLs if calling local service containers
+## 🚢 Production Deployment
 
-### Run The App
-
+### Option A: Docker Compose (All-in-One)
 ```bash
-pnpm dev
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-### Repo-Scoped Validation
-
+### Option B: Cloudflare Edge (Frontend SPA) + VPS (API Server)
 ```bash
-pnpm type-check
-pnpm test
-NEXT_PUBLIC_CONVEX_URL=https://placeholder.convex.cloud STRIPE_SECRET_KEY=sk_test_placeholder pnpm build
+# Build frontend and deploy to Cloudflare Workers KV
+pnpm run build:web
+pnpm deploy:cloudflare
 ```
 
-Use placeholder secrets only for build validation when routes instantiate SDKs at module scope. Real runtime usage requires valid secrets.
+---
 
-## Production Deployment
+## 🔒 Security & Database Migration Tools
 
-### Supported Deployment Modes
+- **Verify Database & Schemas**:
+  ```bash
+  npx tsx artifacts/api-server/src/test-db-and-schemas.ts
+  ```
+- **Apply PostgreSQL RLS Security**:
+  ```bash
+  node fix_insforge_rls.mjs
+  ```
 
-- containerized deployment on ECS, Cloud Run, Azure Container Apps, Kubernetes, or similar
-- managed Node-compatible platform deployment with environment injection
+---
 
-### Production Build Procedure
-
-```bash
-pnpm install --frozen-lockfile
-pnpm type-check
-pnpm test
-pnpm build
-```
-
-### Container Build
-
-```bash
-docker build -t shothik-web .
-docker run --rm -p 3000:3000 --env-file .env.production shothik-web
-```
-
-### Deployment Checklist
-
-- verify production environment variables are present
-- confirm Convex deployment URL and deploy key alignment
-- confirm payment webhooks and callback URLs match production domain
-- confirm Redis or Upstash access works from the runtime network
-- verify health endpoints before shifting traffic
-- verify monitoring and alerting targets are active
-
-### Environment-Specific Guidance
-
-**Development**
-- local `.env.local`
-- optional local service URLs
-- debugging and test tooling enabled
-
-**Staging**
-- sandbox payment providers
-- production-like Convex and Redis
-- smoke tests and UAT required before promotion
-
-**Production**
-- secrets from a managed secret store
-- no local fallback credentials
-- strict alerting on health, latency, and payment failures
-
-## Cloud Infrastructure Requirements
-
-### Minimum Runtime Requirements
-
-- Linux container runtime
-- Node.js `20.x`
-- outbound network access to:
-  - Convex
-  - payment providers
-  - microservice APIs
-  - analytics / monitoring backends
-
-### Recommended Managed Services
-
-- **CDN / Edge**: Vercel, CloudFront, or equivalent
-- **Secrets**: AWS Secrets Manager, GCP Secret Manager, Azure Key Vault, Doppler, or Vault
-- **Cache / Rate limiting**: Upstash Redis or managed Redis
-- **Observability**: PostHog, centralized logs, uptime checks, metrics dashboard
-
-### Networking Requirements
-
-- HTTPS termination
-- egress allow-list for third-party providers where possible
-- webhook ingress routes for Stripe / bKash / PublishDrive and similar integrations
-
-### Persistence / External State
-
-- Convex remains the main active data contract for the web app
-- Redis / Upstash used for caching, rate limiting, and idempotency
-- payment providers maintain their own transactional state
-
-## API Documentation
-
-### API Surface
-
-This repo serves API handlers from `app/api/**`.
-
-OpenAPI / Swagger entry points:
-
-- `/api-docs`
-- `/api/docs/swagger.json`
-
-### Authentication Modes
-
-The route layer currently uses several auth patterns:
-
-- **Bearer token** from `Authorization` header
-- **Clerk-backed user auth**
-- **Agent API keys** beginning with `shothik_agent_`
-- **Webhook signature validation** for payment or external callbacks
-- **Admin key** for selected metrics endpoints
-
-Reference auth helpers:
-
-- [auth.ts](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/lib/auth.ts)
-- [agent-auth.ts](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/lib/agent-auth.ts)
-
-### Route Groups
-
-| Group | Example Endpoints | Auth | Purpose |
-| --- | --- | --- | --- |
-| Health | `/api/health`, `/api/health-check` | public / admin-key for metrics | liveness, dependency checks, runtime metrics |
-| Tool APIs | `/api/tools/paraphrase`, `/api/tools/plagiarism/analyze`, `/api/tools/translator` | bearer or app auth depending on tool | core AI tooling |
-| Publishing | `/api/publish/submit`, `/api/publish/status`, `/api/books/export/validate` | bearer / agent key | manuscript processing and publishing workflows |
-| Payments | `/api/stripe/*`, `/api/razorpay/*`, `/api/bkash/*` | provider auth + app auth | checkout, payout, webhooks |
-| Twin / Agent | `/api/twin/*` | bearer / agent key | skills, tasks, identity, activity |
-| Research / Sheet | `/api/research/chat/*`, `/api/sheet/*` | bearer | workflow history and session APIs |
-| Docs / Metadata | `/api/docs/swagger.json`, `/api/templates`, `/api/geolocation` | mixed | support, docs, utility |
-
-### Representative Request / Response Examples
-
-#### Health Check
-
-`GET /api/health`
-
-Response:
-
-```json
-{
-  "status": "ok",
-  "timestamp": "2025-01-01T00:00:00.000Z",
-  "uptime": 12345.67
-}
-```
-
-Deep health:
-
-`GET /api/health?deep=true`
-
-Metrics mode:
-
-`GET /api/health?metrics=true`
-
-Headers:
-
-```http
-x-admin-key: <metrics-admin-key>
-```
-
-#### Paraphrase Tool
-
-`POST /api/tools/paraphrase`
-
-Headers:
-
-```http
-Authorization: Bearer <token>
-Content-Type: application/json
-```
-
-Example body:
-
-```json
-{
-  "text": "Rewrite this paragraph clearly.",
-  "mode": "fluency",
-  "language": "en"
-}
-```
-
-Representative response:
-
-```json
-{
-  "output": "A clearer rewritten paragraph.",
-  "mode": "fluency",
-  "cached": false
-}
-```
-
-#### Publishing Validation
-
-`POST /api/books/export/validate`
-
-Headers:
-
-```http
-Authorization: Bearer <token>
-Content-Type: application/json
-```
-
-Body:
-
-```json
-{
-  "bookId": "book_123",
-  "fix": false
-}
-```
-
-Representative response:
-
-```json
-{
-  "fixed": false,
-  "score": 92,
-  "issues": [],
-  "ready_for": ["epub", "distribution"]
-}
-```
-
-#### Stripe Connect
-
-`POST /api/stripe/connect`
-
-Headers:
-
-```http
-Authorization: Bearer <token>
-Content-Type: application/json
-```
-
-Representative response:
-
-```json
-{
-  "url": "https://connect.stripe.com/setup/..."
-}
-```
-
-### API Route Development Guidance
-
-- validate request bodies and query params before side effects
-- return stable JSON error shapes
-- avoid top-level SDK initialization unless env guards are present
-- prefer lazy client creation for Stripe, Convex, Redis, and payment SDKs
-- always set explicit timeouts for external fetches
-- instrument critical routes with health and metrics visibility
-
-## Environment Variables
-
-The full reference lives in [`.env.example`](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/.env.example).
-
-### Required In Most Deployments
-
-| Variable | Purpose | Required |
-| --- | --- | --- |
-| `NEXT_PUBLIC_APP_URL` | canonical frontend URL | Recommended |
-| `NEXT_PUBLIC_API_URL` | external API origin used by route rewrites and client integrations | Yes |
-| `NEXT_PUBLIC_CONVEX_URL` | Convex URL for frontend and API route access | Yes |
-| `CONVEX_DEPLOYMENT` | Convex deployment name | Usually |
-| `CLERK_SECRET_KEY` | server-side auth | Yes for protected routes |
-| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | client-side auth | Yes |
-| `STRIPE_SECRET_KEY` | Stripe server operations | Yes if Stripe routes enabled |
-| `STRIPE_WEBHOOK_SECRET` | webhook verification | Yes if Stripe webhooks enabled |
-| `REDIS_URL` / `REDIS_TOKEN` | caching, idempotency, rate limits | Recommended / required for some protections |
-
-### Service Endpoint Variables
-
-| Variable | Default / Example | Purpose |
-| --- | --- | --- |
-| `NLP_SERVICE_URL` | `http://localhost:3001` | NLP inference backend |
-| `AI_DETECTOR_SERVICE_URL` | `http://localhost:3002` | AI detector backend |
-| `CALIBRE_SERVICE_URL` | `http://localhost:3003` | ebook / conversion backend |
-| `NEXT_PUBLIC_API_URL` | `https://shothik.work` | external API base and rewrite target for `/api/*` and `/paraphrase/*` |
-
-### Payments And Business Integrations
-
-- Stripe keys
-- Razorpay key and secret
-- bKash base URL and credentials
-- PublishDrive webhook and publication settings where applicable
-
-### Optional Observability / Feature Flags
-
-- PostHog keys
-- monitoring keys
-- feature-flag toggles
-
-## Dependencies And Compatibility Notes
-
-### Core Versions
-
-| Dependency | Version |
-| --- | --- |
-| Node.js | `20.x` recommended |
-| pnpm | `10.x` |
-| Next.js | `16.2.3` |
-| React | `19.2.0` |
-| TypeScript | `5.x` |
-| Vitest | `4.x` |
-| Playwright | `1.57.x` |
-
-### Important Compatibility Notes
-
-- `swagger-ui-react` currently pulls peer warnings with React 19 through transitive packages
-- some API routes instantiate Stripe and Convex clients at module scope, which means build-time env placeholders may be required during CI builds
-- extracted repo validation revealed previously hoisted dependencies that are now declared locally:
-  - `uuid`
-  - `@casl/ability`
-  - `@upstash/redis`
-  - `pdf-parse`
-  - `razorpay`
-  - `form-data`
-
-Use [package.json](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/package.json) as the source of truth for the full dependency list.
-
-## Testing And Quality Gates
-
-Primary commands:
-
-```bash
-pnpm type-check
-pnpm test
-```
-
-Coverage config currently lives in:
-
-- [vitest.config.ts](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/vitest.config.ts)
-
-Current global thresholds:
-
-- lines: `40`
-- functions: `40`
-- branches: `30`
-- statements: `40`
-
-These are the current enforced floors, not the long-term target standard.
-
-See:
-
-- [TEST_CASE_DOCUMENTATION.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/TEST_CASE_DOCUMENTATION.md)
-
-## Continuous Integration
-
-Initial CI workflow:
-
-- [ci.yml](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/.github/workflows/ci.yml)
-
-The workflow currently runs:
-
-- dependency install with frozen lockfile
-- TypeScript type-check
-- test coverage run
-- production build with safe placeholder env values
-- optional Playwright smoke execution on manual dispatch
-
-### Local Pre-PR Validation
-
-Run the same core checks locally before pushing:
-
-```bash
-pnpm install
-pnpm type-check
-pnpm test:coverage
-NEXT_PUBLIC_CONVEX_URL=https://placeholder.convex.cloud STRIPE_SECRET_KEY=sk_test_placeholder pnpm build
-```
-
-### Branch Strategy
-
-Recommended working branches:
-
-- `feat/*`
-- `fix/*`
-- `chore/*`
-- `docs/*`
-- `refactor/*`
-- `test/*`
-
-## Troubleshooting
-
-### `Cannot find module ...` after extraction
-
-Cause:
-
-- dependency was previously satisfied by monorepo hoisting
-
-Fix:
-
-- add the dependency directly to this repo’s `package.json`
-- reinstall with `pnpm install`
-
-### Build fails with undefined Convex deployment address
-
-Cause:
-
-- `NEXT_PUBLIC_CONVEX_URL` missing during build and some routes create a Convex client at module scope
-
-Fix:
-
-- set `NEXT_PUBLIC_CONVEX_URL` in CI and local build environments
-
-### Build fails with Stripe authenticator missing
-
-Cause:
-
-- `STRIPE_SECRET_KEY` missing while a route initializes Stripe at import time
-
-Fix:
-
-- set `STRIPE_SECRET_KEY` in build environment
-- long term: move SDK creation behind lazy initialization
-
-### `pnpm install` inherits parent workspace
-
-Cause:
-
-- extracted repo lives inside another monorepo tree
-
-Fix:
-
-- keep local `pnpm-workspace.yaml` with `packages: ["."]`
-- or move the repo outside the old monorepo entirely before push
-
-### Health route reports degraded environment
-
-Cause:
-
-- required env variables or dependent services are missing
-
-Fix:
-
-- inspect `/api/health?deep=true`
-- inspect `/api/health?metrics=true` with admin key if configured
-
-## Security And Compliance
-
-### Required Practices
-
-- store all secrets in managed secret stores, never in source control
-- validate all request bodies before external side effects
-- verify webhook signatures for payment providers
-- use bearer token validation consistently
-- redact or sanitize PII when logging or persisting freeform text
-- enforce rate limiting and idempotency on payment and mutation-heavy routes
-
-### Existing Security Signals In Repo
-
-- PII detection and sanitization helpers in `lib/agent-auth.ts`
-- idempotency helpers in `lib/security/idempotency.ts`
-- OWASP and security utilities in `lib/security/*`
-- rate limiting and resiliency helpers in `lib/rateLimiter.ts` and related modules
-
-### Compliance Guidance
-
-- treat user text as sensitive content
-- minimize log payloads
-- enforce least privilege for payment and data integrations
-- review third-party SDKs quarterly
-- document data retention and deletion policies for each external integration
-
-## Performance And Monitoring
-
-### Performance Guidance
-
-- avoid heavyweight SDK initialization at module scope
-- keep API route fetches behind explicit timeout budgets
-- use caching where result reuse is safe
-- keep SSR payloads lean and avoid unnecessary client bundles
-- monitor document parsing and payment flows separately from standard page traffic
-
-### Monitoring Setup
-
-Existing monitoring entry points:
-
-- `/api/health`
-- `/api/health?deep=true`
-- `/api/health?metrics=true`
-
-Track at minimum:
-
-- p50 / p95 / p99 route latency
-- external dependency availability
-- failed payment callbacks
-- Convex connectivity
-- cache hit/miss behavior
-- build-time env validation failures
-
-### Alert Recommendations
-
-- alert on health route `503`
-- alert on error rate spikes by route group
-- alert on payment webhook failures
-- alert on sustained latency degradation for `/api/tools/*` and `/api/twin/*`
-
-## Additional Documentation
-
-- [TEST_CASE_DOCUMENTATION.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/TEST_CASE_DOCUMENTATION.md)
-- [FUTURE_WORK_ROADMAP.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/FUTURE_WORK_ROADMAP.md)
-- [CI_CD_SECURITY_HARDENING.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/CI_CD_SECURITY_HARDENING.md)
-- [BRANCH_PROTECTION_POLICY.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/BRANCH_PROTECTION_POLICY.md)
-- [COVERAGE_IMPROVEMENT_PLAN.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/COVERAGE_IMPROVEMENT_PLAN.md)
-- [ENVIRONMENT_VARIABLES.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/ENVIRONMENT_VARIABLES.md)
-- [PARAPHRASE_PLAGIARISM_MODERNIZATION_ROLLOUT.md](file:///Users/macos/Downloads/shothik-platfrom1%204/fresh-repos/shothik-web/docs/PARAPHRASE_PLAGIARISM_MODERNIZATION_ROLLOUT.md)
-
-# shothikhermes
-
-<!-- Vercel Git Integration Deployment Test - Updated 2026-08-07 -->
-=======
-- **Vite `define` block** inlines `NEXT_PUBLIC_*` env vars at build time for compatibility with components originally written for Next.js (`artifacts/shothik/vite.config.ts`).
-- **`/api` routing** is owned entirely by `artifacts/api-server`; the Vite dev proxy forwards `/api/*` to that gateway, not to an external host directly.
-- **Convex auth** uses a custom JWT-exchange flow: the api-server signs a short-lived Convex token using `CONVEX_DEPLOY_KEY`, which the frontend then uses for `ConvexProviderWithAuth`.
-- **InsForge auth** uses the browser SDK directly; the anonymous key is intentionally public (browser-safe) and is not a secret.
->>>>>>> origin/main
+© 2026 Shothik AI. Production Monorepo. All Rights Reserved.

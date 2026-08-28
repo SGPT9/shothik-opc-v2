@@ -51,13 +51,15 @@ export function AssistantSteps({ steps, collapsed = true }: AssistantStepsProps)
   const doneCount = steps.filter((s) => s.status === "done").length;
   const isRunning = steps.some((s) => s.status === "running");
 
+  if (doneCount === 0 && !isRunning) return null;
+
   return (
-    <div className="my-3 rounded-xl border border-border/60 bg-muted/10 overflow-hidden">
+    <div className="my-2.5 rounded-xl border border-border/60 bg-muted/10 overflow-hidden">
       {/* Header toggle */}
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-left hover:bg-muted/20 transition cursor-pointer select-none"
+        className="flex w-full items-center gap-2.5 px-3.5 py-2 text-left hover:bg-muted/20 transition cursor-pointer select-none"
       >
         {isRunning ? (
           <Loader2 className="h-3.5 w-3.5 text-brand animate-spin shrink-0" />
@@ -66,11 +68,8 @@ export function AssistantSteps({ steps, collapsed = true }: AssistantStepsProps)
         )}
         <span className="flex-1 text-xs font-semibold text-muted-foreground">
           {isRunning
-            ? `Running agent steps…`
-            : `${doneCount} step${doneCount !== 1 ? "s" : ""} completed`}
-        </span>
-        <span className="text-[10px] text-muted-foreground/50 font-mono mr-1">
-          {steps.length} actions
+            ? "Searching and verifying sources…"
+            : `Completed ${doneCount} research step${doneCount !== 1 ? "s" : ""}`}
         </span>
         <ChevronDown className={cn(
           "h-3.5 w-3.5 text-muted-foreground/40 transition-transform duration-200",

@@ -20,12 +20,19 @@ import { swarmRouter } from "./swarm";
 import { ragRouter } from "./rag";
 import { sandboxRouter } from "./sandbox";
 import { visionRouter } from "./vision";
+import agentTracesRouter from "./agent-traces";
 import telemetryRouter from "./telemetry";
+import authRouter from "./auth";
 import proxyRouter from "./proxy";
+import projectsRouter from "./projects";
+import subscriptionsRouter from "./subscriptions";
+import connectorsRouter from "./connectors";
 
 const router: IRouter = Router();
 
 router.use("/telemetry", telemetryRouter);
+router.use(agentTracesRouter);
+router.use(authRouter);
 
 router.use(healthRouter);
 router.use(ollamaRouter);
@@ -48,6 +55,9 @@ router.use(voiceRouter);
 router.use(whatsappRouter);
 router.use(mcpRouter);
 router.use(memoryRouter);
+router.use(projectsRouter);
+router.use(subscriptionsRouter);
+router.use(connectorsRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.

@@ -15,13 +15,19 @@ swarmRouter.get("/v1/swarm/agents", (_req: Request, res: Response) => {
     success: true,
     agents: [
       { id: "commander", name: "Commander Agent", role: "Goal Decomposition & DAG Scheduling", icon: "👑" },
+      { id: "architect", name: "Architect Agent", role: "System Design & Scaling Invariants", icon: "🏛️" },
       { id: "researcher", name: "Researcher Agent", role: "Primary Source & Context Analysis", icon: "🔬" },
       { id: "frontend_lead", name: "Frontend Lead", role: "DeepSeek-Close UI/UX & Client State", icon: "🎨" },
       { id: "backend_lead", name: "Backend Lead", role: "API Gateway, Memory & Database", icon: "⚙️" },
+      { id: "analytics_lead", name: "Analytics & MFS Lead", role: "Cash Flow, Settlement & Unit Economics", icon: "📊" },
       { id: "qa_red_team", name: "QA Red Team", role: "Adversarial Stress Testing & Security", icon: "🛡️" },
+      { id: "security_sentinel", name: "Security Sentinel", role: "Zero-Trust Cryptography & Token Guardrails", icon: "🔐" },
+      { id: "tax_auditor", name: "Legal & Tax Auditor", role: "NBR VAT/Tax Compliance & Contract Verification", icon: "⚖️" },
+      { id: "devops_deployer", name: "DevOps & Cloud Deployer", role: "Docker, Cloudflare Edge & CI/CD Infrastructure", icon: "🚀" },
     ],
   });
 });
+
 
 /**
  * POST /api/v1/swarm/deliberate

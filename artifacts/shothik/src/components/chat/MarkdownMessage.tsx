@@ -107,45 +107,47 @@ export function MarkdownMessage({
 
   return (
     <div className={cn("prose prose-sm dark:prose-invert max-w-none break-words space-y-3", className)}>
-      {/* Perspective Lenses (Executive / Research / Task Action) */}
-      <div className="flex items-center gap-1.5 pt-1 pb-0.5 text-[11px] font-mono select-none not-prose">
-        <button
-          type="button"
-          onClick={() => setActiveLens("executive")}
-          className={cn(
-            "px-2 py-0.5 rounded-md transition cursor-pointer border",
-            activeLens === "executive"
-              ? "bg-violet-500/20 text-violet-300 border-violet-500/40 font-semibold"
-              : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
-          )}
-        >
-          <span>🚀 Executive</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveLens("research")}
-          className={cn(
-            "px-2 py-0.5 rounded-md transition cursor-pointer border",
-            activeLens === "research"
-              ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-semibold"
-              : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
-          )}
-        >
-          <span>🔬 Research</span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveLens("action")}
-          className={cn(
-            "px-2 py-0.5 rounded-md transition cursor-pointer border",
-            activeLens === "action"
-              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold"
-              : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
-          )}
-        >
-          <span>💼 Task Action</span>
-        </button>
-      </div>
+      {/* Perspective Lenses (Executive / Research / Task Action) — Only on substantive analysis */}
+      {(content.length > 180 || content.includes("###") || content.includes("|")) && (
+        <div className="flex items-center gap-1.5 pt-1 pb-0.5 text-[11px] font-mono select-none not-prose">
+          <button
+            type="button"
+            onClick={() => setActiveLens("executive")}
+            className={cn(
+              "px-2 py-0.5 rounded-md transition cursor-pointer border",
+              activeLens === "executive"
+                ? "bg-violet-500/20 text-violet-300 border-violet-500/40 font-semibold"
+                : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
+            )}
+          >
+            <span>🚀 Executive</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveLens("research")}
+            className={cn(
+              "px-2 py-0.5 rounded-md transition cursor-pointer border",
+              activeLens === "research"
+                ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 font-semibold"
+                : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
+            )}
+          >
+            <span>🔬 Research</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveLens("action")}
+            className={cn(
+              "px-2 py-0.5 rounded-md transition cursor-pointer border",
+              activeLens === "action"
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-semibold"
+                : "bg-muted/40 text-muted-foreground border-transparent hover:bg-muted/70"
+            )}
+          >
+            <span>💼 Task Action</span>
+          </button>
+        </div>
+      )}
 
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
@@ -323,9 +325,9 @@ export function MarkdownMessage({
             return (
               <div className="space-y-0">
                 {/* Code Block Header Toolbar */}
-                <div className="flex items-center justify-between border-b border-zinc-800 dark:border-white/[0.08] bg-zinc-900 dark:bg-black/80 px-3.5 py-2 text-[11px] text-zinc-400">
-                  <div className="flex items-center space-x-2 font-mono">
-                    <span className="rounded bg-white/[0.08] border border-white/[0.12] px-2 py-0.5 font-semibold text-zinc-200 uppercase text-[10px]">
+                <div className="flex items-center justify-between border-b border-zinc-800 dark:border-white/[0.08] bg-zinc-900 dark:bg-black/80 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-[11px] text-zinc-400 gap-2 flex-wrap sm:flex-nowrap">
+                  <div className="flex items-center space-x-1.5 sm:space-x-2 font-mono min-w-0">
+                    <span className="rounded bg-white/[0.08] border border-white/[0.12] px-1.5 sm:px-2 py-0.5 font-semibold text-zinc-200 uppercase text-[9px] sm:text-[10px]">
                       {lang}
                     </span>
                     {isPreviewable && (
@@ -334,7 +336,7 @@ export function MarkdownMessage({
                           type="button"
                           onClick={() => setCodePreviewMap((prev) => ({ ...prev, [codeId]: false }))}
                           className={cn(
-                            "px-2 py-0.5 rounded-md text-[10px] font-sans font-medium transition cursor-pointer",
+                            "px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-sans font-medium transition cursor-pointer",
                             !isPreviewOpen ? "bg-white/[0.15] text-white font-semibold shadow-xs" : "text-zinc-400 hover:text-zinc-200"
                           )}
                         >
@@ -344,22 +346,22 @@ export function MarkdownMessage({
                           type="button"
                           onClick={() => setCodePreviewMap((prev) => ({ ...prev, [codeId]: true }))}
                           className={cn(
-                            "px-2 py-0.5 rounded-md text-[10px] font-sans font-medium transition cursor-pointer flex items-center gap-1",
+                            "px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-sans font-medium transition cursor-pointer flex items-center gap-1",
                             isPreviewOpen ? "bg-emerald-500/20 text-emerald-300 font-semibold shadow-xs border border-emerald-500/30" : "text-zinc-400 hover:text-zinc-200"
                           )}
                         >
-                          <span>👁️ Live Preview</span>
+                          <span>👁️ Preview</span>
                         </button>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-1.5">
+                  <div className="flex items-center space-x-1 sm:space-x-1.5 shrink-0">
                     <button
                       type="button"
                       onClick={() => handleRunCode(codeId, text, lang)}
                       disabled={isRunning}
-                      className="flex items-center space-x-1 rounded-md bg-emerald-500/15 px-2.5 py-1 text-emerald-400 hover:bg-emerald-500/25 transition text-[10px] font-mono border border-emerald-500/30 cursor-pointer select-none disabled:opacity-50"
+                      className="flex items-center space-x-1 rounded-md bg-emerald-500/15 px-2 sm:px-2.5 py-1 text-emerald-400 hover:bg-emerald-500/25 transition text-[10px] font-mono border border-emerald-500/30 cursor-pointer select-none disabled:opacity-50"
                     >
                       {isRunning ? (
                         <Loader2 className="h-3 w-3 animate-spin text-emerald-400" />
@@ -372,21 +374,21 @@ export function MarkdownMessage({
                     <button
                       type="button"
                       onClick={() => handleCopy(text)}
-                      className="flex items-center space-x-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] px-2.5 py-1 text-zinc-300 hover:text-white transition text-[10px] font-mono cursor-pointer select-none"
+                      className="flex items-center space-x-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] px-2 sm:px-2.5 py-1 text-zinc-300 hover:text-white transition text-[10px] font-mono cursor-pointer select-none"
                       title="Copy code to clipboard"
                     >
                       {isCopied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
-                      <span>{isCopied ? "Copied" : "Copy"}</span>
+                      <span className="hidden xs:inline">{isCopied ? "Copied" : "Copy"}</span>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => handleDownloadCode(text, lang)}
-                      className="flex items-center space-x-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] px-2.5 py-1 text-zinc-300 hover:text-white transition text-[10px] font-mono cursor-pointer select-none"
+                      className="flex items-center space-x-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] px-2 sm:px-2.5 py-1 text-zinc-300 hover:text-white transition text-[10px] font-mono cursor-pointer select-none"
                       title="Download code file"
                     >
                       <Download className="h-3 w-3 text-amber-400" />
-                      <span>Download</span>
+                      <span className="hidden xs:inline">Download</span>
                     </button>
                   </div>
                 </div>
