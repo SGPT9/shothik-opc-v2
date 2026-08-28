@@ -141,29 +141,53 @@ export default function GrammarCheckerClient() {
         </div>
       </div>
 
-      {/* ── Mobile Tab Navigation ── */}
+      {/* ── Mobile Tab Navigation (Always Active & Accessible) ── */}
       {isMobile && (
-        <div className="flex items-center justify-center p-1 rounded-xl bg-muted/60 border border-border/80">
+        <div
+          role="tablist"
+          aria-label="Grammar checker mobile view switcher"
+          className="flex items-center justify-center p-1 rounded-xl bg-muted/60 border border-border/80"
+        >
           <button
             type="button"
+            role="tab"
+            aria-selected={mobileTab === "editor"}
             onClick={() => setMobileTab("editor")}
             className={cn(
-              "flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer",
-              mobileTab === "editor" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground"
+              "flex-1 h-10 px-3 text-xs font-bold rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5",
+              mobileTab === "editor"
+                ? "bg-background text-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Input Text ({wordCount})
+            <span>Input Text</span>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
+              {wordCount}
+            </span>
           </button>
+
           <button
             type="button"
+            role="tab"
+            aria-selected={mobileTab === "result"}
             onClick={() => setMobileTab("result")}
-            disabled={!result}
             className={cn(
-              "flex-1 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer",
-              mobileTab === "result" ? "bg-background text-foreground shadow-xs" : "text-muted-foreground disabled:opacity-40"
+              "flex-1 h-10 px-3 text-xs font-bold rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5",
+              mobileTab === "result"
+                ? "bg-background text-foreground shadow-xs font-bold"
+                : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Diagnostics {result ? `(${issues.length})` : ""}
+            <span>Diagnostics</span>
+            {result ? (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-brand/15 text-brand font-bold font-mono">
+                {issues.length} {issues.length === 1 ? "issue" : "issues"}
+              </span>
+            ) : (
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                Preview
+              </span>
+            )}
           </button>
         </div>
       )}

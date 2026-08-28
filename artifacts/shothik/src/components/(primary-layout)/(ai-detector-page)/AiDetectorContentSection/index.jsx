@@ -516,7 +516,7 @@ const AiDetectorContentSection = () => {
 
           {/* Main Section */}
           <div className="relative flex flex-1 flex-col gap-3 overflow-x-hidden">
-            {isMobile && result && (
+            {isMobile && (
               <div className="flex w-full rounded-xl bg-muted/50 p-1 shadow-sm"
                    role="tablist" aria-label="AI Detector views">
                 <button
@@ -526,14 +526,17 @@ const AiDetectorContentSection = () => {
                   aria-controls="ai-editor-panel"
                   tabIndex={mobileTab === "editor" ? 0 : -1}
                   className={cn(
-                    "flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+                    "flex-1 h-10 rounded-lg px-4 py-2 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5",
                     mobileTab === "editor"
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                   onClick={() => setMobileTab("editor")}
                 >
-                  {t('common.editor')}
+                  <span>Editor</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-mono">
+                    {text.trim() ? text.trim().split(/\s+/).length : 0}
+                  </span>
                 </button>
                 <button
                   id="ai-results-tab"
@@ -542,17 +545,21 @@ const AiDetectorContentSection = () => {
                   aria-controls="ai-results-panel"
                   tabIndex={mobileTab === "results" ? 0 : -1}
                   className={cn(
-                    "flex-1 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+                    "flex-1 h-10 rounded-lg px-4 py-2 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5",
                     mobileTab === "results"
                       ? "bg-background text-foreground shadow-sm"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                   onClick={() => setMobileTab("results")}
                 >
-                  {t('common.results')}
-                  {result && (
-                    <span className="bg-primary/10 text-primary ml-1.5 rounded-full px-1.5 py-0.5 text-xs">
-                      {parseInt(result.ai_percentage ?? 0)}%
+                  <span>Results</span>
+                  {result ? (
+                    <span className="bg-primary/10 text-primary ml-1.5 rounded-full px-1.5 py-0.5 text-xs font-mono font-bold">
+                      {parseInt(result.ai_percentage ?? result.fake_percentage ?? 0)}%
+                    </span>
+                  ) : (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">
+                      Preview
                     </span>
                   )}
                 </button>
