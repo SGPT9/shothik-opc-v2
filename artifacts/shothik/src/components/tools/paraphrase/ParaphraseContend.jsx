@@ -1504,14 +1504,14 @@ const ParaphraseContend = () => {
               />
             ) : null}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 lg:gap-0">
               <div
                 className={cn(
                   "relative flex flex-col pb-1",
                   "border-b lg:border-r lg:border-b-0",
-                  "border-border rounded-bl-lg",
-                  "bg-card dark:bg-transparent",
-                  "h-[calc(100vh-380px)] max-h-[500px] min-h-[450px]",
+                  "border-border rounded-xl lg:rounded-bl-lg lg:rounded-tr-none",
+                  "bg-card dark:bg-transparent shadow-xs lg:shadow-none",
+                  "min-h-[220px] max-h-[380px] lg:h-[calc(100vh-380px)] lg:max-h-[500px] lg:min-h-[450px]",
                 )}
               >
                 <UserInputBox
@@ -1598,10 +1598,10 @@ const ParaphraseContend = () => {
                 ref={outputRef}
                 className={cn(
                   "relative flex flex-col",
-                  "h-[calc(100vh-380px)] max-h-[500px] min-h-[450px]",
+                  "min-h-[220px] max-h-[380px] lg:h-[calc(100vh-380px)] lg:max-h-[500px] lg:min-h-[450px]",
                   "overflow-hidden",
-                  "border-border rounded-br-lg border-t md:border-t-0",
-                  "bg-card dark:bg-transparent",
+                  "border-border rounded-xl lg:rounded-br-lg lg:rounded-tl-none border lg:border-t-0",
+                  "bg-card dark:bg-transparent shadow-xs lg:shadow-none",
                 )}
               >
                 <div className="border-border relative z-20 block border-b lg:hidden">
