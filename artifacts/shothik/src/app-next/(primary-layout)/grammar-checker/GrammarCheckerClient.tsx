@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, Fragment } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,35 +12,40 @@ import {
   Copy,
   Check,
   RotateCcw,
-  ArrowRight,
   ShieldCheck,
   CheckCheck,
   Trash2,
-  FileText,
   Wand2,
   CheckCircle2,
   Languages,
+  ArrowRight,
+  Info,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
-import ButtonPasteText from "@/components/buttons/ButtonPasteText";
-import ButtonSampleText from "@/components/buttons/ButtonSampleText";
-import ButtonInsertDocumentText from "@/components/buttons/ButtonInsertDocumentText";
+import InitialInputActions from "@/components/(primary-layout)/(ai-detector-page)/AiDetectorContentSection/InitialInputActions";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import useScreenSize from "@/hooks/ui/useScreenSize";
 import useIsDark from "@/hooks/ui/useIsDark";
 import { useGrammarCheck } from "@/hooks/useGrammarCheck";
 import { GrammarIssue } from "@/lib/tools/grammar/types";
 import { trackToolUsed } from "@/lib/posthog";
+import { trySamples } from "@/_mock/trySamples";
 
-const SAMPLE_TEXT_EN = "She dont know about the meeting yesterday and their was no reminder sent. Each of the student have submitted there reports.";
-const SAMPLE_TEXT_BN = "আমরা আগামী কালকে ঢাকা যাবো এবং তাহাদের সাথে জরুরী মিটিং করব।";
+const SAMPLE_MODELS = [
+  { name: "English Sample", text: trySamples.grammar.English },
+  { name: "Bangla Sample", text: trySamples.grammar.Bangla },
+  { name: "Academic Paper", text: "The data shows that there is many factors influencing the outcome and its not clear why the participants was absent." },
+  { name: "Email Draft", text: "Please find attached the document you requested for. I hope this finds you well and let me know if you need further informations." },
+];
 
 const ISSUE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  grammar: { bg: "bg-rose-500/10", text: "text-rose-500", border: "border-rose-500/30" },
-  spelling: { bg: "bg-amber-500/10", text: "text-amber-500", border: "border-amber-500/30" },
-  style: { bg: "bg-blue-500/10", text: "text-blue-500", border: "border-blue-500/30" },
-  punctuation: { bg: "bg-emerald-500/10", text: "text-emerald-500", border: "border-emerald-500/30" },
+  grammar: { bg: "bg-rose-500/15", text: "text-rose-500", border: "border-rose-500/30" },
+  spelling: { bg: "bg-amber-500/15", text: "text-amber-500", border: "border-amber-500/30" },
+  style: { bg: "bg-blue-500/15", text: "text-blue-500", border: "border-blue-500/30" },
+  punctuation: { bg: "bg-emerald-500/15", text: "text-emerald-500", border: "border-emerald-500/30" },
 };
 
 export default function GrammarCheckerClient() {
@@ -59,6 +64,7 @@ export default function GrammarCheckerClient() {
     return text.trim() ? text.trim().split(/\s+/).length : 0;
   }, [text]);
 
+  const maxWords = 1500;
   const issues = result?.issues || [];
   const grammarCount = issues.filter((i) => i.type === "grammar").length;
   const spellingCount = issues.filter((i) => i.type === "spelling").length;
@@ -67,14 +73,15 @@ export default function GrammarCheckerClient() {
 
   const healthScore = Math.max(70, Math.min(100, 100 - issues.length * 6));
 
-  const handleCheck = async () => {
-    if (!text.trim() || isChecking) return;
+  const handleCheck = async (overrideInput?: string) => {
+    const inputToUse = overrideInput || text;
+    if (!inputToUse.trim() || isChecking) return;
     if (!enableEdit) {
       setEnableEdit(true);
       return;
     }
 
-    const res = await check(text, selectedLang);
+    const res = await check(inputToUse, selectedLang);
     if (res) {
       trackToolUsed("grammar-checker", wordCount);
       setEnableEdit(false);
@@ -103,6 +110,11 @@ export default function GrammarCheckerClient() {
     setText("");
     setEnableEdit(true);
     setMobileTab("editor");
+  };
+
+  const handleSampleClick = (sampleText: string) => {
+    setText(sampleText);
+    setEnableEdit(true);
   };
 
   const copyToClipboard = () => {
@@ -177,82 +189,83 @@ export default function GrammarCheckerClient() {
         </div>
       )}
 
-      {/* ── Dual Studio Cards Container (Exact AI Detector Grid) ── */}
+      {/* ── Main Dual Card Grid (Exact AI Detector Studio Height & Layout) ── */}
       <div className="grid gap-4 lg:grid-cols-2">
-        {/* ── LEFT PANE: Input / Interactive View ── */}
+        {/* ── LEFT PANE: AI Detector Identical Editor ── */}
         <Card
           className={cn(
             "flex flex-col border border-border/80 shadow-xs rounded-xl overflow-hidden bg-card",
-            "h-[calc(100vh-320px)] max-h-[620px] min-h-[420px]",
+            "h-[calc(100vh-328px)] max-h-[600px] min-h-[400px] lg:h-[calc(100vh-280px)]",
             isMobile && mobileTab !== "editor" ? "hidden" : "flex"
           )}
         >
-          {/* Card Header */}
-          <div className="h-11 shrink-0 bg-muted/30 border-b border-border/40 px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Input Text</span>
-              <Badge variant="secondary" className="text-[10px] font-mono font-semibold">
-                {wordCount} Words
-              </Badge>
-            </div>
-            {text && (
-              <button
-                type="button"
-                onClick={handleClear}
-                className="text-xs text-muted-foreground hover:text-foreground flex items-center gap-1 transition cursor-pointer"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Clear
-              </button>
-            )}
-          </div>
-
-          {/* Card Text Area / Interactive Overlay */}
-          <div className="relative flex-1 min-h-0 flex flex-col p-4 overflow-hidden">
+          {/* Editor Surface */}
+          <div className="relative flex-1 min-h-0 flex flex-col overflow-hidden">
             {enableEdit ? (
               <textarea
                 id="grammar-input-text"
                 name="grammarInputText"
                 aria-label="Text to Check for Grammar and Spelling"
-                placeholder="Paste or type text here to detect grammar, punctuation, and spelling errors..."
-                className="placeholder:text-muted-foreground/60 h-full w-full flex-1 resize-none overflow-y-auto bg-transparent text-sm md:text-base leading-relaxed break-words outline-none font-normal custom-scrollbar"
+                role="textbox"
+                placeholder="Enter or paste text to check for grammar, spelling, and phrasing improvements..."
+                className="placeholder:text-muted-foreground h-full w-full flex-1 resize-none overflow-x-hidden overflow-y-auto bg-transparent p-4 text-sm md:text-base leading-relaxed break-words outline-none font-normal custom-scrollbar"
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 disabled={isChecking}
               />
             ) : (
-              <div className="h-full w-full flex-1 overflow-y-auto text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap text-foreground/90 font-normal custom-scrollbar">
+              <div className="size-full flex-1 overflow-x-hidden overflow-y-auto p-4 text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap font-normal custom-scrollbar">
                 {text}
               </div>
             )}
 
             {/* Empty State Initial Action Buttons */}
             {!text && (
-              <div className="absolute inset-0 m-auto flex flex-col items-center justify-center p-6 text-center pointer-events-none">
-                <div className="flex flex-wrap items-center justify-center gap-2 pointer-events-auto">
-                  <ButtonSampleText
-                    sample={selectedLang === "bn" ? SAMPLE_TEXT_BN : SAMPLE_TEXT_EN}
-                    onApply={(val) => setText(val)}
-                  />
-                  <span className="text-xs text-muted-foreground">Or</span>
-                  <ButtonPasteText onApply={(val) => setText(val)} />
-                  <span className="text-xs text-muted-foreground">Or</span>
-                  <ButtonInsertDocumentText onApply={(val) => setText(val)} />
-                </div>
+              <div className="absolute right-4 bottom-6 left-4 mx-auto flex flex-col items-center justify-center gap-2 pointer-events-none">
+                <InitialInputActions
+                  setInput={(val) => setText(val)}
+                  showPaste={true}
+                  showInsertDocument={true}
+                  showSample={true}
+                  sample={SAMPLE_MODELS[0].text}
+                  className="pointer-events-auto"
+                />
               </div>
             )}
           </div>
 
-          {/* Bottom Action Bar */}
-          <div className="shrink-0 h-13 px-4 bg-muted/30 border-t border-border/50 flex items-center justify-between gap-3">
-            <div className="text-xs text-muted-foreground">
-              {text ? `${wordCount} words (${text.length} chars)` : "Ready for analysis"}
+          {/* Bottom Action Footer (Exact InputActions layout) */}
+          <div className="shrink-0 h-12 px-4 bg-muted/30 border-t border-border/50 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-xs whitespace-nowrap text-muted-foreground font-mono">
+                <b>{wordCount}</b> / {maxWords} words
+              </span>
+              {text && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-foreground cursor-pointer"
+                        onClick={handleClear}
+                        aria-label="Clear text"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Clear text</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
 
             <Button
-              onClick={handleCheck}
+              onClick={() => handleCheck()}
               disabled={!text.trim() || isChecking}
-              className="h-9 px-5 rounded-xl text-xs font-bold bg-brand hover:bg-brand/90 text-brand-foreground shadow-xs cursor-pointer transition active:scale-[0.98]"
+              className="h-8 px-4 md:h-9 md:px-5 rounded-xl text-xs font-bold bg-brand hover:bg-brand/90 text-brand-foreground shadow-xs cursor-pointer transition active:scale-[0.98]"
             >
               {isChecking ? (
                 <>
@@ -262,124 +275,148 @@ export default function GrammarCheckerClient() {
               ) : !enableEdit ? (
                 <>
                   <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
-                  Edit Text
+                  Edit
                 </>
               ) : (
                 <>
                   <Wand2 className="mr-1.5 h-3.5 w-3.5" />
-                  Check Grammar
+                  Fix Grammar
                 </>
               )}
             </Button>
           </div>
         </Card>
 
-        {/* ── RIGHT PANE: Output Diagnostics & Interactive Fixes ── */}
+        {/* ── RIGHT PANE: Output Results / Empty Sample Text Grid ── */}
         <Card
           className={cn(
             "flex flex-col border border-border/80 shadow-xs rounded-xl overflow-hidden bg-card",
-            "h-[calc(100vh-320px)] max-h-[620px] min-h-[420px]",
+            "h-[calc(100vh-328px)] max-h-[600px] min-h-[400px] lg:h-[calc(100vh-280px)]",
             isMobile && mobileTab !== "result" ? "hidden" : "flex"
           )}
         >
-          {/* Card Header with Actions */}
-          <div className="h-11 shrink-0 bg-muted/30 border-b border-border/40 px-4 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Grammar Diagnostics</span>
-              {result && (
-                <Badge variant="outline" className="bg-brand/10 text-brand border-brand/30 text-[10px] font-bold">
-                  {issues.length} {issues.length === 1 ? "Issue" : "Issues"}
-                </Badge>
-              )}
-            </div>
-
-            {result && (
-              <div className="flex items-center gap-1.5">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={copyToClipboard}
-                  className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                >
-                  {copied ? <Check className="h-3.5 w-3.5 text-emerald-500 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
-                  {copied ? "Copied" : "Copy Clean"}
-                </Button>
-                <SendToWritingStudioButton
-                  text={result.correctedText || text}
-                  title="Grammar Checked Document"
-                  source="grammar"
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs font-semibold"
-                />
-              </div>
-            )}
-          </div>
-
-          {/* Main Output Display */}
-          <div className="relative flex-1 min-h-0 flex flex-col p-4 overflow-hidden justify-between">
-            {!result && !isChecking ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 text-muted-foreground">
-                <div className="w-12 h-12 rounded-2xl bg-muted/60 border border-border/80 flex items-center justify-center mb-3 text-muted-foreground/80">
-                  <SpellCheck className="h-6 w-6" />
+          {!result && !isChecking ? (
+            /* Empty State: Sample Text Options (Exact AI Detector Style) */
+            <div className="flex flex-1 flex-col p-6 justify-between overflow-y-auto custom-scrollbar">
+              <div className="space-y-4">
+                <strong className="block text-sm font-bold text-foreground">Try Sample Text</strong>
+                <div className="grid grid-cols-2 gap-3">
+                  {SAMPLE_MODELS.map((item, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => handleSampleClick(item.text)}
+                      className="bg-muted/40 hover:bg-muted border border-border/60 flex h-10 cursor-pointer items-center justify-start gap-2.5 rounded-xl px-3 text-left transition text-foreground"
+                    >
+                      <SpellCheck className="h-4 w-4 text-indigo-500 shrink-0" />
+                      <span className="text-xs font-semibold truncate">{item.name}</span>
+                    </button>
+                  ))}
                 </div>
-                <h3 className="text-sm font-bold text-foreground">Diagnostics Appear Here</h3>
-                <p className="text-xs text-muted-foreground max-w-xs mt-1">
-                  Click "Check Grammar" to analyze syntax, punctuation, agreement, and spelling rules.
+              </div>
+
+              <div className="p-4 rounded-xl bg-muted/20 border border-border/40 space-y-2">
+                <span className="text-xs font-bold text-foreground block">Intelligent Syntax Correction</span>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Scans across 100+ grammatical rules including subject-verb agreement, dangling modifiers, spelling variations, Oxford commas, and tone consistency.
                 </p>
               </div>
-            ) : isChecking ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-center p-6 space-y-3 animate-in fade-in">
-                <div className="relative">
-                  <div className="w-12 h-12 rounded-full border-3 border-brand/20 border-t-brand animate-spin" />
-                  <SpellCheck className="absolute inset-0 m-auto h-5 w-5 text-brand animate-pulse" />
+            </div>
+          ) : isChecking ? (
+            /* Loading State */
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-3">
+              <div className="relative">
+                <div className="w-12 h-12 rounded-full border-3 border-brand/20 border-t-brand animate-spin" />
+                <SpellCheck className="absolute inset-0 m-auto h-5 w-5 text-brand animate-pulse" />
+              </div>
+              <h3 className="text-xs font-bold text-foreground">Analyzing Grammar & Agreement</h3>
+              <p className="text-[11px] text-muted-foreground">Detecting syntax flaws and spelling anomalies...</p>
+            </div>
+          ) : (
+            /* Output Result State (Exact OutputResult Score Dial & Interactive Fix Cards) */
+            <div className="flex flex-1 flex-col overflow-hidden justify-between">
+              {/* Header Bar */}
+              <div className="h-12 border-b border-border/50 px-4 flex items-center justify-between bg-muted/30">
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-brand/10 text-brand border-brand/30 text-xs font-bold">
+                    {issues.length} {issues.length === 1 ? "Issue" : "Issues"} Found
+                  </Badge>
                 </div>
-                <div>
-                  <h3 className="text-xs font-bold text-foreground">Checking Grammar & Syntax</h3>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Evaluating sentence structure & agreement...</p>
+
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={copyToClipboard}
+                    className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                  >
+                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-500 mr-1" /> : <Copy className="h-3.5 w-3.5 mr-1" />}
+                    {copied ? "Copied" : "Copy"}
+                  </Button>
+
+                  <SendToWritingStudioButton
+                    text={result?.correctedText || text}
+                    title="Grammar Checked Document"
+                    source="grammar"
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-2.5 text-xs font-semibold"
+                  />
                 </div>
               </div>
-            ) : (
-              <div className="space-y-3 flex-1 flex flex-col justify-between overflow-hidden">
-                {/* Writing Health Scorecard (AI Detector Style) */}
+
+              {/* Main Scorecard Section */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+                {/* Circular Progress Meter */}
                 <div className={cn(
-                  "shrink-0 p-3 rounded-xl border flex items-center justify-between gap-3",
-                  issues.length === 0 ? "bg-emerald-500/10 border-emerald-500/30" : "bg-brand/10 border-brand/30"
+                  "flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl border",
+                  issues.length === 0 ? "bg-emerald-500/10 border-emerald-500/30" : "bg-muted/20 border-border/40"
                 )}>
-                  <div className="flex items-center gap-3">
-                    <div className={cn(
-                      "flex items-center justify-center w-10 h-10 rounded-xl text-white font-bold text-sm shadow-xs",
-                      issues.length === 0 ? "bg-emerald-500 shadow-emerald-500/20" : "bg-brand shadow-brand/20"
-                    )}>
+                  <div className="relative flex size-28 shrink-0 items-center justify-center">
+                    <div
+                      className="absolute h-full w-full rounded-full border-6"
+                      style={{ borderColor: "#10b91d20" }}
+                    />
+                    <div
+                      className="absolute h-full w-full rounded-full border-6"
+                      style={{
+                        borderColor: issues.length === 0 ? "#10b91d" : "#3b82f6",
+                        clipPath: `inset(${100 - healthScore}% 0 0 0)`,
+                      }}
+                    />
+                    <p className={cn("text-base font-bold font-mono", issues.length === 0 ? "text-emerald-500" : "text-brand")}>
                       {healthScore}%
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-bold text-foreground">
-                          {issues.length === 0 ? "Writing Health: Flawless" : "Writing Health"}
-                        </span>
-                        {issues.length === 0 && <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />}
-                      </div>
-                      <span className="text-[11px] text-muted-foreground font-medium">
-                        {issues.length === 0 ? "Zero errors detected" : `${issues.length} suggested corrections`}
-                      </span>
-                    </div>
+                    </p>
                   </div>
 
-                  {issues.length > 0 && (
-                    <Button
-                      size="sm"
-                      onClick={handleApplyAll}
-                      className="h-8 px-3 text-xs font-bold bg-brand hover:bg-brand/90 text-brand-foreground rounded-xl shadow-xs cursor-pointer"
-                    >
-                      <CheckCheck className="h-3.5 w-3.5 mr-1" />
-                      Fix All ({issues.length})
-                    </Button>
-                  )}
+                  <div className="flex-1 space-y-1.5 text-center sm:text-left">
+                    <div className="flex items-center justify-center sm:justify-start gap-1.5">
+                      <span className="text-xs font-bold text-foreground uppercase tracking-wide">
+                        {issues.length === 0 ? "Writing Health: Flawless" : "Writing Health Score"}
+                      </span>
+                      {issues.length === 0 && <CheckCircle2 className="h-4 w-4 text-emerald-500" />}
+                    </div>
+                    <p className="text-xs text-muted-foreground font-medium">
+                      {issues.length === 0 ? "Zero syntax or spelling errors detected" : `${issues.length} suggested corrections ready to apply`}
+                    </p>
+
+                    {issues.length > 0 && (
+                      <div className="pt-1 flex justify-center sm:justify-start">
+                        <Button
+                          size="sm"
+                          onClick={handleApplyAll}
+                          className="h-7 px-3 text-xs font-bold bg-brand hover:bg-brand/90 text-brand-foreground rounded-lg shadow-xs cursor-pointer"
+                        >
+                          <CheckCheck className="h-3.5 w-3.5 mr-1" />
+                          Fix All ({issues.length})
+                        </Button>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
-                {/* Issue Category Breakdown */}
-                <div className="shrink-0 grid grid-cols-4 gap-1.5 text-center text-xs">
+                {/* Issue Category Pill Grid */}
+                <div className="grid grid-cols-4 gap-1.5 text-center text-xs">
                   <div className="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-500 font-semibold">
                     <span className="text-[9px] block text-rose-500/80">Grammar</span>
                     {grammarCount}
@@ -398,8 +435,8 @@ export default function GrammarCheckerClient() {
                   </div>
                 </div>
 
-                {/* Interactive Issue Cards List */}
-                <div className="space-y-1.5 flex-1 overflow-y-auto custom-scrollbar pr-1">
+                {/* Interactive Fix Cards List */}
+                <div className="space-y-1.5 max-h-[180px] overflow-y-auto custom-scrollbar pr-1">
                   {issues.length === 0 ? (
                     <div className="p-4 rounded-xl bg-emerald-500/5 border border-emerald-500/20 text-center text-xs text-emerald-600 font-medium">
                       🎉 Great job! No grammatical or spelling errors found.
@@ -410,7 +447,7 @@ export default function GrammarCheckerClient() {
                       return (
                         <div
                           key={idx}
-                          className="p-2.5 rounded-xl border border-border/60 bg-card hover:border-border transition flex items-center justify-between gap-3"
+                          className="p-2.5 rounded-xl border border-border/60 bg-card hover:border-border transition flex items-center justify-between gap-2"
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 mb-0.5">
@@ -444,8 +481,8 @@ export default function GrammarCheckerClient() {
                   )}
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </Card>
       </div>
     </div>
