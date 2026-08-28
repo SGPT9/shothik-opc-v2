@@ -8,12 +8,12 @@ const useWordLimit = (service) => {
   const premiumPack = user?.package === "premium";
 
   const defaultLimit = freePack
-    ? 180
+    ? 1500
     : starterPack
-      ? 500
+      ? 3000
       : premiumPack
-        ? 1000
-        : 180;
+        ? 10000
+        : 1500;
 
   const limitArray = Array.isArray(userLimit) ? userLimit : [];
   const starter = limitArray.find(
