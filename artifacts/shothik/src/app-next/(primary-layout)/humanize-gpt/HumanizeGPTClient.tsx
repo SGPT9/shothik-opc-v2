@@ -219,6 +219,9 @@ export default function HumanizeGPTClient() {
 
           <CardContent className="p-4 flex-1 flex flex-col justify-between gap-4">
             <Textarea
+              id="humanize-input-text"
+              name="humanizeInputText"
+              aria-label="Source AI Text to Humanize"
               placeholder="Paste ChatGPT, Claude, or DeepSeek text here to make it 100% human-like..."
               value={text}
               onChange={(e) => setText(e.target.value)}

@@ -121,6 +121,9 @@ export default function GrammarCheckerClient() {
         {/* Quick Sample Selector & Language */}
         <div className="flex items-center gap-3 overflow-x-auto">
           <select
+            id="grammar-lang-select"
+            name="grammarLanguage"
+            aria-label="Select Language for Grammar Check"
             value={selectedLang}
             onChange={(e) => setSelectedLang(e.target.value)}
             className="text-xs px-3 py-1.5 rounded-xl border border-border/80 bg-card font-semibold text-foreground outline-none cursor-pointer focus:border-brand"
@@ -178,6 +181,9 @@ export default function GrammarCheckerClient() {
 
           <CardContent className="p-4 flex-1 flex flex-col justify-between gap-4">
             <Textarea
+              id="grammar-input-text"
+              name="grammarInputText"
+              aria-label="Text to Check for Grammar and Spelling"
               placeholder="Paste or type text to check for grammar, spelling, and phrasing improvements..."
               value={text}
               onChange={(e) => setText(e.target.value)}
