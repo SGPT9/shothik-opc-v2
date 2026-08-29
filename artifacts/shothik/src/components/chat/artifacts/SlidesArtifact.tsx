@@ -1203,7 +1203,54 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
           });
         }
 
-        if (s.bullets && s.bullets.length > 0) {
+        if (s.layout === "split" && (s.splitLeft || s.splitRight)) {
+          if (s.splitLeft) {
+            slide.addText(s.splitLeft.heading, { x: 0.8, y: 2.5, w: 4.0, fontSize: 13, color: "F87171", bold: true, fontFace: "Arial" });
+            const leftBullets = s.splitLeft.points.map((p) => ({ text: p, options: { bullet: true, color: "CBD5E1", fontSize: 11, breakLine: true } }));
+            slide.addText(leftBullets, { x: 0.8, y: 3.0, w: 4.0, h: 2.5, fontFace: "Arial" });
+          }
+          if (s.splitRight) {
+            slide.addText(s.splitRight.heading, { x: 5.2, y: 2.5, w: 4.0, fontSize: 13, color: "34D399", bold: true, fontFace: "Arial" });
+            const rightBullets = s.splitRight.points.map((p) => ({ text: p, options: { bullet: true, color: "CBD5E1", fontSize: 11, breakLine: true } }));
+            slide.addText(rightBullets, { x: 5.2, y: 3.0, w: 4.0, h: 2.5, fontFace: "Arial" });
+          }
+        } else if (s.layout === "stats" && s.metrics && s.metrics.length > 0) {
+          const colWidth = 8.4 / Math.min(s.metrics.length, 4);
+          s.metrics.slice(0, 4).forEach((m, idx) => {
+            const posX = 0.8 + idx * colWidth;
+            slide.addText(m.label, { x: posX, y: 2.7, w: colWidth - 0.2, fontSize: 11, color: "94A3B8", fontFace: "Arial" });
+            slide.addText(m.value, { x: posX, y: 3.2, w: colWidth - 0.2, fontSize: 20, color: "818CF8", bold: true, fontFace: "Arial" });
+            if (m.trend) {
+              slide.addText(m.trend, { x: posX, y: 3.9, w: colWidth - 0.2, fontSize: 10, color: "34D399", fontFace: "Arial" });
+            }
+          });
+        } else if (s.layout === "timeline" && s.timelineSteps && s.timelineSteps.length > 0) {
+          const colWidth = 8.4 / Math.min(s.timelineSteps.length, 4);
+          s.timelineSteps.slice(0, 4).forEach((st, idx) => {
+            const posX = 0.8 + idx * colWidth;
+            slide.addText(st.step, { x: posX, y: 2.6, w: colWidth - 0.2, fontSize: 10, color: "C084FC", bold: true, fontFace: "Arial" });
+            slide.addText(st.title, { x: posX, y: 3.0, w: colWidth - 0.2, fontSize: 12, color: "FFFFFF", bold: true, fontFace: "Arial" });
+            slide.addText(st.desc, { x: posX, y: 3.5, w: colWidth - 0.2, h: 1.8, fontSize: 10, color: "94A3B8", fontFace: "Arial" });
+          });
+        } else if (s.layout === "process" && s.processSteps && s.processSteps.length > 0) {
+          const colWidth = 8.4 / Math.min(s.processSteps.length, 4);
+          s.processSteps.slice(0, 4).forEach((p, idx) => {
+            const posX = 0.8 + idx * colWidth;
+            slide.addText(p.number, { x: posX, y: 2.6, w: colWidth - 0.2, fontSize: 12, color: "818CF8", bold: true, fontFace: "Arial" });
+            slide.addText(p.title, { x: posX, y: 3.0, w: colWidth - 0.2, fontSize: 12, color: "FFFFFF", bold: true, fontFace: "Arial" });
+            slide.addText(p.desc, { x: posX, y: 3.5, w: colWidth - 0.2, h: 1.8, fontSize: 10, color: "94A3B8", fontFace: "Arial" });
+          });
+        } else if (s.layout === "quote" && s.quote) {
+          slide.addText(`"${s.quote.text}"`, { x: 1.2, y: 2.8, w: 7.6, fontSize: 15, color: "E2E8F0", italic: true, fontFace: "Georgia" });
+          slide.addText(`${s.quote.author} — ${s.quote.role}`, { x: 1.2, y: 4.3, w: 7.6, fontSize: 11, color: "94A3B8", bold: true, fontFace: "Arial" });
+        } else if (s.layout === "grid" && s.features && s.features.length > 0) {
+          s.features.slice(0, 4).forEach((f, idx) => {
+            const posX = 0.8 + (idx % 2) * 4.4;
+            const posY = 2.6 + Math.floor(idx / 2) * 1.4;
+            slide.addText(f.title, { x: posX, y: posY, w: 4.0, fontSize: 12, color: "FFFFFF", bold: true, fontFace: "Arial" });
+            slide.addText(f.desc, { x: posX, y: posY + 0.35, w: 4.0, h: 0.9, fontSize: 10, color: "94A3B8", fontFace: "Arial" });
+          });
+        } else if (s.bullets && s.bullets.length > 0) {
           const bulletList = s.bullets.map((b) => ({
             text: b,
             options: { bullet: true, color: "CBD5E1", fontSize: 13, breakLine: true },
