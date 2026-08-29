@@ -234,6 +234,17 @@ export class MemoryExtractionService {
     const extracted = this.extractDecisions(params);
     return this.commitMemories(extracted);
   }
+
+  /**
+   * Convenience helper for dialogue and voice interactions
+   */
+  public extractAndCommitFromDialogue(
+    prompt: string,
+    response: string,
+    source: MemorySource = "chat"
+  ): ExtractedMemory[] {
+    return this.extractAndCommit({ prompt, response, source });
+  }
 }
 
 export const memoryExtractionService = MemoryExtractionService.getInstance();
