@@ -77,21 +77,8 @@ const featuresMenuKeys = {
       { labelKey: "header.aiSlides", icon: Presentation, href: "/slide-generation" },
       { labelKey: "header.deepResearch", icon: Beaker, href: "/research" },
       { labelKey: "header.dataAnalysis", icon: BarChart3, href: "/canvas" },
-    ],
-  },
-  vibeMetaAutomation: {
-    titleKey: "header.vibeMetaAutomation",
-    items: [
-      { labelKey: "header.productAnalysis", icon: FileText, href: "/twin" },
-      { labelKey: "header.aiStrategy", icon: Lightbulb, href: "/agents/chat" },
-      { labelKey: "header.aiAdSets", icon: Images, href: "/saved-reports" },
-      { labelKey: "header.aiAdCreatives", icon: Palette, href: "/writing-studio" },
-      { labelKey: "header.aiAdCopies", icon: FileText, href: "/paraphrase" },
-      { labelKey: "header.aiPoweredEditing", icon: Brush, href: "/writing-studio" },
-      { labelKey: "header.aiMediaCanvas", icon: Image, href: "/files" },
-      { labelKey: "header.adLaunch", icon: Rocket, href: "/connectors" },
-      { labelKey: "header.mindmapReports", icon: GitBranch, href: "/writing-studio" },
-      { labelKey: "header.aiOptimization", icon: TrendingUp, href: "/canvas" },
+      { labelKey: "nav.twin", icon: Sparkles, href: "/twin" },
+      { labelKey: "nav.writingStudio", icon: FileText, href: "/writing-studio" },
     ],
   },
 };
@@ -134,7 +121,6 @@ export default function Header({ className, layout }) {
   const featuresSections = [
     translateSection(featuresMenuKeys.writing),
     translateSection(featuresMenuKeys.agents),
-    translateSection(featuresMenuKeys.vibeMetaAutomation),
   ];
 
   if (layout === "primary") {
