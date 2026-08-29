@@ -156,8 +156,8 @@ export default function Header({ className, layout }) {
                 <span>550 Credits</span>
               </Link>
 
-              <LanguageSwitcher className="inline-flex" />
-              <ThemeToggle className="inline-flex" />
+              <LanguageSwitcher className="hidden sm:inline-flex" />
+              <ThemeToggle className="hidden sm:inline-flex" />
               <div className="flex items-center gap-2 md:gap-3">
                 {showLoadingState ? (
                   <div className="flex items-center gap-1">
@@ -247,8 +247,8 @@ export default function Header({ className, layout }) {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
               <OfflineSyncStatusBadge />
-              <LanguageSwitcher className="inline-flex" />
-              <ThemeToggle className="inline-flex" />
+              <LanguageSwitcher className="hidden sm:inline-flex" />
+              <ThemeToggle className="hidden sm:inline-flex" />
               <div className="flex items-center gap-2 md:gap-3">
                 {showLoadingState ? (
                   <div className="flex items-center gap-1">
