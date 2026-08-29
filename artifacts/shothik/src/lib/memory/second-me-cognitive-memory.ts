@@ -20,7 +20,7 @@ export interface WorkingMemoryState {
 export interface EpisodicMemoryEntry {
   id: string;
   userId: string;
-  category: "user_preference" | "architectural_decision" | "feedback_correction" | "domain_knowledge";
+  category: "user_preference" | "architectural_decision" | "feedback_correction" | "domain_knowledge" | "business_rules" | "brand_voice" | "founder_preference";
   summary: string;
   details: string;
   confidence: number; // 0.0 - 1.0

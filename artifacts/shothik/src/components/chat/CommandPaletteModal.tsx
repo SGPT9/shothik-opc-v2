@@ -27,7 +27,7 @@ interface CommandPaletteModalProps {
 
 interface CommandItem {
   id: string;
-  category: "Studios" | "Autonomous Twin" | "Logistics & MFS" | "Tools";
+  category: "Studios" | "Autonomous Twin" | "Logistics & MFS" | "Tools" | "Developer Sandbox";
   title: string;
   subtitle: string;
   icon: any;

@@ -41,6 +41,7 @@ import { MarketingGrowthArtifact } from "@/components/chat/artifacts/MarketingGr
 import { LiveAgentTraceTimeline } from "@/components/chat/LiveAgentTraceTimeline";
 import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp, Activity } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
+import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,6 +89,7 @@ interface ArtifactPanelProps {
   docPage?: number;
   docBbox?: [number, number, number, number];
   docSourceRef?: string;
+  conversationId?: string;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -111,6 +113,7 @@ export function ArtifactPanel({
   docPage,
   docBbox,
   docSourceRef,
+  conversationId = "dsh_live_session",
 }: ArtifactPanelProps) {
   // Version History State (Pillar 5)
   const [selectedVersion, setSelectedVersion] = useState<string>("v3");

@@ -1254,7 +1254,6 @@ export function useChatStreamEngine(options?: UseChatStreamEngineOptions) {
             extraCallbacks?.onStep?.(step);
             if (persistTraces) {
               persistTraceToBackend({
-                id: `trc_${activeSessionId}_${step.id}`,
                 sessionId: activeSessionId,
                 agentName: `${activeAgent}:${step.type}`,
                 prompt: step.label,

@@ -52,17 +52,17 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
     setSubtitleText("Thinking…");
 
     setTimeout(() => {
-      const res = ChatGptVoiceAgentService.executeVoiceAction("Voice Command", actionType, selectedLang);
+      const res = ChatGptVoiceAgentService.executeVoiceAction("Voice Command", actionType, selectedLang as IndicLanguageCode);
       setActiveResponse(res);
       setSpeechState("speaking");
-      setSubtitleText(res.speechTranscript || "I understand. How can I help you further?");
+      setSubtitleText(res.spokenTranscript || "I understand. How can I help you further?");
 
       // Autonomously extract voice decisions into SecondMe cognitive memory
       try {
         memoryExtractionService.extractAndCommitFromDialogue(
           `Spoken directive for ${actionType}`,
-          res.speechTranscript || "",
-          "voice_assistant"
+          res.spokenTranscript || "",
+          "chat"
         );
       } catch {}
     }, 600);
@@ -125,10 +125,11 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
           />
 
           {/* 3D Living Neural Voice Orb */}
-          <div className="w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center relative cursor-pointer" onClick={() => triggerVoiceAction("create_order")}>
+          <div className="w-64 h-64 sm:w-80 sm:h-80 flex items-center justify-center relative cursor-pointer" onClick={() => triggerVoiceAction("steadfast_book_courier")}>
             <AvatarOrb3D
-              role={activeRole}
-              state={speechState}
+              avatarRole={activeRole}
+              isSpeaking={speechState === "speaking"}
+              isListening={speechState === "listening"}
               size={280}
               className="scale-100 hover:scale-105 transition-transform duration-500"
             />
@@ -178,7 +179,7 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
               setSpeechState("listening");
               setSubtitleText("Listening…");
             } else {
-              triggerVoiceAction("create_order");
+              triggerVoiceAction("steadfast_book_courier");
             }
           }}
           className={cn(

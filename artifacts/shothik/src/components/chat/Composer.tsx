@@ -365,11 +365,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       }
     }, [onAction, onOpenTool]);
 
-    const dispatchArtifact = useCallback((tab: "slides" | "research" | "sheet" | "code" | "synthesizer") => {
+    const dispatchArtifact = useCallback((tab: ArtifactTab | string) => {
       if (onAction) {
-        onAction({ type: "OPEN_ARTIFACT", tab });
+        onAction({ type: "OPEN_ARTIFACT", tab } as any);
       } else if (onOpenArtifact) {
-        onOpenArtifact(tab);
+        onOpenArtifact(tab as any);
       }
     }, [onAction, onOpenArtifact]);
 

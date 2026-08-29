@@ -305,7 +305,7 @@ export default function HumanizeGPTClient() {
                   <span className="text-xs text-muted-foreground">Or</span>
                   <ButtonPasteText onApply={(val) => setText(val)} />
                   <span className="text-xs text-muted-foreground">Or</span>
-                  <ButtonInsertDocumentText onApply={(val) => setText(val)} />
+                  <ButtonInsertDocumentText className="" onChange={() => {}} onApply={(val: any) => setText(val)} />
                 </div>
               </div>
             )}
@@ -435,10 +435,7 @@ export default function HumanizeGPTClient() {
                   <SendToWritingStudioButton
                     text={result?.humanizedText || ""}
                     title="Humanized Document"
-                    source="humanizer"
-                    variant="outline"
-                    size="sm"
-                    className="h-8 px-2.5 text-xs font-semibold"
+                    source="tool"
                   />
                 </div>
               </div>
