@@ -234,6 +234,606 @@ export function buildDynamicDeck(topicTitle: string): SlideData[] {
     ];
   }
 
+  if (lower.includes("rmg") || lower.includes("textile") || lower.includes("garment") || lower.includes("apparel") || lower.includes("knitwear") || lower.includes("fob")) {
+    return [
+      {
+        id: 1,
+        layout: "hero",
+        tag: "Executive Vision",
+        title: cleanTopic,
+        subtitle: "Decarbonizing & Automating the $47B Bangladesh RMG & Global Apparel Supply Chain",
+        bullets: [
+          "AI-driven Fabric Yield & Cut-Order Planning reducing textile wastage by 14%",
+          "Automated ESG & LEED Certification audit logging with real-time worker safety telemetry",
+          "Direct FOB & Cost of Making (CM) quotation generator with real-time yarn & raw material pricing",
+        ],
+        metrics: [
+          { label: "Apparel Export TAM", value: "$47.4B", trend: "Global #2" },
+          { label: "Fabric Scrap Reduction", value: "14.2%", trend: "Cost Saver" },
+          { label: "Audit Readiness", value: "99.8%", trend: "EU/US Compliant" },
+        ],
+        speakerNotes: "Open by highlighting Bangladesh's position as the world's 2nd largest garment exporter and how AI automation protects margins amid rising labor and energy costs.",
+      },
+      {
+        id: 2,
+        layout: "split",
+        tag: "Industry Friction vs Solution",
+        title: "Overcoming RMG Margin Compression",
+        subtitle: "Eliminating Blind Spots in High-Volume Fast-Fashion Manufacturing",
+        bullets: [],
+        splitLeft: {
+          heading: "⚠️ Traditional Factory Inefficiencies",
+          points: [
+            "Manual Marker Making: 8%-12% excess fabric waste per 10,000-piece cut",
+            "Slow CM Costing: 3-5 days to deliver FOB quotations to European buyers",
+            "Fragmented Compliance: Paper records failing sudden buyer ESG/accord audits",
+          ],
+        },
+        splitRight: {
+          heading: "✅ Our AI-Powered Factory OS",
+          points: [
+            "Computer Vision Fabric Nesting achieving 91.4% fabric utilization rate",
+            "Instant 60-Second CM Quotations factoring live cotton, yarn, and freight rates",
+            "Automated Digital Twin of factory floors with immutable compliance logs",
+          ],
+        },
+        speakerNotes: "Emphasize how fast buyers make purchase decisions today and how 60-second quotation turnaround secures tier-1 contracts.",
+      },
+      {
+        id: 3,
+        layout: "stats",
+        tag: "Market Scale",
+        title: "Massive Global Sourcing TAM",
+        subtitle: "Capturing the $47B Export Sector & 4,200+ Tier-1 Factories",
+        bullets: [
+          "Over 4,200 active BGMEA and BKMEA registered export manufacturing units",
+          "European Union Due Diligence Act mandating end-to-end supply chain transparency",
+        ],
+        metrics: [
+          { label: "Annual Export Volume", value: "$47.4B", trend: "+12.4% YoY" },
+          { label: "Tier-1 Factories", value: "4,200+", trend: "Nationwide" },
+          { label: "Workforce Employed", value: "4.4M+", trend: "Direct Labor" },
+          { label: "Green LEED Factories", value: "215+", trend: "World #1" },
+        ],
+        speakerNotes: "Frame the macro context: Bangladesh holds the highest concentration of LEED Platinum green garment factories globally.",
+      },
+      {
+        id: 4,
+        layout: "process",
+        tag: "Operational Architecture",
+        title: "End-to-End Factory Intelligence Workflow",
+        subtitle: "From Buyer Tech Pack Ingestion to Port of Chittagong Bill of Lading",
+        bullets: [],
+        processSteps: [
+          { number: "01", title: "Tech Pack Parsing", desc: "Extract measurements, fabric specs & BOM in 15 seconds" },
+          { number: "02", title: "Automated CM Costing", desc: "Calculate knitting, dyeing, CMT & FOB in USD and BDT" },
+          { number: "03", title: "Floor Line Balancing", desc: "Distribute 80-operator sewing line tasks for maximum SMV" },
+          { number: "04", title: "Export Clearance", desc: "Generate customs documentation & bill of lading automatically" },
+        ],
+        speakerNotes: "Walk through the four operational stages, highlighting our proprietary tech pack parser and automated floor line balancing.",
+      },
+      {
+        id: 5,
+        layout: "quote",
+        tag: "Buyer Validation",
+        title: "Proven Production Impact",
+        subtitle: "Tier-1 Composite Knitwear Manufacturer Testimonial",
+        bullets: [],
+        quote: {
+          text: "Integrating Shothik RMG intelligence cut our sample approval cycle from 14 days down to 48 hours. We recovered $180,000 in fabric scrap savings in our first quarter alone.",
+          author: "Managing Director",
+          role: "Top-5 Gazipur Composite Knitwear Group (32,000 Workers)",
+        },
+        speakerNotes: "Share this real-world quote showing tangible ROI in fabric savings and dramatic reduction in buyer sample cycle time.",
+      },
+      {
+        id: 6,
+        layout: "grid",
+        tag: "Product Capabilities",
+        title: "Enterprise RMG Feature Matrix",
+        subtitle: "Purpose-Built for Industrial Scale & Real-Time Production Lines",
+        bullets: [],
+        features: [
+          { title: "Smart Marker Nesting", desc: "Optimized fabric cutting curves saving up to 4% yarn weight per run" },
+          { title: "Real-Time SMV Tracking", desc: "Standard Minute Value analytics per sewing station to prevent bottlenecking" },
+          { title: "ESG & Carbon Tracker", desc: "Calculates CO2 footprint and water consumption per finished garment unit" },
+          { title: "Back-to-Back LC Ledger", desc: "Reconciles raw material import LCs against export proceeds and bank margins" },
+        ],
+        speakerNotes: "Review the key capabilities: smart marker nesting, real-time SMV tracking, ESG tracking, and back-to-back LC reconciliation.",
+      },
+      {
+        id: 7,
+        layout: "split",
+        tag: "Moat & Defensibility",
+        title: "Why Competitors Cannot Replicate",
+        subtitle: "Domain Data Depth & Factory ERP Integration",
+        bullets: [],
+        splitLeft: {
+          heading: "📊 Proprietary Data Assets",
+          points: [
+            "Trained on 45,000+ real tech packs, wash recipes & pattern grading matrices",
+            "Direct integration with leading industrial circular knitting & sewing hardware",
+            "Native Bengali & Sylheti voice interface for floor supervisors and line managers",
+          ],
+        },
+        splitRight: {
+          heading: "🔒 Enterprise Stickiness",
+          points: [
+            "Deep integration with commercial banking back-to-back LC clearance APIs",
+            "Certified for EU Digital Product Passport (DPP) compliance regulations",
+            "Over 98% annual customer retention among tier-1 industrial clients",
+          ],
+        },
+        speakerNotes: "Explain our structural competitive advantages: proprietary tech pack datasets and deep integration into commercial trade banking.",
+      },
+      {
+        id: 8,
+        layout: "timeline",
+        tag: "Roadmap & Scaling",
+        title: "Growth & Global Sourcing Milestones",
+        subtitle: "Expanding from Dhaka & Chittagong to Vietnam & Cambodia",
+        bullets: [],
+        timelineSteps: [
+          { step: "Phase 1", title: "Dhaka & Gazipur Scale", desc: "Deploy across 250 composite knitwear & woven facilities", status: "active" },
+          { step: "Phase 2", title: "Chittagong Port & EPZ", desc: "Integrate customs automation with Port of Chittagong", status: "upcoming" },
+          { step: "Phase 3", title: "EU Digital Passport", desc: "Launch mandatory EU DPP QR traceability for fashion brands", status: "upcoming" },
+          { step: "Phase 4", title: "Regional Expansion", desc: "Enter Vietnam and Cambodia apparel manufacturing corridors", status: "upcoming" },
+        ],
+        speakerNotes: "Conclude with our growth trajectory: scaling in Dhaka/Gazipur, integrating Chittagong port logistics, and expanding regionally.",
+      },
+    ];
+  }
+
+  if (lower.includes("fintech") || lower.includes("mfs") || lower.includes("bkash") || lower.includes("nagad") || lower.includes("banking") || lower.includes("payment") || lower.includes("wallet")) {
+    return [
+      {
+        id: 1,
+        layout: "hero",
+        tag: "Executive Vision",
+        title: cleanTopic,
+        subtitle: "Next-Gen AI Micro-Credit, Merchant Settlement & MFS Infrastructure for 120M+ Wallets",
+        bullets: [
+          "Instant automated bKash, Nagad & Bangla QR reconciliation with 0.1s settlement verification",
+          "Alternative credit scoring engine evaluating transactional velocity for unbanked micro-merchants",
+          "AI fraud detection preventing SIM-swap scams and unauthorized cash-out disputes",
+        ],
+        metrics: [
+          { label: "MFS Annual Volume", value: "$145B", trend: "+26.8% YoY" },
+          { label: "Registered Wallets", value: "120M+", trend: "Nationwide" },
+          { label: "Settlement Speed", value: "0.12s", trend: "Real-Time" },
+        ],
+        speakerNotes: "Open by highlighting Bangladesh's status as a world leader in mobile financial services ($145B annual throughput) and our platform's infrastructure role.",
+      },
+      {
+        id: 2,
+        layout: "split",
+        tag: "FinTech Problem vs Solution",
+        title: "Modernizing Merchant Settlement & Credit",
+        subtitle: "Eliminating High-Risk Manual Reconciliation & Predatory Informal Lending",
+        bullets: [],
+        splitLeft: {
+          heading: "⚠️ Current Merchant Pain Points",
+          points: [
+            "Manual TrxID Verification: 3-5% payment loss from fake SMS receipts",
+            "Lack of Working Capital: Micro-merchants forced into 10%-15% monthly informal debt",
+            "Fragmented PGW Integrations: High integration barrier across individual MFS rails",
+          ],
+        },
+        splitRight: {
+          heading: "✅ Our FinTech Infrastructure",
+          points: [
+            "Unified Multi-Rail PGW: Single webhook for bKash, Nagad, Upay & Visa/Mastercard",
+            "Algorithmic Micro-Lending: Instant ৳5,000-৳50,000 working capital loans via AI scoring",
+            "Automated NBR Tax Withholding: 100% compliant VAT/AIT deduction certificates",
+          ],
+        },
+        speakerNotes: "Contrast the vulnerability of manual SMS checking with our automated cryptographic TrxID verification and unified merchant SDK.",
+      },
+      {
+        id: 3,
+        layout: "stats",
+        tag: "Market Opportunity",
+        title: "The $145 Billion Digital Payment Wave",
+        subtitle: "Capturing Merchant Fees & Credit Spreads in South Asia's Fastest Growing MFS Hub",
+        bullets: [
+          "Over 3.2 million registered retail and f-commerce merchants accepting mobile payments",
+          "Bangladesh Bank Smart Bangladesh Vision targeting 100% cashless retail by 2031",
+        ],
+        metrics: [
+          { label: "Total MFS Flow", value: "$145B", trend: "+26.8% CAGR" },
+          { label: "Active Merchants", value: "3.2M+", trend: "Retail & F-Comm" },
+          { label: "Avg Transaction", value: "৳1,850", trend: "BDT" },
+          { label: "Credit Gap", value: "$12.8B", trend: "Unmet MSME Need" },
+        ],
+        speakerNotes: "Present the market volume data: $145B moving across MFS rails annually, with a massive $12.8B unmet micro-credit gap.",
+      },
+      {
+        id: 4,
+        layout: "process",
+        tag: "Payment Architecture",
+        title: "Sub-Second Transaction Lifecycle",
+        subtitle: "From Consumer QR Scan to Merchant Automated Bank Settlement",
+        bullets: [],
+        processSteps: [
+          { number: "01", title: "Dynamic QR / Intent", desc: "Generate encrypted payment intent with custom invoice metadata" },
+          { number: "02", title: "MFS Rail Routing", desc: "Execute transaction over bKash, Nagad or Bangla QR rails" },
+          { number: "03", title: "AI Fraud Scoring", desc: "Verify device signature, velocity limits & TrxID authenticity" },
+          { number: "04", title: "Instant Auto-Payout", desc: "Credit merchant ledger with automated VAT & fee reconciliation" },
+        ],
+        speakerNotes: "Walk through the four payment lifecycle steps, showing sub-second speed and integrated fraud screening.",
+      },
+      {
+        id: 5,
+        layout: "quote",
+        tag: "Enterprise Impact",
+        title: "Trusted by Fast-Growing Merchants",
+        subtitle: "Dhanmondi Retail Chain Founder Testimonial",
+        bullets: [],
+        quote: {
+          text: "Switching to Shothik FinTech rails dropped our transaction dispute rate to zero. The automated bKash reconciliation alone saves our accounting team 45 hours every week.",
+          author: "Head of Digital Commerce",
+          role: "Lifestyle & Apparel Chain (18 Outlets across Dhaka & Chittagong)",
+        },
+        speakerNotes: "Highlight this case study proving immediate operational savings in accounting overhead and dispute elimination.",
+      },
+      {
+        id: 6,
+        layout: "grid",
+        tag: "Platform Capabilities",
+        title: "Comprehensive FinTech Suite",
+        subtitle: "Engineered for High-Concurrency & Zero-Downtime Reliability",
+        bullets: [],
+        features: [
+          { title: "Bangla QR Integration", desc: "Interoperable QR payment standard compatible with all major banks & MFS apps" },
+          { title: "Instant Cashout Engine", desc: "Automated BEFTN/NPSB batch payouts to merchant commercial bank accounts" },
+          { title: "Alternative Credit Scoring", desc: "Evaluates invoice velocity and courier delivery rates to grant working capital" },
+          { title: "PCI-DSS Level 1 Security", desc: "Bank-grade hardware encryption for all stored tokens and financial keys" },
+        ],
+        speakerNotes: "Review our four core FinTech pillars: Bangla QR, instant cashouts, credit scoring, and PCI-DSS Level 1 compliance.",
+      },
+      {
+        id: 7,
+        layout: "split",
+        tag: "Unit Economics",
+        title: "High-Margin Recurring Revenue",
+        subtitle: "Monetizing Transaction Volume, SaaS Subscriptions & Lending Spreads",
+        bullets: [],
+        splitLeft: {
+          heading: "💰 Revenue Streams",
+          points: [
+            "0.8% - 1.2% Merchant Discount Rate (MDR) on processed transaction volume",
+            "৳1,499 - ৳9,900 / mo SaaS tier for automated accounting & inventory sync",
+            "3.5% - 5.0% origination fee on disbursed micro-merchant credit lines",
+          ],
+        },
+        splitRight: {
+          heading: "📈 Unit Economics",
+          points: [
+            "Customer Acquisition Cost (CAC): ৳1,200 BDT per onboarded merchant",
+            "Lifetime Value (LTV): ৳18,400 BDT (LTV:CAC Ratio of 15.3x)",
+            "Gross Margin: 78.4% with negative net revenue churn across pro tiers",
+          ],
+        },
+        speakerNotes: "Demonstrate our exceptional 15.3x LTV:CAC ratio and diversified revenue across transaction fees, SaaS, and credit origination.",
+      },
+      {
+        id: 8,
+        layout: "timeline",
+        tag: "Strategic Milestones",
+        title: "Scale & Capital Deployment Roadmap",
+        subtitle: "Expanding Financial Inclusion across Bangladesh & South Asia",
+        bullets: [],
+        timelineSteps: [
+          { step: "Q1", title: "100k Active Wallets", desc: "Reach $10M monthly processed GMV across Dhaka retailers", status: "active" },
+          { step: "Q2", title: "Micro-Credit Rollout", desc: "Disburse ৳25M BDT in algorithmic working capital loans", status: "upcoming" },
+          { step: "Q3", title: "Cross-Border Remittance", desc: "Integrate GCC-to-Bangladesh real-time remittance rails", status: "upcoming" },
+          { step: "Q4", title: "Digital Bank Sandbox", desc: "Secure Bangladesh Bank Digital Banking infrastructure partnership", status: "upcoming" },
+        ],
+        speakerNotes: "Conclude by outlining the expansion into micro-credit, GCC remittance corridors, and digital banking infrastructure.",
+      },
+    ];
+  }
+
+  if (lower.includes("agri") || lower.includes("krishi") || lower.includes("farmer") || lower.includes("agriculture") || lower.includes("crop") || lower.includes("harvest")) {
+    return [
+      {
+        id: 1,
+        layout: "hero",
+        tag: "Executive Vision",
+        title: cleanTopic,
+        subtitle: "Digitizing Farm-to-Fork Supply Chains & Climate-Resilient AgriTech for 35M+ Farmers",
+        bullets: [
+          "Direct farmer-to-retail procurement cutting middleman markups by 35%",
+          "IoT cold storage monitoring & predictive spoilage alerts for perishable produce",
+          "Satellite & computer vision crop health analysis for localized yield optimization",
+        ],
+        metrics: [
+          { label: "Agri Sector GDP", value: "৳3.2T BDT", trend: "11.6% of GDP" },
+          { label: "Farmer Base", value: "35M+", trend: "Direct Impact" },
+          { label: "Post-Harvest Waste", value: "-22%", trend: "Cold Chain" },
+        ],
+        speakerNotes: "Open by highlighting Bangladesh's massive ৳3.2 Trillion agriculture sector and how digital supply chains empower 35M smallholder farmers.",
+      },
+      {
+        id: 2,
+        layout: "split",
+        tag: "Agri Friction vs Solution",
+        title: "Fixing the Broken Agricultural Value Chain",
+        subtitle: "Eliminating 5 Layers of Intermediaries & 30% Perishable Spoilage",
+        bullets: [],
+        splitLeft: {
+          heading: "⚠️ Traditional Supply Chain Flaws",
+          points: [
+            "Middleman Exploitation: Farmers receive only 35% of retail consumer price",
+            "High Perishable Loss: 25%-30% fruit & vegetable spoilage in transit",
+            "Lack of Input Pricing Transparency: 20% price markup on fertilizers & seeds",
+          ],
+        },
+        splitRight: {
+          heading: "✅ The Direct Digital Advantage",
+          points: [
+            "Direct B2B Market Linkage: Farmers capture 65%+ of retail value via mobile app",
+            "Temperature-Controlled Micro-Hubs: Solar-powered cold storage near harvest clusters",
+            "Direct Input Sourcing: Bulk quality seeds & inputs at 15% discount to market",
+          ],
+        },
+        speakerNotes: "Contrast the 5 layers of intermediaries with our direct-to-retail digital procurement network and solar cold chain.",
+      },
+      {
+        id: 3,
+        layout: "stats",
+        tag: "Market Opportunity",
+        title: "Huge Unpenetrated AgriTech TAM",
+        subtitle: "Transforming 8.8 Million Hectares of Arable Land into High-Yield Digital Nodes",
+        bullets: [
+          "Over 35 million rural citizens engaged in crop, poultry, dairy, and fisheries production",
+          "Rapid smartphone & 4G mobile penetration across rural union parishads",
+        ],
+        metrics: [
+          { label: "Total Market Size", value: "$38.5B", trend: "Annual Agri Economy" },
+          { label: "Digital Penetration", value: "<4%", trend: "Massive White Space" },
+          { label: "Avg Farmer Income", value: "+38%", trend: "On-Platform" },
+          { label: "Partner Hubs", value: "1,200+", trend: "Upazila Level" },
+        ],
+        speakerNotes: "Highlight the massive white space: less than 4% digital penetration across a $38.5B agricultural economy.",
+      },
+      {
+        id: 4,
+        layout: "process",
+        tag: "Farm-to-Fork Flow",
+        title: "Seamless Direct Supply Chain Lifecycle",
+        subtitle: "From Village Harvest Aggregation to Supermarket Shelf in Under 12 Hours",
+        bullets: [],
+        processSteps: [
+          { number: "01", title: "Harvest Forecast", desc: "Farmer logs crop readiness via Bengali voice interface" },
+          { number: "02", title: "Micro-Hub Weighing", desc: "Digital grading & quality certification at village hub" },
+          { number: "03", title: "Cold Logistics", desc: "Dispatched in monitored temperature vehicles to metro centers" },
+          { number: "04", title: "Instant MFS Payout", desc: "Farmer receives full bKash/Nagad payment upon delivery" },
+        ],
+        speakerNotes: "Walk through the 12-hour journey from village harvesting to supermarket shelf, highlighting instant MFS farmer settlement.",
+      },
+      {
+        id: 5,
+        layout: "quote",
+        tag: "Farmer Testimonial",
+        title: "Transforming Grassroots Lives",
+        subtitle: "Bogra Potato & Vegetable Grower Testimonial",
+        bullets: [],
+        quote: {
+          text: "Previously the local brokers took 40% of my potato profit. With Shothik Agri, I sold directly to Dhaka grocery chains and got paid on my bKash account the very same afternoon.",
+          author: "Abdul Karim",
+          role: "Farmer & Cooperative Leader (Shibganj, Bogra — 12 Acres)",
+        },
+        speakerNotes: "Share this authentic testimonial demonstrating instant livelihood improvement for rural farming communities.",
+      },
+      {
+        id: 6,
+        layout: "grid",
+        tag: "Technology Stack",
+        title: "AgriTech Innovation Matrix",
+        subtitle: "Deep-Tech Tailored for Low-Bandwidth Rural Connectivity",
+        bullets: [],
+        features: [
+          { title: "Voice-First Bengali AI", desc: "Dial-in automated voice assistant allowing illiterate farmers to log crop data" },
+          { title: "Computer Vision Grading", desc: "Smartphone camera pest identification & vegetable grading in 2 seconds" },
+          { title: "Micro-Climate Weather Radar", desc: "Hyper-local rainfall & flood alerts delivered 48 hours in advance via SMS" },
+          { title: "Crop-Backed Micro-Loans", desc: "Pre-harvest financing with automatic loan deduction at produce sale" },
+        ],
+        speakerNotes: "Detail our rural-first technologies: voice AI, computer vision pest diagnostics, and crop-backed micro-loans.",
+      },
+      {
+        id: 7,
+        layout: "split",
+        tag: "Impact & Sustainability",
+        title: "ESG & Food Security Leadership",
+        subtitle: "Building Climate-Resilient Agricultural Systems for South Asia",
+        bullets: [],
+        splitLeft: {
+          heading: "🌱 Environmental Impact",
+          points: [
+            "22% reduction in perishable food wastage preventing methane landfill emissions",
+            "Precision fertilizer guidance reducing chemical groundwater runoff by 18%",
+            "Solar-powered micro cold storage running 100% off-grid in remote unions",
+          ],
+        },
+        splitRight: {
+          heading: "👥 Social & Economic Impact",
+          points: [
+            "Over 38% average increase in take-home income for participating farmers",
+            "Empowering 25,000+ female backyard poultry & dairy micro-entrepreneurs",
+            "Stabilizing urban food inflation by cutting speculative hoarding",
+          ],
+        },
+        speakerNotes: "Highlight our dual ESG impact: cutting food waste while increasing smallholder farmer incomes by 38%.",
+      },
+      {
+        id: 8,
+        layout: "timeline",
+        tag: "Execution Roadmap",
+        title: "Nationwide Agricultural Expansion",
+        subtitle: "Scaling from Northern Crop Belts to Southern Coastal Aquaculture",
+        bullets: [],
+        timelineSteps: [
+          { step: "Phase 1", title: "North Bengal Belts", desc: "Scale Bogra, Rangpur & Rajshahi vegetable/grain corridors", status: "active" },
+          { step: "Phase 2", title: "Southern Aquaculture", desc: "Deploy shrimp & fish cold chain across Khulna & Barisal", status: "upcoming" },
+          { step: "Phase 3", title: "Fertilizer Direct B2B", desc: "Partner with BCIC for transparent digital input distribution", status: "upcoming" },
+          { step: "Phase 4", title: "Regional Export", desc: "Export high-value fresh mango & betel leaf to EU & Middle East", status: "upcoming" },
+        ],
+        speakerNotes: "Conclude with our expansion plan: North Bengal grain hubs, southern aquaculture, and regional exports to the Middle East.",
+      },
+    ];
+  }
+
+  if (lower.includes("bangla") || lower.includes("heritage") || lower.includes("ekushey") || lower.includes("boimela") || lower.includes("book") || lower.includes("author") || lower.includes("publish") || lower.includes("literature")) {
+    return [
+      {
+        id: 1,
+        layout: "hero",
+        tag: "Executive Vision",
+        title: cleanTopic,
+        subtitle: "Amar Ekushey Boi Mela: AI-Powered Literary Studio & 1-Click Nilkhet Print-on-Demand",
+        bullets: [
+          "End-to-end Bengali AI authoring engine with poetic meter & literary grammar refinement",
+          "Interactive 3D Page-Flip book preview with authentic hardbound cloth & gold-foil rendering",
+          "1-Click Nilkhet physical print fulfillment with automated Steadfast & Pathao nationwide courier delivery",
+        ],
+        metrics: [
+          { label: "Boi Mela Annual Sales", value: "৳600M+ BDT", trend: "Ekushey Hub" },
+          { label: "Digital-to-Print Time", value: "48 Hours", trend: "Nilkhet POD" },
+          { label: "Author Royalties", value: "70%", trend: "vs 15% Legacy" },
+        ],
+        speakerNotes: "Open by honoring Bangladesh's legendary literary heritage (Ekushey Boi Mela) and showing how Shothik empowers every Bengali storyteller.",
+      },
+      {
+        id: 2,
+        layout: "split",
+        tag: "Publishing Friction vs Solution",
+        title: "Democratizing Bangladeshi Publishing",
+        subtitle: "Eliminating Legacy Gatekeepers, High Minimum Print Runs & Royalties Exploitation",
+        bullets: [],
+        splitLeft: {
+          heading: "⚠️ Traditional Publishing Barriers",
+          points: [
+            "Exorbitant Upfront Cost: Minimum 1,000-copy print runs costing ৳80,000+ BDT",
+            "Publisher Gatekeeping: 95% of aspiring authors rejected by traditional presses",
+            "Meager Royalties: Authors receive only 10%-15% after 12-month payment delays",
+          ],
+        },
+        splitRight: {
+          heading: "✅ Shothik 1-Click POD Revolution",
+          points: [
+            "Zero Upfront Inventory: Print-on-demand starting from a single book copy (৳180 BDT)",
+            "Instant 3D Virtual Proof: Authors review realistic page-turns and cover binding online",
+            "70% Net Author Earnings: Automated bKash royalty payouts upon Steadfast courier delivery",
+          ],
+        },
+        speakerNotes: "Contrast the traditional 1,000-copy barrier with Shothik's 1-copy Nilkhet POD engine and 70% author royalties.",
+      },
+      {
+        id: 3,
+        layout: "stats",
+        tag: "Market Scale",
+        title: "The 300M Bengali Speaking Demographic",
+        subtitle: "Capturing the 7th Most Spoken Language on Earth across Bangladesh & Global Diaspora",
+        bullets: [
+          "Over 300 million native Bengali speakers across Bangladesh, West Bengal, and global diaspora",
+          "Ekushey Boi Mela attracting over 5 million physical visitors every February in Dhaka",
+        ],
+        metrics: [
+          { label: "Global Bengali TAM", value: "300M+", trend: "7th World Lang" },
+          { label: "Annual Book Titles", value: "85,000+", trend: "Printed" },
+          { label: "Diaspora Spending", value: "$45M+", trend: "UK, US, Middle East" },
+          { label: "Avg Delivery Time", value: "48h", trend: "64 Districts" },
+        ],
+        speakerNotes: "Highlight the immense cultural TAM: 300 million Bengali speakers and an eager global diaspora.",
+      },
+      {
+        id: 4,
+        layout: "process",
+        tag: "Creation to Delivery",
+        title: "The 4-Step Self-Publishing Journey",
+        subtitle: "From Raw Idea to Hardcover Book on the Reader's Bookshelf",
+        bullets: [],
+        processSteps: [
+          { number: "01", title: "AI Literary Drafting", desc: "Collaborate with specialized Bengali character, plot & rhyme agents" },
+          { number: "02", title: "3D BoiMela Proofing", desc: "Inspect realistic 3D page turns, paper textures & gold-embossed covers" },
+          { number: "03", title: "Nilkhet Print Hub", desc: "Automated press queue printing, folding, binding & matte lamination" },
+          { number: "04", title: "Steadfast Courier COD", desc: "Doorstep delivery across all 64 districts with automated bKash collection" },
+        ],
+        speakerNotes: "Walk through the four seamless stages: AI drafting, 3D proofing, Nilkhet physical printing, and Steadfast courier delivery.",
+      },
+      {
+        id: 5,
+        layout: "quote",
+        tag: "Author Spotlight",
+        title: "Empowering Independent Voices",
+        subtitle: "Debut Fiction Novelist & Boi Mela Creator",
+        bullets: [],
+        quote: {
+          text: "Publishing my first historical novel through Shothik was magical. I designed the cover in 3D, printed 50 copies in Nilkhet for under ৳10,000, and delivered them to readers across Chittagong and Sylhet in 2 days.",
+          author: "Nusrat Jahan",
+          role: "Independent Author (Ekushey Boi Mela 2026)",
+        },
+        speakerNotes: "Share this inspiring author testimonial proving how democratized POD creates independent literary success.",
+      },
+      {
+        id: 6,
+        layout: "grid",
+        tag: "Studio Innovations",
+        title: "Boi Mela 3D Studio Features",
+        subtitle: "The Most Comprehensive Bengali Digital Publishing Suite",
+        bullets: [],
+        features: [
+          { title: "Bangla Grammar & Chhanda", desc: "Deep phonetic verification for Matra, Juktakkhor, and classical poetic meters" },
+          { title: "BoiMela 3D Canvas", desc: "WebGL interactive page-flip viewer with authentic paper weight & spine lighting" },
+          { title: "Nilkhet POD Integration", desc: "Direct API dispatch to verified Nilkhet printing presses with live job queues" },
+          { title: "Steadfast Courier Sync", desc: "Instant barcode generation, parcel tracking, and Cash-on-Delivery settlement" },
+        ],
+        speakerNotes: "Review the four studio pillars: grammatical verification, WebGL 3D preview, Nilkhet API, and Steadfast courier sync.",
+      },
+      {
+        id: 7,
+        layout: "split",
+        tag: "Author Monetization",
+        title: "Transparent & Fair Economics",
+        subtitle: "Empowering Authors to Earn a Sustainable Living from Creative Craft",
+        bullets: [],
+        splitLeft: {
+          heading: "📊 Cost Breakdown (200-Page Book)",
+          points: [
+            "Nilkhet Offset POD Printing (80 GSM paper): ৳140 BDT",
+            "Full Color Matte/Gloss Laminated Cover: ৳40 BDT",
+            "Steadfast Courier Delivery (Inside Dhaka): ৳60 BDT (৳120 Outside)",
+          ],
+        },
+        splitRight: {
+          heading: "💰 Author Earnings (৳450 Retail Price)",
+          points: [
+            "Total Production & Logistics Cost: ৳240 BDT",
+            "Author Net Royalty: ৳210 BDT per copy sold (46.7% net margin)",
+            "Direct weekly bKash / Nagad wallet deposit with zero payment delays",
+          ],
+        },
+        speakerNotes: "Demonstrate the clear unit economics: an author earns ৳210 net profit on every ৳450 book sold with zero upfront inventory risk.",
+      },
+      {
+        id: 8,
+        layout: "timeline",
+        tag: "Vision & Expansion",
+        title: "The Future of Bengali Literature",
+        subtitle: "Preserving Heritage While Scaling Global Digital Distribution",
+        bullets: [],
+        timelineSteps: [
+          { step: "Phase 1", title: "Ekushey Boi Mela Scale", desc: "Onboard 1,000 independent authors for the February book fair", status: "active" },
+          { step: "Phase 2", title: "Audiobook AI Studio", desc: "Generate multi-voice dramatic audiobooks in authentic Bengali accents", status: "upcoming" },
+          { step: "Phase 3", title: "Diaspora POD Network", desc: "Print locally in London, New York & Toronto for diaspora communities", status: "upcoming" },
+          { step: "Phase 4", title: "Heritage Archive", desc: "Digitize 50,000 rare historical manuscripts with automated OCR", status: "upcoming" },
+        ],
+        speakerNotes: "Conclude with our visionary roadmap: scaling at Boi Mela, launching AI audiobooks, and printing locally in global diaspora hubs.",
+      },
+    ];
+  }
+
   // Default consulting-grade investor deck for commerce, SaaS, and technology
   return [
     {
