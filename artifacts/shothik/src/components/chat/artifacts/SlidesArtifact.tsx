@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { VTuberPresentationStage } from "./VTuberPresentationStage";
 import { cn } from "@/lib/utils";
 
-export type SlideLayout = "hero" | "split" | "stats" | "timeline";
+export type SlideLayout = "hero" | "split" | "stats" | "timeline" | "process" | "quote" | "grid";
 
 export interface SlideData {
   id: number;
@@ -34,10 +34,13 @@ export interface SlideData {
   title: string;
   subtitle: string;
   layout?: SlideLayout;
-  bullets: string[];
+  bullets?: string[];
   splitLeft?: { heading: string; points: string[] };
   splitRight?: { heading: string; points: string[] };
   timelineSteps?: { step: string; title: string; desc: string; status: "completed" | "active" | "upcoming" }[];
+  processSteps?: { number: string; title: string; desc: string }[];
+  quote?: { text: string; author: string; role: string };
+  features?: { title: string; desc: string }[];
   metrics?: { label: string; value: string; trend?: string }[];
   speakerNotes: string;
   bgGradient?: string;
@@ -1588,6 +1591,92 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
                       </div>
                       <p className="text-xs font-bold text-white truncate">{s.title}</p>
                       <p className="text-[10px] text-zinc-400 line-clamp-2 leading-tight">{s.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 5. PROCESS WORKFLOW LAYOUT */}
+            {active.layout === "process" && (
+              <div className="space-y-2">
+                <div>
+                  <input
+                    type="text"
+                    value={active.title}
+                    onChange={(e) => handleUpdateActiveSlide({ title: e.target.value })}
+                    className="w-full bg-transparent text-lg sm:text-xl font-bold text-white tracking-tight outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                  <input
+                    type="text"
+                    value={active.subtitle}
+                    onChange={(e) => handleUpdateActiveSlide({ subtitle: e.target.value })}
+                    className="w-full bg-transparent text-[11px] text-zinc-300 outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1">
+                  {active.processSteps?.map((p, idx) => (
+                    <div key={idx} className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-1 text-left relative overflow-hidden">
+                      <div className="text-xs font-mono font-bold text-indigo-400">{p.number}</div>
+                      <p className="text-xs font-bold text-white truncate">{p.title}</p>
+                      <p className="text-[10px] text-zinc-400 leading-snug">{p.desc}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 6. QUOTE / TESTIMONIAL LAYOUT */}
+            {active.layout === "quote" && (
+              <div className="space-y-3">
+                <div>
+                  <input
+                    type="text"
+                    value={active.title}
+                    onChange={(e) => handleUpdateActiveSlide({ title: e.target.value })}
+                    className="w-full bg-transparent text-lg sm:text-xl font-bold text-white tracking-tight outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                  <input
+                    type="text"
+                    value={active.subtitle}
+                    onChange={(e) => handleUpdateActiveSlide({ subtitle: e.target.value })}
+                    className="w-full bg-transparent text-[11px] text-zinc-300 outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                </div>
+                {active.quote && (
+                  <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.08] space-y-2 text-left">
+                    <p className="text-xs sm:text-sm italic text-zinc-200 leading-relaxed font-serif">"{active.quote.text}"</p>
+                    <div className="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[11px]">
+                      <span className="font-bold text-white">{active.quote.author}</span>
+                      <span className="text-zinc-400">{active.quote.role}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 7. GRID FEATURE MATRIX LAYOUT */}
+            {active.layout === "grid" && (
+              <div className="space-y-2">
+                <div>
+                  <input
+                    type="text"
+                    value={active.title}
+                    onChange={(e) => handleUpdateActiveSlide({ title: e.target.value })}
+                    className="w-full bg-transparent text-lg sm:text-xl font-bold text-white tracking-tight outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                  <input
+                    type="text"
+                    value={active.subtitle}
+                    onChange={(e) => handleUpdateActiveSlide({ subtitle: e.target.value })}
+                    className="w-full bg-transparent text-[11px] text-zinc-300 outline-none border-b border-transparent hover:border-white/20 focus:border-indigo-400"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  {active.features?.map((f, idx) => (
+                    <div key={idx} className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] space-y-0.5 text-left">
+                      <p className="text-xs font-bold text-white truncate">{f.title}</p>
+                      <p className="text-[10px] text-zinc-400 leading-tight">{f.desc}</p>
                     </div>
                   ))}
                 </div>

@@ -5,6 +5,7 @@ import {
   FileText,
   Download,
   Check,
+  X,
   ChevronLeft,
   ChevronRight,
   ZoomIn,

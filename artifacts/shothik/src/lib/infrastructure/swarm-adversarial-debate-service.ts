@@ -31,6 +31,7 @@ export interface SwarmDebateResult {
   bearPerspective: SwarmAgentPerspective;
   techPerspective?: SwarmAgentPerspective;
   consensusChair: SwarmAgentPerspective;
+  synthesis?: string;
   finalDecision: "PROCEED_WITH_CAUTION" | "HIGH_CONVICTION_GO" | "REJECT_RISK_HIGH";
   consensusScore: number; // 0 to 100
   actionChecklist: string[];
@@ -197,6 +198,7 @@ export class SwarmAdversarialDebateService {
       bearPerspective,
       techPerspective,
       consensusChair,
+      synthesis: consensusChair.summary,
       finalDecision: consensusScore >= 70 ? "HIGH_CONVICTION_GO" : "PROCEED_WITH_CAUTION",
       consensusScore,
       actionChecklist,
