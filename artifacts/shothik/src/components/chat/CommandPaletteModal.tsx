@@ -150,6 +150,18 @@ export function CommandPaletteModal({
         onOpenChange(false);
       },
     },
+    {
+      id: "webhook_sandbox",
+      category: "Developer Sandbox",
+      title: "Logistics & MFS Webhook Sandbox",
+      subtitle: "Simulate inbound bKash, Steadfast, and Pathao webhook events",
+      icon: Zap,
+      shortcut: "W",
+      action: () => {
+        onSelectAction?.("webhook_sandbox");
+        onOpenChange(false);
+      },
+    },
   ], [onOpenChange, onSelectAction]);
 
   const filtered = useMemo(() => {
