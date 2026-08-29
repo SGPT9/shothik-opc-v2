@@ -300,6 +300,15 @@ const DEMO_TEXT =
   "The city streets were full of excitement as people gathered for the yearly parade. Brightly colored floats and marching bands filled the air with music and laughter. Spectators lined the sidewalks, cheering and waving as the procession passed by.";
 const DEMO_SELECTED_WORD = "parade";
 
+const getSafeEditorText = (ed) => {
+  if (!ed || ed.isDestroyed || !ed.state?.schema) return "";
+  try {
+    return ed.getText() || "";
+  } catch {
+    return ed.state?.doc?.textContent || "";
+  }
+};
+
 function UserInputBox({
   wordLimit = 300,
   setUserInput,
@@ -433,9 +442,7 @@ function UserInputBox({
         }
 
         isInternalUpdate.current = true;
-        const plainText =
-          editor.getText?.() ||
-          (editor.state?.doc ? customMarkdownSerializer.serialize(editor.state.doc) : "");
+        const plainText = getSafeEditorText(editor);
         setUserInput(plainText);
       },
     },
@@ -587,7 +594,7 @@ function UserInputBox({
   };
 
   useEffect(() => {
-    if (!editor || isDemoMode) {
+    if (!editor || editor.isDestroyed || !editor.state?.schema || isDemoMode) {
       return;
     }
     if (isInternalUpdate.current) {
@@ -595,7 +602,7 @@ function UserInputBox({
       return;
     }
 
-    const currentText = editor.getText?.() || "";
+    const currentText = getSafeEditorText(editor);
     if (currentText === (userInput || "")) {
       return;
     }
@@ -604,20 +611,10 @@ function UserInputBox({
       if (!userInput) {
         editor?.commands?.setContent?.("");
       } else {
-        // parse the Markdown into a ProseMirror node
-        const doc = defaultMarkdownParser.parse(userInput);
-        if (doc && typeof doc.toJSON === "function") {
-          const normalizedJson = normalizeTiptapJSON(doc.toJSON());
-          editor?.commands?.setContent?.(normalizedJson);
-        } else {
-          editor?.commands?.setContent?.(userInput);
-        }
+        editor?.commands?.setContent?.(userInput);
       }
     } catch (error) {
-      console.error("Error setting content in UserInputBox, falling back to direct string:", error);
-      try {
-        editor?.commands?.setContent?.(userInput || "");
-      } catch {}
+      console.warn("Error setting content in UserInputBox:", error);
     }
   }, [userInput, editor, isDemoMode]);
 
@@ -673,7 +670,7 @@ function UserInputBox({
   const handleToggleFreeze = () => {
     const key = normalize(selectedWord); // Normalize the selected word/phrase
     const isPhrase = key.includes(" ");
-    const editorText = editor?.getText?.() || "";
+    const editorText = getSafeEditorText(editor);
 
     // Function to count occurrences - now using normalized text
     const countOccurrences = (text, searchTerm, isPhrase) => {
