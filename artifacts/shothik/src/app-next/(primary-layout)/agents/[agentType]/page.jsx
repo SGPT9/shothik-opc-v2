@@ -61,11 +61,13 @@ export default function SpecificAgentPage() {
       case "chat":
         return <ChatAgentPage />;
       case "presentation":
-        return <ChatAgentPage initialTab="slides" />;
+      case "slides":
+        return <PresentationAgentPageV2 />;
+      case "sheet":
       case "sheets":
-        return <ChatAgentPage initialTab="sheet" />;
+        return <SheetAgentPage specificAgent="sheet" />;
       case "research":
-        return <ChatAgentPage initialTab="research" />;
+        return <ResearchAgentPage />;
       case "browse":
         return <Redirect to="/marketplace" replace />;
       case "call":
