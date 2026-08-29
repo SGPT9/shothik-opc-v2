@@ -24,7 +24,7 @@ export const crdtRouter = Router();
  * Connects a client device or browser tab to a real-time SSE CRDT sync stream.
  */
 crdtRouter.get("/v1/crdt/stream/:docId", (req: Request, res: Response): void => {
-  const { docId } = req.params;
+  const docId = String(req.params.docId || "");
   if (!docId) {
     res.status(400).json({ success: false, error: "Missing docId" });
     return;
@@ -104,7 +104,7 @@ crdtRouter.post("/v1/crdt/delta", (req: Request, res: Response): void => {
   // Update backend memory snapshot with prototype pollution protection
   let currentDoc = documentSnapshots.get(op.docId);
   if (!currentDoc) {
-    currentDoc = Object.create(null);
+    currentDoc = Object.create(null) as Record<string, any>;
     documentSnapshots.set(op.docId, currentDoc);
   }
 
@@ -137,7 +137,7 @@ crdtRouter.post("/v1/crdt/delta", (req: Request, res: Response): void => {
  * Returns the current consolidated server snapshot for a document.
  */
 crdtRouter.get("/v1/crdt/state/:docId", (req: Request, res: Response): void => {
-  const { docId } = req.params;
+  const docId = String(req.params.docId || "");
   const state = documentSnapshots.get(docId) || {};
   res.json({ success: true, docId, state });
 });
