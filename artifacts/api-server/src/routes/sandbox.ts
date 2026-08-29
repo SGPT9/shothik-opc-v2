@@ -69,10 +69,11 @@ sandboxRouter.post("/v1/sandbox/simulate-webhook", async (req: Request, res: Res
       event = "delivered",
       invoiceNumber = `NLK_INV_${Date.now()}`,
       trackingCode = `ST-POD-${Math.floor(100000 + Math.random() * 900000)}`,
-      amount = 450,
-    } = req.body;
+    const safeAmount = Math.max(1, Math.min(1000000, Number(amount) || 450));
+    const safeInvoice = String(invoiceNumber || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64) || `NLK_INV_${Date.now().toString().slice(-6)}`;
+    const safeTracking = String(trackingCode || "").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 64) || `ST-POD-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    logger.info({ provider, event, invoiceNumber, trackingCode }, "[sandbox-webhook] Simulating inbound webhook");
+    logger.info({ provider, event, invoiceNumber: safeInvoice, trackingCode: safeTracking }, "[sandbox-webhook] Simulating inbound webhook");
 
     let simulatedPayload: Record<string, any> = {};
 
@@ -81,29 +82,29 @@ sandboxRouter.post("/v1/sandbox/simulate-webhook", async (req: Request, res: Res
         paymentID: `TRX_${Date.now()}`,
         trxID: `BK_${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
         transactionStatus: event === "failed" ? "Failed" : "Completed",
-        amount: String(amount),
+        amount: String(safeAmount),
         currency: "BDT",
         intent: "sale",
-        merchantInvoiceNumber: invoiceNumber,
+        merchantInvoiceNumber: safeInvoice,
         customerMsisdn: "01700000000",
         dateTime: new Date().toISOString(),
       };
     } else if (provider === "steadfast") {
       simulatedPayload = {
-        tracking_code: trackingCode,
-        invoice: invoiceNumber,
+        tracking_code: safeTracking,
+        invoice: safeInvoice,
         status: event, // "delivered" | "in_transit" | "cancelled" | "return"
         updated_at: new Date().toISOString(),
         delivery_charge: 60,
-        cod_amount: Number(amount),
+        cod_amount: safeAmount,
         recipient_phone: "01700000000",
       };
     } else if (provider === "pathao") {
       simulatedPayload = {
         consignment_id: `PTH_${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
-        merchant_order_id: invoiceNumber,
+        merchant_order_id: safeInvoice,
         order_status: event === "delivered" ? "Delivered" : "In_Transit",
-        collected_amount: Number(amount),
+        collected_amount: safeAmount,
         delivery_fee: 60,
         updated_at: new Date().toISOString(),
       };

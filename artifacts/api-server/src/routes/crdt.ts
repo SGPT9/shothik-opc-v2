@@ -66,6 +66,29 @@ crdtRouter.get("/v1/crdt/stream/:docId", (req: Request, res: Response): void => 
   });
 });
 
+const FORBIDDEN_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
+function safeSetNestedPath(obj: Record<string, any>, path: string, value: any, isDelete: boolean = false): void {
+  const keys = path.split(".").filter((k) => !FORBIDDEN_KEYS.has(k.trim()));
+  if (keys.length === 0) return;
+
+  let current = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    const k = keys[i];
+    if (!(k in current) || typeof current[k] !== "object" || current[k] === null) {
+      current[k] = {};
+    }
+    current = current[k];
+  }
+
+  const lastKey = keys[keys.length - 1];
+  if (isDelete) {
+    delete current[lastKey];
+  } else {
+    current[lastKey] = value;
+  }
+}
+
 /**
  * POST /api/v1/crdt/delta
  * Broadcasts an incoming CRDT delta operation to all other connected client devices.
@@ -73,44 +96,37 @@ crdtRouter.get("/v1/crdt/stream/:docId", (req: Request, res: Response): void => 
 crdtRouter.post("/v1/crdt/delta", (req: Request, res: Response): void => {
   const op: CRDTOperationPayload = req.body;
 
-  if (!op || !op.docId || !op.id) {
+  if (!op || typeof op.docId !== "string" || typeof op.id !== "string" || typeof op.path !== "string") {
     res.status(400).json({ success: false, error: "Invalid CRDT operation payload" });
     return;
   }
 
-  // Update backend memory snapshot
+  // Update backend memory snapshot with prototype pollution protection
   let currentDoc = documentSnapshots.get(op.docId);
   if (!currentDoc) {
-    currentDoc = {};
+    currentDoc = Object.create(null);
     documentSnapshots.set(op.docId, currentDoc);
   }
 
-  // Apply operation path update to snapshot
-  const keys = op.path.split(".");
-  let target = currentDoc;
-  for (let i = 0; i < keys.length - 1; i++) {
-    const k = keys[i];
-    if (!(k in target) || typeof target[k] !== "object") {
-      target[k] = {};
-    }
-    target = target[k];
-  }
-  const lastKey = keys[keys.length - 1];
-  if (op.type === "delete") {
-    delete target[lastKey];
-  } else {
-    target[lastKey] = op.value;
-  }
+  safeSetNestedPath(currentDoc, op.path, op.value, op.type === "delete");
 
   // Broadcast delta to all other subscribers on this document
   const subscribers = activeDocumentClients.get(op.docId);
   if (subscribers && subscribers.size > 0) {
     const message = `data: ${JSON.stringify({ type: "CRDT_DELTA", op })}\n\n`;
+    const deadClients: Response[] = [];
+
     subscribers.forEach((clientRes) => {
       try {
-        clientRes.write(message);
-      } catch {}
+        const ok = clientRes.write(message);
+        if (!ok) deadClients.push(clientRes);
+      } catch {
+        deadClients.push(clientRes);
+      }
     });
+
+    // Prune dead client sockets immediately
+    deadClients.forEach((dead) => subscribers.delete(dead));
   }
 
   res.json({ success: true, docId: op.docId, broadcastTo: subscribers?.size || 0 });

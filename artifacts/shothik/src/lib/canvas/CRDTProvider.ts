@@ -151,15 +151,18 @@ export class CRDTProvider {
   }
 
   /**
-   * Internal deterministic state mutation
+   * Internal deterministic state mutation with prototype pollution protection
    */
   private executeOperationOnState(op: CRDTOperation): void {
-    const keys = op.path.split(".");
+    const forbidden = new Set(["__proto__", "constructor", "prototype"]);
+    const keys = op.path.split(".").filter((k) => !forbidden.has(k.trim()));
+    if (keys.length === 0) return;
+
     let current = this.state.data;
 
     for (let i = 0; i < keys.length - 1; i++) {
       const k = keys[i];
-      if (!(k in current) || typeof current[k] !== "object") {
+      if (!(k in current) || typeof current[k] !== "object" || current[k] === null) {
         current[k] = {};
       }
       current = current[k];
@@ -174,10 +177,10 @@ export class CRDTProvider {
   }
 
   /**
-   * Get current document snapshot
+   * Get current document snapshot (immutable clone)
    */
   public getData(): Record<string, any> {
-    return { ...this.state.data };
+    return JSON.parse(JSON.stringify(this.state.data));
   }
 
   /**
