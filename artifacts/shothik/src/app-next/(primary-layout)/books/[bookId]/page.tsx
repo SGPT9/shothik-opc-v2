@@ -1,13 +1,13 @@
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "@/lib/navigation";
 // Convex queries stubbed for frontend-only mode — returns null (loading skeleton shown)
 function useQuery(_ref: unknown, _args?: unknown) { return null; }
 function useMutation(_ref: unknown) { return async (..._args: unknown[]) => { console.log("[stub] mutation called — backend not connected"); }; }
 import { api } from "@/convex/_generated/api";
 import { useSelector } from "react-redux";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import {
   ArrowLeft,
   BookOpen,
@@ -27,10 +27,13 @@ import {
   Lock,
   Users,
   AlertCircle,
+  Printer,
+  Sparkles,
 } from "lucide-react";
 import VoteButton from "@/components/common/VoteButton";
 import SendCreditsButton from "@/components/credits/SendCreditsButton";
 import { DistributionStatusPanel } from "@/components/books/DistributionStatusPanel";
+import { NilkhetOrderModal } from "@/components/books/NilkhetOrderModal";
 
 function TagBadge({ children }: { children: React.ReactNode }) {
   return (
@@ -40,13 +43,42 @@ function TagBadge({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function BookDetailPage() {
-  const params = useParams();
-  const bookId = params.bookId as string;
+export default function BookDetailPage(props: any) {
+  const wouterParams = useParams<{ bookId?: string }>();
+  const [location] = useLocation();
+  const pathSegment = location.split("/books/")[1]?.split("/")[0]?.split("?")[0];
+  const bookId = props?.params?.bookId || wouterParams?.bookId || pathSegment || "amar-ekushey-novel";
   const { accessToken, user } = useSelector((state: any) => state.auth);
   const isAuthenticated = !!accessToken;
 
-  const book = useQuery(api.books.getPublishedBookById, { id: bookId as any });
+  const convexBook = useQuery(api.books.getPublishedBookById, { id: bookId as any });
+  const [localBook, setLocalBook] = useState<any>(null);
+  const [loadingLocal, setLoadingLocal] = useState(true);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
+
+  useEffect(() => {
+    let isCancelled = false;
+    async function fetchBookData() {
+      try {
+        const res = await fetch(`/api/v1/publishing/books/${bookId}`);
+        const data = await res.json();
+        if (!isCancelled && data.success && data.book) {
+          setLocalBook(data.book);
+        }
+      } catch (err) {
+        console.error("Failed to load local book:", err);
+      } finally {
+        if (!isCancelled) setLoadingLocal(false);
+      }
+    }
+    fetchBookData();
+    return () => {
+      isCancelled = true;
+    };
+  }, [bookId]);
+
+  const book = convexBook || localBook;
+
   const accessData = useQuery(
     api.marketplace.hasAccess,
     book ? { bookId: bookId as any } : "skip"
@@ -65,7 +97,7 @@ export default function BookDetailPage() {
   const [savingPrice, setSavingPrice] = useState(false);
   const [priceSuccess, setPriceSuccess] = useState(false);
 
-  if (book === undefined) {
+  if (loadingLocal && !book) {
     return (
       <div className="mx-auto max-w-4xl px-3 py-8 sm:px-6 sm:py-12">
         <div className="animate-pulse space-y-6">
@@ -84,7 +116,7 @@ export default function BookDetailPage() {
     );
   }
 
-  if (book === null) {
+  if (!loadingLocal && !book) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 px-4">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
@@ -337,6 +369,22 @@ export default function BookDetailPage() {
               </>
             )}
 
+            {/* 🖨️ Nilkhet Print-on-Demand (POD) Option */}
+            <div className="mt-2 pt-3 border-t border-border/80 flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => setOrderModalOpen(true)}
+                className="flex items-center justify-center gap-2 w-full rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white px-4 py-3 sm:py-2.5 text-xs font-bold transition-all shadow-md active:scale-98 min-h-[48px] sm:min-h-[44px] cursor-pointer"
+                data-testid="button-order-nilkhet-pod"
+              >
+                <Printer className="h-4 w-4" />
+                <span>Order Physical Book (Nilkhet POD)</span>
+              </button>
+              <p className="text-[10px] text-center text-muted-foreground leading-tight">
+                Doorstep delivery via Steadfast Courier · Cash on Delivery (COD)
+              </p>
+            </div>
+
             {book.googlePlayUrl && (
               <a
                 href={book.googlePlayUrl}
@@ -549,6 +597,18 @@ export default function BookDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 🖨️ Physical Print-on-Demand Modal */}
+      {book && (
+        <NilkhetOrderModal
+          open={orderModalOpen}
+          onOpenChange={setOrderModalOpen}
+          bookTitle={book.title}
+          pageCount={book.pageCount || 160}
+          authorName={book.authorName || "Author"}
+          coverUrl={book.coverUrl}
+        />
+      )}
     </div>
   );
 }
