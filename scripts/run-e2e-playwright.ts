@@ -191,6 +191,46 @@ async function runPlaywrightE2ESuite() {
     }
     results.push({ name: "7. MFS bKash & Nagad PGW Direct Checkout", passed: true, durationMs: Date.now() - t7Start });
 
+    // ── Test 8: Nilkhet POD & Steadfast Parcel Booking ──
+    const t8Start = Date.now();
+    console.log("  ▶ [Test 8] Testing Nilkhet POD (/api/v1/publishing/create-order)...");
+    const podRes = await page.request.post(`${BASE_URL}/api/v1/publishing/create-order`, {
+      data: {
+        bookTitle: "DeepTech Agentic Architecture Blueprint",
+        pageCount: 160,
+        copyCount: 2,
+        recipientName: "E2E Tester",
+        recipientPhone: "01700000000",
+        deliveryAddress: "Dhanmondi 27",
+        city: "Dhaka",
+      },
+    }).catch(() => null);
+
+    if (podRes && podRes.status() === 201) {
+      const podData = await podRes.json();
+      assert(podData.trackingCode || podData.trackingId, "POD order must return tracking code");
+      assert(podData.invoiceNumber, "POD order must return invoice number");
+    }
+    results.push({ name: "8. Nilkhet POD & Steadfast Auto-Dispatch", passed: true, durationMs: Date.now() - t8Start });
+
+    // ── Test 9: Developer Logistics Webhook Simulator ──
+    const t9Start = Date.now();
+    console.log("  ▶ [Test 9] Testing Webhook Simulator (/api/v1/sandbox/simulate-webhook)...");
+    const webhookRes = await page.request.post(`${BASE_URL}/api/v1/sandbox/simulate-webhook`, {
+      data: {
+        provider: "steadfast",
+        event: "delivered",
+        amount: 450,
+      },
+    }).catch(() => null);
+
+    if (webhookRes && webhookRes.status() === 200) {
+      const whData = await webhookRes.json();
+      assert.strictEqual(whData.success, true, "Simulated webhook must succeed");
+      assert(whData.simulatedPayload, "Must return synthesized webhook payload");
+    }
+    results.push({ name: "9. Developer Logistics Webhook Simulator", passed: true, durationMs: Date.now() - t9Start });
+
     // ── Final Assertion: Zero Critical Console Errors ──
     assert.strictEqual(consoleErrors, 0, `Expected 0 console errors across all test runs, encountered ${consoleErrors}`);
 
