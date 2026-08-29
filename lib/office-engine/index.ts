@@ -6,6 +6,8 @@
 
 export * as DocxEngine from "./docx/index.js";
 export * as PptxEngine from "./pptx/index.js";
+export * as OfficeParser from "./parse/index.js";
+export { parseFileToText } from "./parse/index.js";
 
 /**
  * Creates a blank formatted .docx manuscript container for research papers or Ekushey books
