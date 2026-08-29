@@ -16,6 +16,7 @@ import {
   FileSpreadsheet,
 } from "lucide-react";
 import { type ChatPersona } from "@/lib/chat/types";
+import SuiteNavigationRail from "./SuiteNavigationRail";
 
 interface EmptyChatGreetingProps {
   onSelectPrompt?: (
@@ -149,6 +150,9 @@ export function EmptyChatGreeting({
           Create AI-native spreadsheets, pitch decks, book manuscripts, or autonomous business operations in seconds.
         </p>
       </div>
+
+      {/* ── GenSpark Multi-Suite Horizon Navigation Strip ── */}
+      <SuiteNavigationRail onNavigateTab={(tab) => onSelectPrompt?.("", "cofounder", tab)} />
 
       {/* ── GenSpark Category Pill Strip ── */}
       <div className="flex flex-wrap items-center justify-center gap-2 max-w-2xl mx-auto">
