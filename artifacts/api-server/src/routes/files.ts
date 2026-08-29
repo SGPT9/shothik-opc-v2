@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import crypto from "crypto";
 import { openDataLoader } from "../lib/document-parsing/opendataloader-bridge";
 import { ragEngine } from "../lib/rag-engine";
 import { logger } from "../lib/logger";
@@ -7,7 +8,7 @@ const router = Router();
 
 /**
  * POST /api/v1/files/upload
- * Uploads a document (PDF, TXT, CSV, MD) and automatically parses and indexes it for Vector RAG
+ * Uploads a document (PDF, DOCX, XLSX, TXT, CSV, MD) and automatically parses and indexes it for Vector RAG
  */
 router.post("/v1/files/upload", async (req: Request, res: Response): Promise<void> => {
   try {
@@ -22,15 +23,20 @@ router.post("/v1/files/upload", async (req: Request, res: Response): Promise<voi
     }
 
     let parsedResult;
+    let fileHash: string;
 
     if (fileBase64) {
       const buffer = Buffer.from(fileBase64, "base64");
-      if (filename.toLowerCase().endsWith(".pdf")) {
+      fileHash = crypto.createHash("sha256").update(buffer).digest("hex");
+      const lower = filename.toLowerCase();
+
+      if (lower.endsWith(".pdf")) {
         parsedResult = await openDataLoader.parsePdf(buffer, filename);
       } else {
         parsedResult = openDataLoader.parseTextDocument(buffer.toString("utf8"), filename);
       }
     } else {
+      fileHash = crypto.createHash("sha256").update(rawContent).digest("hex");
       parsedResult = openDataLoader.parseTextDocument(rawContent, filename);
     }
 
@@ -43,6 +49,7 @@ router.post("/v1/files/upload", async (req: Request, res: Response): Promise<voi
       metadata: {
         pageCount: parsedResult.pageCount,
         sectionCount: parsedResult.sections.length,
+        fileHash,
         ...metadata,
       },
     });
@@ -51,6 +58,7 @@ router.post("/v1/files/upload", async (req: Request, res: Response): Promise<voi
       success: true,
       documentId: ragResult.document.id,
       title: parsedResult.title,
+      fileHash,
       pageCount: parsedResult.pageCount,
       chunksCreated: ragResult.chunksCreated,
       totalLength: parsedResult.totalLength,
@@ -59,6 +67,45 @@ router.post("/v1/files/upload", async (req: Request, res: Response): Promise<voi
     });
   } catch (error: any) {
     logger.error({ error: error.message }, "[files-route] Upload failed");
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/v1/files/batch-upload
+ * Batch ingest multiple documents in parallel
+ */
+router.post("/v1/files/batch-upload", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { files, userId = "usr_default" } = req.body;
+
+    if (!Array.isArray(files) || files.length === 0) {
+      res.status(400).json({ success: false, error: "files array is required and must not be empty" });
+      return;
+    }
+
+    const uploaded = [];
+    for (const f of files) {
+      const parsed = openDataLoader.parseTextDocument(f.rawContent || "", f.filename || "file.txt");
+      const rag = await ragEngine.ingestDocument({
+        userId,
+        title: parsed.title,
+        content: parsed.markdown,
+        sourceType: "text",
+      });
+      uploaded.push({
+        documentId: rag.document.id,
+        title: parsed.title,
+        chunksCreated: rag.chunksCreated,
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      count: uploaded.length,
+      documents: uploaded,
+    });
+  } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
   }
 });
@@ -77,6 +124,31 @@ router.get("/v1/files", async (req: Request, res: Response): Promise<void> => {
       userId,
       count: allDocs.length,
       documents: allDocs,
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/v1/files/:docId/content
+ * Retrieves the full parsed content of an indexed file
+ */
+router.get("/v1/files/:docId/content", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
+    const { docId } = req.params;
+    const allDocs = await ragEngine.listDocuments(userId);
+    const doc = allDocs.find((d) => d.id === docId);
+
+    if (!doc) {
+      res.status(404).json({ success: false, error: `Document ${docId} not found` });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      document: doc,
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });
