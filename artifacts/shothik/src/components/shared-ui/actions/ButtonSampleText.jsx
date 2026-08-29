@@ -20,9 +20,10 @@ const ButtonSampleText = ({
 }) => {
   const handleSampleText = () => {
     try {
-      if (!sample) return;
-
-      onApply?.(sample);
+      const defaultSample =
+        "The city buzzed with energy as crowds assembled for the annual parade. Vibrant floats and lively marching bands infused the atmosphere with music and joy, while spectators lined the streets, applauding and waving as the procession moved along.";
+      const textToApply = sample || defaultSample;
+      onApply?.(textToApply);
     } catch (error) {
       console.error("Failed to apply sample text:", error);
     }

@@ -1,1 +1,16 @@
-{"projectId":"prj_gebINoUnh0aUE6MVWX1IVMxH64mz","orgId":"team_yYosLYVfzlkh84OYM6D5CLXB","projectName":"shothik-web-mirror-v2"}
+{
+  "projectId": "prj_gebINoUnh0aUE6MVWX1IVMxH64mz",
+  "orgId": "team_yYosLYVfzlkh84OYM6D5CLXB",
+  "projectName": "shothik-web-mirror-v2",
+  "settings": {
+    "createdAt": 1785134497993,
+    "framework": "nextjs",
+    "devCommand": null,
+    "installCommand": null,
+    "buildCommand": null,
+    "outputDirectory": null,
+    "rootDirectory": null,
+    "directoryListing": false,
+    "nodeVersion": "24.x"
+  }
+}

@@ -9,6 +9,8 @@ import {
 import { cn } from "@/lib/utils";
 import { ClipboardPaste } from "lucide-react";
 
+import { toast } from "react-toastify";
+
 const ButtonPasteText = ({
   className = "",
   onApply,
@@ -19,10 +21,18 @@ const ButtonPasteText = ({
 }) => {
   const handlePaste = async () => {
     try {
-      const text = await navigator.clipboard.readText();
-      onApply?.(text);
+      if (typeof navigator !== "undefined" && navigator?.clipboard?.readText) {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim()) {
+          onApply?.(text);
+          toast.success("Pasted from clipboard");
+          return;
+        }
+      }
+      toast.info("Please paste text using Ctrl+V or Cmd+V");
     } catch (error) {
-      console.error("Failed to read clipboard:", error);
+      console.warn("Failed to read clipboard:", error);
+      toast.info("Please paste text using Ctrl+V or Cmd+V");
     }
   };
 

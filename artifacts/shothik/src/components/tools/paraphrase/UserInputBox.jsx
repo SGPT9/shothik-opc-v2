@@ -325,11 +325,15 @@ function UserInputBox({
   // Use demo text when in demo mode, otherwise use userInput
   const editorContent = isDemoMode ? DEMO_TEXT : userInput;
 
-  const [initialDoc, setInitialDoc] = useState(
-    editorContent
-      ? defaultMarkdownParser.parse(editorContent).toJSON()
-      : undefined,
-  );
+  const [initialDoc, setInitialDoc] = useState(() => {
+    if (!editorContent) return undefined;
+    try {
+      const parsed = defaultMarkdownParser.parse(editorContent);
+      return parsed ? parsed.toJSON() : undefined;
+    } catch {
+      return undefined;
+    }
+  });
   const allowDoubleClickSelection = useRef(false);
 
   const isDragging = useRef(false);
@@ -585,27 +589,31 @@ function UserInputBox({
   };
 
   useEffect(() => {
-    if (!editor || isInternalUpdate.current || isDemoMode) {
-      // clear the flag so that onUpdate can fire next time
+    if (!editor || isDemoMode) {
+      return;
+    }
+    if (isInternalUpdate.current) {
       isInternalUpdate.current = false;
       return;
     }
 
     try {
-      // parse the Markdown into a ProseMirror node
-      const doc = defaultMarkdownParser.parse(userInput);
-
-      // Normalize the JSON to match Tiptap's expected node names
-      const normalizedJson = normalizeTiptapJSON(doc.toJSON());
-
-      // update the editor with that JSON
-      editor.commands.setContent(normalizedJson);
+      if (!userInput) {
+        editor?.commands?.setContent("");
+      } else {
+        // parse the Markdown into a ProseMirror node
+        const doc = defaultMarkdownParser.parse(userInput);
+        if (doc) {
+          const normalizedJson = normalizeTiptapJSON(doc.toJSON());
+          editor?.commands?.setContent(normalizedJson);
+        } else {
+          editor?.commands?.setContent(userInput);
+        }
+      }
     } catch (error) {
-      console.error("Error setting content in UserInputBox:", error);
+      console.error("Error setting content in UserInputBox, falling back to direct string:", error);
+      editor?.commands?.setContent(userInput || "");
     }
-
-    // we're done syncing, clear the flag again
-    isInternalUpdate.current = false;
   }, [userInput, editor, isDemoMode]);
 
   // Force editor recreation when frozen words/phrases, demo mode, or yellow highlight changes
@@ -618,6 +626,7 @@ function UserInputBox({
     if (isDemoMode && editor) {
       // Wait for editor to be ready
       setTimeout(() => {
+        if (!editor?.state?.doc) return;
         const content = editor.state.doc.textContent;
         const wordIndex = content.indexOf(DEMO_SELECTED_WORD);
 
@@ -626,16 +635,17 @@ function UserInputBox({
           const to = wordIndex + DEMO_SELECTED_WORD.length;
 
           // Focus the editor first to make selection visible
-          editor.commands.focus();
+          editor.commands?.focus();
 
           // Select the word
-          editor.commands.setTextSelection({ from, to });
+          editor.commands?.setTextSelection({ from, to });
 
           // Trigger selection update manually
           setSelectedWord(DEMO_SELECTED_WORD);
 
           // Position the popover
           setTimeout(() => {
+            if (!editor?.view) return;
             const { view } = editor;
             const start = view.coordsAtPos(from);
 
