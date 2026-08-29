@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Bot,
   Play,
@@ -15,9 +13,11 @@ import {
   Terminal,
   Activity,
   Layers,
+  Brain,
 } from "lucide-react";
 import { LiquidGlassCard } from "../LiquidGlassCard";
 import { cn } from "@/lib/utils";
+import { epistemicGraphMemory } from "@/lib/memory/EpistemicGraphMemory";
 
 export interface AutonomousTask {
   id: string;
@@ -30,51 +30,106 @@ export interface AutonomousTask {
 const INITIAL_TWIN_TASKS: AutonomousTask[] = [
   {
     id: "twin-t1",
-    title: "Add /docs/identity-verification for NID API integration",
-    description: "Documentation page for Bangladeshi banks integrating with POST /v1/verify/identity.",
-    tags: ["FEATURE", "TONIGHT", "1 CREDIT"],
+    title: "Steadfast 64-District COD Settlement & Auto-Payouts",
+    description: "Reconcile daily parcel deliveries and automate bKash merchant payouts.",
+    tags: ["LOGISTICS", "TONIGHT", "1 CREDIT"],
     status: "in_progress",
   },
   {
     id: "twin-t2",
-    title: "Configure bKash Merchant Webhook Ingress & Auto-Retry",
-    description: "Implement HMAC-SHA256 signature verification on incoming payment IPNs.",
-    tags: ["MFS", "1 CREDIT"],
+    title: "NBR Income Tax Act Section 78 Rebate Verification",
+    description: "Audit investment rebate allowances and generate export tax clearance filing.",
+    tags: ["TAX & COMPLIANCE", "1 CREDIT"],
     status: "todo",
   },
   {
     id: "twin-t3",
-    title: "Automate Cold Outreach to 45 Dhaka Tech Founders",
-    description: "Personalized cold emails targeting CTOs of top emerging-market scaleups.",
+    title: "Automate Cold Outreach to 45 Emerging Market Tech Founders",
+    description: "Personalized outbound pitch notes with TAM/SAM metrics and traction deck.",
     tags: ["GROWTH", "TONIGHT"],
     status: "todo",
   },
 ];
 
 export function TwinArtifact() {
-  const [tasks, setTasks] = useState<AutonomousTask[]>(INITIAL_TWIN_TASKS);
-  const [isAutoMode, setIsAutoMode] = useState(false);
+  const [tasks, setTasks] = useState<AutonomousTask[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("shothik_twin_tasks");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch {}
+    }
+    return INITIAL_TWIN_TASKS;
+  });
+
+  const [isAutoMode, setIsAutoMode] = useState(true);
   const [isNightshift, setIsNightshift] = useState(true);
   const [chatInput, setChatInput] = useState("");
+  const [activeEpistemicNodes, setActiveEpistemicNodes] = useState<any[]>([]);
+
   const [feed, setFeed] = useState([
     {
       id: "f-1",
-      sender: "Polsia (Autonomous Twin)",
+      sender: "Shothik (Autonomous Twin)",
       time: "12:16 AM",
-      text: "Deployed webhook delivery log to `/v1/webhooks/deliveries`. 3 scheduled tasks queued for tonight's execution cycle.",
-    },
-    {
-      id: "f-2",
-      sender: "Polsia (Autonomous Twin)",
-      time: "Just now",
-      text: "Nightshift active: I will execute high-priority backlog tasks at 2:00 AM and deliver the CEO Morning Digest.",
+      text: "Nightshift active: Executing priority backlog tasks at 2:00 AM. Learned rules synced with Epistemic Memory DAG.",
     },
   ]);
+
+  // Load epistemic nodes and persistent feed
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const storedFeed = localStorage.getItem("shothik_twin_feed");
+        if (storedFeed) {
+          const parsed = JSON.parse(storedFeed);
+          if (Array.isArray(parsed) && parsed.length > 0) setFeed(parsed);
+        }
+        setActiveEpistemicNodes(epistemicGraphMemory.getActiveNodes());
+      } catch {}
+    }
+  }, []);
+
+  // Sync tasks to localStorage whenever modified
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("shothik_twin_tasks", JSON.stringify(tasks));
+        window.dispatchEvent(new CustomEvent("shothik_twin_tasks_updated", { detail: { tasks } }));
+      } catch {}
+    }
+  }, [tasks]);
+
+  // Sync feed to localStorage
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("shothik_twin_feed", JSON.stringify(feed));
+      } catch {}
+    }
+  }, [feed]);
 
   const handleSendMessage = () => {
     if (!chatInput.trim()) return;
     const userMsg = chatInput.trim();
     setChatInput("");
+
+    // 1. Commit directive into Epistemic DAG
+    epistemicGraphMemory.addDecision(userMsg, "DECISION", 0.95);
+    setActiveEpistemicNodes(epistemicGraphMemory.getActiveNodes());
+
+    // 2. Synthesize new autonomous task
+    const newTask: AutonomousTask = {
+      id: `task-${Date.now()}`,
+      title: userMsg.slice(0, 50),
+      description: userMsg,
+      tags: ["AUTONOMOUS", "1 CREDIT", "TONIGHT"],
+      status: "in_progress",
+    };
+    setTasks((prev) => [newTask, ...prev]);
 
     setFeed((prev) => [
       ...prev,
@@ -86,9 +141,9 @@ export function TwinArtifact() {
       },
       {
         id: `twin-${Date.now()}`,
-        sender: "Polsia (Autonomous Twin)",
+        sender: "Shothik (Autonomous Twin)",
         time: "Just now",
-        text: `Understood: "${userMsg}". I have broken this directive into autonomous sub-steps and added it to the priority backlog.`,
+        text: `Understood: "${userMsg}". I have synthesized a priority execution task and linked this rule to the Epistemic Memory DAG with automated conflict superseding.`,
       },
     ]);
   };
@@ -235,17 +290,35 @@ export function TwinArtifact() {
           </div>
         </div>
 
-        {/* Right Column: Founder Standup Feed & Directive Dispatch */}
+        {/* Right Column: Founder Standup Feed & Epistemic DAG */}
         <div className="md:col-span-6 flex flex-col h-full bg-background overflow-hidden">
           <div className="h-11 px-4 border-b border-border flex items-center justify-between bg-muted/20 shrink-0">
             <span className="text-xs font-bold text-foreground flex items-center gap-2">
               <Terminal className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Founder Standup & Telemetry</span>
+              <span>Founder Standup & Epistemic DAG</span>
             </span>
             <span className="text-[10px] font-mono text-emerald-400">● Live Connection</span>
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            {/* Epistemic DAG Rules Pill Box */}
+            {activeEpistemicNodes.length > 0 && (
+              <div className="p-3 rounded-xl bg-violet-500/10 border border-violet-500/30 space-y-1.5 mb-2">
+                <div className="flex items-center gap-1.5 text-[11px] font-bold text-violet-300">
+                  <Brain className="w-3.5 h-3.5 text-violet-400" />
+                  <span>Authoritative Epistemic DAG Rules ({activeEpistemicNodes.length})</span>
+                </div>
+                <div className="space-y-1 max-h-28 overflow-y-auto custom-scrollbar">
+                  {activeEpistemicNodes.map((node) => (
+                    <div key={node.id} className="text-[10px] text-zinc-300 flex items-start gap-1 font-mono">
+                      <span className="text-emerald-400 font-bold">• [{node.topic}]:</span>
+                      <span className="truncate">{node.content}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {feed.map((msg) => (
               <div
                 key={msg.id}
@@ -273,7 +346,7 @@ export function TwinArtifact() {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                placeholder="Give Polsia an autonomous directive..."
+                placeholder="Give autonomous directive (e.g., 'Switch courier to Steadfast')..."
                 className="flex-1 text-xs bg-background border border-border rounded-xl px-3 py-2 outline-none focus:border-violet-400"
               />
               <button
