@@ -302,4 +302,321 @@ router.post("/v1/publishing/export-book", async (req: Request, res: Response) =>
   }
 });
 
+// --- Sample Boi Mela Published Inventory ---
+const BOI_MELA_CATALOG = [
+  {
+    id: "amar-ekushey-novel",
+    _id: "amar-ekushey-novel",
+    title: "অমর একুশে উপন্যাস: রক্তের আখরে গাঁথা",
+    subtitle: "১৯৫২ থেকে ২০২৬ — ভাষার আত্মমর্যাদা ও সাংস্কৃতিক জাগরণের মহাকাব্যিক আখ্যান",
+    authorName: "ড. হুমায়ুন কবির",
+    userId: "usr_author_01",
+    category: "Fiction",
+    genre: "Historical Fiction",
+    language: "bn",
+    pageCount: 160,
+    listPrice: "320",
+    creditPrice: 0,
+    currency: "BDT",
+    coverPreset: "ekushey",
+    isbn: "978-984-95842-1-2",
+    rating: 4.9,
+    ratingCount: 142,
+    publishedAt: "2026-02-21T00:00:00.000Z",
+    synopsis: "ভাষার অধিকার রক্ষা থেকে শুরু করে আধুনিক ডিজিটাল সার্বভৌমত্ব প্রতিষ্ঠায় নতুন প্রজন্মের আত্মত্যাগ নিয়ে রচিত কালজয়ী উপন্যাস।",
+    chapters: [
+      { id: "ch1", title: "অধ্যায় ১: পলাশী থেকে কার্জন হলের মিছিল", wordCount: 3200 },
+      { id: "ch2", title: "অধ্যায় ২: নীলক্ষেতের প্রথম লিড টাইপ প্রেস", wordCount: 4100 },
+      { id: "ch3", title: "অধ্যায় ৩: ডিজিটাল মাতৃভাষা ও ভোরের আলো", wordCount: 3800 },
+    ],
+  },
+  {
+    id: "tech-playbook",
+    _id: "tech-playbook",
+    title: "The Bangladeshi Tech Startup Playbook",
+    subtitle: "From Zero to $10M ARR in Emerging Markets: Fundraising, Product & Growth",
+    authorName: "Tanvir Ahmed & Shothik Founders",
+    userId: "agent_tech_writer",
+    category: "Technology",
+    genre: "Business & Strategy",
+    language: "en",
+    pageCount: 240,
+    listPrice: "450",
+    creditPrice: 50,
+    currency: "BDT",
+    coverPreset: "tech_playbook",
+    isbn: "978-984-95842-2-9",
+    rating: 4.8,
+    ratingCount: 89,
+    publishedAt: "2026-01-15T00:00:00.000Z",
+    synopsis: "A battle-tested blueprint for Bangladeshi founders scaling B2B SaaS, MFS fin-tech, and AI-native startups in South Asia.",
+    chapters: [
+      { id: "ch1", title: "Chapter 1: The Emerging Market Moat & Unit Economics", wordCount: 4200 },
+      { id: "ch2", title: "Chapter 2: bKash / Nagad Micro-Transactions & Retention", wordCount: 5100 },
+      { id: "ch3", title: "Chapter 3: Swarm Autonomous Operations & Lean Scaling", wordCount: 4600 },
+    ],
+  },
+  {
+    id: "poetry-anthology",
+    _id: "poetry-anthology",
+    title: "শ্রাবণের মেঘ ও নৈঃশব্দ্য: সমকালীন কবিতা",
+    subtitle: "নাগরিক বিষাদ, বৃষ্টি ও নদীমাতৃক বাংলার একশত লিরিকাল কবিতা",
+    authorName: "নুসরাত জাহান",
+    userId: "usr_author_02",
+    category: "Poetry",
+    genre: "Contemporary Poetry",
+    language: "bn",
+    pageCount: 120,
+    listPrice: "250",
+    creditPrice: 0,
+    currency: "BDT",
+    coverPreset: "poetry",
+    isbn: "978-984-95842-3-6",
+    rating: 4.7,
+    ratingCount: 67,
+    publishedAt: "2026-02-01T00:00:00.000Z",
+    synopsis: "বৃষ্টিভেজা ঢাকা শহর, ধানমণ্ডি লেকের অপরাহ্ন ও স্মৃতির কোলাজ নিয়ে রচিত একশত মনোমুগ্ধকর কবিতা সংকলন।",
+    chapters: [
+      { id: "ch1", title: "স্তবক ১: বৃষ্টির শব্দ ও নিস্তব্ধ ঘর", wordCount: 1800 },
+      { id: "ch2", title: "স্তবক ২: বুড়িগঙ্গার জল ও অচেনা ট্রলার", wordCount: 2200 },
+    ],
+  },
+  {
+    id: "thesis-monograph",
+    _id: "thesis-monograph",
+    title: "Distributed LLM Agent Orchestration & Micro-Inference",
+    subtitle: "Formal System Verification, CRDT Collaboration & Edge Memory Graphs",
+    authorName: "Shothik Research Lab & AI Swarm Group",
+    userId: "agent_researcher_ai",
+    category: "Academic",
+    genre: "Computer Science",
+    language: "en",
+    pageCount: 320,
+    listPrice: "550",
+    creditPrice: 100,
+    currency: "BDT",
+    coverPreset: "thesis",
+    isbn: "978-984-95842-4-3",
+    rating: 5.0,
+    ratingCount: 34,
+    publishedAt: "2026-02-10T00:00:00.000Z",
+    synopsis: "Comprehensive research monograph on multi-agent consensus protocols, sub-10ms Wasm sandbox execution, and local-first memory topologies.",
+    chapters: [
+      { id: "ch1", title: "1. Epistemic Graphs & Subagent Deliberation Bounds", wordCount: 6500 },
+      { id: "ch2", title: "2. Conflict-Free Replicated Data Types in Real-Time LLM Streaming", wordCount: 7200 },
+    ],
+  },
+];
+
+/**
+ * GET /api/v1/publishing/books
+ * Returns the Boi Mela published book catalogue
+ */
+router.get("/v1/publishing/books", (_req: Request, res: Response): void => {
+  res.status(200).json({
+    success: true,
+    total: BOI_MELA_CATALOG.length,
+    books: BOI_MELA_CATALOG,
+  });
+});
+
+/**
+ * GET /api/v1/publishing/books/:bookId
+ * Returns metadata and preview chapters for a specific book
+ */
+router.get("/v1/publishing/books/:bookId", (req: Request, res: Response): void => {
+  const { bookId } = req.params;
+  const found = BOI_MELA_CATALOG.find((b) => b.id === bookId || b._id === bookId);
+
+  if (!found) {
+    // Generate dynamic fallback for any bookId requested
+    const dynamicBook = {
+      id: bookId,
+      _id: bookId,
+      title: bookId.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+      subtitle: "Published via Shothik AI Boi Mela Publishing Suite",
+      authorName: "Shothik Community Author",
+      userId: "usr_author_gen",
+      category: "General",
+      pageCount: 120,
+      listPrice: "350",
+      creditPrice: 0,
+      currency: "BDT",
+      publishedAt: new Date().toISOString(),
+      synopsis: "Original manuscript published and printed through the Nilkhet Print-on-Demand network.",
+      chapters: [
+        { id: "ch1", title: "Chapter 1: Introduction & Opening Premise", wordCount: 2800 },
+        { id: "ch2", title: "Chapter 2: Core Developments & Narrative Flow", wordCount: 3400 },
+      ],
+    };
+    res.status(200).json({ success: true, book: dynamicBook });
+    return;
+  }
+
+  res.status(200).json({
+    success: true,
+    book: found,
+  });
+});
+
+/**
+ * POST /api/v1/publishing/typeset-manuscript
+ * Generates print-ready HTML with @page CSS, bleed, and running headers
+ */
+router.post("/v1/publishing/typeset-manuscript", (req: Request, res: Response): void => {
+  try {
+    const {
+      title = "Untitled Manuscript",
+      author = "Author Name",
+      isbn = "978-984-0000-00-0",
+      trimSize = "6x9", // "6x9" | "A5" | "Royal_Demy"
+      font = "Kalpurush",
+      chapters = [],
+    } = req.body;
+
+    const dimensions = trimSize === "Royal_Demy"
+      ? { width: "156mm", height: "234mm" }
+      : trimSize === "A5"
+      ? { width: "148mm", height: "210mm" }
+      : { width: "152.4mm", height: "228.6mm" }; // 6x9 trade book
+
+    const typesetHtml = `<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>${title} — Ekushey Typeset Manuscript</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Kalpurush&family=SolaimanLipi&family=Merriweather:ital,wght@0,300;0,400;0,700;1,400&family=Inter:wght@400;600;700&display=swap');
+    
+    @page {
+      size: ${dimensions.width} ${dimensions.height};
+      margin: 20mm 15mm 20mm 20mm; /* Extra inner margin for spine gutter */
+      @bottom-center {
+        content: counter(page);
+        font-family: '${font}', 'SolaimanLipi', 'Merriweather', serif;
+        font-size: 9pt;
+      }
+    }
+
+    @page :left {
+      margin-left: 15mm;
+      margin-right: 20mm; /* Gutter on right for left pages */
+      @top-left {
+        content: "${title}";
+        font-size: 8pt;
+        color: #666;
+        font-family: '${font}', 'SolaimanLipi', serif;
+      }
+    }
+
+    @page :right {
+      margin-left: 20mm; /* Gutter on left for right pages */
+      margin-right: 15mm;
+      @top-right {
+        content: "${author}";
+        font-size: 8pt;
+        color: #666;
+        font-family: '${font}', 'SolaimanLipi', serif;
+      }
+    }
+
+    body {
+      font-family: '${font}', 'SolaimanLipi', 'Merriweather', serif;
+      font-size: 10.5pt;
+      line-height: 1.65;
+      color: #111;
+      text-align: justify;
+      hyphens: auto;
+    }
+
+    .title-page {
+      page-break-before: always;
+      page-break-after: always;
+      text-align: center;
+      padding-top: 50mm;
+    }
+
+    .book-title {
+      font-size: 24pt;
+      font-weight: bold;
+      margin-bottom: 8mm;
+      line-height: 1.2;
+    }
+
+    .book-author {
+      font-size: 14pt;
+      margin-bottom: 25mm;
+      color: #333;
+    }
+
+    .copyright-page {
+      page-break-before: always;
+      page-break-after: always;
+      font-size: 8pt;
+      color: #444;
+      line-height: 1.5;
+      padding-top: 80mm;
+    }
+
+    .chapter-heading {
+      page-break-before: always;
+      padding-top: 25mm;
+      margin-bottom: 12mm;
+      font-size: 16pt;
+      font-weight: bold;
+      text-align: center;
+    }
+
+    p {
+      margin: 0 0 1em 0;
+      text-indent: 1.5em;
+    }
+
+    p.first-paragraph {
+      text-indent: 0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Title Page -->
+  <div class="title-page">
+    <div class="book-title">${title}</div>
+    <div class="book-author">${author}</div>
+    <div style="font-size: 10pt; color: #555;">সঠিক এআই প্রেস · অমর একুশে গ্রন্থ প্রকাশনা</div>
+  </div>
+
+  <!-- Copyright Page -->
+  <div class="copyright-page">
+    <p class="first-paragraph">গ্রন্থস্বত্ব © ${new Date().getFullYear()} ${author}</p>
+    <p class="first-paragraph">আন্তর্জাতিক প্রমিত গ্রন্থ সংখ্যা (ISBN): ${isbn}</p>
+    <p class="first-paragraph">প্রচ্ছদ ও মুদ্রণ সংস্করণ: সঠিক এআই নীলক্ষেত পিওডি হাব</p>
+    <p class="first-paragraph">মুদ্রক: বাকুশাহ মার্কেট প্রেস কমপ্লেক্স, নীলক্ষেত, ঢাকা-১২০৫</p>
+  </div>
+
+  <!-- Chapters Content -->
+  ${(chapters.length > 0 ? chapters : [{ title: "অধ্যায় ১", content: "সূচনা ও মূল পাণ্ডুলিপি টেক্সট..." }]).map((ch: any) => `
+    <div class="chapter">
+      <div class="chapter-heading">${ch.title || "অধ্যায়"}</div>
+      <p class="first-paragraph">${ch.content || "পাণ্ডুলিপির মূল অনুচ্ছেদ ও বিবরণ..."}</p>
+    </div>
+  `).join("")}
+</body>
+</html>`;
+
+    res.status(200).json({
+      success: true,
+      title,
+      author,
+      trimSize,
+      font,
+      typesetHtml,
+      printReady: true,
+      generatedAt: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;
+

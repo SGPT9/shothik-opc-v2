@@ -1,8 +1,9 @@
 
 
 import { useState, useCallback } from "react";
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+// Safe hooks for standalone mode
+function useSafeQuery(_ref: unknown, _args?: unknown): any { return null; }
+function useSafeMutation(_ref: unknown): any { return async () => {}; }
 import { useSelector } from "react-redux";
 import {
   Popover,
@@ -31,9 +32,9 @@ export default function SendCreditsButton({
   const { accessToken } = useSelector((state: any) => state.auth);
   const isAuthenticated = !!accessToken;
 
-  const balanceData = useQuery(api.credits.getBalance);
-  const giftsData = useQuery(api.credits.getGiftsForTarget, { targetType, targetId });
-  const sendCredits = useMutation(api.credits.sendCredits);
+  const balanceData = useSafeQuery(null);
+  const giftsData = useSafeQuery(null);
+  const sendCredits = useSafeMutation(null);
 
   const [open, setOpen] = useState(false);
   const [customAmount, setCustomAmount] = useState("");

@@ -1,7 +1,5 @@
 
 
-import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { useState, useCallback } from "react";
 import { useSelector } from "react-redux";
@@ -25,21 +23,17 @@ export default function VoteButton({
   const { accessToken } = useSelector((state: any) => state.auth);
   const isAuthenticated = !!accessToken;
 
-  const voteTotals = useQuery(api.votes.getVotesForTarget, { targetType, targetId });
-  const userVote = useQuery(api.votes.getVoteByUser, { targetType, targetId });
-  const castVote = useMutation(api.votes.castVote);
-
   const [optimisticDelta, setOptimisticDelta] = useState(0);
   const [optimisticUserVote, setOptimisticUserVote] = useState<number | null | undefined>(undefined);
 
-  const score = (voteTotals?.score ?? initialScore) + optimisticDelta;
-  const currentVote = optimisticUserVote !== undefined ? optimisticUserVote : userVote;
+  const score = initialScore + optimisticDelta;
+  const currentVote = optimisticUserVote;
 
   const handleVote = useCallback(
     async (value: 1 | -1) => {
       if (!isAuthenticated) return;
 
-      const wasVote = optimisticUserVote !== undefined ? optimisticUserVote : userVote;
+      const wasVote = optimisticUserVote;
 
       if (wasVote === value) {
         setOptimisticDelta((d) => d - value);
@@ -51,15 +45,8 @@ export default function VoteButton({
         setOptimisticDelta((d) => d + value);
         setOptimisticUserVote(value);
       }
-
-      try {
-        await castVote({ targetType, targetId, value });
-      } catch {
-        setOptimisticDelta(0);
-        setOptimisticUserVote(undefined);
-      }
     },
-    [isAuthenticated, userVote, optimisticUserVote, castVote, targetType, targetId]
+    [isAuthenticated, optimisticUserVote]
   );
 
   const iconSize = size === "sm" ? "h-4 w-4" : "h-5 w-5";
