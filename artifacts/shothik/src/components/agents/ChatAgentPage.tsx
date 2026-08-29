@@ -27,6 +27,8 @@ import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal";
+import { CommandPaletteModal } from "@/components/chat/CommandPaletteModal";
+import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
 import { ShareArtifactModal } from "@/components/chat/ShareArtifactModal";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -113,7 +115,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const { streamState, startStream, stopStream } = useChatStreamEngine();
   const { attachments, addAttachment, removeAttachment, clearAttachments } = useAttachmentUploader();
   const { hasStartupIntent } = useTwinHandoffDetector(messages);
-  const { workingState, updateDraft, addChip, removeChip, recallContext, recordDecision } = useSecondMeCognitiveState({
+  const { workingState, updateDraft, addChip, removeChip, recallContext, recordDecision, autoExtractAndCommit } = useSecondMeCognitiveState({
     sessionId: conversationId,
   });
 
@@ -156,11 +158,28 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isSwarmDebateOpen, setIsSwarmDebateOpen] = useState(false);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isDshDrawerOpen, setIsDshDrawerOpen] = useState(false);
   const [webGpuInfo, setWebGpuInfo] = useState<WebGpuCapability | null>(null);
+
+  // Global Cmd+K / Ctrl+K and Cmd+P / Ctrl+P listeners
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setIsPrintModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     WebGpuInferenceService.probeHardware().then(setWebGpuInfo).catch(() => {});
@@ -771,6 +790,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       const chatMode = autoChatMode;
       const needleRoute = needle2.routeIntent("chat", text.trim());
       const chatHistory = messages.slice(-8).map((m) => ({ role: m.role, content: m.content })).concat([{ role: "user", content: text.trim() }]);
+      const cognitivePrompt = recallContext(text.trim());
+      let accumulatedResponse = "";
 
       await startStream(
         "/api/chat",
@@ -782,6 +803,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           context: {
             persona,
             selectedAgentId: autoAgentId,
+            cognitivePrompt,
             activeTab,
             activeArtifact: {
               tab: activeTab,
@@ -796,8 +818,21 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             attachments: attachments.map((a) => ({ name: a.name, type: a.type, url: a.url })),
           },
         },
-        (chunk) => updateLastAssistantMessage(chunk),
-        () => finalizeLastAssistantMessage(),
+        (chunk) => {
+          accumulatedResponse += chunk;
+          updateLastAssistantMessage(chunk);
+        },
+        () => {
+          finalizeLastAssistantMessage();
+          if (accumulatedResponse) {
+            autoExtractAndCommit({
+              prompt: text.trim(),
+              response: accumulatedResponse,
+              source: "chat",
+              context: { autoAgentId, activeTab },
+            });
+          }
+        },
         (err) => {
           updateLastAssistantMessage(`\n\n*[Stream Error: ${err.message}]*`);
           finalizeLastAssistantMessage();
@@ -834,7 +869,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         }
       );
     },
-    [addMessage, attachments, clearAttachments, conversationId, finalizeLastAssistantMessage, startStream, updateLastAssistantMessage, persona, updateMessageMetadata]
+    [addMessage, attachments, autoExtractAndCommit, clearAttachments, conversationId, finalizeLastAssistantMessage, recallContext, startStream, updateLastAssistantMessage, persona, updateMessageMetadata]
   );
 
   // Control Layer: Checkpoint & Secret Resolution Handlers
@@ -1431,6 +1466,37 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         <KeyboardShortcutsModal
           open={isShortcutsOpen}
           onOpenChange={setIsShortcutsOpen}
+        />
+
+        <CommandPaletteModal
+          open={isCommandPaletteOpen}
+          onOpenChange={setIsCommandPaletteOpen}
+          onSelectAction={(act) => {
+            if (act === "voice") {
+              setIsVoiceOrbOpen(true);
+            } else if (act === "second_me") {
+              // Open SecondMe memory drawer or tab
+              setActiveTab("twin");
+              setArtifactOpen(true);
+            } else if (["slides", "sheet", "research", "doc", "code"].includes(act)) {
+              setActiveTab(act as ArtifactTab);
+              setArtifactOpen(true);
+            }
+          }}
+        />
+
+        <UniversalPrintModal
+          isOpen={isPrintModalOpen}
+          onClose={() => setIsPrintModalOpen(false)}
+          defaultPreset={activeTab === "research" ? "research" : activeTab === "doc" ? "book" : "chat"}
+          title={activeConversation?.title || "Executive Briefing & Workspace Memo"}
+          author={`Shothik AI · ${activeAgent.name}`}
+          content={docContent || ""}
+          chatMessages={messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+            time: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          }))}
         />
 
         <PwaInstallBanner />

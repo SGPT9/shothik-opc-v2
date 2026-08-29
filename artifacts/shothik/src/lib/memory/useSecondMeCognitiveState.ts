@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import {
   SecondMeCognitiveMemory,
   WorkingMemoryState,
   EpisodicMemoryEntry,
   PersonaCalibration,
 } from "./second-me-cognitive-memory";
+import {
+  memoryExtractionService,
+  ExtractedMemory,
+  MemorySource,
+} from "./MemoryExtractionService";
 
 export interface UseSecondMeCognitiveStateOptions {
   sessionId?: string;
@@ -28,6 +33,43 @@ export function useSecondMeCognitiveState(options?: UseSecondMeCognitiveStateOpt
     }
     return memory.getPersona();
   });
+
+  // Synchronize stored memories into cognitive memory instance on mount & event
+  useEffect(() => {
+    const syncFromStorage = () => {
+      try {
+        const stored = localStorage.getItem("shothik_twin_memories");
+        if (stored) {
+          const items = JSON.parse(stored);
+          if (Array.isArray(items)) {
+            items.forEach((item: any) => {
+              memory.recordEpisodicDecision({
+                userId: "current-user",
+                category: item.category || "user_preference",
+                summary: item.title || "",
+                details: item.detail || "",
+                confidence: item.confidence || 0.9,
+                tags: item.tags || [],
+              });
+            });
+          }
+        }
+      } catch {}
+    };
+
+    syncFromStorage();
+
+    const handleMemoryExtracted = () => {
+      syncFromStorage();
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("shothik_memory_extracted", handleMemoryExtracted);
+      return () => {
+        window.removeEventListener("shothik_memory_extracted", handleMemoryExtracted);
+      };
+    }
+  }, [memory]);
 
   const updateDraft = useCallback(
     (text: string, tab?: WorkingMemoryState["activeArtifactTab"]) => {
@@ -70,6 +112,18 @@ export function useSecondMeCognitiveState(options?: UseSecondMeCognitiveStateOpt
     [memory]
   );
 
+  const autoExtractAndCommit = useCallback(
+    (params: {
+      prompt?: string;
+      response: string;
+      source: MemorySource;
+      context?: Record<string, any>;
+    }): ExtractedMemory[] => {
+      return memoryExtractionService.extractAndCommit(params);
+    },
+    []
+  );
+
   const recallContext = useCallback(
     (query: string) => {
       return memory.generateCognitiveContextPrompt(query);
@@ -92,8 +146,10 @@ export function useSecondMeCognitiveState(options?: UseSecondMeCognitiveStateOpt
     addChip,
     removeChip,
     recordDecision,
+    autoExtractAndCommit,
     recallContext,
     updatePersona,
     memoryInstance: memory,
   };
 }
+

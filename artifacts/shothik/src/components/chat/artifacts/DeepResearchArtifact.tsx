@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
 
 interface Source {
   title: string;
@@ -306,6 +307,7 @@ export function DeepResearchArtifact({
 }: DeepResearchArtifactProps) {
   const queryTopic = initialQuery || "Dhaka Logistics & Courier Competitor Intelligence";
   const [copied, setCopied] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<"report" | "sources" | "steps" | "matrix">("report");
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
@@ -333,7 +335,7 @@ export function DeepResearchArtifact({
   };
 
   const handlePrint = () => {
-    window.print();
+    setIsPrintModalOpen(true);
   };
 
   return (
@@ -642,6 +644,17 @@ export function DeepResearchArtifact({
           </div>
         </div>
       )}
+
+      {/* ── Universal Publication-Grade Print & Export Modal ── */}
+      <UniversalPrintModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        defaultPreset="research"
+        title={queryTopic}
+        author="Shothik Autonomous Deep Research"
+        content={summaryText}
+        sources={sourcesList}
+      />
     </div>
   );
 }

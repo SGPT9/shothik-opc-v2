@@ -19,6 +19,7 @@ import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
 import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
 import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
 import { SecondMeMemoryModal } from "@/components/twin/SecondMeMemoryModal";
+import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -194,13 +195,22 @@ Next up:
 /* ------------------------------------------------------------------ */
 
 export default function TwinPage() {
-  const [companyName, setCompanyName] = useState("VerifiQ");
+  const [companyName, setCompanyName] = useState(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("shothik_active_company") || "VerifiQ";
+    }
+    return "VerifiQ";
+  });
   const [tasks, setTasks] = useState<CockpitTask[]>(INITIAL_TASKS);
   const [docs, setDocs] = useState<CockpitDoc[]>(INITIAL_DOCS);
   const [feed, setFeed] = useState<StandupMessage[]>(INITIAL_FEED);
   const [chatInput, setChatInput] = useState("");
   const [credits, setCredits] = useState<number>(15);
   const [chatSidebarOpen, setChatSidebarOpen] = useState(true);
+
+  // Business metrics
+  const [visitorCount, setVisitorCount] = useState<number>(128);
+  const [revenueBdt, setRevenueBdt] = useState<number>(45200);
 
   // Planning loop state
   const [isPlanning, setIsPlanning] = useState(false);
@@ -245,15 +255,69 @@ export default function TwinPage() {
   const [dailyDigestOpen, setDailyDigestOpen] = useState(false);
   const [dokployOpen, setDokployOpen] = useState(false);
   const [secondMeMemoryOpen, setSecondMeMemoryOpen] = useState(false);
+  const [memoryCount, setMemoryCount] = useState(4);
 
-  // Load persistent tasks from localStorage if available
+  // Load persistent tasks, docs, feed & memory count from localStorage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("shothik_twin_tasks");
-      if (stored) {
-        setTasks(JSON.parse(stored));
+      const storedTasks = localStorage.getItem("shothik_twin_tasks");
+      if (storedTasks) {
+        setTasks(JSON.parse(storedTasks));
       }
+      const storedDocs = localStorage.getItem("shothik_twin_docs");
+      if (storedDocs) {
+        setDocs(JSON.parse(storedDocs));
+      }
+      const storedFeed = localStorage.getItem("shothik_twin_feed");
+      if (storedFeed) {
+        setFeed(JSON.parse(storedFeed));
+      }
+      const storedRev = localStorage.getItem("shothik_twin_revenue");
+      if (storedRev) {
+        setRevenueBdt(Number(storedRev) || 45200);
+      }
+      const storedVis = localStorage.getItem("shothik_twin_visitors");
+      if (storedVis) {
+        setVisitorCount(Number(storedVis) || 128);
+      }
+      const storedMems = localStorage.getItem("shothik_twin_memories");
+      if (storedMems) {
+        const parsed = JSON.parse(storedMems);
+        if (Array.isArray(parsed)) {
+          setMemoryCount(parsed.length);
+        }
+      }
+    } catch {
+      // fallback to initial
+    }
+  }, []);
+
+  // Save company name when changed
+  useEffect(() => {
+    try {
+      localStorage.setItem("shothik_active_company", companyName);
     } catch {}
+  }, [companyName]);
+
+  // Save docs when changed
+  useEffect(() => {
+    try {
+      localStorage.setItem("shothik_twin_docs", JSON.stringify(docs));
+    } catch {}
+  }, [docs]);
+
+  // Memory extraction event listener
+  useEffect(() => {
+    const handleMemExtract = (e: any) => {
+      if (e.detail?.total) {
+        setMemoryCount(e.detail.total);
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("shothik_memory_extracted", handleMemExtract);
+      return () => window.removeEventListener("shothik_memory_extracted", handleMemExtract);
+    }
   }, []);
 
   const feedScrollRef = useRef<HTMLDivElement>(null);
@@ -332,8 +396,21 @@ export default function TwinPage() {
         },
       ];
 
-      setTasks((prev) => [...plannedTasks, ...prev]);
+      setTasks((prev) => {
+        const updated = [...plannedTasks, ...prev];
+        try {
+          localStorage.setItem("shothik_twin_tasks", JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
       setIsPlanning(false);
+
+      // Autonomous extraction of roadmap decisions into SecondMe Memory
+      memoryExtractionService.extractAndCommit({
+        prompt: "Analyze product roadmap and draft strategic tasks",
+        response: plannedTasks.map((t) => `${t.title}: ${t.description}`).join("\n"),
+        source: "task",
+      });
 
       setFeed((prev) => [
         ...prev,
@@ -350,6 +427,13 @@ export default function TwinPage() {
     const text = chatInput.trim();
     if (!text) return;
     const now = new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+
+    // Auto extract founder preferences or directives from standup messages
+    memoryExtractionService.extractAndCommit({
+      prompt: "Founder directive to Polsia",
+      response: text,
+      source: "chat",
+    });
 
     setFeed((prev) => [
       ...prev,
@@ -525,21 +609,33 @@ export default function TwinPage() {
 
           {/* Business & Telemetry Widget */}
           <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
-              Business
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
+                Business
+              </h3>
+              <span className="font-mono text-[10px] text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/30">
+                LIVE TELEMETRY
+              </span>
+            </div>
 
             <div className="space-y-2 font-mono text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-zinc-700 dark:text-zinc-300">VISITORS:</span>
-                <span className="font-extrabold text-zinc-950 dark:text-white text-sm">32</span>
+                <span className="font-extrabold text-zinc-950 dark:text-white text-sm">{visitorCount.toLocaleString()}</span>
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-zinc-700 dark:text-zinc-300">REVENUE:</span>
-                <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-sm">$0.00</span>
+                <span className="font-extrabold text-emerald-700 dark:text-emerald-400 text-sm">৳{revenueBdt.toLocaleString()} BDT</span>
               </div>
-              <div className="flex items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400 font-medium">
-                <span>UPDATED 20M AGO</span>
+              <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300">TASKS:</span>
+                <span className="font-bold text-zinc-900 dark:text-zinc-200">
+                  {tasks.filter((t) => t.status === "completed").length} / {tasks.length} Done
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-zinc-600 dark:text-zinc-400 font-medium pt-1">
+                <span>UPDATED JUST NOW</span>
+                <span className="text-[10px] text-zinc-400">⚡ AUTO-SYNC</span>
               </div>
             </div>
 
@@ -575,8 +671,8 @@ export default function TwinPage() {
               <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
                 SecondMe Memory
               </h3>
-              <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-600 border-purple-500/30">
-                Active
+              <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/30 font-mono">
+                {memoryCount} Traits
               </Badge>
             </div>
 

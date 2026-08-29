@@ -113,17 +113,32 @@ export class SecondMeCognitiveMemory {
 
   recallEpisodicMemories(query: string, limit = 5): EpisodicMemoryEntry[] {
     const queryTokens = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+    const isPricingQuery = /courier|delivery|cod|price|cost|fee|tk|bdt|refund|return|voucher/i.test(query);
+    const isVoiceQuery = /tone|voice|style|bangla|banglish|language/i.test(query);
+    const isFounderQuery = /preference|rule|autonomy|approval|directive/i.test(query);
 
     return [...this.episodicMemory]
       .map((entry) => {
         let score = 0;
         const text = `${entry.summary} ${entry.details} ${entry.tags.join(" ")}`.toLowerCase();
+
+        // Exact & token overlap matching
         for (const token of queryTokens) {
-          if (text.includes(token)) score += 1;
+          if (text.includes(token)) score += 1.5;
         }
+
+        // Semantic Intent & Category boosting
+        if (isPricingQuery && entry.category === "business_rules") score += 3.0;
+        if (isVoiceQuery && entry.category === "brand_voice") score += 3.0;
+        if (isFounderQuery && entry.category === "founder_preference") score += 3.0;
+
+        // Confidence weighting
+        score *= (entry.confidence || 0.9);
+
         return { entry, score };
       })
       .sort((a, b) => b.score - a.score)
+      .filter((item) => item.score > 0 || queryTokens.length === 0)
       .slice(0, limit)
       .map((item) => item.entry);
   }
@@ -134,15 +149,40 @@ export class SecondMeCognitiveMemory {
     this.semanticMemory.push(node);
   }
 
-  searchSemanticMemory(query: string, limit = 3): SemanticMemoryNode[] {
+  /**
+   * Searches semantic nodes with cosine embedding comparison or BM25 keyword matching
+   */
+  searchSemanticMemory(query: string, limit = 3, queryEmbedding?: number[]): SemanticMemoryNode[] {
     const tokens = query.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
+
     return [...this.semanticMemory]
       .map((node) => {
         let match = 0;
+
+        // 1. Vector Cosine Similarity if embeddings are available
+        if (queryEmbedding && node.embedding && queryEmbedding.length === node.embedding.length) {
+          let dotProduct = 0;
+          let normA = 0;
+          let normB = 0;
+          for (let i = 0; i < queryEmbedding.length; i++) {
+            dotProduct += queryEmbedding[i] * node.embedding[i];
+            normA += queryEmbedding[i] * queryEmbedding[i];
+            normB += node.embedding[i] * node.embedding[i];
+          }
+          const cosine = dotProduct / (Math.sqrt(normA) * Math.sqrt(normB) || 1);
+          match += cosine * 5;
+        }
+
+        // 2. Keyword & BM25-style lexical matching
         const full = `${node.documentTitle} ${node.sectionHeader} ${node.text}`.toLowerCase();
         for (const t of tokens) {
           if (full.includes(t)) match += 2;
         }
+
+        // Epistemic Tier weighting
+        if (node.epistemicTier === "tier_1_official") match *= 1.25;
+        else if (node.epistemicTier === "tier_2_internal") match *= 1.1;
+
         return { node, match };
       })
       .sort((a, b) => b.match - a.match)

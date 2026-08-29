@@ -13,6 +13,7 @@ import {
   Languages,
   MessageSquare,
   Bot,
+  Brain,
 } from "lucide-react";
 import {
   Dialog,
@@ -24,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { saveOfflineTask } from "@/lib/offline/offline-storage";
+import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 
 export interface VoiceMessage {
   id: string;
@@ -121,6 +123,13 @@ export function VoiceCommanderModal({
 
     setConversation((prev) => [...prev, userMsg, twinMsg]);
 
+    // Automatically stream and commit voice directives to SecondMe Memory
+    memoryExtractionService.extractAndCommit({
+      prompt: `Spoken Voice Directive: ${spokenText}`,
+      response: `Action Executed: ${actionResult}`,
+      source: "chat",
+    });
+
     saveOfflineTask({
       id: `voice-task-${Date.now()}-${Math.random()}`,
       title: `Voice Command: ${spokenText.slice(0, 50)}`,
@@ -147,12 +156,12 @@ export function VoiceCommanderModal({
             <div>
               <DialogTitle className="text-base font-bold text-slate-100 flex items-center gap-2">
                 <span>Banglish Voice Commander</span>
-                <Badge variant="outline" className="border-violet-500/40 text-violet-400 font-mono text-[10px]">
-                  Web Speech V2
+                <Badge variant="outline" className="border-purple-500/40 bg-purple-500/10 text-purple-300 font-mono text-[10px] flex items-center gap-1">
+                  <Brain className="size-2.5" /> SecondMe Brain
                 </Badge>
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-400">
-                Hands-free voice operator for {companyName} with native Bangla & Banglish NLP.
+                Hands-free voice operator for {companyName} with native Bangla & Banglish cognitive tone.
               </DialogDescription>
             </div>
           </div>

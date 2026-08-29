@@ -35,25 +35,26 @@ swarmRouter.get("/v1/swarm/agents", (_req: Request, res: Response) => {
  */
 swarmRouter.post("/v1/swarm/deliberate", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { goal, topic, userId = "usr_default", sessionId } = req.body;
+    const { goal, topic, problem, userId = "usr_default", sessionId } = req.body;
+    const effectiveGoal = goal || topic || problem;
 
-    if (!goal || typeof goal !== "string") {
-      res.status(400).json({ success: false, error: "Missing required field: 'goal' (string)" });
+    if (!effectiveGoal || typeof effectiveGoal !== "string") {
+      res.status(400).json({ success: false, error: "Missing required field: 'goal' or 'topic' (string)" });
       return;
     }
 
-    const taskTitle = topic || goal.slice(0, 50);
+    const taskTitle = topic || effectiveGoal.slice(0, 50);
     logger.info(`[swarm-route] Starting multi-agent deliberation on: "${taskTitle}"`);
 
     // 1. Initialize or link DSH trace session
     let trackedSessionId = sessionId;
     if (!trackedSessionId) {
-      const dshSession = await dshRuntime.initSession(userId, `Swarm: ${taskTitle}`, { goal });
+      const dshSession = await dshRuntime.initSession(userId, `Swarm: ${taskTitle}`, { goal: effectiveGoal });
       trackedSessionId = dshSession.id;
     }
 
     // 2. Recall user semantic context
-    const recalledContext = await semanticMemory.recall(userId, goal, 3);
+    const recalledContext = await semanticMemory.recall(userId, effectiveGoal, 3);
     if (recalledContext.memories.length > 0) {
       await dshRuntime.recordEvent(trackedSessionId, "thought_block", {
         thought: `Recalled ${recalledContext.memories.length} semantic user memories to guide swarm consensus.`,
@@ -63,11 +64,15 @@ swarmRouter.post("/v1/swarm/deliberate", async (req: Request, res: Response): Pr
     // 3. Record subagent spawn event in DSH journal
     await dshRuntime.recordEvent(trackedSessionId, "subagent_spawn", {
       agent: "commander",
-      goal,
+      goal: effectiveGoal,
     });
 
     // 4. Run Swarm Deliberation
-    const summary = await swarmEngine.deliberate(goal, { userId, sessionId: trackedSessionId });
+    const summary = await swarmEngine.runDeliberation(effectiveGoal, {
+      userId,
+      sessionId: trackedSessionId,
+      recalledMemories: recalledContext.memories,
+    });
 
     // 5. Record completion event in DSH journal
     await dshRuntime.recordEvent(trackedSessionId, "session_done", {

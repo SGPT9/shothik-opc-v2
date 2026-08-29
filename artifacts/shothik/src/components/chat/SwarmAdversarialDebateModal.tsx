@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { SwarmAdversarialDebateService, type SwarmDebateResult } from "@/lib/infrastructure/swarm-adversarial-debate-service";
+import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import { CheckCircle2, ShieldAlert, Zap, Scale, Sparkles, X, ArrowRight, MessageSquare, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -52,10 +53,16 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
         if (data.summary) {
           // Adapt backend summary to debate result shape
           const fallback = SwarmAdversarialDebateService.runSwarmDebate(topic);
-          setDebateResult({
+          const fullRes = {
             ...fallback,
             topic,
             debatedAt: new Date().toISOString(),
+          };
+          setDebateResult(fullRes);
+          memoryExtractionService.extractAndCommit({
+            prompt: `Swarm deliberation consensus on ${topic}`,
+            response: fullRes.synthesis,
+            source: "swarm",
           });
           return;
         }
@@ -65,6 +72,11 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
     } finally {
       const localRes = SwarmAdversarialDebateService.runSwarmDebate(topic);
       setDebateResult(localRes);
+      memoryExtractionService.extractAndCommit({
+        prompt: `Swarm deliberation consensus on ${topic}`,
+        response: localRes.synthesis,
+        source: "swarm",
+      });
       setIsDeliberating(false);
     }
   };
