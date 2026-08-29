@@ -235,10 +235,40 @@ export default function GrammarCheckerClient() {
               <div
                 tabIndex={0}
                 role="region"
-                aria-label="Original text being checked"
-                className="h-full w-full flex-1 overflow-y-auto p-4 text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap text-foreground/80 font-normal custom-scrollbar focus-visible:outline-none"
+                aria-label="Checked text with interactive grammar highlights"
+                className="h-full w-full flex-1 overflow-y-auto p-4 text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap text-foreground/90 font-normal custom-scrollbar focus-visible:outline-none"
               >
-                {text}
+                {issues.length === 0 ? (
+                  text
+                ) : (
+                  text.split(/(\s+)/).map((segment, idx) => {
+                    const matchedIssue = issues.find(
+                      (iss) => iss.original.toLowerCase() === segment.trim().toLowerCase()
+                    );
+                    if (!matchedIssue || !segment.trim()) {
+                      return <span key={idx}>{segment}</span>;
+                    }
+                    const isGrammar = matchedIssue.type === "grammar";
+                    const isSpelling = matchedIssue.type === "spelling";
+                    return (
+                      <span
+                        key={idx}
+                        onClick={() => handleApplyCorrection(matchedIssue)}
+                        className={cn(
+                          "underline decoration-wavy decoration-2 cursor-pointer font-medium transition-all px-0.5 rounded hover:bg-muted/80",
+                          isGrammar
+                            ? "decoration-rose-500 text-rose-600 dark:text-rose-400"
+                            : isSpelling
+                              ? "decoration-amber-500 text-amber-600 dark:text-amber-400"
+                              : "decoration-blue-500 text-blue-600 dark:text-blue-400"
+                        )}
+                        title={`Click to fix: replace "${matchedIssue.original}" with "${matchedIssue.replacement}"`}
+                      >
+                        {segment}
+                      </span>
+                    );
+                  })
+                )}
               </div>
             )}
 
