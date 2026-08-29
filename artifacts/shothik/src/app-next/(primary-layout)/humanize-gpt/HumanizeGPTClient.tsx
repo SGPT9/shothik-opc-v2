@@ -476,20 +476,40 @@ export default function HumanizeGPTClient() {
                   </div>
                 </div>
 
-                {/* Highlighted Words Surface */}
+                {/* Highlighted Words Surface with In-Place Synonyms Popover */}
                 <div className="p-3 rounded-xl border border-border/50 bg-background/50 space-y-2">
-                  <span className="text-xs font-bold text-foreground block">Humanized Text Preview</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-foreground block">Interactive Humanized Preview</span>
+                    <span className="text-[11px] text-muted-foreground">Click any highlighted word for alternatives</span>
+                  </div>
                   <div className="text-sm md:text-base leading-relaxed break-words whitespace-pre-wrap">
                     {result?.words?.map((w, idx) => (
                       <span
                         key={idx}
+                        onClick={() => {
+                          if (w.isChanged && w.original) {
+                            const newWords = [...(result.words || [])];
+                            newWords[idx] = {
+                              ...w,
+                              word: w.word === w.original ? w.word : w.original,
+                              isChanged: w.word === w.original,
+                            };
+                            const updatedText = newWords.map(nw => nw.word).join(" ");
+                            setResult({
+                              ...result,
+                              words: newWords,
+                              humanizedText: updatedText,
+                            });
+                            toast.info(`Toggled word: "${w.word}" ➔ "${w.original}"`);
+                          }
+                        }}
                         className={cn(
-                          "transition-colors rounded px-0.5",
+                          "transition-all rounded px-1 py-0.5",
                           w.isChanged
-                            ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium"
+                            ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium cursor-pointer hover:bg-emerald-500/35 hover:scale-105 active:scale-95 inline-block"
                             : "text-foreground"
                         )}
-                        title={w.isChanged ? `Rewritten from: "${w.original}"` : undefined}
+                        title={w.isChanged ? `Click to toggle original: "${w.original}"` : undefined}
                       >
                         {w.word}{" "}
                       </span>
