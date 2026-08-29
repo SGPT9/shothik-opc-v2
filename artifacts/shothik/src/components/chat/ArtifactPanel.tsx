@@ -118,6 +118,7 @@ export function ArtifactPanel({
   const [copied, setCopied] = useState<boolean>(false);
   const [internalMaximized, setInternalMaximized] = useState<boolean>(false);
   const effectiveMaximized = onToggleMaximize ? isMaximized : internalMaximized;
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
   // Global Escape key listener to close drawer
   useEffect(() => {
@@ -225,10 +226,22 @@ export function ArtifactPanel({
       )}
     >
 
-      {/* Mobile Top Grabber Bar */}
-      <div className="md:hidden flex flex-col items-center justify-center pt-2 pb-1 bg-muted/40 rounded-t-3xl border-b border-border/30">
+      {/* Mobile Top Grabber Bar (Swipe Down to Dismiss) */}
+      <div
+        onTouchStart={(e) => setTouchStartY(e.touches[0].clientY)}
+        onTouchEnd={(e) => {
+          if (touchStartY !== null) {
+            const diffY = e.changedTouches[0].clientY - touchStartY;
+            if (diffY > 60) {
+              onClose();
+            }
+            setTouchStartY(null);
+          }
+        }}
+        className="md:hidden flex flex-col items-center justify-center pt-2 pb-1 bg-muted/40 rounded-t-3xl border-b border-border/30 cursor-pointer active:bg-muted/60 transition"
+      >
         <div className="w-12 h-1.5 rounded-full bg-muted-foreground/30 mb-1" />
-        <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">Swipe down or tap close</span>
+        <span className="text-[10px] font-bold text-muted-foreground tracking-wider uppercase">Swipe down to dismiss</span>
       </div>
 
       {/* ── Clean Single-Artifact Header & Switcher (DeepSeek Minimalist Standard) ── */}

@@ -85,4 +85,58 @@ describe("Second Me Tri-Tier Cognitive Memory Fabric", () => {
     expect(prompt).toContain("Language: bn-BD");
     expect(prompt).toContain("Dual Voice Architecture");
   });
+
+  it("boosts business rules and pricing traits for delivery/cost queries", () => {
+    const memory = new SecondMeCognitiveMemory();
+
+    memory.recordEpisodicDecision({
+      userId: "user-42",
+      category: "business_rules",
+      summary: "Dhaka COD Delivery Fee",
+      details: "Inside Dhaka COD delivery charge is 70 BDT",
+      confidence: 0.95,
+      tags: ["delivery", "pricing"],
+    });
+
+    memory.recordEpisodicDecision({
+      userId: "user-42",
+      category: "brand_voice",
+      summary: "Conversational Phrasing",
+      details: "Use conversational Bangla greetings",
+      confidence: 0.90,
+      tags: ["voice"],
+    });
+
+    const recalled = memory.recallEpisodicMemories("How much is courier delivery in Dhaka?");
+    expect(recalled.length).toBeGreaterThan(0);
+    expect(recalled[0].category).toBe("business_rules");
+    expect(recalled[0].summary).toBe("Dhaka COD Delivery Fee");
+  });
+
+  it("performs vector cosine similarity search on semantic nodes", () => {
+    const memory = new SecondMeCognitiveMemory();
+
+    memory.indexSemanticNode({
+      id: "node-1",
+      documentTitle: "Pricing Strategy",
+      sectionHeader: "MFS Commission",
+      text: "bKash payment gateway charges 1.5% per successful settlement transaction.",
+      embedding: [0.1, 0.9, 0.2],
+      epistemicTier: "tier_1_official",
+    });
+
+    memory.indexSemanticNode({
+      id: "node-2",
+      documentTitle: "Server Architecture",
+      sectionHeader: "Dokploy Containers",
+      text: "Dokploy manages zero-downtime rolling container deployments.",
+      embedding: [0.9, 0.1, 0.1],
+      epistemicTier: "tier_2_internal",
+    });
+
+    // Query close to node-1 vector
+    const results = memory.searchSemanticMemory("payment commission", 2, [0.15, 0.85, 0.25]);
+    expect(results.length).toBeGreaterThan(0);
+    expect(results[0].documentTitle).toBe("Pricing Strategy");
+  });
 });

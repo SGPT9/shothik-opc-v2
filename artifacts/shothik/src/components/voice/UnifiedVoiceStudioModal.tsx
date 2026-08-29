@@ -5,6 +5,7 @@ import {
   type VoiceExecutionActionType,
   type VoiceActionResponse,
 } from "@/lib/voice/chatgpt-voice-agent-service";
+import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import {
   Mic,
   MicOff,
@@ -55,6 +56,15 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
       setActiveResponse(res);
       setSpeechState("speaking");
       setSubtitleText(res.speechTranscript || "I understand. How can I help you further?");
+
+      // Autonomously extract voice decisions into SecondMe cognitive memory
+      try {
+        memoryExtractionService.extractAndCommitFromDialogue(
+          `Spoken directive for ${actionType}`,
+          res.speechTranscript || "",
+          "voice_assistant"
+        );
+      } catch {}
     }, 600);
   };
 

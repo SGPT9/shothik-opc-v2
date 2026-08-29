@@ -107,21 +107,45 @@ export function DshExecutionDrawer({
           ]);
         }
 
-        // 2. Fetch Memori Profile
-        const memRes = await fetch(`/api/memory/${userId}`);
-        if (memRes.ok) {
-          const json = await memRes.json();
-          if (isMounted && json.memories) {
-            setMemories(json.memories);
+        // 2. Fetch Memori Profile & Local Episodic Memories
+        let loadedMemories: UserMemoryItem[] = [];
+        try {
+          const memRes = await fetch(`/api/memory/${userId}`);
+          if (memRes.ok) {
+            const json = await memRes.json();
+            if (json.memories && json.memories.length > 0) {
+              loadedMemories = json.memories;
+            }
           }
-        } else {
-          if (isMounted) {
-            setMemories([
-              { id: "mem_1", category: "PREFERENCE", content: "Always format tabular data with clean Markdown tables", createdAt: Date.now() - 86400000 },
-              { id: "mem_2", category: "FACT", content: "Primary logistics provider is Steadfast Courier (Dhaka Metro)", createdAt: Date.now() - 43200000 },
-              { id: "mem_3", category: "STYLE", content: "Prefers concise executive summaries before technical details", createdAt: Date.now() - 12000000 },
-            ]);
-          }
+        } catch {}
+
+        if (loadedMemories.length === 0 && typeof window !== "undefined") {
+          try {
+            const rawStored = localStorage.getItem("shothik_twin_memories") || localStorage.getItem("shothik_second_me_memories");
+            if (rawStored) {
+              const parsed = JSON.parse(rawStored);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                loadedMemories = parsed.map((m: any, idx: number) => ({
+                  id: m.id || `mem_${idx}`,
+                  category: m.category || m.type || "PREFERENCE",
+                  content: m.content || m.summary || m.text || "Founder rule",
+                  createdAt: m.createdAt || m.timestamp || Date.now() - idx * 3600000,
+                }));
+              }
+            }
+          } catch {}
+        }
+
+        if (loadedMemories.length === 0) {
+          loadedMemories = [
+            { id: "mem_1", category: "PREFERENCE", content: "Always format tabular data with clean Markdown tables", createdAt: Date.now() - 86400000 },
+            { id: "mem_2", category: "FACT", content: "Primary logistics provider is Steadfast Courier (Dhaka Metro)", createdAt: Date.now() - 43200000 },
+            { id: "mem_3", category: "STYLE", content: "Prefers concise executive summaries before technical details", createdAt: Date.now() - 12000000 },
+          ];
+        }
+
+        if (isMounted) {
+          setMemories(loadedMemories);
         }
       } catch {
         if (isMounted) {

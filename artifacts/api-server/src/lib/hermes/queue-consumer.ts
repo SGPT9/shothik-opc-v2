@@ -3,7 +3,7 @@ import logger from "../logger.js";
 export interface QueueMessage<T = Record<string, unknown>> {
   id: string;
   timestamp: number;
-  type: "swarm_task" | "deep_research" | "book_compilation" | "mfs_reconciliation";
+  type: "swarm_task" | "deep_research" | "book_compilation" | "mfs_reconciliation" | "webhook_dispatch" | "memory_reflection";
   payload: T;
   retryCount: number;
   maxRetries: number;

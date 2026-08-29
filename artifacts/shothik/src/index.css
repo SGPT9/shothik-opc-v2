@@ -273,3 +273,43 @@
   }
 }
 
+/* ── Publication-Grade @media print Styles ── */
+@media print {
+  @page {
+    margin: 12mm 15mm;
+    size: auto;
+  }
+
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+  }
+
+  /* Hide navigation, sidebars, buttons, modals except the active print canvas */
+  header, nav, aside, footer, button, .no-print, [role="dialog"]:not(:has(#print-mount-stage)) {
+    display: none !important;
+  }
+
+  #print-mount-stage {
+    display: block !important;
+    width: 100% !important;
+    max-width: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Prevent awkward mid-element page breaks */
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+
+  p, table, figure, pre, blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+}
+
+
