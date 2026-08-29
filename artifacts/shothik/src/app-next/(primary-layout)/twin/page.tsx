@@ -1074,7 +1074,7 @@ export default function TwinPage() {
 
             <div className="space-y-1.5 font-mono text-xs">
               <p className="text-zinc-800 dark:text-zinc-200 font-bold">
-                {activeProfile.email || `${companySlug}@shothik.ai`}
+                {activeProfile.email || `${companySlug}@shothikgpt.com`}
               </p>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold pt-1">
                 NO EMAILS YET
@@ -1355,7 +1355,7 @@ export default function TwinPage() {
       <ManageDomainsModal
         open={manageDomainsOpen}
         onOpenChange={setManageDomainsOpen}
-        polsiaUrl="https://verifiq-3.shothik.ai"
+        polsiaUrl="https://verifiq-3.shothikgpt.com"
         customDomain="shothikaddress.com"
         onReleaseDomain={() => {
           setFeed((prev) => [
@@ -1435,7 +1435,7 @@ export default function TwinPage() {
         onOpenChange={setAutoColdOutreachOpen}
         onStartOutreach={async (freq) => {
           const logs = [
-            "> Provisioning Shothik outbound SMTP proxy (verifiq-3@shothik.ai)...",
+            "> Provisioning Shothik outbound SMTP proxy (verifiq-3@shothikgpt.com)...",
             "> Domain DNS DKIM/SPF auto-validated via Cloudflare Turnstile...",
             "> Auto-Cold Outreach pipeline is active and queued for dispatch.",
           ];
@@ -1446,7 +1446,7 @@ export default function TwinPage() {
           const outreachMsg: StandupMessage = {
             id: `msg-${Date.now()}`,
             time: "JUST NOW",
-            text: `✉️ Auto Cold Outreach activated (${freq.toUpperCase()}). Shothik will send tailored pitches to target CTOs from verifiq-3@shothik.ai.`,
+            text: `✉️ Auto Cold Outreach activated (${freq.toUpperCase()}). Shothik will send tailored pitches to target CTOs from verifiq-3@shothikgpt.com.`,
           };
           setFeed((prev) => [...prev, outreachMsg]);
         }}
