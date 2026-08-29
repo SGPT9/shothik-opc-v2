@@ -52,7 +52,7 @@ router.post(["/humanizerV5", "/humanizerV4", "/api/humanize", "/api/tools/humani
 });
 
 // --- 2. Paraphrase V2 & Tagging (Tokenized Synonyms) ---
-router.post(["/api/paraphraseV2", "/paraphraseV2", "/api/paraphrase-for-tagging", "/paraphrase-for-tagging"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/api/v1/tools/paraphrase", "/api/paraphraseV2", "/paraphraseV2", "/api/paraphrase-for-tagging", "/paraphrase-for-tagging"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", mode = "standard" } = req.body;
 
@@ -84,7 +84,7 @@ router.post(["/api/paraphraseV2", "/paraphraseV2", "/api/paraphrase-for-tagging"
 });
 
 // --- 3. Sheet AI & LangGraph Streaming Endpoint ---
-router.post(["/api/langgraph/stream", "/conversation/create-stream", "/api/sheet/generate"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/api/v1/tools/sheet-ai", "/api/langgraph/stream", "/conversation/create-stream", "/api/sheet/generate"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { prompt = "Analyze data", chatId = "sheet_1" } = req.body;
 
@@ -116,7 +116,7 @@ router.post(["/api/langgraph/stream", "/conversation/create-stream", "/api/sheet
 });
 
 // --- 4. User Sentence Feedback Report ---
-router.post(["/report/send-report", "/api/report/send-report"], (req: Request, res: Response): void => {
+router.post(["/api/v1/feedback/report", "/report/send-report", "/api/report/send-report"], (req: Request, res: Response): void => {
   const { sentence, reason = "User feedback" } = req.body;
   logger.info({ sentence, reason }, "[report] Received user feedback report");
   res.status(200).json({

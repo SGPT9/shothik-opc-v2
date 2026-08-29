@@ -26,12 +26,13 @@ router.get("/v1/connectors", async (req: Request, res: Response) => {
 });
 
 /**
- * POST /api/v1/connectors/save
+ * POST /api/v1/connectors & POST /api/v1/connectors/save & PUT /api/v1/connectors/:provider
  * Encrypts and saves user-provided API credentials
  */
-router.post("/v1/connectors/save", async (req: Request, res: Response) => {
+const handleSaveConnector = async (req: Request, res: Response) => {
   try {
-    const { userId = "usr_default", provider, apiKey, secretKey, endpointUrl, extra } = req.body;
+    const { userId = "usr_default", apiKey, secretKey, endpointUrl, extra } = req.body;
+    const provider = req.params.provider || req.body.provider;
 
     if (!provider || (!apiKey && !secretKey)) {
       return res.status(400).json({
@@ -56,7 +57,11 @@ router.post("/v1/connectors/save", async (req: Request, res: Response) => {
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
   }
-});
+};
+
+router.post("/v1/connectors/save", handleSaveConnector);
+router.post("/v1/connectors", handleSaveConnector);
+router.put("/v1/connectors/:provider", handleSaveConnector);
 
 /**
  * POST /api/v1/connectors/test

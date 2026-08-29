@@ -5,10 +5,10 @@ import { logger } from "../lib/logger";
 export const memoryRouter = Router();
 
 /**
- * POST /api/memory/memorize
+ * POST /api/v1/memory/memorize & /api/memory/memorize
  * Store a new semantic memory fact or preference for a user.
  */
-memoryRouter.post("/memory/memorize", async (req: Request, res: Response): Promise<void> => {
+const handleMemorize = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId, content, category, metadata } = req.body;
 
@@ -38,13 +38,12 @@ memoryRouter.post("/memory/memorize", async (req: Request, res: Response): Promi
       error: err.message || "Failed to persist memory",
     });
   }
-});
+};
 
-/**
- * POST /api/memory/recall
- * Semantically recall relevant user memories given a prompt/query.
- */
-memoryRouter.post("/memory/recall", async (req: Request, res: Response): Promise<void> => {
+memoryRouter.post("/memory/memorize", handleMemorize);
+memoryRouter.post("/v1/memory/memorize", handleMemorize);
+
+const handleRecall = async (req: Request, res: Response): Promise<void> => {
   try {
     const { userId, query, limit } = req.body;
 
@@ -73,13 +72,12 @@ memoryRouter.post("/memory/recall", async (req: Request, res: Response): Promise
       error: err.message || "Failed to recall memory",
     });
   }
-});
+};
 
-/**
- * GET /api/memory/:userId
- * List all memories for a user, optionally filtered by category.
- */
-memoryRouter.get("/memory/:userId", async (req: Request, res: Response): Promise<void> => {
+memoryRouter.post("/memory/recall", handleRecall);
+memoryRouter.post("/v1/memory/recall", handleRecall);
+
+const handleListMemories = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = typeof req.params.userId === "string" ? req.params.userId : String(req.params.userId || "");
     const category = typeof req.query.category === "string" ? req.query.category : undefined;
@@ -100,13 +98,12 @@ memoryRouter.get("/memory/:userId", async (req: Request, res: Response): Promise
     logger.error(`[memory-router] Failed to list memories: ${err.message}`);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
 
-/**
- * DELETE /api/memory/:userId/:memoryId
- * Delete a specific memory entry.
- */
-memoryRouter.delete("/memory/:userId/:memoryId", async (req: Request, res: Response): Promise<void> => {
+memoryRouter.get("/memory/:userId", handleListMemories);
+memoryRouter.get("/v1/memory/:userId", handleListMemories);
+
+const handleDeleteMemory = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = typeof req.params.userId === "string" ? req.params.userId : String(req.params.userId || "");
     const memoryId = typeof req.params.memoryId === "string" ? req.params.memoryId : String(req.params.memoryId || "");
@@ -130,13 +127,12 @@ memoryRouter.delete("/memory/:userId/:memoryId", async (req: Request, res: Respo
     logger.error(`[memory-router] Failed to delete memory: ${err.message}`);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
 
-/**
- * DELETE /api/memory/:userId
- * Clear all memories for a user.
- */
-memoryRouter.delete("/memory/:userId", async (req: Request, res: Response): Promise<void> => {
+memoryRouter.delete("/memory/:userId/:memoryId", handleDeleteMemory);
+memoryRouter.delete("/v1/memory/:userId/:memoryId", handleDeleteMemory);
+
+const handleClearMemories = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = typeof req.params.userId === "string" ? req.params.userId : String(req.params.userId || "");
 
@@ -155,4 +151,7 @@ memoryRouter.delete("/memory/:userId", async (req: Request, res: Response): Prom
     logger.error(`[memory-router] Failed to clear memories: ${err.message}`);
     res.status(500).json({ success: false, error: err.message });
   }
-});
+};
+
+memoryRouter.delete("/memory/:userId", handleClearMemories);
+memoryRouter.delete("/v1/memory/:userId", handleClearMemories);
