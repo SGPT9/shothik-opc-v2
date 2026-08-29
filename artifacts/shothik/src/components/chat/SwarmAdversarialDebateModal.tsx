@@ -51,11 +51,11 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
       if (res.ok) {
         const data = await res.json();
         if (data.summary) {
-          // Adapt backend summary to debate result shape
           const fallback = SwarmAdversarialDebateService.runSwarmDebate(topic);
-          const fullRes = {
+          const fullRes: SwarmDebateResult = {
             ...fallback,
             topic,
+            synthesis: data.summary,
             debatedAt: new Date().toISOString(),
           };
           setDebateResult(fullRes);
@@ -64,12 +64,11 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             response: fullRes.synthesis,
             source: "swarm",
           });
+          setIsDeliberating(false);
           return;
         }
       }
-    } catch {
-      // Fallback to local synchronous debate engine
-    } finally {
+      // If backend response did not have summary, use local engine
       const localRes = SwarmAdversarialDebateService.runSwarmDebate(topic);
       setDebateResult(localRes);
       memoryExtractionService.extractAndCommit({
@@ -77,6 +76,16 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
         response: localRes.synthesis,
         source: "swarm",
       });
+    } catch {
+      // Fallback to local synchronous debate engine on network error
+      const localRes = SwarmAdversarialDebateService.runSwarmDebate(topic);
+      setDebateResult(localRes);
+      memoryExtractionService.extractAndCommit({
+        prompt: `Swarm deliberation consensus on ${topic}`,
+        response: localRes.synthesis,
+        source: "swarm",
+      });
+    } finally {
       setIsDeliberating(false);
     }
   };
