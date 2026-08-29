@@ -44,10 +44,10 @@ const DEFAULT_TIER_LIMITS: Record<string, Record<string, number>> = {
 };
 
 /**
- * GET /api/v1/subscriptions/me
+ * GET /api/v1/subscriptions/me & /api/v1/subscriptions/current
  * Retrieve the current user's subscription details.
  */
-router.get("/v1/subscriptions/me", async (req: Request, res: Response) => {
+router.get(["/v1/subscriptions/me", "/v1/subscriptions/current"], async (req: Request, res: Response) => {
   try {
     const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "guest";
 
@@ -60,15 +60,18 @@ router.get("/v1/subscriptions/me", async (req: Request, res: Response) => {
           interval: "month",
           currentPeriodEnd: null,
           cancelAtPeriodEnd: false,
+          credits: 500,
         },
       });
       return;
     }
 
-    const [subscription] = await db
+    const subscription = await db
       .select()
       .from(userSubscriptionsTable)
-      .where(eq(userSubscriptionsTable.userId, userId));
+      .where(eq(userSubscriptionsTable.userId, userId))
+      .then((rows) => rows[0])
+      .catch(() => null);
 
     if (!subscription) {
       res.json({
