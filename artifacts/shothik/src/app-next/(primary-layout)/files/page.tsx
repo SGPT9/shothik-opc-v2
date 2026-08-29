@@ -164,13 +164,23 @@ export default function FilesPage() {
         content,
       };
 
-      if (isMd) {
+      if (isMd && content) {
         saveOfflineManuscript({
           id: newFileItem.id,
           title: file.name.replace(/\.[^/.]+$/, ""),
           content,
           updatedAt: Date.now(),
         });
+
+        // Auto-sync to backend Vector RAG engine with SHA-256 hash
+        fetch("/api/v1/files/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            filename: file.name,
+            rawContent: content,
+          }),
+        }).catch((err) => console.warn("Backend file sync warning:", err));
       }
 
       setFiles((prev) => [newFileItem, ...prev]);
