@@ -52,6 +52,10 @@ interface SlidesArtifactProps {
 const TEMPLATES = [
   { id: "business", label: "Demo Day Pitch", icon: "📊", themeClass: "from-slate-950 via-indigo-950/80 to-slate-950", accent: "text-indigo-400", border: "border-indigo-500/30" },
   { id: "vc_pitch", label: "VC Pitch Premium", icon: "🏆", themeClass: "from-slate-950 via-amber-950/40 to-slate-900", accent: "text-amber-400", border: "border-amber-500/40" },
+  { id: "bangla_heritage", label: "Ekushey Heritage", icon: "🏛️", themeClass: "from-red-950/90 via-amber-950/40 to-slate-950", accent: "text-amber-300", border: "border-amber-500/40" },
+  { id: "rmg_textile", label: "RMG & Textile ESG", icon: "🧵", themeClass: "from-teal-950 via-slate-900 to-emerald-950/80", accent: "text-emerald-400", border: "border-teal-500/40" },
+  { id: "fintech_gold", label: "FinTech & MFS Gold", icon: "💳", themeClass: "from-slate-950 via-yellow-950/40 to-slate-900", accent: "text-yellow-400", border: "border-yellow-500/40" },
+  { id: "agritech_green", label: "AgriTech & Rural", icon: "🌾", themeClass: "from-lime-950/80 via-slate-900 to-emerald-950", accent: "text-lime-400", border: "border-lime-500/40" },
   { id: "emerald", label: "Emerald Nature", icon: "🌿", themeClass: "from-emerald-950 via-teal-950/60 to-slate-950", accent: "text-emerald-300", border: "border-emerald-500/30" },
   { id: "obsidian", label: "Obsidian Gradient", icon: "🔮", themeClass: "from-neutral-950 via-purple-950/50 to-neutral-950", accent: "text-purple-300", border: "border-purple-500/30" },
   { id: "cyber_midnight", label: "Cyber Midnight", icon: "⚡", themeClass: "from-black via-cyan-950/50 to-purple-950/40 font-mono", accent: "text-cyan-400", border: "border-cyan-500/40" },
