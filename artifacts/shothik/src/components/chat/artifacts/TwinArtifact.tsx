@@ -65,6 +65,16 @@ export function TwinArtifact() {
     return INITIAL_TWIN_TASKS;
   });
 
+  const [credits, setCredits] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("shothik_twin_credits");
+        if (stored) return Number(stored) || 500;
+      } catch {}
+    }
+    return 500;
+  });
+
   const [isAutoMode, setIsAutoMode] = useState(true);
   const [isNightshift, setIsNightshift] = useState(true);
   const [chatInput, setChatInput] = useState("");
@@ -75,7 +85,7 @@ export function TwinArtifact() {
       id: "f-1",
       sender: "Shothik (Autonomous Twin)",
       time: "12:16 AM",
-      text: "Nightshift active: Executing priority backlog tasks at 2:00 AM. Learned rules synced with Epistemic Memory DAG.",
+      text: "Nightshift active: Executing priority backlog tasks at 2:00 AM (1 credit/task). Learned rules synced with Epistemic Memory DAG.",
     },
   ]);
 
@@ -103,6 +113,15 @@ export function TwinArtifact() {
     }
   }, [tasks]);
 
+  // Sync credits to localStorage whenever modified
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        localStorage.setItem("shothik_twin_credits", String(credits));
+      } catch {}
+    }
+  }, [credits]);
+
   // Sync feed to localStorage
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -116,6 +135,22 @@ export function TwinArtifact() {
     if (!chatInput.trim()) return;
     const userMsg = chatInput.trim();
     setChatInput("");
+
+    if (credits < 1) {
+      setFeed((prev) => [
+        ...prev,
+        {
+          id: `err-${Date.now()}`,
+          sender: "Shothik System",
+          time: "Just now",
+          text: "⚠️ Insufficient credits: 0 credits remaining. Please top up your wallet via bKash or Nagad to execute autonomous tasks.",
+        },
+      ]);
+      return;
+    }
+
+    // Deduct 1 credit for autonomous task ingestion
+    setCredits((prev) => Math.max(0, prev - 1));
 
     // 1. Commit directive into Epistemic DAG
     epistemicGraphMemory.addDecision(userMsg, "DECISION", 0.95);
@@ -143,21 +178,23 @@ export function TwinArtifact() {
         id: `twin-${Date.now()}`,
         sender: "Shothik (Autonomous Twin)",
         time: "Just now",
-        text: `Understood: "${userMsg}". I have synthesized a priority execution task and linked this rule to the Epistemic Memory DAG with automated conflict superseding.`,
+        text: `Understood: "${userMsg}". (1 credit consumed). I have synthesized a priority execution task and linked this rule to the Epistemic Memory DAG with automated conflict superseding.`,
       },
     ]);
   };
 
   const handleToggleTask = (taskId: string) => {
     setTasks((prev) =>
-      prev.map((t) =>
-        t.id === taskId
-          ? {
-              ...t,
-              status: t.status === "completed" ? "todo" : "completed",
-            }
-          : t
-      )
+      prev.map((t) => {
+        if (t.id === taskId) {
+          const nextStatus = t.status === "completed" ? "todo" : "completed";
+          if (nextStatus === "completed" && credits > 0) {
+            setCredits((c) => Math.max(0, c - 1));
+          }
+          return { ...t, status: nextStatus };
+        }
+        return t;
+      })
     );
   };
 
@@ -183,6 +220,11 @@ export function TwinArtifact() {
         </div>
 
         <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono font-bold">
+            <Zap className="w-3.5 h-3.5 fill-amber-400" />
+            <span>{credits} Credits</span>
+          </div>
+
           <button
             type="button"
             onClick={() => setIsAutoMode(!isAutoMode)}
@@ -193,7 +235,7 @@ export function TwinArtifact() {
                 : "bg-muted/50 border-border text-muted-foreground hover:text-foreground"
             )}
           >
-            <Zap className="w-3.5 h-3.5" />
+            <Activity className="w-3.5 h-3.5" />
             <span>{isAutoMode ? "Auto Mode: ON" : "Auto Mode: OFF"}</span>
           </button>
 
