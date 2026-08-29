@@ -52,7 +52,7 @@ export class SteadfastClient {
   public async createOrder(payload: SteadfastCreateOrderPayload): Promise<SteadfastCreateOrderResponse> {
     if (!this.isConfigured()) {
       logger.info({ payload }, "[SteadfastClient] Simulating order creation in test mode");
-      const trackingCode = `BD_ST_${Math.floor(100000 + Math.random() * 900000)}`;
+      const trackingCode = `BD_STEADFAST_${Math.floor(100000 + Math.random() * 900000)}`;
       const consignmentId = `CN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
       return {
         status: 200,

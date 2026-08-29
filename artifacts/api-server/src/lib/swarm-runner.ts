@@ -26,6 +26,10 @@ export class AutonomousSwarmEngine {
     return AutonomousSwarmEngine.instance;
   }
 
+  async runDeliberation(goal: string, context?: Record<string, any>): Promise<SwarmDeliberationSummary> {
+    return this.deliberate(goal, context);
+  }
+
   async deliberate(goal: string, context?: Record<string, any>): Promise<SwarmDeliberationSummary> {
     const startTime = performance.now();
 
