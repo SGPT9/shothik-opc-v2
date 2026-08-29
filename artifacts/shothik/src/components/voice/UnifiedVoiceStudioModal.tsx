@@ -5,6 +5,7 @@ import {
   type VoiceExecutionActionType,
   type VoiceActionResponse,
 } from "@/lib/voice/chatgpt-voice-agent-service";
+import { type IndicLanguageCode } from "@/lib/voice/multilingual-indic-voice-service";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import {
   Mic,

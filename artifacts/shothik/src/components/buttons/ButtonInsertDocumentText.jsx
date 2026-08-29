@@ -50,7 +50,7 @@ const pdfToText = async (file) => {
   return extractedText.trim();
 };
 
-const ButtonInsertDocumentText = ({ className, onApply, onChange }) => {
+const ButtonInsertDocumentText = ({ className = "", onApply = undefined, onChange = undefined }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef(null);
 

@@ -10,11 +10,11 @@ import { cn } from "@/lib/utils";
 import { ClipboardPaste } from "lucide-react";
 
 const ButtonPasteText = ({
-  className,
+  className = "",
   onApply,
-  onClick,
+  onClick = undefined,
   isTooltip = true,
-  children,
+  children = null,
   ...props
 }) => {
   const handlePaste = async () => {

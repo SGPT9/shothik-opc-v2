@@ -1,9 +1,11 @@
-// Grammar check types
 export interface GrammarIssue {
   id: string;
   type: "grammar" | "spelling" | "style" | "punctuation";
   message: string;
   suggestion: string;
+  original?: string;
+  replacement?: string;
+  explanation?: string;
   startIndex: number;
   endIndex: number;
   context: string;
