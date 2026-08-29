@@ -782,16 +782,20 @@ export default function EditableOutput({
   );
 
   useEffect(() => {
-    if (!editor) return;
-    editor.commands.setContent(
-      formatContent(
-        annotatedData,
-        showChangedWords,
-        showStructuralChanges,
-        showLongestUnchangedWords,
-        isDark,
-      ),
-    );
+    if (!editor || editor.isDestroyed) return;
+    try {
+      editor?.commands?.setContent?.(
+        formatContent(
+          annotatedData,
+          showChangedWords,
+          showStructuralChanges,
+          showLongestUnchangedWords,
+          isDark,
+        ),
+      );
+    } catch (e) {
+      console.warn("Error setting EditableOutput content:", e);
+    }
   }, [
     editor,
     annotatedData,
@@ -803,8 +807,9 @@ export default function EditableOutput({
 
   // Enhanced click handler with virtual anchor
   useEffect(() => {
-    if (!editor) return;
-    const dom = editor.view.dom;
+    if (!editor || editor.isDestroyed) return;
+    const dom = editor?.view?.dom;
+    if (!dom) return;
 
     const onClick = (e) => {
       const el = e.target.closest(".word-span");

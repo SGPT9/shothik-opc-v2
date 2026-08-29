@@ -428,16 +428,14 @@ function UserInputBox({
 
       onUpdate: ({ editor }) => {
         // Don't trigger setUserInput when in demo mode
-        if (isDemoMode) {
+        if (isDemoMode || !editor) {
           return;
         }
 
         isInternalUpdate.current = true;
-        // const plainText = editor.getText(); // Extracts plain text content
-        // const plainText = customMarkdownSerializer.serialize(editor.state.doc); // Extracts plain text content
-        const plainText = customMarkdownSerializer.serialize(editor.state.doc); // Extracts plain text content
-        // setUserInput(plainText); // Pass plain text to the parent component
-        // .content, "JSON DATA");
+        const plainText =
+          editor.getText?.() ||
+          (editor.state?.doc ? customMarkdownSerializer.serialize(editor.state.doc) : "");
         setUserInput(plainText);
       },
     },
@@ -597,22 +595,29 @@ function UserInputBox({
       return;
     }
 
+    const currentText = editor.getText?.() || "";
+    if (currentText === (userInput || "")) {
+      return;
+    }
+
     try {
       if (!userInput) {
-        editor?.commands?.setContent("");
+        editor?.commands?.setContent?.("");
       } else {
         // parse the Markdown into a ProseMirror node
         const doc = defaultMarkdownParser.parse(userInput);
-        if (doc) {
+        if (doc && typeof doc.toJSON === "function") {
           const normalizedJson = normalizeTiptapJSON(doc.toJSON());
-          editor?.commands?.setContent(normalizedJson);
+          editor?.commands?.setContent?.(normalizedJson);
         } else {
-          editor?.commands?.setContent(userInput);
+          editor?.commands?.setContent?.(userInput);
         }
       }
     } catch (error) {
       console.error("Error setting content in UserInputBox, falling back to direct string:", error);
-      editor?.commands?.setContent(userInput || "");
+      try {
+        editor?.commands?.setContent?.(userInput || "");
+      } catch {}
     }
   }, [userInput, editor, isDemoMode]);
 
@@ -625,8 +630,8 @@ function UserInputBox({
   useEffect(() => {
     if (isDemoMode && editor) {
       // Wait for editor to be ready
-      setTimeout(() => {
-        if (!editor?.state?.doc) return;
+      const timer = setTimeout(() => {
+        if (!editor || editor.isDestroyed || !editor.state?.doc) return;
         const content = editor.state.doc.textContent;
         const wordIndex = content.indexOf(DEMO_SELECTED_WORD);
 
@@ -635,17 +640,17 @@ function UserInputBox({
           const to = wordIndex + DEMO_SELECTED_WORD.length;
 
           // Focus the editor first to make selection visible
-          editor.commands?.focus();
+          editor?.commands?.focus?.();
 
           // Select the word
-          editor.commands?.setTextSelection({ from, to });
+          editor?.commands?.setTextSelection?.({ from, to });
 
           // Trigger selection update manually
           setSelectedWord(DEMO_SELECTED_WORD);
 
           // Position the popover
           setTimeout(() => {
-            if (!editor?.view) return;
+            if (!editor || editor.isDestroyed || !editor.view) return;
             const { view } = editor;
             const start = view.coordsAtPos(from);
 
@@ -658,6 +663,7 @@ function UserInputBox({
           }, 100);
         }
       }, 200);
+      return () => clearTimeout(timer);
     }
   }, [isDemoMode, editor]);
 
@@ -667,7 +673,7 @@ function UserInputBox({
   const handleToggleFreeze = () => {
     const key = normalize(selectedWord); // Normalize the selected word/phrase
     const isPhrase = key.includes(" ");
-    const editorText = editor.getText();
+    const editorText = editor?.getText?.() || "";
 
     // Function to count occurrences - now using normalized text
     const countOccurrences = (text, searchTerm, isPhrase) => {

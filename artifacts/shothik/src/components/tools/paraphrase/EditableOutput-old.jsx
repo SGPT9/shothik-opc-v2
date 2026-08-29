@@ -43,7 +43,7 @@ const EditableOutput = ({
   useEffect(() => {
     if (!editor || !data?.length) return;
 
-    editor.commands.setContent(generateTextOnly(data));
+    editor?.commands?.setContent?.(generateTextOnly(data));
 
     // Remove previous decorator and reapply
     editor.view.setProps({
