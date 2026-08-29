@@ -44,6 +44,7 @@ import {
   Play,
   RefreshCw,
   Share,
+  Sparkles,
   Table,
 } from "lucide-react";
 
@@ -51,6 +52,7 @@ import { lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ShareSheetModal from "../share/ShareSheetModal";
 import SavePointsDropdown from "./SavePointsDropDown";
+import SheetVisualInsightsModal from "./SheetVisualInsightsModal";
 
 const Workbook = lazy(() => import('@fortune-sheet/react').then(mod => ({ default: mod.Workbook })));
 
@@ -112,6 +114,7 @@ const StatusChip = ({ status, title, rowCount = 0 }) => {
 
 export default function SheetDataArea() {
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [insightsModalOpen, setInsightsModalOpen] = useState(false);
   const [cssLoaded, setCssLoaded] = useState(false);
   const saveTimerRef = useRef(null);
   const headersRef = useRef([]);
@@ -359,6 +362,26 @@ export default function SheetDataArea() {
                 <Button
                   variant="outline"
                   size="sm"
+                  onClick={() => setInsightsModalOpen(true)}
+                  disabled={!hasData}
+                  className="rounded-lg border-2 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-950/20 px-2 transition-all hover:-translate-y-0.5 hover:shadow-md sm:px-4"
+                >
+                  <Sparkles className="h-4 w-4 sm:mr-2 text-emerald-500" />
+                  <span className="hidden sm:inline">Insights & Charts</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>AI Chart Recommendations & Pivot Tables</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => setShareModalOpen(true)}
                   disabled={!hasData}
                   className="ml-2 rounded-lg border-2 px-2 transition-all hover:-translate-y-0.5 hover:shadow-md sm:px-4"
@@ -426,6 +449,13 @@ export default function SheetDataArea() {
         sheetId={currentSavePoint?.id || "sheet-" + Date.now()}
         sheetData={sheetState.sheet}
         chatId={activeChatId}
+      />
+
+      <SheetVisualInsightsModal
+        open={insightsModalOpen}
+        onClose={() => setInsightsModalOpen(false)}
+        data={sheetState.sheet}
+        headers={headers}
       />
     </div>
   );
