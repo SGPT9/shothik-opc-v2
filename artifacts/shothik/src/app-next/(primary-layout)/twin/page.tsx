@@ -18,10 +18,13 @@ import { ConnectExistingCompanyModal } from "@/components/twin/ConnectExistingCo
 import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
 import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
 import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
+import { SecondMeMemoryModal } from "@/components/twin/SecondMeMemoryModal";
+import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
+  Brain,
   Paperclip,
   Send,
   Plus,
@@ -241,6 +244,17 @@ export default function TwinPage() {
   const [voiceCommanderOpen, setVoiceCommanderOpen] = useState(false);
   const [dailyDigestOpen, setDailyDigestOpen] = useState(false);
   const [dokployOpen, setDokployOpen] = useState(false);
+  const [secondMeMemoryOpen, setSecondMeMemoryOpen] = useState(false);
+
+  // Load persistent tasks from localStorage if available
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("shothik_twin_tasks");
+      if (stored) {
+        setTasks(JSON.parse(stored));
+      }
+    } catch {}
+  }, []);
 
   const feedScrollRef = useRef<HTMLDivElement>(null);
 
@@ -552,6 +566,27 @@ export default function TwinPage() {
             >
               <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <span>ADD MEMBER</span>
+            </button>
+          </div>
+
+          {/* SecondMe Memory & Cognitive Persona Widget */}
+          <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
+                SecondMe Memory
+              </h3>
+              <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-600 border-purple-500/30">
+                Active
+              </Badge>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setSecondMeMemoryOpen(true)}
+              className={`w-full ${beveledBtnClass}`}
+            >
+              <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+              <span>TWIN BRAIN & MEMORY</span>
             </button>
           </div>
         </section>
@@ -1223,16 +1258,27 @@ export default function TwinPage() {
       {/* Document Reader / Markdown Detail Modal */}
       <Dialog open={!!activeDoc} onOpenChange={(v) => !v && setActiveDoc(null)}>
         <DialogContent className="sm:max-w-2xl bg-white text-slate-900 border border-slate-300 p-8 rounded-none shadow-2xl font-serif dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800 max-h-[85vh] overflow-y-auto">
-          <div className="flex items-center justify-between pb-3 border-b border-transparent">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
             <DialogTitle className="text-2xl font-bold font-serif text-black dark:text-white flex items-center gap-2">
               <FileText className="w-5 h-5 text-zinc-500" />
               <span>{activeDoc?.title}</span>
             </DialogTitle>
-            <DialogClose asChild>
-              <button type="button" className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
-                <X className="w-5 h-5" />
-              </button>
-            </DialogClose>
+            <div className="flex items-center gap-2">
+              <SendToWritingStudioButton
+                text={activeDoc?.content || activeDoc?.title || ""}
+                title={activeDoc?.title}
+                source="twin"
+                label="Edit in Studio ➔"
+                variant="outline"
+                size="sm"
+                className="h-8 text-xs font-semibold"
+              />
+              <DialogClose asChild>
+                <button type="button" className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
+                  <X className="w-5 h-5" />
+                </button>
+              </DialogClose>
+            </div>
           </div>
           <DialogDescription className="sr-only">Document contents</DialogDescription>
           <div className="prose prose-sm dark:prose-invert max-w-none font-serif pt-2 leading-relaxed [&_h3]:font-bold [&_h3]:text-base [&_h3]:mt-4 [&_h3]:mb-2 [&_p]:text-xs [&_p]:text-slate-700 dark:[&_p]:text-zinc-300 [&_ul]:space-y-2 [&_li]:text-xs [&_code]:font-mono [&_code]:text-[11px] [&_code]:bg-slate-100 dark:[&_code]:bg-zinc-900 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:border [&_code]:border-slate-200 dark:[&_code]:border-zinc-800">
@@ -1259,6 +1305,12 @@ export default function TwinPage() {
           </DialogDescription>
 
           <div className="grid grid-cols-2 gap-2 mt-4 text-xs">
+            <button
+              onClick={() => { setMenuOpen(false); setSecondMeMemoryOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer bg-purple-500/5 font-semibold text-purple-600 dark:text-purple-400"
+            >
+              🧠 SecondMe Memory
+            </button>
             <button
               onClick={() => { setMenuOpen(false); setCompanySettingsOpen(true); }}
               className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer"
@@ -1300,6 +1352,7 @@ export default function TwinPage() {
       </Dialog>
 
       {/* Additional Supporting Modals */}
+      <SecondMeMemoryModal isOpen={secondMeMemoryOpen} onClose={() => setSecondMeMemoryOpen(false)} twinName={companyName} />
       <MfsGatewayModal open={mfsGatewayOpen} onOpenChange={setMfsGatewayOpen} />
       <ConnectExistingCompanyModal open={connectCompanyOpen} onOpenChange={setConnectCompanyOpen} />
       <VoiceCommanderModal open={voiceCommanderOpen} onOpenChange={setVoiceCommanderOpen} />
