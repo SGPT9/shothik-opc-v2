@@ -43,7 +43,7 @@ export function AutoModeModal({ open, onOpenChange, onStartAutoMode }: AutoModeM
         <DialogDescription className="sr-only">Configure autonomous Auto Mode duration</DialogDescription>
 
         <p className="mt-4 text-[15px] font-sans text-slate-700 dark:text-zinc-300 leading-relaxed">
-          Polsia works autonomously for the hours you choose, completing your open tasks and planning new ones as it goes.
+          Shothik works autonomously for the hours you choose, completing your open tasks and planning new ones as it goes.
         </p>
 
         <div className="mt-8 space-y-3 font-mono">

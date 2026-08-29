@@ -1,14 +1,14 @@
 import { Router, type Request, type Response } from "express";
-import { McpManager } from "../lib/mcp-manager.js";
+import { McpManager } from "../lib/mcp-manager";
 
 const router = Router();
 const mcpManager = McpManager.getInstance();
 
 /**
- * GET /api/mcp/capabilities
+ * GET /api/v1/mcp/capabilities or /api/mcp/capabilities
  * Lists all available MCP capabilities across operations and network tools.
  */
-router.get("/mcp/capabilities", async (req: Request, res: Response) => {
+router.get(["/v1/mcp/capabilities", "/mcp/capabilities"], async (req: Request, res: Response) => {
   try {
     const { category, query } = req.query;
     const capabilities = await mcpManager.listCapabilities(
@@ -31,10 +31,10 @@ router.get("/mcp/capabilities", async (req: Request, res: Response) => {
 });
 
 /**
- * GET /api/mcp/capabilities/:id
+ * GET /api/v1/mcp/capabilities/:id or /api/mcp/capabilities/:id
  * Fetches metadata for a single MCP capability.
  */
-router.get("/mcp/capabilities/:id", async (req: Request, res: Response) => {
+router.get(["/v1/mcp/capabilities/:id", "/mcp/capabilities/:id"], async (req: Request, res: Response) => {
   try {
     const id = typeof req.params.id === "string" ? req.params.id : String(req.params.id || "");
     const capability = await mcpManager.getCapabilityMetadata(id);
@@ -60,10 +60,10 @@ router.get("/mcp/capabilities/:id", async (req: Request, res: Response) => {
 });
 
 /**
- * GET /api/mcp/capabilities/:id/source
+ * GET /api/v1/mcp/capabilities/:id/source or /api/mcp/capabilities/:id/source
  * Injects the full skill prompt markdown for agent execution context.
  */
-router.get("/mcp/capabilities/:id/source", async (req: Request, res: Response) => {
+router.get(["/v1/mcp/capabilities/:id/source", "/mcp/capabilities/:id/source"], async (req: Request, res: Response) => {
   try {
     const id = typeof req.params.id === "string" ? req.params.id : String(req.params.id || "");
     const file = typeof req.query.file === "string" ? req.query.file : "SKILL.md";

@@ -3,6 +3,7 @@ import { eq, desc } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { projectsTable, writingAutosaveTable } from "@workspace/db";
 import { logger } from "../lib/logger";
+import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 
 const router = Router();
 
@@ -38,7 +39,7 @@ router.get("/v1/projects", async (req: Request, res: Response) => {
  */
 router.get("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const [project] = await db
       .select()
       .from(projectsTable)
@@ -59,8 +60,9 @@ router.get("/v1/projects/:id", async (req: Request, res: Response) => {
 /**
  * POST /api/v1/projects
  * Create a new project.
+ * Guarded by IETF Idempotency-Key.
  */
-router.post("/v1/projects", async (req: Request, res: Response) => {
+router.post("/v1/projects", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = (req.headers["x-user-id"] as string) || "guest";
     const { title, type, template, description, sections, settings } = req.body;
@@ -97,7 +99,7 @@ router.post("/v1/projects", async (req: Request, res: Response) => {
 router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
     const userId = (req.headers["x-user-id"] as string) || "guest";
-    const { id } = req.params;
+    const id = String(req.params.id);
     const updates: Record<string, unknown> = {};
 
     // Only apply fields that are explicitly sent
@@ -138,7 +140,7 @@ router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
  */
 router.delete("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
 
     const [deleted] = await db
       .delete(projectsTable)
@@ -208,7 +210,7 @@ router.post("/v1/writing/autosave", async (req: Request, res: Response) => {
 router.get("/v1/writing/autosave/:localProjectId", async (req: Request, res: Response) => {
   try {
     const userId = (req.headers["x-user-id"] as string) || "guest";
-    const { localProjectId } = req.params;
+    const localProjectId = String(req.params.localProjectId);
 
     const rows = await db
       .select()
@@ -269,7 +271,7 @@ router.post("/v1/writing/sections", async (req: Request, res: Response) => {
 router.get("/v1/writing/sections/:localProjectId", async (req: Request, res: Response) => {
   try {
     const userId = (req.headers["x-user-id"] as string) || "guest";
-    const { localProjectId } = req.params;
+    const localProjectId = String(req.params.localProjectId);
 
     const rows = await db
       .select()

@@ -33,6 +33,8 @@ import nightshiftRouter from "./nightshift";
 import writingToolsRouter from "./writing-tools";
 import aiToolsExtendedRouter from "./ai-tools-extended";
 import { crdtRouter } from "./crdt";
+import companiesRouter from "./companies";
+import twinTasksRouter from "./twin-tasks";
 
 const router: IRouter = Router();
 
@@ -40,6 +42,8 @@ router.use("/telemetry", telemetryRouter);
 router.use(agentTracesRouter);
 router.use(authRouter);
 router.use(nightshiftRouter);
+router.use(companiesRouter);
+router.use(twinTasksRouter);
 
 router.use(healthRouter);
 router.use(ollamaRouter);

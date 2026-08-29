@@ -105,6 +105,80 @@ export class DatabaseAutoSyncEngine {
           courier_provider TEXT DEFAULT 'steadfast',
           tracking_code TEXT,
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );`,
+
+        // Background Jobs & Transactional Outbox
+        `CREATE TABLE IF NOT EXISTS background_jobs (
+          id SERIAL PRIMARY KEY,
+          task_type TEXT NOT NULL,
+          payload JSONB NOT NULL DEFAULT '{}',
+          status TEXT NOT NULL DEFAULT 'pending',
+          attempts INTEGER NOT NULL DEFAULT 0,
+          max_attempts INTEGER NOT NULL DEFAULT 3,
+          last_error TEXT,
+          idempotency_key TEXT UNIQUE,
+          locked_at TIMESTAMP WITH TIME ZONE,
+          locked_by TEXT,
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          completed_at TIMESTAMP WITH TIME ZONE
+        );`,
+
+        // Persistent Courier Consignments
+        `CREATE TABLE IF NOT EXISTS parcels (
+          id SERIAL PRIMARY KEY,
+          consignment_id TEXT NOT NULL UNIQUE,
+          tracking_code TEXT NOT NULL UNIQUE,
+          provider TEXT NOT NULL DEFAULT 'steadfast',
+          user_id TEXT NOT NULL DEFAULT 'usr_default',
+          recipient_name TEXT NOT NULL,
+          recipient_phone TEXT NOT NULL,
+          city TEXT NOT NULL,
+          address TEXT NOT NULL,
+          cod_amount_bdt INTEGER NOT NULL DEFAULT 0,
+          delivery_fee_bdt INTEGER NOT NULL DEFAULT 60,
+          status TEXT NOT NULL DEFAULT 'BOOKED',
+          status_bangla TEXT NOT NULL DEFAULT 'বুকিং সম্পন্ন হয়েছে',
+          timeline JSONB NOT NULL DEFAULT '[]',
+          whatsapp_notification_sent BOOLEAN NOT NULL DEFAULT FALSE,
+          metadata JSONB NOT NULL DEFAULT '{}',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );`,
+
+        // IETF-Standard Idempotency Keys
+        `CREATE TABLE IF NOT EXISTS idempotency_keys (
+          key TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL,
+          endpoint TEXT NOT NULL,
+          request_hash TEXT NOT NULL,
+          response_status INTEGER,
+          response_body JSONB,
+          state TEXT NOT NULL DEFAULT 'processing',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          expires_at TIMESTAMP WITH TIME ZONE NOT NULL
+        );`,
+
+        // Multi-Venture Autonomous Companies
+        `CREATE TABLE IF NOT EXISTS companies (
+          id SERIAL PRIMARY KEY,
+          user_id TEXT NOT NULL DEFAULT 'usr_default',
+          name TEXT NOT NULL,
+          slug TEXT NOT NULL UNIQUE,
+          industry TEXT NOT NULL DEFAULT 'Technology',
+          business_model TEXT NOT NULL DEFAULT 'SaaS',
+          business_type TEXT DEFAULT 'Digital Venture',
+          problem_statement TEXT DEFAULT '',
+          domain TEXT NOT NULL,
+          email TEXT NOT NULL,
+          revenue_bdt INTEGER NOT NULL DEFAULT 0,
+          visitor_count INTEGER NOT NULL DEFAULT 1,
+          is_paused BOOLEAN NOT NULL DEFAULT FALSE,
+          tasks JSONB NOT NULL DEFAULT '[]',
+          docs JSONB NOT NULL DEFAULT '[]',
+          feed JSONB NOT NULL DEFAULT '[]',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );`
       ];
 
@@ -116,7 +190,17 @@ export class DatabaseAutoSyncEngine {
         }
       }
 
-      verifiedTables.push("projects", "user_subscriptions", "second_me_key_custody", "tool_usage", "nilkhet_orders");
+      verifiedTables.push(
+        "projects",
+        "user_subscriptions",
+        "second_me_key_custody",
+        "tool_usage",
+        "nilkhet_orders",
+        "background_jobs",
+        "parcels",
+        "idempotency_keys",
+        "companies"
+      );
       this.isInitialized = true;
 
       return {
@@ -126,11 +210,24 @@ export class DatabaseAutoSyncEngine {
         latencyMs,
       };
     } catch (error: any) {
-      logger.warn({ error: error.message }, "[DatabaseAutoSync] PostgreSQL offline, falling back to local SQLite engine");
+      logger.warn({ error: error.message }, "[DatabaseAutoSync] PostgreSQL offline, initializing local SQLite engine fallback");
+      try {
+        const { initSqliteTables } = await import("@workspace/db");
+        await initSqliteTables();
+      } catch (sqliteErr: any) {
+        logger.warn({ error: sqliteErr?.message }, "[DatabaseAutoSync] SQLite table initialization notice");
+      }
       return {
         connected: false,
         engine: "SQLite-Fallback",
-        tablesVerified: ["sqlite_projects", "sqlite_autosave"],
+        tablesVerified: [
+          "offline_projects",
+          "offline_autosave",
+          "offline_parcels",
+          "offline_nilkhet_orders",
+          "local_cache",
+          "agent_traces",
+        ],
         latencyMs: Date.now() - startTime,
         error: error.message,
       };

@@ -1434,7 +1434,7 @@ const ParaphraseContend = () => {
           </div>
         </div>
 
-        {process.env.NODE_ENV === "development" && <SocketDebug />}
+        {import.meta.env.VITE_SHOW_DEBUG === "true" && <SocketDebug />}
         <div className="flex w-full flex-col gap-5 lg:gap-8">
           <Card className="border-border mt-0 flex w-full min-w-0 flex-1 flex-col gap-0 overflow-visible rounded-[12px] rounded-tl-none border py-0">
             <div className="border-border flex items-center border-b px-2 py-1 md:hidden">

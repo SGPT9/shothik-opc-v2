@@ -14,6 +14,7 @@ interface DocumentsListModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSelectDoc: (doc: DocumentItem) => void;
+  docs?: DocumentItem[];
 }
 
 export const FULL_DOCUMENT_ARCHIVE: DocumentItem[] = [
@@ -95,10 +96,12 @@ Start with SSL Wireless for sandbox tests, contract direct routes with GP & Robi
   { id: "doc-day-30", title: "Day 30 — CEO Report", timeAgo: "JUL 31", type: "report" },
 ];
 
-export function DocumentsListModal({ open, onOpenChange, onSelectDoc }: DocumentsListModalProps) {
+export function DocumentsListModal({ open, onOpenChange, onSelectDoc, docs }: DocumentsListModalProps) {
   const [tab, setTab] = useState<"all" | "documents" | "reports">("all");
 
-  const filtered = FULL_DOCUMENT_ARCHIVE.filter((d) => {
+  const documentPool = docs && docs.length > 0 ? docs : FULL_DOCUMENT_ARCHIVE;
+
+  const filtered = documentPool.filter((d) => {
     if (tab === "documents") return d.type === "document";
     if (tab === "reports") return d.type === "report";
     return true;

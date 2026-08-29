@@ -41,7 +41,14 @@ function unsealKey(sealedText: string): string {
   }
 }
 
+// Circuit breaker for database connection health
+let isPostgresAvailable = true;
+let lastPostgresFailureTime = 0;
+const POSTGRES_CIRCUIT_BREAKER_TTL_MS = 30000;
+
 export class UserKeyVault {
+  private fallbackStore = new Map<string, string>();
+
   /**
    * Save or update a user's BYOK credential
    */
@@ -52,33 +59,46 @@ export class UserKeyVault {
   ): Promise<void> {
     const sealed = sealKey(JSON.stringify(credentials));
     const purpose = `connector_${provider.toLowerCase()}`;
+    const fallbackKey = `${userId}:${purpose}`;
 
-    try {
-      const existing = await db
-        .select()
-        .from(keyCustodyTable)
-        .where(and(eq(keyCustodyTable.userId, userId), eq(keyCustodyTable.purpose, purpose)));
+    // Always mirror to fast local memory store for zero-latency failover
+    this.fallbackStore.set(fallbackKey, sealed);
 
-      if (existing.length > 0) {
-        await db
-          .update(keyCustodyTable)
-          .set({
-            sealedKey: sealed,
+    const now = Date.now();
+    const shouldProbeDb = isPostgresAvailable || now - lastPostgresFailureTime > POSTGRES_CIRCUIT_BREAKER_TTL_MS;
+
+    if (shouldProbeDb) {
+      try {
+        const existing = await db
+          .select()
+          .from(keyCustodyTable)
+          .where(and(eq(keyCustodyTable.userId, userId), eq(keyCustodyTable.purpose, purpose)));
+
+        isPostgresAvailable = true;
+
+        if (existing.length > 0) {
+          await db
+            .update(keyCustodyTable)
+            .set({
+              sealedKey: sealed,
+              provider,
+              updatedAt: new Date(),
+            })
+            .where(eq(keyCustodyTable.id, existing[0].id));
+        } else {
+          await db.insert(keyCustodyTable).values({
+            userId,
+            purpose,
             provider,
-            updatedAt: new Date(),
-          })
-          .where(eq(keyCustodyTable.id, existing[0].id));
-      } else {
-        await db.insert(keyCustodyTable).values({
-          userId,
-          purpose,
-          provider,
-          sealedKey: sealed,
-        });
+            sealedKey: sealed,
+          });
+        }
+        logger.info({ userId, provider }, "[UserKeyVault] Stored user BYOK credentials securely");
+      } catch (err: any) {
+        isPostgresAvailable = false;
+        lastPostgresFailureTime = Date.now();
+        logger.warn({ userId, provider, error: err.message }, "[UserKeyVault] DB offline, retained key in local encrypted memory vault");
       }
-      logger.info({ userId, provider }, "[UserKeyVault] Stored user BYOK credentials securely");
-    } catch (err: any) {
-      logger.error({ userId, provider, error: err.message }, "[UserKeyVault] Failed to save key in DB");
     }
   }
 
@@ -87,54 +107,108 @@ export class UserKeyVault {
    */
   public async getKey(userId: string, provider: string): Promise<{ apiKey?: string; secretKey?: string; endpointUrl?: string; extra?: Record<string, any> } | null> {
     const purpose = `connector_${provider.toLowerCase()}`;
-    try {
-      const records = await db
-        .select()
-        .from(keyCustodyTable)
-        .where(and(eq(keyCustodyTable.userId, userId), eq(keyCustodyTable.purpose, purpose)));
+    const fallbackKey = `${userId}:${purpose}`;
 
-      if (records.length === 0) return null;
-      const unsealed = unsealKey(records[0].sealedKey);
-      return JSON.parse(unsealed);
-    } catch (err: any) {
-      logger.warn({ userId, provider, error: err.message }, "[UserKeyVault] Could not retrieve user key");
-      return null;
+    const now = Date.now();
+    const shouldProbeDb = isPostgresAvailable || now - lastPostgresFailureTime > POSTGRES_CIRCUIT_BREAKER_TTL_MS;
+
+    if (shouldProbeDb) {
+      try {
+        const records = await db
+          .select()
+          .from(keyCustodyTable)
+          .where(and(eq(keyCustodyTable.userId, userId), eq(keyCustodyTable.purpose, purpose)));
+
+        isPostgresAvailable = true;
+
+        if (records.length > 0) {
+          const unsealed = unsealKey(records[0].sealedKey);
+          return JSON.parse(unsealed);
+        }
+      } catch (err: any) {
+        isPostgresAvailable = false;
+        lastPostgresFailureTime = Date.now();
+        logger.warn({ userId, provider, error: err.message }, "[UserKeyVault] DB read error, querying local memory vault");
+      }
     }
+
+    // Check local memory fallback
+    const localSealed = this.fallbackStore.get(fallbackKey);
+    if (localSealed) {
+      try {
+        const unsealed = unsealKey(localSealed);
+        return JSON.parse(unsealed);
+      } catch {
+        return null;
+      }
+    }
+
+    return null;
   }
 
   /**
    * List all configured providers for a user with masked key previews
    */
   public async listUserProviders(userId: string): Promise<Record<string, { configured: boolean; maskedKey: string; endpointUrl?: string }>> {
-    try {
-      const records = await db
-        .select()
-        .from(keyCustodyTable)
-        .where(eq(keyCustodyTable.userId, userId));
+    const result: Record<string, { configured: boolean; maskedKey: string; endpointUrl?: string }> = {};
 
-      const result: Record<string, { configured: boolean; maskedKey: string; endpointUrl?: string }> = {};
+    const now = Date.now();
+    const shouldProbeDb = isPostgresAvailable || now - lastPostgresFailureTime > POSTGRES_CIRCUIT_BREAKER_TTL_MS;
 
-      for (const record of records) {
-        const providerName = record.provider || record.purpose.replace("connector_", "");
-        try {
-          const raw = JSON.parse(unsealKey(record.sealedKey));
-          const keyStr = raw.apiKey || raw.secretKey || "";
-          const masked = keyStr.length > 8 ? `${keyStr.slice(0, 4)}...${keyStr.slice(-4)}` : "••••••••";
-          result[providerName.toLowerCase()] = {
-            configured: true,
-            maskedKey: masked,
-            endpointUrl: raw.endpointUrl,
-          };
-        } catch {
-          result[providerName.toLowerCase()] = { configured: true, maskedKey: "••••••••" };
+    // 1. Load from DB if available
+    if (shouldProbeDb) {
+      try {
+        const records = await db
+          .select()
+          .from(keyCustodyTable)
+          .where(eq(keyCustodyTable.userId, userId));
+
+        isPostgresAvailable = true;
+
+        for (const record of records) {
+          const providerName = record.provider || record.purpose.replace("connector_", "");
+          try {
+            const raw = JSON.parse(unsealKey(record.sealedKey));
+            const keyStr = raw.apiKey || raw.secretKey || "";
+            const masked = keyStr.length > 8 ? `${keyStr.slice(0, 4)}...${keyStr.slice(-4)}` : "••••••••";
+            result[providerName.toLowerCase()] = {
+              configured: true,
+              maskedKey: masked,
+              endpointUrl: raw.endpointUrl,
+            };
+          } catch {
+            result[providerName.toLowerCase()] = { configured: true, maskedKey: "••••••••" };
+          }
+        }
+      } catch (err: any) {
+        isPostgresAvailable = false;
+        lastPostgresFailureTime = Date.now();
+        logger.warn({ userId, error: err.message }, "[UserKeyVault] DB list error, using local memory");
+      }
+    }
+
+    // 2. Overlay local memory entries if DB was offline
+    for (const [key, sealed] of this.fallbackStore.entries()) {
+      if (key.startsWith(`${userId}:`)) {
+        const providerName = key.replace(`${userId}:connector_`, "");
+        if (!result[providerName]) {
+          try {
+            const raw = JSON.parse(unsealKey(sealed));
+            const keyStr = raw.apiKey || raw.secretKey || "";
+            const masked = keyStr.length > 8 ? `${keyStr.slice(0, 4)}...${keyStr.slice(-4)}` : "••••••••";
+            result[providerName.toLowerCase()] = {
+              configured: true,
+              maskedKey: masked,
+              endpointUrl: raw.endpointUrl,
+            };
+          } catch {
+            result[providerName.toLowerCase()] = { configured: true, maskedKey: "••••••••" };
+          }
         }
       }
-
-      return result;
-    } catch (err: any) {
-      logger.warn({ userId, error: err.message }, "[UserKeyVault] Error listing user providers");
-      return {};
     }
+
+    return result;
   }
 
   /**
@@ -142,13 +216,23 @@ export class UserKeyVault {
    */
   public async deleteKey(userId: string, provider: string): Promise<void> {
     const purpose = `connector_${provider.toLowerCase()}`;
-    try {
-      await db
-        .delete(keyCustodyTable)
-        .where(and(eq(keyCustodyTable.userId, userId), eq(keyCustodyTable.purpose, purpose)));
-      logger.info({ userId, provider }, "[UserKeyVault] Removed user BYOK credentials");
-    } catch (err: any) {
-      logger.error({ userId, provider, error: err.message }, "[UserKeyVault] Failed to delete key");
+    const fallbackKey = `${userId}:${purpose}`;
+    this.fallbackStore.delete(fallbackKey);
+
+    const now = Date.now();
+    const shouldProbeDb = isPostgresAvailable || now - lastPostgresFailureTime > POSTGRES_CIRCUIT_BREAKER_TTL_MS;
+
+    if (shouldProbeDb) {
+      try {
+        await db
+          .delete(keyCustodyTable)
+          .where(and(eq(keyCustodyTable.userId, userId), eq(keyCustodyTable.purpose, purpose)));
+        logger.info({ userId, provider }, "[UserKeyVault] Removed user BYOK credentials");
+      } catch (err: any) {
+        isPostgresAvailable = false;
+        lastPostgresFailureTime = Date.now();
+        logger.warn({ userId, provider, error: err.message }, "[UserKeyVault] DB delete error, removed from local memory");
+      }
     }
   }
 }

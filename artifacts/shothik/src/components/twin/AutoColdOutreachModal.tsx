@@ -49,13 +49,13 @@ export function AutoColdOutreachModal({
         </div>
 
         <DialogDescription className="text-xs font-serif text-slate-700 dark:text-zinc-300 leading-relaxed pt-1 pb-3">
-          Polsia will find leads for your business, send cold outreach via email, and respond to any replies.
+          Shothik will find leads for your business, send cold outreach via email, and respond to any replies.
         </DialogDescription>
 
         <div className="space-y-5 pt-1">
           {/* Blue/Ice Callout Banner */}
           <div className="p-3.5 bg-[#f0f6fa] dark:bg-blue-950/30 border border-[#d6e5f0] dark:border-blue-900/50 text-slate-700 dark:text-blue-200 text-xs font-serif leading-snug">
-            Your outreach starts now and sends from a Polsia address.
+            Your outreach starts now and sends from a Shothik address.
           </div>
 
           {/* Frequency Options */}

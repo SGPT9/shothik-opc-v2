@@ -27,11 +27,16 @@ async function fixInsforgeRLSAndOwnership() {
       "tool_usage",
       "llm_usage",
       "key_custody",
+      "second_me_key_custody",
       "writing_profiles",
       "twins",
       "twin_tasks",
       "twin_activity_log",
       "twin_pending_approvals",
+      "nilkhet_orders",
+      "background_jobs",
+      "parcels",
+      "idempotency_keys",
     ];
 
     // 1. Reassign ownership to project_admin so dashboard and app can manage them

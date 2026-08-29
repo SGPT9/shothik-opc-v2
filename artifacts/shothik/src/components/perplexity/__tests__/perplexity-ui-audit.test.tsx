@@ -19,7 +19,7 @@ describe("Perplexity UI/UX Audit & Consistency Polish", () => {
     render(<PerplexityFocusSelector currentFocus="pro_search" onSelectFocus={() => {}} />);
 
     const activeBtn = screen.getByRole("button", { name: /Pro Search/i });
-    expect(activeBtn.className).toContain("bg-muted/80");
-    expect(activeBtn.className).toContain("text-foreground");
+    expect(activeBtn.className).toContain("bg-cyan-500/15");
+    expect(activeBtn.className).toContain("text-cyan-300");
   });
 });

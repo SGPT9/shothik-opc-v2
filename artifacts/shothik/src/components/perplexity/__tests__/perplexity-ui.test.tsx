@@ -19,15 +19,20 @@ describe("Perplexity UI Components", () => {
   it("renders Perplexity Focus Mode Selector options", () => {
     render(<PerplexityFocusSelector currentFocus="all" onSelectFocus={vi.fn()} />);
 
-    expect(screen.getByText(/All Web & AI/i)).toBeDefined();
+    expect(screen.getByText(/All Web/i)).toBeDefined();
     expect(screen.getByText(/Pro Search/i)).toBeDefined();
     expect(screen.getByText(/Academic/i)).toBeDefined();
   });
 
   it("renders Perplexity Related Questions pills", () => {
-    render(<PerplexityRelatedQueries onSelectQuery={vi.fn()} />);
+    render(
+      <PerplexityRelatedQueries
+        queries={["How to verify a bKash TrxID instantly?", "What are the Steadfast delivery zones?"]}
+        onSelectQuery={vi.fn()}
+      />
+    );
 
-    expect(screen.getByText(/Related Questions/i)).toBeDefined();
+    expect(screen.getByText(/Suggested Next Questions/i)).toBeDefined();
     expect(screen.getByText(/bKash TrxID/i)).toBeDefined();
   });
 });

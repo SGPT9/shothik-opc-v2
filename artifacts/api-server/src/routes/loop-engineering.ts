@@ -4,8 +4,8 @@ import { logger } from "../lib/logger";
 
 const router: IRouter = Router();
 
-// POST /api/loop/execute
-router.post("/loop/execute", async (req: Request, res: Response) => {
+// POST /api/v1/loop/execute or /api/loop/execute
+router.post(["/v1/loop/execute", "/loop/execute"], async (req: Request, res: Response) => {
   const { prompt, context, maxIterations = 3, stream = false } = req.body;
 
   if (!prompt || typeof prompt !== "string") {
@@ -21,8 +21,8 @@ router.post("/loop/execute", async (req: Request, res: Response) => {
   }
 });
 
-// POST /api/loop/self-heal
-router.post("/loop/self-heal", (req: Request, res: Response) => {
+// POST /api/v1/loop/self-heal or /api/loop/self-heal
+router.post(["/v1/loop/self-heal", "/loop/self-heal"], (req: Request, res: Response) => {
   const { code, errorMessage, language = "python" } = req.body;
 
   if (!code || typeof code !== "string") {
@@ -37,8 +37,8 @@ router.post("/loop/self-heal", (req: Request, res: Response) => {
   }
 });
 
-// GET /api/loop/metrics
-router.get("/loop/metrics", (_req: Request, res: Response) => {
+// GET /api/v1/loop/metrics or /api/loop/metrics
+router.get(["/v1/loop/metrics", "/loop/metrics"], (_req: Request, res: Response) => {
   res.json({
     activeLoops: 1,
     averageConvergenceDurationMs: 82,

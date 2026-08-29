@@ -490,6 +490,11 @@ export default function ConnectorsPage() {
                 </div>
 
                 <div className="flex items-center gap-1.5">
+                  {connector.connected && (
+                    <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded-md border border-emerald-500/20">
+                      Twin Ready
+                    </span>
+                  )}
                   <span className={`w-1.5 h-1.5 rounded-full ${connector.connected ? "bg-emerald-500" : "bg-zinc-300 dark:bg-zinc-600"}`} />
                   <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500">
                     {connector.connected ? "Active" : "Ready"}
@@ -557,6 +562,13 @@ export default function ConnectorsPage() {
                   {testResult}
                 </div>
               )}
+
+              <div className="p-3 rounded-xl bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200/60 dark:border-indigo-800/40 flex items-start gap-2.5 text-xs text-indigo-950 dark:text-indigo-200">
+                <span className="font-semibold text-indigo-600 dark:text-indigo-400 shrink-0">Twin Automation:</span>
+                <p className="leading-relaxed text-[11px]">
+                  Once activated, this connector can be granted supervised or autonomous execution permissions in your Twin workspace.
+                </p>
+              </div>
 
               <div className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-800 flex items-start gap-2 text-xs text-zinc-500 dark:text-zinc-400">
                 <Shield className="w-4 h-4 text-zinc-500 shrink-0 mt-0.5" />

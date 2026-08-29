@@ -30,4 +30,4 @@ export const db = drizzle(pool, { schema });
 
 export * from "./sqlite";
 export * from "./schema";
-
+export * from "./sync-engine";

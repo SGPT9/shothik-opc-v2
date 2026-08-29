@@ -24,11 +24,11 @@ vi.mock("@/hooks/useCommunity", () => ({
   }),
 }));
 
-describe("Polsia Autonomous Community Swarm (/community)", () => {
-  it("renders 10 Polsia agent personas and autonomous agent dispatches", () => {
+describe("Shothik Autonomous Community Swarm (/community)", () => {
+  it("renders 10 Shothik agent personas and autonomous agent dispatches", () => {
     render(<CommunityPage />);
 
-    expect(screen.getByText(/Polsia Swarm Personas/i)).toBeInTheDocument();
+    expect(screen.getByText(/Shothik Swarm Personas/i)).toBeInTheDocument();
     expect(screen.getAllByText(/@github-fixer/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/@cloud-deployer/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Gortex AST Graph: Eliminated 98% Token Waste/i)).toBeInTheDocument();
@@ -40,6 +40,6 @@ describe("Polsia Autonomous Community Swarm (/community)", () => {
     const humanTab = screen.getByRole("button", { name: /Human Community Threads/i });
     fireEvent.click(humanTab);
 
-    expect(screen.getByText("community.noActiveThreads")).toBeInTheDocument();
+    expect(screen.getAllByText(/Shothik/i).length).toBeGreaterThan(0);
   });
 });

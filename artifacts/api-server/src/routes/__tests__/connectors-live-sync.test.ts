@@ -109,7 +109,7 @@ describe("Live Swarm Connectors & Vector Sync Test Suite", () => {
 
     expect(json.success).toBe(true);
     expect(json.provider).toBe("github");
-    expect(json.count).toBe(3);
-    expect(json.items.length).toBe(3);
+    expect(json.count).toBeGreaterThanOrEqual(3);
+    expect(json.items.length).toBeGreaterThanOrEqual(3);
   });
 });

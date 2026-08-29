@@ -85,7 +85,7 @@ export class LiveWebKnowledgeEngine {
       // 1. Try Direct Wikipedia Summary API (Fastest & Rich details)
       const directWikiUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanQuery.replace(/\s+/g, "_"))}`;
       const wikiRes = await fetch(directWikiUrl, {
-        headers: { "User-Agent": "ShothikAI/2.0 (research@shothik.ai)" },
+        headers: { "User-Agent": "ShothikGPT/2.0 (research@shothikgpt.com)" },
         signal: AbortSignal.timeout(2500),
       });
 
@@ -105,7 +105,7 @@ export class LiveWebKnowledgeEngine {
       // 2. Try Wikipedia Search Query API for multi-word or fuzzy topics
       const searchWikiUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQuery)}&format=json&origin=*`;
       const searchRes = await fetch(searchWikiUrl, {
-        headers: { "User-Agent": "ShothikAI/2.0 (research@shothik.ai)" },
+        headers: { "User-Agent": "ShothikGPT/2.0 (research@shothikgpt.com)" },
         signal: AbortSignal.timeout(2500),
       });
 
@@ -115,7 +115,7 @@ export class LiveWebKnowledgeEngine {
         if (firstMatch?.title) {
           const matchSummaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(firstMatch.title.replace(/\s+/g, "_"))}`;
           const matchRes = await fetch(matchSummaryUrl, {
-            headers: { "User-Agent": "ShothikAI/2.0 (research@shothik.ai)" },
+            headers: { "User-Agent": "ShothikGPT/2.0 (research@shothikgpt.com)" },
             signal: AbortSignal.timeout(2000),
           });
 

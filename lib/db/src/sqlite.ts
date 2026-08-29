@@ -3,7 +3,20 @@ import { drizzle } from "drizzle-orm/libsql";
 import { eq, lt, and, desc } from "drizzle-orm";
 import * as fs from "fs";
 import * as path from "path";
-import { localCacheTable, agentTracesTable, type LocalCache, type AgentTrace } from "./schema/sqlite-schema";
+import {
+  localCacheTable,
+  agentTracesTable,
+  offlineProjectsTable,
+  offlineAutosaveTable,
+  offlineParcelsTable,
+  offlineNilkhetOrdersTable,
+  type LocalCache,
+  type AgentTrace,
+  type OfflineProject,
+  type OfflineAutosave,
+  type OfflineParcel,
+  type OfflineNilkhetOrder,
+} from "./schema/sqlite-schema";
 
 // Ensure local data directory exists
 const dataDir = path.resolve(process.cwd(), "data");
@@ -25,6 +38,10 @@ export const sqliteDb = drizzle(sqliteClient, {
   schema: {
     localCacheTable,
     agentTracesTable,
+    offlineProjectsTable,
+    offlineAutosaveTable,
+    offlineParcelsTable,
+    offlineNilkhetOrdersTable,
   },
 });
 
@@ -63,6 +80,66 @@ export async function initSqliteTables(client: Client = sqliteClient): Promise<v
       duration_ms INTEGER NOT NULL DEFAULT 0,
       metadata TEXT NOT NULL DEFAULT '{}',
       created_at INTEGER NOT NULL
+    );
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS offline_projects (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL DEFAULT '',
+      word_count INTEGER NOT NULL DEFAULT 0,
+      current_version INTEGER NOT NULL DEFAULT 1,
+      genre TEXT DEFAULT 'general',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS offline_autosave (
+      id TEXT PRIMARY KEY,
+      doc_id TEXT NOT NULL,
+      user_id TEXT NOT NULL,
+      content TEXT NOT NULL,
+      version INTEGER NOT NULL DEFAULT 1,
+      checksum TEXT NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS offline_parcels (
+      tracking_code TEXT PRIMARY KEY,
+      consignment_id TEXT NOT NULL,
+      provider TEXT NOT NULL DEFAULT 'steadfast',
+      recipient_name TEXT NOT NULL,
+      recipient_phone TEXT NOT NULL,
+      city TEXT NOT NULL,
+      address TEXT NOT NULL,
+      cod_amount_bdt INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'BOOKED',
+      status_bangla TEXT NOT NULL DEFAULT 'বুক করা হয়েছে',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS offline_nilkhet_orders (
+      order_id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      book_title TEXT NOT NULL,
+      page_count INTEGER NOT NULL,
+      copies INTEGER NOT NULL DEFAULT 1,
+      spine_thickness_mm TEXT NOT NULL,
+      total_cost_bdt INTEGER NOT NULL,
+      delivery_address TEXT NOT NULL,
+      recipient_phone TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'PENDING_PRINT',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
     );
   `);
 }

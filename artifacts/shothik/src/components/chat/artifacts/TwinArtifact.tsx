@@ -210,7 +210,7 @@ export function TwinArtifact() {
             <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
               <span>Autonomous Twin Founder Studio</span>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-400 font-semibold">
-                Polsia AI Engine
+                Shothik AI Engine
               </span>
             </h2>
             <p className="text-[11px] text-muted-foreground">

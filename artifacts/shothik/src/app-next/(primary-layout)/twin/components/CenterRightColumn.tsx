@@ -1,5 +1,5 @@
 /**
- * Polsia Column 3 — Growth / Distribution Channels & Coolify/Dokploy PaaS Deployment Engine.
+ * Shothik Column 3 — Growth / Distribution Channels & Coolify/Dokploy PaaS Deployment Engine.
  * Agent-run marketing, automated cloud deployments & commerce logistics.
  */
 import { useState } from "react";

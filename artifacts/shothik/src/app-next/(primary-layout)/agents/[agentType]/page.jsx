@@ -1,5 +1,6 @@
 
 import NotFound from "@/app-next/not-found";
+import { Redirect } from "wouter";
 import { AgentContextProvider } from "@/components/agents/shared/AgentContextProvider";
 import ChatAgentPage from "@/components/agents/ChatAgentPage";
 import ChatInput from "@/components/research/ui/ChatInput";
@@ -66,35 +67,9 @@ export default function SpecificAgentPage() {
       case "research":
         return <ChatAgentPage initialTab="research" />;
       case "browse":
-        return (
-          <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
-            <div className="rounded-2xl border border-border bg-muted/30 p-10 max-w-md">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Browse Agents</h2>
-              <p className="text-muted-foreground mb-6">Discover and explore AI agents built by the community. This feature is coming soon.</p>
-              <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">Coming Soon</span>
-            </div>
-          </div>
-        );
+        return <Redirect to="/marketplace" replace />;
       case "call":
-        return (
-          <div className="flex flex-col items-center justify-center py-24 px-4 text-center">
-            <div className="rounded-2xl border border-border bg-muted/30 p-10 max-w-md">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-                <svg className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
-                </svg>
-              </div>
-              <h2 className="text-2xl font-bold text-foreground mb-2">Call Agent</h2>
-              <p className="text-muted-foreground mb-6">Voice-call AI agents for real-time conversations and assistance. This feature is coming soon.</p>
-              <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">Coming Soon</span>
-            </div>
-          </div>
-        );
+        return <Redirect to="/twin?tab=video" replace />;
       default:
         return <NotFound />;
     }

@@ -13,29 +13,6 @@ export interface PerplexitySourcesGridProps {
   sources?: PerplexitySource[];
 }
 
-export const DEFAULT_MOCK_SOURCES: PerplexitySource[] = [
-  {
-    id: 1,
-    title: "Chaldal Grocery E-Commerce Logistics & Market Sizing",
-    domain: "chaldal.com",
-    url: "https://chaldal.com",
-    snippet: "Dhaka logistics hubs and 15-minute grocery delivery operations across 8 divisions.",
-  },
-  {
-    title: "ShopUp F-Commerce Merchant Network & COD Returns",
-    domain: "shopup.com.bd",
-    id: 2,
-    url: "https://shopup.com.bd",
-    snippet: "B2B commerce platform connecting 500k+ micro-merchants with courier partners.",
-  },
-  {
-    id: 3,
-    title: "NBR Income Tax Act 2023 & SRO 228 SRO Guidelines",
-    domain: "nbr.gov.bd",
-    url: "https://nbr.gov.bd",
-    snippet: "Official Bangladesh National Board of Revenue tax slabs and 15% Section 78 rebates.",
-  },
-];
 
 export const PerplexitySourcesGrid: React.FC<PerplexitySourcesGridProps> = ({
   sources,

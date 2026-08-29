@@ -17,6 +17,7 @@ import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 import { FCommerceBlueprints } from "@/components/commerce/FCommerceBlueprints";
 import { CommunityArtifact } from "@/components/chat/artifacts/CommunityArtifact";
 import { MultiAgentSwarmFlow } from "@/components/chat/artifacts/MultiAgentSwarmFlow";
+import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { CareerStudioArtifact } from "@/components/chat/artifacts/CareerStudioArtifact";
 import { WhatsAppOrderSimulator } from "@/components/chat/artifacts/WhatsAppOrderSimulator";
 import { VoicePitchToDeck } from "@/components/chat/artifacts/VoicePitchToDeck";
@@ -403,6 +404,15 @@ export function ArtifactPanel({
         {mounted.has("swarm") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "swarm" ? "block" : "hidden"}`}>
             <MultiAgentSwarmFlow onPopulateTab={(tab) => handleTabChange(tab)} />
+            {/* Inline Swarm Adversarial Debate Artifact Card */}
+            <div className="px-4 pb-4">
+              <SwarmAdversarialDebateModal
+                isOpen={true}
+                onClose={() => {/* inline card — no-op close */}}
+                initialTopic="Strategic Business & Legal Analysis"
+                onOpenSource={(sourceKey) => console.log("[SwarmDebate] Opening source:", sourceKey)}
+              />
+            </div>
           </div>
         )}
 

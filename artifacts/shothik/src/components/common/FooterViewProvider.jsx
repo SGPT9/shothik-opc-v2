@@ -2,6 +2,7 @@ import { usePathname } from "@/lib/navigation";
 
 // Full-screen workspace & studio routes where a bottom marketing footer breaks 100vh layout
 const WORKSPACE_ROUTES = [
+  "/",
   "/agents",
   "/twin",
   "/writing-studio",

@@ -3,6 +3,7 @@ import { eq, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { userSubscriptionsTable, toolUsageTable, llmUsageTable } from "@workspace/db";
 import { logger } from "../lib/logger";
+import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 
 const router = Router();
 
@@ -276,81 +277,272 @@ router.get(["/v1/subscriptions/credits", "/api/v1/subscriptions/credits"], async
   });
 });
 
+// Outcome-based monetization pass catalog
+export const OUTCOME_PASSES: Record<string, { id: string; name: string; priceBdt: number; creditsEquivalent: number; outcome: string }> = {
+  THESIS_PLAGIARISM_PASS: {
+    id: "THESIS_PLAGIARISM_PASS",
+    name: "Single Thesis Plagiarism & Citation Report",
+    priceBdt: 49,
+    creditsEquivalent: 50,
+    outcome: "Full thesis plagiarism audit report with institutional similarity scores & IEEE PDF export",
+  },
+  PROJECT_VENTURE_PASS: {
+    id: "PROJECT_VENTURE_PASS",
+    name: "Founder Project Pass",
+    priceBdt: 299,
+    creditsEquivalent: 300,
+    outcome: "Editable PPTX pitch deck, 3-year financial model spreadsheet, and Dokploy container deployment",
+  },
+  F_COMMERCE_MONTHLY_PASS: {
+    id: "F_COMMERCE_MONTHLY_PASS",
+    name: "Autonomous F-Commerce Operations",
+    priceBdt: 999,
+    creditsEquivalent: 1200,
+    outcome: "24/7 autonomous Steadfast/Pathao courier tracking and customer query resolution on Messenger/WhatsApp",
+  },
+};
+
 /**
- * POST /api/v1/subscriptions/deduct-credits
+ * GET /api/v1/subscriptions/passes/catalog
+ * Public catalog of outcome-based micro-passes
+ */
+router.get(["/v1/subscriptions/passes/catalog", "/api/v1/subscriptions/passes/catalog"], (_req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    currency: "BDT",
+    passes: Object.values(OUTCOME_PASSES),
+  });
+});
+
+/**
+ * POST /api/v1/subscriptions/ledger:deduct (Canonical) & /v1/subscriptions/deduct-credits (Legacy)
  * Atomically checks balance and deducts task credits for autonomous agent actions
  */
-router.post(["/v1/subscriptions/deduct-credits", "/api/v1/subscriptions/deduct-credits"], async (req: Request, res: Response) => {
-  try {
-    const { userId = "usr_default", amount = 1, taskId, taskTitle, reason = "Autonomous Twin Task" } = req.body;
-    const cost = Math.max(1, Number(amount) || 1);
-    const currentBalance = userCreditLedger.get(userId) ?? 500;
+router.post(
+  [
+    "/v1/subscriptions/ledger:deduct",
+    "/api/v1/subscriptions/ledger:deduct",
+    "/v1/subscriptions/deduct-credits",
+    "/api/v1/subscriptions/deduct-credits",
+  ],
+  idempotencyMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const { userId = "usr_default", amount = 1, taskId, taskTitle, reason = "Autonomous Twin Task" } = req.body;
+      const cost = Math.max(1, Number(amount) || 1);
+      const currentBalance = userCreditLedger.get(userId) ?? 500;
 
-    if (currentBalance < cost) {
-      logger.warn({ userId, currentBalance, cost }, "[CreditLedger] Insufficient credits for task execution");
-      return res.status(402).json({
-        success: false,
-        error: "Insufficient credits",
-        code: "INSUFFICIENT_CREDITS",
-        required: cost,
-        available: currentBalance,
-        topupRequired: true,
-        message: `Task execution requires ${cost} credits, but current balance is ${currentBalance}. Please top up via bKash or Nagad.`,
+      if (currentBalance < cost) {
+        logger.warn({ userId, currentBalance, cost }, "[CreditLedger] Insufficient credits for task execution");
+        return res.status(402).json({
+          success: false,
+          error: "Insufficient credits",
+          code: "INSUFFICIENT_CREDITS",
+          required: cost,
+          available: currentBalance,
+          topupRequired: true,
+          message: `Task execution requires ${cost} credits, but current balance is ${currentBalance}. Please top up via bKash or Nagad.`,
+        });
+      }
+
+      const newBalance = currentBalance - cost;
+      userCreditLedger.set(userId, newBalance);
+
+      const transactionId = `TX_CR_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+      logger.info({ userId, cost, newBalance, taskId, transactionId }, "[CreditLedger] Deducted credits for autonomous task");
+
+      return res.status(200).json({
+        success: true,
+        transactionId,
+        userId,
+        deducted: cost,
+        previousBalance: currentBalance,
+        remainingCredits: newBalance,
+        taskId: taskId || `task_${Date.now()}`,
+        taskTitle: taskTitle || "Autonomous Strategy Directive",
+        timestamp: new Date().toISOString(),
       });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
     }
-
-    const newBalance = currentBalance - cost;
-    userCreditLedger.set(userId, newBalance);
-
-    const transactionId = `TX_CR_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
-    logger.info({ userId, cost, newBalance, taskId, transactionId }, "[CreditLedger] Deducted credits for autonomous task");
-
-    return res.status(200).json({
-      success: true,
-      transactionId,
-      userId,
-      deducted: cost,
-      previousBalance: currentBalance,
-      remainingCredits: newBalance,
-      taskId: taskId || `task_${Date.now()}`,
-      taskTitle: taskTitle || "Autonomous Strategy Directive",
-      timestamp: new Date().toISOString(),
-    });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
   }
-});
+);
 
 /**
- * POST /api/v1/subscriptions/topup-credits
+ * POST /api/v1/subscriptions/ledger:topup (Canonical) & /v1/subscriptions/topup-credits (Legacy)
  * Credits user's balance upon verified bKash/Nagad TrxID
  */
-router.post(["/v1/subscriptions/topup-credits", "/api/v1/subscriptions/topup-credits"], async (req: Request, res: Response) => {
-  try {
-    const { userId = "usr_default", amount = 500, trxId, paymentMethod = "bkash" } = req.body;
-    const addedCredits = Math.max(1, Number(amount) || 500);
-    const currentBalance = userCreditLedger.get(userId) ?? 500;
-    const newBalance = currentBalance + addedCredits;
+router.post(
+  [
+    "/v1/subscriptions/ledger:topup",
+    "/api/v1/subscriptions/ledger:topup",
+    "/v1/subscriptions/topup-credits",
+    "/api/v1/subscriptions/topup-credits",
+  ],
+  idempotencyMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const { userId = "usr_default", amount = 500, trxId, paymentMethod = "bkash" } = req.body;
+      const addedCredits = Math.max(1, Number(amount) || 500);
+      const currentBalance = userCreditLedger.get(userId) ?? 500;
+      const newBalance = currentBalance + addedCredits;
 
-    userCreditLedger.set(userId, newBalance);
-    const receiptNumber = `RCP_CR_${Date.now()}`;
+      userCreditLedger.set(userId, newBalance);
+      const receiptNumber = `RCP_CR_${Date.now()}`;
 
-    logger.info({ userId, addedCredits, newBalance, trxId }, "[CreditLedger] Top-up credits applied");
+      logger.info({ userId, addedCredits, newBalance, trxId }, "[CreditLedger] Top-up credits applied");
 
-    return res.status(200).json({
-      success: true,
-      receiptNumber,
-      userId,
-      addedCredits,
-      previousBalance: currentBalance,
-      creditsBalance: newBalance,
-      trxId: trxId || `TRX_${Date.now()}`,
-      paymentMethod,
-      message: `Successfully topped up ${addedCredits} task credits to your wallet.`,
-    });
-  } catch (error: any) {
-    return res.status(500).json({ success: false, error: error.message });
+      return res.status(200).json({
+        success: true,
+        receiptNumber,
+        userId,
+        addedCredits,
+        previousBalance: currentBalance,
+        creditsBalance: newBalance,
+        trxId: trxId || `TRX_${Date.now()}`,
+        paymentMethod,
+        message: `Successfully topped up ${addedCredits} task credits to your wallet.`,
+      });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
   }
-});
+);
+
+/**
+ * POST /api/v1/subscriptions/passes:purchase
+ * Instant unlock for tangible human outcomes (Thesis 49 BDT, Project 299 BDT, F-Commerce 999 BDT)
+ */
+router.post(
+  ["/v1/subscriptions/passes:purchase", "/api/v1/subscriptions/passes:purchase"],
+  idempotencyMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const { userId = "usr_default", passId, trxId } = req.body;
+      const pass = OUTCOME_PASSES[passId];
+
+      if (!pass) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid passId. Valid passes are: ${Object.keys(OUTCOME_PASSES).join(", ")}`,
+        });
+      }
+
+      const currentBalance = userCreditLedger.get(userId) ?? 500;
+      const newBalance = currentBalance + pass.creditsEquivalent;
+      userCreditLedger.set(userId, newBalance);
+
+      const passToken = `PASS_${pass.id.slice(0, 4)}_${Date.now()}`;
+      logger.info({ userId, passId, passToken, trxId }, "[CreditLedger] Outcome pass activated");
+
+      return res.status(200).json({
+        success: true,
+        passToken,
+        passId: pass.id,
+        name: pass.name,
+        priceBdt: pass.priceBdt,
+        outcomeUnlocked: pass.outcome,
+        newCreditsBalance: newBalance,
+        activatedAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
+
+/**
+ * POST /api/v1/mfs/verify-trx
+ * Verifies a bKash/Nagad MFS Transaction ID and credits revenue to the Twin's live telemetry ledger.
+ * Standard bKash TrxIDs are 10-character alphanumeric (e.g. BKA8829102).
+ */
+router.post(
+  ["/v1/mfs/verify-trx", "/api/v1/mfs/verify-trx"],
+  idempotencyMiddleware,
+  async (req: Request, res: Response) => {
+    try {
+      const {
+        trxId,
+        amountBdt,
+        provider = "bkash",
+        userId = "usr_default",
+        companyName = "VerifiQ",
+        note,
+      } = req.body;
+
+      // Validate TrxID format (8-14 alphanumeric characters)
+      if (!trxId || typeof trxId !== "string") {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required field: trxId (bKash/Nagad Transaction ID)",
+        });
+      }
+
+      const cleanTrxId = trxId.trim();
+      if (!/^[A-Za-z0-9]{8,14}$/.test(cleanTrxId)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid TrxID format: "${cleanTrxId}". Expected 8-14 alphanumeric characters (e.g. BKA8829102).`,
+        });
+      }
+
+      if (!amountBdt || Number(amountBdt) <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing or invalid amountBdt. Must be a positive number.",
+        });
+      }
+
+      const amount = Number(amountBdt);
+      const mfsProvider = provider.toLowerCase() === "nagad" ? "nagad_trx" : "bkash_trx";
+
+      // Import and use TwinRevenueLedger
+      const { TwinRevenueLedger } = await import("../lib/twin/revenue-ledger");
+
+      const { newTotalBdt, transaction } = TwinRevenueLedger.creditRevenue({
+        companyName,
+        amountBdt: amount,
+        source: mfsProvider,
+        referenceId: cleanTrxId,
+        note: note || `${provider.toUpperCase()} payment verified via MFS TrxID listener`,
+      });
+
+      // Also credit to user's task credit wallet
+      const currentCredits = userCreditLedger.get(userId) ?? 500;
+      const creditEquivalent = Math.floor(amount / 10); // ৳10 = 1 task credit
+      const newCredits = currentCredits + creditEquivalent;
+      userCreditLedger.set(userId, newCredits);
+
+      logger.info(
+        { trxId: cleanTrxId, amountBdt: amount, provider, companyName, newTotalBdt },
+        "[MFS] TrxID verified and revenue credited to Twin ledger"
+      );
+
+      return res.status(200).json({
+        success: true,
+        verified: true,
+        trxId: cleanTrxId,
+        provider: provider.toUpperCase(),
+        amountBdt: amount,
+        revenueUpdate: {
+          companyName,
+          previousRevenueBdt: newTotalBdt - amount,
+          newRevenueBdt: newTotalBdt,
+          transactionId: transaction.id,
+        },
+        creditUpdate: {
+          userId,
+          addedCredits: creditEquivalent,
+          newCreditsBalance: newCredits,
+        },
+        verifiedAt: new Date().toISOString(),
+        message: `${provider.toUpperCase()} TrxID ${cleanTrxId} verified — ৳${amount} BDT credited to ${companyName} revenue ledger`,
+      });
+    } catch (error: any) {
+      return res.status(500).json({ success: false, error: error.message });
+    }
+  }
+);
 
 export default router;

@@ -1,6 +1,8 @@
 import { Router, Request, Response } from "express";
-import { taskQueue, JobType } from "../lib/queue/task-queue";
+import { taskQueue, JobType, JobProgressEvent } from "../lib/queue/task-queue";
 import { dbAutoSync } from "../lib/db-bootstrap";
+import { validateRequest } from "../lib/middleware/zod-validator";
+import { JobSubmitSchema } from "@workspace/api-zod";
 
 const router = Router();
 
@@ -8,37 +10,97 @@ const router = Router();
  * POST /api/v1/jobs/submit
  * Enqueue a long-running background job (Deep Research, Courier Sync, Book Compilation)
  */
-router.post("/v1/jobs/submit", (req: Request, res: Response): void => {
-  try {
-    const { type, data = {}, userId = "usr_default" } = req.body;
+router.post(
+  "/v1/jobs/submit",
+  validateRequest(JobSubmitSchema),
+  (req: Request, res: Response): void => {
+    try {
+      const { type, data = {}, userId = "usr_default" } = req.body;
+      const idempotencyKey = req.headers["idempotency-key"] as string | undefined;
 
-    const validTypes: JobType[] = [
-      "DEEP_RESEARCH",
-      "BULK_COURIER_RECONCILIATION",
-      "BOOK_PDF_COMPILATION",
-      "SEMANTIC_VAULT_REINDEX",
-    ];
+      const job = taskQueue.enqueueJob(type as JobType, userId, data, idempotencyKey);
 
-    if (!type || !validTypes.includes(type)) {
-      res.status(400).json({
-        success: false,
-        error: `Invalid job type. Supported types: ${validTypes.join(", ")}`,
+      res.status(202).json({
+        success: true,
+        jobId: job.id,
+        type: job.type,
+        status: job.status,
+        progress: job.progress,
+        message: "Job enqueued for background processing.",
+        streamUrl: `/api/v1/jobs/${job.id}/stream`,
       });
-      return;
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
     }
-
-    const job = taskQueue.enqueueJob(type, userId, data);
-
-    res.status(202).json({
-      success: true,
-      jobId: job.id,
-      type: job.type,
-      status: job.status,
-      message: "Job enqueued for background processing.",
-    });
-  } catch (error: any) {
-    res.status(500).json({ success: false, error: error.message });
   }
+);
+
+/**
+ * GET /api/v1/jobs/:jobId/stream
+ * Real-time Server-Sent Events (SSE) stream for live job progress & step events
+ */
+router.get("/v1/jobs/:jobId/stream", (req: Request, res: Response): void => {
+  const { jobId } = req.params;
+  const job = taskQueue.getJob(jobId as string);
+
+  if (!job) {
+    res.status(404).json({ success: false, error: "Job not found" });
+    return;
+  }
+
+  // Set standard SSE streaming headers
+  res.writeHead(200, {
+    "Content-Type": "text/event-stream",
+    "Cache-Control": "no-cache, no-transform",
+    Connection: "keep-alive",
+    "X-Accel-Buffering": "no",
+  });
+  res.flushHeaders?.();
+
+  // Send initial snapshot
+  const initialEvent: JobProgressEvent = {
+    jobId: job.id,
+    type: job.type,
+    progress: job.progress,
+    status: job.status,
+    stepMessage: job.stepMessage || `Job is currently ${job.status}`,
+    timestamp: new Date().toISOString(),
+  };
+  res.write(`data: ${JSON.stringify(initialEvent)}\n\n`);
+
+  // If already completed or failed, close immediately
+  if (job.status === "completed" || job.status === "failed" || job.status === "dlq") {
+    res.write(`data: ${JSON.stringify({ type: "done", result: job.result, error: job.error })}\n\n`);
+    res.write("data: [DONE]\n\n");
+    res.end();
+    return;
+  }
+
+  // Heartbeat interval every 15s to keep connection alive
+  const heartbeatTimer = setInterval(() => {
+    res.write(": heartbeat\n\n");
+  }, 15000);
+
+  // Progress listener
+  const onProgress = (event: JobProgressEvent) => {
+    res.write(`data: ${JSON.stringify(event)}\n\n`);
+    if (event.status === "completed" || event.status === "failed" || event.status === "dlq") {
+      cleanup();
+      res.write(`data: ${JSON.stringify({ type: "done", result: job.result, error: job.error })}\n\n`);
+      res.write("data: [DONE]\n\n");
+      res.end();
+    }
+  };
+
+  const cleanup = () => {
+    clearInterval(heartbeatTimer);
+    taskQueue.removeListener(`progress:${jobId}`, onProgress);
+  };
+
+  taskQueue.on(`progress:${jobId}`, onProgress);
+
+  req.on("close", cleanup);
+  req.on("end", cleanup);
 });
 
 /**

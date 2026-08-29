@@ -94,7 +94,7 @@ router.get(["/v1/agent/traces", "/agent/traces", "/v1/agent/traces/:sessionId", 
  */
 router.get(["/v1/agent/traces/item/:id", "/agent/traces/item/:id"], async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const trace = await getAgentTrace(id);
 
     if (!trace) {
@@ -123,7 +123,7 @@ router.get(["/v1/agent/traces/item/:id", "/agent/traces/item/:id"], async (req: 
  */
 router.delete(["/v1/agent/traces/:sessionId", "/agent/traces/:sessionId"], async (req: Request, res: Response) => {
   try {
-    const { sessionId } = req.params;
+    const sessionId = String(req.params.sessionId);
     await clearSessionTraces(sessionId);
 
     return res.status(200).json({

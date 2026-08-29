@@ -32,7 +32,7 @@ describe("Agent Traces API & Engine Integration", () => {
     return res;
   }
 
-  function getRouteHandler(method: "get" | "post" | "delete", pathPrefix: string) {
+  function getRouteHandler(method: "get" | "post" | "delete", pathPrefix: string): any {
     const layer = (agentTracesRouter.stack || []).find((l: any) => {
       const matchMethod = l.route?.methods?.[method];
       const matchPath = l.route?.path === pathPrefix || (Array.isArray(l.route?.path) && l.route.path.includes(pathPrefix));

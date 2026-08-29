@@ -36,6 +36,7 @@ import { saveOfflineTask, saveOfflineManuscript } from "@/lib/offline/offline-st
 import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
 import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
 import { useSearchParams, Link } from "@/lib/navigation";
+import { saveCompanyProfile, createCompanyProfile, slugify } from "@/lib/twin/dynamic-company-store";
 
 interface WayfinderTicketTemplate {
   id: string;
@@ -96,7 +97,7 @@ export default function NewCompanyWizardPage() {
   };
 
   const SYNTHESIS_LOGS = [
-    "🧠 Polsia Strategic Co-Founder: Estimating South Asia TAM ($10.0B), SAM ($1.5B), and SOM ($150M)...",
+    "🧠 Shothik Strategic Co-Founder: Estimating South Asia TAM ($10.0B), SAM ($1.5B), and SOM ($150M)...",
     "📝 AI Product Lead: Synthesizing Product Requirements Document (PRD) & User Stories...",
     "🏗️ Autonomous Tech Lead: Decomposing features into 10 unblocked Wayfinder tickets...",
     "🐳 Dokploy SRE Agent: Configuring standalone Docker container (<88MB RAM budget) & Ingress...",
@@ -208,7 +209,15 @@ export default function NewCompanyWizardPage() {
   };
 
   const handleLaunchCompany = () => {
-    const slug = subdomain || "company";
+    const slug = subdomain || slugify(companyName) || "company";
+    const name = companyName || "Autonomous Company";
+
+    // Create & persist full company profile
+    const profile = createCompanyProfile(name, industry, businessModel, "Autonomous SaaS", problemStatement);
+    profile.slug = slug;
+    profile.domain = `https://${slug}.shothikgpt.com`;
+    profile.email = `founder@${slug}.shothik.ai`;
+    saveCompanyProfile(profile);
 
     INITIAL_WAYFINDER_TICKETS.forEach((t) => {
       saveOfflineTask({
@@ -223,7 +232,7 @@ export default function NewCompanyWizardPage() {
       });
     });
 
-    const prdContent = `# ${companyName || "Autonomous Company"} — Product Requirements Document (PRD)
+    const prdContent = `# ${name} — Product Requirements Document (PRD)
 
 ## 1. Executive Summary
 - **Subdomain:** \`https://${slug}.shothikgpt.com\`
@@ -247,24 +256,31 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
 
     saveOfflineManuscript({
       id: `${slug}-prd`,
-      title: `${companyName || "New Startup"} PRD`,
+      title: `${name} PRD`,
       content: prdContent,
       updatedAt: Date.now(),
     });
 
     if (typeof window !== "undefined") {
+      localStorage.setItem("shothik_active_company", slug);
+      localStorage.setItem("shothik_twin_has_setup", "true");
       window.location.href = `/twin?company=${slug}`;
     }
   };
 
   const handleLaunchCommerceTwin = () => {
-    const slug = (businessName || "f-commerce")
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, "-")
-      .replace(/-+/g, "-");
+    const name = businessName || "My F-Commerce Business";
+    const slug = slugify(name);
+
+    // Create & persist full commerce company profile
+    const profile = createCompanyProfile(name, "Commerce & Retail", "Direct Sales & COD", businessType, "Automated courier dispatch and bKash payment verification");
+    profile.slug = slug;
+    profile.domain = `https://${slug}.shothikgpt.com`;
+    profile.email = `sales@${slug}.shothik.ai`;
+    saveCompanyProfile(profile);
 
     const commerceProfile = {
-      businessName: businessName || "My Business",
+      businessName: name,
       businessType,
       courierProvider,
       isAutonomous,
@@ -276,6 +292,8 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
     localStorage.setItem(`twin_commerce_${slug}`, JSON.stringify(commerceProfile));
 
     if (typeof window !== "undefined") {
+      localStorage.setItem("shothik_active_company", slug);
+      localStorage.setItem("shothik_twin_has_setup", "true");
       window.location.href = `/twin?company=${slug}&mode=commerce`;
     }
   };
@@ -292,6 +310,9 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
               New Autonomous Twin Setup
             </h1>
+            <Badge variant="outline" className="text-[11px] font-mono border-indigo-500/30 text-indigo-400">
+              New Autonomous Company Slot
+            </Badge>
           </div>
           <p className="mt-1 text-xs text-muted-foreground">
             Connect an existing running business to automate operations or build a new venture from scratch.
@@ -399,6 +420,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
                   className="w-full rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  data-testid="input-business-name"
                 />
               </div>
 
@@ -410,6 +432,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                   value={businessType}
                   onChange={(e) => setBusinessType(e.target.value)}
                   className="w-full rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  data-testid="select-business-type"
                 >
                   <option>F-Commerce (Facebook Page / Shop)</option>
                   <option>WhatsApp Direct Commerce</option>
@@ -454,6 +477,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                     value={courierApiKey}
                     onChange={(e) => setCourierApiKey(e.target.value)}
                     className="w-full rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-sm text-foreground font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    data-testid="input-courier-api-key"
                   />
                 </div>
                 <div>
@@ -466,6 +490,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                     value={courierSecret}
                     onChange={(e) => setCourierSecret(e.target.value)}
                     className="w-full rounded-xl border border-border bg-muted/40 px-3.5 py-2.5 text-sm text-foreground font-mono placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    data-testid="input-courier-secret"
                   />
                 </div>
               </div>
@@ -474,13 +499,13 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
             {/* Permissions & Delegation Matrix */}
             <div className="border-t border-border/60 pt-5 space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Twin Permissions & Delegation Rules
+                Twin Capabilities & Permissions Matrix
               </h4>
 
               <div className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-background/60">
                 <div className="space-y-0.5">
                   <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <span>Autonomous Customer Replies</span>
+                    <span>Autonomous Customer Delivery Queries</span>
                     {isAutonomous ? (
                       <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 text-[10px]">
                         Fully Autonomous
@@ -498,6 +523,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                 <Switch
                   checked={isAutonomous}
                   onCheckedChange={setIsAutonomous}
+                  data-testid="switch-autonomous"
                 />
               </div>
 
@@ -513,6 +539,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                 <Switch
                   checked={autoSendWhatsApp}
                   onCheckedChange={setAutoSendWhatsApp}
+                  data-testid="switch-whatsapp"
                 />
               </div>
             </div>
@@ -528,13 +555,14 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                   size="sm"
                   onClick={() => setSimulationTested(true)}
                   className="text-xs gap-1.5 h-8 border-brand/30 text-brand hover:bg-brand/10"
+                  data-testid="button-run-courier-simulation"
                 >
                   <Sliders className="h-3.5 w-3.5" /> Run Courier Simulation
                 </Button>
               </div>
 
               {simulationTested && (
-                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-2 animate-in fade-in">
+                <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 space-y-2 animate-in fade-in" data-testid="simulation-results">
                   <div className="flex items-center gap-2 text-xs font-semibold text-emerald-400">
                     <CheckCircle2 className="h-4 w-4" />
                     <span>Courier API Verification: Successful</span>
@@ -554,6 +582,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                 onClick={handleLaunchCommerceTwin}
                 disabled={!businessName}
                 className="bg-brand text-white hover:bg-brand/90 font-semibold px-6 gap-2 h-10 shadow-lg shadow-brand/20 cursor-pointer"
+                data-testid="button-activate-commerce-twin"
               >
                 <span>Activate Business Twin</span>
                 <ArrowRight className="h-4 w-4" />
@@ -709,7 +738,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                   onClick={handleStartSynthesis}
                   disabled={!companyName.trim() || isSynthesizing}
                   className="rounded-xl px-6 gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold shadow-lg shadow-indigo-900/30"
-                  data-testid="button-start-synthesis"
+                  data-testid="button-synthesize-company"
                 >
                   <span>Synthesize PRD & Roadmap</span>
                   <ArrowRight className="h-4 w-4" />
@@ -800,6 +829,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                   <Button
                     onClick={handleLaunchCompany}
                     className="rounded-xl px-6 gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold shrink-0 shadow-lg shadow-emerald-900/30 h-9 cursor-pointer"
+                    data-testid="button-launch-company"
                   >
                     <Rocket className="h-4 w-4" /> Launch in Autonomous Twin
                   </Button>
@@ -824,6 +854,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
                   {INITIAL_WAYFINDER_TICKETS.map((ticket, idx) => (
                     <div
                       key={ticket.id}
+                      data-testid={`preview-ticket-${ticket.id}`}
                       className="rounded-xl border border-border/70 bg-background/60 p-3 flex flex-col justify-between space-y-2 hover:border-indigo-500/40 transition"
                     >
                       <div className="flex items-start justify-between gap-2">

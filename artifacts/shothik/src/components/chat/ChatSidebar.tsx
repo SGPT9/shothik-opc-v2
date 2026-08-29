@@ -122,7 +122,7 @@ export function ChatSidebar({
 
         {/* Twin AI Direct Link */}
         <a
-          href="/twin"
+          href={typeof window !== "undefined" && (localStorage.getItem("shothik_active_company") || localStorage.getItem("shothik_twin_has_setup")) ? "/twin" : "/twin/new"}
           className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.08] text-zinc-200 text-sm font-semibold transition no-underline shadow-xs cursor-pointer select-none group"
         >
           <span className="flex items-center gap-2.5">

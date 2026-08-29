@@ -90,7 +90,7 @@ const DEFAULT_MEMORIES: ExtractedMemory[] = [
 export function SecondMeMemoryModal({
   isOpen,
   onClose,
-  twinName = "Polsia",
+  twinName = "Shothik",
 }: SecondMeMemoryModalProps) {
   const [memories, setMemories] = useState<ExtractedMemory[]>([]);
   const [activeTab, setActiveTab] = useState<"all" | "auto" | MemoryCategory>("all");

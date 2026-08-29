@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import logger from "../lib/logger.js";
+import { logger } from "../lib/logger";
+import { analyzeCustomerMessage, type NlpAnalysisResult } from "../lib/whatsapp/banglish-nlp";
 
 const router = Router();
 
@@ -33,6 +34,7 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
 
     if (body.object === "whatsapp_business_account") {
       const entries = body.entry || [];
+      const responses: Array<{ recipientPhone: string; reply: string; analysis: NlpAnalysisResult }> = [];
 
       for (const entry of entries) {
         const changes = entry.changes || [];
@@ -54,19 +56,58 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
               "[whatsapp-webhook] Inbound customer message received"
             );
 
-            // Autonomous Merchant Twin Trigger:
-            // Detects order intent, product availability, or bKash TrxID verification
+            // Autonomous Banglish NLP Intent Extraction:
+            const analysis = analyzeCustomerMessage(messageText);
+            responses.push({
+              recipientPhone: senderPhone,
+              reply: analysis.replyText,
+              analysis,
+            });
           }
         }
       }
 
-      return res.status(200).json({ status: "EVENT_RECEIVED", success: true });
+      return res.status(200).json({
+        status: "EVENT_RECEIVED",
+        success: true,
+        dispatchedCount: responses.length,
+        responses,
+      });
     }
 
     return res.status(404).json({ error: "Not a WhatsApp Business Account payload" });
   } catch (err: any) {
     logger.error({ error: err.message }, "[whatsapp-webhook] Processing error");
     return res.status(500).json({ error: "Webhook processing failure" });
+  }
+});
+
+/**
+ * POST /v1/whatsapp/simulate
+ * Simulates an inbound customer message from WhatsApp/Messenger and runs Banglish NLP
+ */
+router.post("/v1/whatsapp/simulate", async (req: Request, res: Response) => {
+  try {
+    const { message, customerPhone = "01711000000", companyName = "Shothik Merchant" } = req.body;
+
+    if (!message || typeof message !== "string") {
+      return res.status(400).json({ success: false, error: "Message text is required" });
+    }
+
+    const analysis = analyzeCustomerMessage(message, companyName);
+
+    return res.status(200).json({
+      success: true,
+      senderPhone: customerPhone,
+      companyName,
+      inputMessage: message,
+      analysis,
+      autoReply: analysis.replyText,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err: any) {
+    logger.error({ err }, "[whatsapp-simulate] Error running simulation");
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -81,7 +122,6 @@ router.post("/v1/whatsapp/send", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Missing recipientPhone or message/template" });
   }
 
-  // Simulated or live outbound dispatch via Meta Graph API
   logger.info({ recipientPhone }, "[whatsapp-outbound] Dispatched reply to customer");
   return res.status(200).json({
     success: true,

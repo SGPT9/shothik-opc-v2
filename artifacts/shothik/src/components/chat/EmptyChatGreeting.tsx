@@ -1,5 +1,5 @@
 import React from "react";
-import { Search, Scale, FileText, ArrowRight, MessageSquare, LayoutTemplate, BookOpen, Presentation, Sparkles } from "lucide-react";
+import { Search, Scale, FileText, ArrowRight, MessageSquare, LayoutTemplate, BookOpen, Presentation, Sparkles, Truck, Rocket } from "lucide-react";
 import { type ChatPersona } from "@/lib/chat/types";
 
 interface EmptyChatGreetingProps {
@@ -24,25 +24,25 @@ interface StarterPromptItem {
 
 const STARTER_PROMPTS: StarterPromptItem[] = [
   {
-    icon: Search,
-    category: "Research",
-    label: "Research a market and summarize findings",
-    prompt: "Research the current market size, key competitors, and growth trends for e-commerce logistics in South Asia and summarize the key findings.",
-    mode: "cofounder",
-    tab: "research",
-  },
-  {
-    icon: Scale,
-    category: "Analysis",
-    label: "Compare options and recommend the best choice",
-    prompt: "Compare PostgreSQL with PostgREST vs MongoDB for a real-time collaborative writing app with version control, and recommend the best choice.",
+    icon: Truck,
+    category: "Commerce",
+    label: "Automate parcel tracking & customer queries",
+    prompt: "I have multiple Steadfast and Pathao parcels in transit. How can Twin automate delivery queries and reconcile cash on delivery?",
     mode: "coworker",
   },
   {
-    icon: FileText,
-    category: "Create",
-    label: "Create a report, model, or draft from my idea",
-    prompt: "Create a 3-scenario revenue model and executive summary draft for a subscription SaaS tool targeting authors and creators.",
+    icon: BookOpen,
+    category: "Academic",
+    label: "Structure a thesis chapter or BoiMela book",
+    prompt: "Structure my research thesis into clean chapters with literature review, APA citations, and BoiMela 3D book preview.",
+    mode: "researcher",
+    tab: "slides",
+  },
+  {
+    icon: Rocket,
+    category: "Venture",
+    label: "Validate a market gap, pitch deck & financials",
+    prompt: "Turn this startup market gap into a 10-slide investor pitch deck, 5-year financial model, and operational execution plan.",
     mode: "cofounder",
     tab: "sheet",
   },
@@ -133,11 +133,9 @@ export function EmptyChatGreeting({
   const activeStarters = PERSONA_STARTER_MAP[agentId] || STARTER_PROMPTS;
 
   const mobilePills = [
-    { icon: Sparkles, label: "বাংলায় লিখুন", prompt: "একটি সুন্দর ও প্রাতিষ্ঠানিক বাংলায় নিবন্ধ লিখে দিন।" },
-    { icon: Search, label: "Search & Research", prompt: "বাংলাদেশের সাম্প্রতিক টেক ও স্টার্টআপ খাতের অগ্রগতি বিশ্লেষণ করুন।" },
-    { icon: FileText, label: "বানান ও ব্যাকরণ", prompt: "আমার লেখার ব্যাকরণ ও বানান শুদ্ধ করে দিন।" },
-    { icon: BookOpen, label: "বই ও গল্প রচনা", prompt: "একটি আকর্ষণীয় গল্পের প্রথম অধ্যায় ও চরিত্র রূপরেখা তৈরি করুন।" },
-    { icon: Scale, label: "ব্যবসা ও হিসাব", prompt: "একটি নতুন ব্যবসার লাভ-ক্ষতি ও মাসিক খরচের হিসাব তৈরি করুন।" },
+    { icon: Truck, label: "পার্সেল ও কুরিয়ার", prompt: "আমার স্টিডফাস্ট ও পাঠাও পার্সেল ট্র্যাকিং ও কাস্টমার কোয়েরি অটোমেট করুন।" },
+    { icon: BookOpen, label: "থিসিস ও বইমেলা", prompt: "আমার রিসার্চ থিসিস অধ্যায় প্রস্তুত করুন এবং বইমেলা ৩ডি বই প্রিভিউ দেখান।" },
+    { icon: Rocket, label: "স্টার্টআপ ও ফান্ডিং", prompt: "একটি স্টার্টআপ আইডিয়ার জন্য ১০ স্লাইডের পিচ ডেক ও ৫ বছরের ফিনান্সিয়াল মডেল তৈরি করুন।" },
   ];
 
   return (

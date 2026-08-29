@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { 
   FileText, Presentation, Table as TableIcon, File, Search, 
-  Calendar, ArrowUpRight, Share2, PhoneCall, Copy, Check, Download
+  Calendar, ArrowUpRight, Share2, PhoneCall, Copy, Check, Plus
 } from "lucide-react";
+import { getChatSessions, StoredChatSession } from "@/lib/chat-sessions-store";
+import { listOfflineManuscripts, OfflineDocument } from "@/lib/offline/offline-storage";
 
 interface Report {
   id: string;
@@ -14,35 +16,38 @@ interface Report {
   chatId: string;
 }
 
-const MOCK_REPORTS: Report[] = [
-  {
-    id: "r1", title: "Enterprise RAG & Logistics in South Asia", type: "markdown", date: "Aug 14, 2026",
-    snippet: "An overview of top enterprise Retrieval-Augmented Generation providers, highlighting Steadfast courier and bKash MFS payment deployment options...",
-    chatId: "chat-1"
-  },
-  {
-    id: "r2", title: "Q4 Seedstars Pitch Deck — Shothik AI", type: "slides", date: "Aug 12, 2026",
-    snippet: "1. 650M South Asian Emerging Market\n2. 5-Step Agentic Slide Studio\n3. bKash/Nagad Micro-Billing Model",
-    chatId: "chat-2"
-  },
-  {
-    id: "r3", title: "F-Commerce Cohort Retention & COD Returns", type: "sheet", date: "Aug 08, 2026",
-    snippet: "Grid data spanning 12 months of cohort retention metrics, showing a 5% improvement YoY after automated COD risk filtering.",
-    chatId: "chat-3"
-  },
-  {
-    id: "r4", title: "NBR Tax Act 2023 Compliance Brief", type: "pdf", date: "Jul 28, 2026",
-    snippet: "Executive summary of Section 78 investment tax rebates and corporate depreciation tables for tech startups.",
-    chatId: "chat-4"
-  }
-];
-
 export default function SavedReportsPage() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [reports, setReports] = useState<Report[]>([]);
 
-  const filtered = MOCK_REPORTS.filter(r => 
+  useEffect(() => {
+    const sessions = getChatSessions();
+    const manuscripts = listOfflineManuscripts();
+
+    const sessionReports: Report[] = sessions.map((s) => ({
+      id: s.id,
+      title: s.title || "Untitled Session",
+      type: "markdown",
+      date: new Date(s.updatedAt || Date.now()).toLocaleDateString(),
+      snippet: s.preview || "Active multi-agent session trace and synthesized outputs.",
+      chatId: s.id,
+    }));
+
+    const manuscriptReports: Report[] = manuscripts.map((m) => ({
+      id: m.id,
+      title: m.title || "Manuscript Draft",
+      type: "markdown",
+      date: new Date(m.updatedAt || Date.now()).toLocaleDateString(),
+      snippet: m.content ? m.content.slice(0, 140) + "..." : "Saved writing studio draft.",
+      chatId: m.id,
+    }));
+
+    setReports([...sessionReports, ...manuscriptReports]);
+  }, []);
+
+  const filtered = reports.filter(r => 
     r.title.toLowerCase().includes(search.toLowerCase()) || 
     r.snippet.toLowerCase().includes(search.toLowerCase())
   );
@@ -84,63 +89,82 @@ export default function SavedReportsPage() {
       </div>
 
       <div className="flex-1 overflow-y-auto px-8 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-          {filtered.map(report => (
-            <div 
-              key={report.id} 
-              className="flex flex-col rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-brand/30 transition-all cursor-pointer group"
-              onClick={() => setLocation(`/agents/chat?conversationId=${report.chatId}`)}
+        {filtered.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center rounded-2xl border border-dashed border-border/80 bg-card/40">
+            <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-muted border border-border mb-4 text-muted-foreground">
+              <FileText className="w-7 h-7" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground mb-1">No Saved Reports Found</h3>
+            <p className="text-sm text-muted-foreground max-w-sm mb-6">
+              {search ? `No reports matching "${search}".` : "Synthesized briefs, financial sheets, and pitch decks from chat and writing studio will automatically appear here."}
+            </p>
+            <button
+              onClick={() => setLocation("/")}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white font-medium text-sm transition shadow-sm"
             >
-              <div className="p-5 flex-1">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted border border-border">
-                    {report.type === "markdown" && <FileText className="w-5 h-5 text-brand" />}
-                    {report.type === "slides" && <Presentation className="w-5 h-5 text-indigo-500" />}
-                    {report.type === "sheet" && <TableIcon className="w-5 h-5 text-emerald-500" />}
-                    {report.type === "pdf" && <File className="w-5 h-5 text-red-500" />}
+              <Plus className="w-4 h-4" />
+              <span>Start New Agent Session</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {filtered.map(report => (
+              <div 
+                key={report.id} 
+                className="flex flex-col rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-brand/30 transition-all cursor-pointer group"
+                onClick={() => setLocation(`/agents/chat?conversationId=${report.chatId}`)}
+              >
+                <div className="p-5 flex-1">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-muted border border-border">
+                      {report.type === "markdown" && <FileText className="w-5 h-5 text-brand" />}
+                      {report.type === "slides" && <Presentation className="w-5 h-5 text-indigo-500" />}
+                      {report.type === "sheet" && <TableIcon className="w-5 h-5 text-emerald-500" />}
+                      {report.type === "pdf" && <File className="w-5 h-5 text-red-500" />}
+                    </div>
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-md border border-border/50">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {report.date}
+                    </span>
                   </div>
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-md border border-border/50">
-                    <Calendar className="w-3.5 h-3.5" />
-                    {report.date}
+                  <h3 className="font-semibold text-foreground mb-2 text-base leading-tight group-hover:text-brand transition-colors">{report.title}</h3>
+                  <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
+                    {report.snippet}
+                  </p>
+                </div>
+
+                {/* Action Bar */}
+                <div className="px-5 py-3 border-t border-border bg-muted/10 flex items-center justify-between mt-auto rounded-b-xl">
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={(e) => handleShareWhatsApp(e, report)}
+                      title="Share via WhatsApp"
+                      className="p-1.5 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/20 transition cursor-pointer flex items-center gap-1 text-[11px] font-semibold"
+                    >
+                      <PhoneCall className="w-3.5 h-3.5" />
+                      <span>WhatsApp</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(e) => handleCopyLink(e, report)}
+                      title="Copy Public Share Link"
+                      className="p-1.5 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition cursor-pointer flex items-center gap-1 text-[11px]"
+                    >
+                      {copiedId === report.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedId === report.id ? "Copied" : "Link"}</span>
+                    </button>
+                  </div>
+
+                  <span className="flex items-center gap-1 text-xs font-medium text-brand opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-200">
+                    Open in Chat
+                    <ArrowUpRight className="w-3.5 h-3.5" />
                   </span>
                 </div>
-                <h3 className="font-semibold text-foreground mb-2 text-base leading-tight group-hover:text-brand transition-colors">{report.title}</h3>
-                <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
-                  {report.snippet}
-                </p>
               </div>
-
-              {/* Action Bar */}
-              <div className="px-5 py-3 border-t border-border bg-muted/10 flex items-center justify-between mt-auto rounded-b-xl">
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={(e) => handleShareWhatsApp(e, report)}
-                    title="Share via WhatsApp"
-                    className="p-1.5 rounded-lg bg-green-500/10 hover:bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/20 transition cursor-pointer flex items-center gap-1 text-[11px] font-semibold"
-                  >
-                    <PhoneCall className="w-3.5 h-3.5" />
-                    <span>WhatsApp</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(e) => handleCopyLink(e, report)}
-                    title="Copy Public Share Link"
-                    className="p-1.5 rounded-lg bg-muted/60 hover:bg-muted text-muted-foreground hover:text-foreground border border-border transition cursor-pointer flex items-center gap-1 text-[11px]"
-                  >
-                    {copiedId === report.id ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedId === report.id ? "Copied" : "Link"}</span>
-                  </button>
-                </div>
-
-                <span className="flex items-center gap-1 text-xs font-medium text-brand opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-200">
-                  Open in Chat
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

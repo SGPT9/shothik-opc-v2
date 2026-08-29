@@ -3,14 +3,16 @@ import crypto from "crypto";
 import { openDataLoader } from "../lib/document-parsing/opendataloader-bridge";
 import { ragEngine } from "../lib/rag-engine";
 import { logger } from "../lib/logger";
+import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 
 const router = Router();
 
 /**
  * POST /api/v1/files/upload
- * Uploads a document (PDF, DOCX, XLSX, TXT, CSV, MD) and automatically parses and indexes it for Vector RAG
+ * Uploads a document (PDF, DOCX, XLSX, TXT, CSV, MD) and automatically parses and indexes it for Vector RAG.
+ * Guarded by IETF Idempotency-Key.
  */
-router.post("/v1/files/upload", async (req: Request, res: Response): Promise<void> => {
+router.post("/v1/files/upload", idempotencyMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { filename = "document.pdf", fileBase64, rawContent, userId = "usr_default", metadata } = req.body;
 
