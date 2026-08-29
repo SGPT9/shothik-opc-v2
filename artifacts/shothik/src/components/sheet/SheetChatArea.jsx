@@ -23,6 +23,7 @@ import removeMarkdown from "remove-markdown-and-html";
 import TypingAnimation from "../common/TypingAnimation";
 import InputArea from "../presentation/InputAreas";
 import MetadataDisplay from "./MetaDataDisplay";
+import StarPromptCards from "./StarPromptCards";
 import { FooterCta } from "./SheetAgentPage";
 
 // Updated MessageBubble component
@@ -1331,18 +1332,12 @@ export default function SheetChatArea({
         <div className="scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent min-h-0 flex-1 overflow-y-auto scroll-smooth">
           <div className="relative pt-20 pr-6 pb-6 pl-20">
             {messages.length === 0 && !isLoadingHistory ? (
-              <div className="mt-8 text-center">
-                <h2 className="text-muted-foreground mb-2 text-xl font-semibold">
-                  Welcome to Sheet Generator
-                </h2>
-                <p className="text-muted-foreground text-sm">
-                  Describe what kind of spreadsheet you&apos;d like to create.
-                </p>
-                <span className="text-muted-foreground mt-2 block text-xs">
-                  Example: &quot;Create a budget tracker for personal
-                  expenses&quot; or &quot;Generate a student grade sheet&quot;
-                </span>
-              </div>
+              <StarPromptCards
+                onSelectPrompt={(prompt) => {
+                  setInputValue(prompt);
+                  handleMessage(prompt);
+                }}
+              />
             ) : (
               <>
                 {messages.map((message) => (
