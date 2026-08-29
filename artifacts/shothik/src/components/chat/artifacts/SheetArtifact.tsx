@@ -123,6 +123,72 @@ export function buildDynamicSheet(title?: string): { headers: string[]; rows: Gr
     };
   }
 
+  if (lower.includes("kitchen") || lower.includes("restaurant") || lower.includes("food") || lower.includes("dine") || lower.includes("cloud kitchen")) {
+    return {
+      headers: ["Restaurant & Cloud Kitchen Metric", "Dhanmondi Hub", "Gulshan-2 Flagship", "Uttara Cloud Outlet"],
+      rows: [
+        ["Monthly Order Volume (Orders)", "4,500", "7,200", "3,800"],
+        ["Average Order Value (AOV in BDT)", "650", "1,250", "550"],
+        ["Gross Food Sales (Turnover)", "2,925,000", "9,000,000", "2,090,000"],
+        ["Raw Food & Ingredient Cost (32%)", "936,000", "2,880,000", "668,800"],
+        ["Pathao / Foodpanda Commission (25%)", "731,250", "2,250,000", "522,500"],
+        ["Kitchen Rent & Utilities", "120,000", "350,000", "85,000"],
+        ["Chef & Staff Payroll", "220,000", "550,000", "160,000"],
+        ["Net Monthly Operating Profit", "+917,750", "+2,970,000", "+653,700"],
+      ],
+      kpis: [
+        { label: "Combined Revenue", value: "৳14.01M", color: "text-cyan-400" },
+        { label: "Food Cost %", value: "32.0%", color: "text-purple-400" },
+        { label: "Net Operating Margin", value: "32.4%", color: "text-emerald-400" },
+        { label: "Total Orders/Mo", value: "15,500", color: "text-amber-400" },
+      ],
+    };
+  }
+
+  if (lower.includes("saas") || lower.includes("mrr") || lower.includes("arr") || lower.includes("churn") || lower.includes("subscription")) {
+    return {
+      headers: ["SaaS Growth & Cohort Metric", "Starter (৳999/mo)", "Pro (৳2,499/mo)", "Enterprise (৳9,999/mo)"],
+      rows: [
+        ["Active Paying Subscribers", "1,250", "480", "65"],
+        ["Monthly Recurring Revenue (MRR)", "1,248,750", "1,199,520", "649,935"],
+        ["Annualized Run-Rate (ARR)", "14,985,000", "14,394,240", "7,799,220"],
+        ["bKash / Nagad PGW Gateway MDR (1.5%)", "18,731", "17,992", "9,749"],
+        ["Monthly Logo Churn Rate", "3.2%", "1.8%", "0.5%"],
+        ["Customer Acquisition Cost (CAC)", "850", "2,100", "8,500"],
+        ["Customer Lifetime Value (LTV in BDT)", "31,218", "138,833", "1,999,800"],
+        ["LTV : CAC Ratio", "36.7x", "66.1x", "235.2x"],
+      ],
+      kpis: [
+        { label: "Total ARR", value: "৳37.18M", color: "text-cyan-400" },
+        { label: "Blended MRR", value: "৳3.09M", color: "text-purple-400" },
+        { label: "Net Revenue Retention", value: "114.2%", color: "text-emerald-400" },
+        { label: "Gross Margin", value: "88.5%", color: "text-amber-400" },
+      ],
+    };
+  }
+
+  if (lower.includes("rmg") || lower.includes("garment") || lower.includes("textile") || lower.includes("fob") || lower.includes("export")) {
+    return {
+      headers: ["RMG Order Parameter (Per 1,000 Dozen)", "Basic Knit T-Shirt", "Fleece Hoodie", "Denim Trouser"],
+      rows: [
+        ["FOB Export Price (USD per Dozen)", "$32.00", "$78.00", "$94.00"],
+        ["Total Order Value (USD)", "$32,000", "$78,000", "$94,000"],
+        ["Yarn & Fabric Material Cost (52%)", "$16,640", "$40,560", "$48,880"],
+        ["Accessories, Zippers & Trims", "$2,880", "$8,580", "$11,280"],
+        ["Cost of Making (CM) Labor & Energy", "$6,400", "$14,040", "$16,920"],
+        ["Commercial Bank LC & Freight Handling", "$960", "$2,340", "$2,820"],
+        ["Net Manufacturer Contribution (USD)", "+$5,120", "+$12,480", "+$14,100"],
+        ["Net Margin Realization in BDT (@ ৳121.5)", "৳622,080", "৳1,516,320", "৳1,713,150"],
+      ],
+      kpis: [
+        { label: "Total Order LC", value: "$204,000", color: "text-cyan-400" },
+        { label: "Net Margin USD", value: "+$31,700", color: "text-purple-400" },
+        { label: "BDT Profit Yield", value: "৳3.85M", color: "text-emerald-400" },
+        { label: "Factory Efficiency", value: "78.4%", color: "text-amber-400" },
+      ],
+    };
+  }
+
   if (lower.includes("runway") || lower.includes("burn") || lower.includes("cashflow") || lower.includes("runway forecast")) {
     return {
       headers: ["Quarterly Runway Line Item", "Q1 FY26 (BDT)", "Q2 FY26 (BDT)", "Q3 FY26 (BDT)"],
