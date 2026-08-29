@@ -1,0 +1,15 @@
+{
+  "name": "@workspace/office-engine",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.ts",
+    "./docx": "./docx/index.ts",
+    "./pptx": "./pptx/index.ts"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^5.3.4",
+    "jszip": "^3.10.1"
+  }
+}

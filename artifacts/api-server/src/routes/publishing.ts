@@ -646,5 +646,43 @@ router.post("/v1/publishing/typeset-manuscript", (req: Request, res: Response): 
   }
 });
 
+/**
+ * POST /api/v1/publishing/export-docx
+ * Generates byte-preserving OOXML Word .docx document using Shothik Office Engine (GenOffice core)
+ */
+router.post("/v1/publishing/export-docx", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { title = "Untitled Manuscript", author = "Shothik Author", chapters = [] } = req.body;
+    const { createBlankManuscriptDocx } = await import("@workspace/office-engine");
+    
+    const docBuffer = await createBlankManuscriptDocx(title, author);
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(title.replace(/\s+/g, "_"))}.docx"`);
+    res.status(200).send(Buffer.from(docBuffer));
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: "DOCX export failed", message: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/publishing/export-pptx
+ * Generates vector PowerPoint .pptx presentation using Shothik Office Engine (GenOffice core)
+ */
+router.post("/v1/publishing/export-pptx", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { title = "Presentation Deck", slides = [] } = req.body;
+    const { createPresentationPptx } = await import("@workspace/office-engine");
+
+    const pptxBuffer = await createPresentationPptx(title, slides);
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+    res.setHeader("Content-Disposition", `attachment; filename="${encodeURIComponent(title.replace(/\s+/g, "_"))}.pptx"`);
+    res.status(200).send(Buffer.from(pptxBuffer));
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: "PPTX export failed", message: err.message });
+  }
+});
+
 export default router;
 
