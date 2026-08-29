@@ -36,7 +36,7 @@ app.get(["/health", "/healthz"], (_req, res) => {
 app.use("/api", router);
 
 // 404 Handler for undefined API routes
-app.use("/api/*", (_req, res) => {
+app.use((_req, res) => {
   res.status(404).json({
     success: false,
     error: {
