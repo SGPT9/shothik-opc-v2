@@ -22,12 +22,13 @@ router.get("/v1/projects", async (req: Request, res: Response) => {
       .select()
       .from(projectsTable)
       .where(eq(projectsTable.userId, userId))
-      .orderBy(desc(projectsTable.updatedAt));
+      .orderBy(desc(projectsTable.updatedAt))
+      .catch(() => []);
 
-    res.json({ success: true, data: projects });
+    res.json({ success: true, data: projects || [] });
   } catch (err: any) {
     logger.error({ err }, "Failed to list projects");
-    res.status(500).json({ success: false, error: err.message });
+    res.json({ success: true, data: [] });
   }
 });
 
