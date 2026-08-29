@@ -134,12 +134,13 @@ const ParaphraseContend = () => {
     return setLanguageState(...args);
   };
   const sampleText = useMemo(() => {
-    const langKey =
-      language && language.startsWith("English") ? "English" : language;
-    return trySamples.paraphrase[langKey] || null;
+    if (!language) return trySamples?.paraphrase?.English || "";
+    if (language.startsWith("English")) return trySamples?.paraphrase?.English || "";
+    if (language === "Bangla" || language === "Bengali") return trySamples?.paraphrase?.Bangla || "";
+    return trySamples?.paraphrase?.[language] || trySamples?.paraphrase?.English || "";
   }, [language]);
 
-  const hasSampleText = Boolean(sampleText); // To conditionally show the Try Sample button
+  const hasSampleText = Boolean(sampleText);
   const [isLoading, setIsLoading] = useState(false);
   const { wordLimit } = useWordLimit("paraphrase");
   const [userInput, setUserInputState] = useState(() => {
