@@ -175,12 +175,14 @@ export default function MobileMenu({
           </div>
         </div>
         <div className="flex h-12 items-center justify-center border-t px-2 md:h-16">
-          <Button
-            className="bg-primary hover:bg-primary/90 text-primary-foreground w-full font-semibold"
-            data-testid="mobile-join-waitlist"
+          <Link
+            href="/agents/chat"
+            onClick={handleLinkClick}
+            className="flex items-center justify-center bg-primary hover:bg-primary/90 text-primary-foreground w-full h-9 rounded-md font-semibold text-sm transition"
+            data-testid="mobile-open-studio"
           >
-            {t('header.joinWaitlist')}
-          </Button>
+            Start Creating Free
+          </Link>
         </div>
       </SheetContent>
     </Sheet>
