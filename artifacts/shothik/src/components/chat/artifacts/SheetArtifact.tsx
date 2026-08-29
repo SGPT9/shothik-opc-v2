@@ -102,6 +102,49 @@ export function buildDynamicSheet(title?: string): { headers: string[]; rows: Gr
     };
   }
 
+  if (lower.includes("nilkhet") || lower.includes("pod") || lower.includes("book") || lower.includes("print on demand") || lower.includes("publisher") || lower.includes("margin")) {
+    return {
+      headers: ["Publishing Cost Parameter", "Paperback (160p)", "Hardcover (320p)", "Royal Demy (400p)"],
+      rows: [
+        ["Retail Selling Price (MRP)", "450", "850", "1,200"],
+        ["70gsm Offset Paper Printing Cost", "112", "224", "280"],
+        ["Binding & Matt Lamination Cover", "35", "95", "120"],
+        ["Steadfast Express Delivery (COD)", "60", "60", "70"],
+        ["bKash / Nagad PGW Fee (1.5%)", "6.75", "12.75", "18.00"],
+        ["Author Royalty Net Payout (20%)", "90", "170", "240"],
+        ["Net Platform Gross Profit", "+146.25", "+288.25", "+472.00"],
+      ],
+      kpis: [
+        { label: "Paperback Margin", value: "32.5%", color: "text-cyan-400" },
+        { label: "Hardcover Margin", value: "33.9%", color: "text-purple-400" },
+        { label: "Royal Demy Profit", value: "+৳472/copy", color: "text-emerald-400" },
+        { label: "Royalty Payout", value: "20% Net", color: "text-amber-400" },
+      ],
+    };
+  }
+
+  if (lower.includes("runway") || lower.includes("burn") || lower.includes("cashflow") || lower.includes("runway forecast")) {
+    return {
+      headers: ["Quarterly Runway Line Item", "Q1 FY26 (BDT)", "Q2 FY26 (BDT)", "Q3 FY26 (BDT)"],
+      rows: [
+        ["Cash Balance at Beginning", "5,000,000", "4,320,000", "3,840,000"],
+        ["bKash & Card Subscriptions Revenue", "850,000", "1,420,000", "2,180,000"],
+        ["Nilkhet POD Physical Fulfillment Inflow", "420,000", "680,000", "1,050,000"],
+        ["Engineering & AI Team Payroll", "1,250,000", "1,450,000", "1,650,000"],
+        ["Cloud GPU & Hostinger/Dokploy Infra", "320,000", "410,000", "520,000"],
+        ["Marketing, Ad Spend & Events", "380,000", "720,000", "950,000"],
+        ["Net Cash Burn / (Surplus)", "-680,000", "-480,000", "+110,000"],
+        ["Cash Balance at End", "4,320,000", "3,840,000", "3,950,000"],
+      ],
+      kpis: [
+        { label: "Initial Cash", value: "৳5.00M", color: "text-cyan-400" },
+        { label: "Breakeven Target", value: "Q3 FY26", color: "text-purple-400" },
+        { label: "Runway Remaining", value: "22.4 Mo", color: "text-emerald-400" },
+        { label: "Burn Reduction", value: "-29.4% QoQ", color: "text-amber-400" },
+      ],
+    };
+  }
+
   // Default SaaS 3-Scenario Model
   return {
     headers: DEFAULT_HEADERS,

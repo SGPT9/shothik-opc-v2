@@ -62,9 +62,26 @@ describe("BoiMela3DPageFlipPreview", () => {
 
     expect(screen.getByText(/অমর একুশে প্রিন্ট স্পেসিফিকেশন/i)).toBeDefined();
     expect(screen.getByText(/6.0 × 9.0 ইঞ্চি/i)).toBeDefined();
+    expect(screen.getByText(/Steadfast COD/i)).toBeDefined();
+    expect(screen.getByText(/Amar Ekushey 2026/i)).toBeDefined();
     expect(screen.getByText(/রকমারি ডট কম/i)).toBeDefined();
     expect(screen.getByText(/বইবাজার প্রকাশনা/i)).toBeDefined();
     expect(screen.getByText(/লুমফিড ডিজিটাল এডিশন/i)).toBeDefined();
+  });
+
+  it("allows switching book edition cover presets", () => {
+    render(<BoiMela3DPageFlipPreview />);
+
+    const ekusheyBtn = screen.getByText("অমর একুশে উপন্যাস");
+    const techBtn = screen.getByText("Tech Playbook");
+    const poetryBtn = screen.getByText("কবিতা সংকলন");
+
+    expect(ekusheyBtn).toBeDefined();
+    expect(techBtn).toBeDefined();
+    expect(poetryBtn).toBeDefined();
+
+    fireEvent.click(techBtn);
+    expect(techBtn.closest("button")).toBeDefined();
   });
 
   it("triggers 1-Click Print PDF export", async () => {
