@@ -51,11 +51,13 @@ interface SlidesArtifactProps {
 
 const TEMPLATES = [
   { id: "business", label: "Demo Day Pitch", icon: "📊", themeClass: "from-slate-950 via-indigo-950/80 to-slate-950", accent: "text-indigo-400", border: "border-indigo-500/30" },
+  { id: "vc_pitch", label: "VC Pitch Premium", icon: "🏆", themeClass: "from-slate-950 via-amber-950/40 to-slate-900", accent: "text-amber-400", border: "border-amber-500/40" },
+  { id: "emerald", label: "Emerald Nature", icon: "🌿", themeClass: "from-emerald-950 via-teal-950/60 to-slate-950", accent: "text-emerald-300", border: "border-emerald-500/30" },
   { id: "obsidian", label: "Obsidian Gradient", icon: "🔮", themeClass: "from-neutral-950 via-purple-950/50 to-neutral-950", accent: "text-purple-300", border: "border-purple-500/30" },
-  { id: "cyber", label: "Cyber Terminal", icon: "⚡", themeClass: "from-black via-emerald-950/50 to-black font-mono", accent: "text-emerald-400", border: "border-emerald-500/40" },
-  { id: "blueprint", label: "Blueprint", icon: "📐", themeClass: "from-blue-950/90 via-slate-900 to-blue-950/90", accent: "text-sky-300", border: "border-sky-500/30" },
-  { id: "editorial", label: "Editorial", icon: "📰", themeClass: "from-stone-900 via-neutral-900 to-stone-950", accent: "text-amber-300", border: "border-amber-500/30" },
-  { id: "minimal", label: "Minimalist", icon: "⬜", themeClass: "from-zinc-900 via-zinc-950 to-black", accent: "text-zinc-300", border: "border-zinc-700/40" },
+  { id: "cyber_midnight", label: "Cyber Midnight", icon: "⚡", themeClass: "from-black via-cyan-950/50 to-purple-950/40 font-mono", accent: "text-cyan-400", border: "border-cyan-500/40" },
+  { id: "blueprint", label: "Blueprint Grid", icon: "📐", themeClass: "from-blue-950/90 via-slate-900 to-blue-950/90", accent: "text-sky-300", border: "border-sky-500/30" },
+  { id: "editorial", label: "Editorial Serif", icon: "📰", themeClass: "from-stone-900 via-neutral-900 to-stone-950", accent: "text-amber-300", border: "border-amber-500/30" },
+  { id: "minimal", label: "Minimalist Mono", icon: "⬜", themeClass: "from-zinc-900 via-zinc-950 to-black", accent: "text-zinc-300", border: "border-zinc-700/40" },
 ];
 
 const PIPELINE_STEPS = ["Outline", "Design", "Content", "Formatting", "Review"];

@@ -29,6 +29,7 @@ import subscriptionsRouter from "./subscriptions";
 import connectorsRouter from "./connectors";
 import filesRouter from "./files";
 import jobsRouter from "./jobs";
+import nightshiftRouter from "./nightshift";
 import writingToolsRouter from "./writing-tools";
 import aiToolsExtendedRouter from "./ai-tools-extended";
 import { crdtRouter } from "./crdt";
@@ -38,6 +39,7 @@ const router: IRouter = Router();
 router.use("/telemetry", telemetryRouter);
 router.use(agentTracesRouter);
 router.use(authRouter);
+router.use(nightshiftRouter);
 
 router.use(healthRouter);
 router.use(ollamaRouter);

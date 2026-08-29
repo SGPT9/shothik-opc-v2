@@ -82,6 +82,13 @@ export const toBengaliNumber = (num: number | string): string => {
   return num.toString().split("").map((d) => bnDigits[parseInt(d, 10)] ?? d).join("");
 };
 
+export const BOOK_PRESETS = [
+  { id: "ekushey", name: "অমর একুশে উপন্যাস", color: "#991b1b", accent: "text-amber-300", bgBadge: "bg-red-950/60", subtitle: "ঐতিহ্যবাহী বাংলা সাহিত্য" },
+  { id: "tech", name: "Tech Playbook", color: "#0f172a", accent: "text-cyan-400", bgBadge: "bg-slate-900", subtitle: "Modern SaaS Blueprint" },
+  { id: "poetry", name: "কবিতা সংকলন", color: "#064e3b", accent: "text-emerald-300", bgBadge: "bg-emerald-950/60", subtitle: "Lyrical Gold Leaf" },
+  { id: "academic", name: "গবেষণা ও থিসিস", color: "#4338ca", accent: "text-indigo-300", bgBadge: "bg-indigo-950/60", subtitle: "Academic IEEE Journal" },
+];
+
 export function BoiMela3DPageFlipPreview({
   book = DEFAULT_SAMPLE_BOOK,
   className = "",
@@ -94,6 +101,7 @@ export function BoiMela3DPageFlipPreview({
   const [exportSuccess, setExportSuccess] = useState(false);
   const [viewMode, setViewMode] = useState<"book_view" | "spec_view">("book_view");
   const [isFlipping, setIsFlipping] = useState(false);
+  const [selectedCoverColor, setSelectedCoverColor] = useState<string>(book.coverColor || "#4338ca");
 
   // Print Spec Interactive Overlays
   const [showCmykGuides, setShowCmykGuides] = useState(false);
@@ -239,6 +247,24 @@ export function BoiMela3DPageFlipPreview({
         {viewMode === "book_view" ? (
           <div className="relative w-full max-w-lg perspective-1000 flex flex-col items-center select-none">
             
+            {/* Book Edition / Cover Preset Selector */}
+            <div className="flex flex-wrap items-center justify-center gap-1.5 mb-3">
+              {BOOK_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => setSelectedCoverColor(preset.color)}
+                  className={`px-3 py-1 text-xs rounded-lg border transition-all cursor-pointer flex items-center gap-1.5 ${
+                    selectedCoverColor === preset.color
+                      ? "bg-white/15 border-indigo-400/80 text-white font-bold shadow-sm"
+                      : "bg-black/30 border-white/10 text-slate-400 hover:text-slate-200"
+                  }`}
+                >
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: preset.color }} />
+                  <span>{preset.name}</span>
+                </button>
+              ))}
+            </div>
+
             {/* Live Print Guides Toolbar */}
             <div className="flex flex-wrap items-center justify-center gap-2 mb-4 text-[11px]">
               <button
@@ -286,7 +312,7 @@ export function BoiMela3DPageFlipPreview({
                 isFlipping ? "scale-95 rotate-y-6 opacity-90" : "scale-100 rotate-y-0 opacity-100"
               }`}
               style={{
-                backgroundColor: currentPage === 0 ? book.coverColor || "#4338ca" : "#faf8f5",
+                backgroundColor: currentPage === 0 ? selectedCoverColor : "#faf8f5",
                 color: currentPage === 0 ? "#ffffff" : "#1e293b",
                 boxShadow: "0 30px 60px -15px rgba(0, 0, 0, 0.85), -15px 0 30px -5px rgba(0, 0, 0, 0.5), inset 2px 0 4px rgba(255,255,255,0.1)",
               }}
