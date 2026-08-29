@@ -20,6 +20,7 @@ import { ApprovalCard } from "./ApprovalCard";
 import { SecretShareCard } from "./SecretShareCard";
 import { WayfinderBoard } from "./WayfinderBoard";
 import { TwinCtaCard } from "./TwinCtaCard";
+import { useTwinHandoffDetector } from "../agents/hooks/useTwinHandoffDetector";
 import { EpistemicProvenanceBadge } from "./EpistemicProvenanceBadge";
 import { GitHubRepoCard } from "./GitHubRepoCard";
 import { cn } from "@/lib/utils";
@@ -244,16 +245,8 @@ export function Transcript({
   const slicedMessages = lowRamConfig.isLowEndDevice ? messages.slice(-visibleLimit) : messages;
   const hasMoreMessages = lowRamConfig.isLowEndDevice && messages.length > visibleLimit;
 
-  // Check if conversation has developed into an explicit PRD, Sprint Backlog, or Company Execution plan
-  const isTwinEligible = useMemo(() => {
-    if (!messages || messages.length < 2) return false;
-    return messages.some((msg) => {
-      const meta = msg.metadata as any;
-      if (meta?.twinEligible || meta?.projectIntent || meta?.isPrd) return true;
-      const content = msg.content || "";
-      return /(### (strategic execution roadmap|product requirements|project roadmap|sprint plan|architecture specification)|\|\s*\*\*foundation|\*\*sprint backlog\*\*|user stories & acceptance criteria|workstream.*timeline)/i.test(content);
-    });
-  }, [messages]);
+  // Multi-signal contextual trigger for Twin, Academic publishing, and Logistics
+  const twinTrigger = useTwinHandoffDetector(messages, messages[0]?._id);
 
   // Auto-scroll to bottom on new messages / streaming only if near bottom
   useEffect(() => {
@@ -899,9 +892,12 @@ export function Transcript({
             );
           })}
 
-          {/* 🚀 Next-Step Bridge: Turn into Twin Workspace (Only for explicit PRDs & Project Workflows) */}
-          {isTwinEligible && !isStreaming && (
-            <TwinCtaCard conversationId={messages[0]?._id || "conv_active"} />
+          {/* 🚀 Next-Step Bridge: Contextual Twin Trigger (Signal-driven) */}
+          {twinTrigger.eligible && !isStreaming && (
+            <TwinCtaCard
+              conversationId={messages[0]?._id || "conv_active"}
+              triggerContext={twinTrigger}
+            />
           )}
 
           {/* Bottom anchor */}
