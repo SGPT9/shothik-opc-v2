@@ -365,7 +365,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       }
     }, [onAction, onOpenTool]);
 
-    const dispatchArtifact = useCallback((tab: ArtifactTab | string) => {
+    const dispatchArtifact = useCallback((tab: string) => {
       if (onAction) {
         onAction({ type: "OPEN_ARTIFACT", tab } as any);
       } else if (onOpenArtifact) {

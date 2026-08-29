@@ -10,12 +10,12 @@ import { cn } from "@/lib/utils";
 import { FileText } from "lucide-react";
 
 const ButtonSampleText = ({
-  className,
+  className = "",
   sample = "",
   onApply,
-  onClick,
+  onClick = undefined,
   isTooltip = true,
-  children,
+  children = null,
   ...props
 }) => {
   const handleSampleText = () => {

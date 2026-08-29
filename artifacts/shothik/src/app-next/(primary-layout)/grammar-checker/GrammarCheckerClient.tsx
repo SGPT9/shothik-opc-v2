@@ -422,7 +422,7 @@ export default function GrammarCheckerClient() {
                   <SendToWritingStudioButton
                     text={result?.correctedText || text}
                     title="Grammar Checked Document"
-                    source="grammar"
+                    source="tool"
                     variant="outline"
                     size="sm"
                     className="h-8 px-2.5 text-xs font-semibold"
