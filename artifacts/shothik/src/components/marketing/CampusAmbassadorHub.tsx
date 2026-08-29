@@ -38,7 +38,7 @@ export function CampusAmbassadorHub({
   const [leaderboard] = useState(() => CampusAmbassadorService.getCampusLeaderboard());
   const payoutSchedule = CampusAmbassadorService.getNextPayoutSchedule();
 
-  const referralUrl = `https://shothik.ai/?ref=${ambassador?.referralCode || "DU_RAHIM_2026"}`;
+  const referralUrl = `https://shothikgpt.com/?ref=${ambassador?.referralCode || "DU_RAHIM_2026"}`;
 
   const handleCopyLink = () => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {

@@ -43,10 +43,10 @@ export default function TeamCTA() {
                 <p className="text-muted-foreground mt-6 text-sm">
                   For career inquiries:{" "}
                   <a
-                    href="mailto:careers@shothik.ai"
+                    href="mailto:careers@shothikgpt.com"
                     className="text-primary hover:underline"
                   >
-                    careers@shothik.ai
+                    careers@shothikgpt.com
                   </a>
                 </p>
               </div>

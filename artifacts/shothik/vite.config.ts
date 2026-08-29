@@ -75,7 +75,7 @@ function localDevApiPlugin(): Plugin {
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({
             success: true,
-            user: { id: 'dev-user', email: 'developer@shothik.ai' },
+            user: { id: 'dev-user', email: 'developer@shothikgpt.com' },
             token: 'mock-session-token'
           }));
           return;

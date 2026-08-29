@@ -14,7 +14,7 @@ export interface SwarmAdversarialDebateModalProps {
 export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalProps> = ({
   isOpen,
   onClose,
-  initialTopic = "Polsia OPC F-Commerce Store Rollout & bKash Micro-Payments",
+  initialTopic = "Shothik OPC F-Commerce Store Rollout & bKash Micro-Payments",
   onOpenSource,
 }) => {
   const [topic, setTopic] = useState(initialTopic);

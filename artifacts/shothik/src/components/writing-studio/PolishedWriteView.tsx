@@ -22,6 +22,7 @@ import {
   Columns3,
   Eye,
   Sliders,
+  Printer,
 } from "lucide-react";
 import { ModeSwitcherHeader } from "./navigation/ModeSwitcherHeader";
 import { LeftSidebar } from "./layout/LeftSidebar";
@@ -36,6 +37,7 @@ import { useWritingHistory } from "./hooks/useWritingHistory";
 import { ReplitBookWorkspace } from "./ReplitBookWorkspace";
 import { ManuscriptImportModal } from "./ManuscriptImportModal";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
+import { NilkhetOrderModal } from "@/components/books/NilkhetOrderModal";
 import { Button } from "@/components/ui/button";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -62,6 +64,7 @@ export function PolishedWriteView({
   const [showPreview, setShowPreview] = useState(true);
   const [preview3D, setPreview3D] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isNilkhetModalOpen, setIsNilkhetModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -346,6 +349,15 @@ export function PolishedWriteView({
                 >
                   📄 ২ডি প্রিন্ট প্রুফ শীট (৬×৯)
                 </button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsNilkhetModalOpen(true)}
+                  className="px-3 py-1 h-7 rounded-full text-xs font-semibold border-brand/40 text-brand hover:bg-brand/10 gap-1"
+                >
+                  <Printer className="h-3 w-3" />
+                  <span>নীলক্ষেত প্রিন্ট কোটেশন</span>
+                </Button>
               </div>
 
               <ComponentErrorBoundary title="Proof Rendering Error">
@@ -420,6 +432,50 @@ export function PolishedWriteView({
         )}
       </div>
 
+      {/* 🚀 Income Enablement: Nilkhet Print-on-Demand & BoiMela 3D Bridge */}
+      {wordCount >= 2500 && mode === "write" && (
+        <div className="mx-4 my-2 p-3 rounded-xl border border-indigo-500/30 bg-indigo-500/5 flex items-center justify-between gap-4 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <Printer className="h-4 w-4" />
+            </div>
+            <div>
+              <p className="text-xs font-bold text-foreground flex items-center gap-2">
+                <span>Manuscript Print-Ready ({wordCount.toLocaleString()} words)</span>
+                <span className="text-[10px] font-mono font-normal text-muted-foreground">
+                  ~{Math.max(48, Math.ceil(wordCount / 250))} pages (6×9 Royal Demy)
+                </span>
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Your manuscript is print-ready. View 3D Book Flip Preview and calculate Nilkhet Print-on-Demand cost.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setMode("format");
+                setPreview3D(true);
+              }}
+              className="h-8 text-xs gap-1.5 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              <span>3D Flip Preview</span>
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => setIsNilkhetModalOpen(true)}
+              className="h-8 text-xs gap-1.5 bg-brand hover:bg-brand/90 text-white font-semibold shadow-xs"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span>Nilkhet Print Quote</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
       {/* Status Bar Footer */}
       <StatusBar wordCount={wordCount} />
 
@@ -428,6 +484,15 @@ export function PolishedWriteView({
         isOpen={isImportOpen}
         onClose={() => setIsImportOpen(false)}
         onImport={handleImportManuscript}
+      />
+
+      {/* Nilkhet Print-on-Demand Modal */}
+      <NilkhetOrderModal
+        open={isNilkhetModalOpen}
+        onOpenChange={setIsNilkhetModalOpen}
+        bookTitle={title}
+        pageCount={Math.max(48, Math.ceil(wordCount / 250))}
+        authorName={project?.author || "Shothik Author"}
       />
     </div>
   );

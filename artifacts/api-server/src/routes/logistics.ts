@@ -2,6 +2,11 @@ import { Router, type Request, type Response } from "express";
 import { ParcelBookingRequestSchema } from "@workspace/hermes/contracts";
 import { steadfastClient } from "../lib/logistics/steadfast-client";
 import { pathaoClient } from "../lib/logistics/pathao-client";
+import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { db, parcelsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
+import { logger } from "../lib/logger";
+import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 
 const router = Router();
 
@@ -36,8 +41,9 @@ const parcelDatabase = new Map<string, any>([
 /**
  * POST /api/v1/logistics/steadfast/book
  * Books parcel with Steadfast / Pathao courier and generates tracking link
+ * Protected by IETF Idempotency-Key
  */
-router.post("/v1/logistics/steadfast/book", async (req: Request, res: Response) => {
+router.post("/v1/logistics/steadfast/book", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
     const parseResult = ParcelBookingRequestSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -110,6 +116,48 @@ router.post("/v1/logistics/steadfast/book", async (req: Request, res: Response) 
 
     parcelDatabase.set(trackingCode, parcelRecord);
 
+    // Persist to PostgreSQL parcels table
+    try {
+      await db.insert(parcelsTable).values({
+        consignmentId,
+        trackingCode,
+        provider,
+        userId: (req.headers["x-user-id"] as string) || "usr_default",
+        recipientName: order.customerName,
+        recipientPhone: order.customerPhone,
+        city: order.city,
+        address: order.deliveryAddress,
+        codAmountBdt: order.codAmountBdt,
+        deliveryFeeBdt,
+        status: "BOOKED",
+        statusBangla: "বুকিং সম্পন্ন",
+        timeline: parcelRecord.timeline,
+        whatsappNotificationSent: Boolean(autoSendWhatsAppConfirmation),
+      });
+      logger.info({ trackingCode, consignmentId }, "[logistics] Parcel persisted to PostgreSQL");
+    } catch (dbErr: any) {
+      logger.debug({ error: dbErr.message }, "[logistics] DB persistence note (active in memory)");
+    }
+
+    // Persist to local SQLite offline mirror for zero-downtime persistence
+    try {
+      const { sqliteDb, offlineParcelsTable } = await import("@workspace/db");
+      await sqliteDb.insert(offlineParcelsTable).values({
+        trackingCode,
+        consignmentId,
+        provider,
+        recipientName: order.customerName,
+        recipientPhone: order.customerPhone,
+        city: order.city,
+        address: order.deliveryAddress,
+        codAmountBdt: order.codAmountBdt,
+        status: "BOOKED",
+        statusBangla: "বুকিং সম্পন্ন",
+      }).onConflictDoNothing();
+    } catch {
+      // Memory fallback holds state
+    }
+
     return res.status(200).json({
       success: true,
       provider,
@@ -164,7 +212,7 @@ router.get("/v1/logistics/track/:trackingCode", (req: Request, res: Response) =>
  * POST /api/v1/logistics/webhook
  * Ingests live status updates from Steadfast, Pathao, or RedX couriers
  */
-router.post("/v1/logistics/webhook", (req: Request, res: Response) => {
+router.post("/v1/logistics/webhook", async (req: Request, res: Response) => {
   try {
     const { trackingCode, status, provider = "steadfast", note, hubName, timestamp } = req.body;
 
@@ -208,9 +256,53 @@ router.post("/v1/logistics/webhook", (req: Request, res: Response) => {
 
     parcelDatabase.set(trackingCode, parcel);
 
-    // Auto-generate WhatsApp notification draft on delivery completion
+    // Dual-write parcel updates to PostgreSQL
+    try {
+      await db.update(parcelsTable)
+        .set({ status: parcel.status, statusBangla: parcel.statusBangla, updatedAt: new Date() })
+        .where(eq(parcelsTable.trackingCode, trackingCode));
+    } catch (dbErr: any) {
+      logger.debug({ error: dbErr.message }, "[logistics] PostgreSQL update note");
+    }
+
+    // Dual-write parcel updates to local SQLite offline mirror
+    try {
+      const { sqliteDb, offlineParcelsTable } = await import("@workspace/db");
+      await sqliteDb.update(offlineParcelsTable)
+        .set({ status: parcel.status, statusBangla: parcel.statusBangla, updatedAt: Date.now() })
+        .where(eq(offlineParcelsTable.trackingCode, trackingCode));
+    } catch {
+      // Memory fallback holds state
+    }
+
+    // Auto-credit COD revenue to Twin ledger on delivery completion
+    let revenueCredit = null;
     let whatsappPayload = null;
+
     if (status.toUpperCase() === "DELIVERED") {
+      const codAmount = Number(parcel.codAmountBdt || req.body.codAmountBdt || req.body.codAmount || 0);
+      if (codAmount > 0) {
+        const codFee = Math.round(codAmount * 0.01);
+        const deliveryFee = Number(parcel.deliveryFeeBdt || 60);
+        const netAmountBdt = Math.max(0, codAmount - codFee - deliveryFee);
+
+        const creditResult = TwinRevenueLedger.creditRevenue({
+          companyName: parcel.companyName || "VerifiQ",
+          amountBdt: netAmountBdt,
+          source: "cod_settlement",
+          referenceId: trackingCode,
+          note: `${provider.toUpperCase()} Courier COD collection remittance settled (${parcel.city || "Dhaka"})`,
+        });
+
+        revenueCredit = {
+          codAmountBdt: codAmount,
+          codFeeBdt: codFee,
+          deliveryFeeBdt: deliveryFee,
+          netCreditedBdt: netAmountBdt,
+          newCompanyRevenueBdt: creditResult.newTotalBdt,
+        };
+      }
+
       whatsappPayload = {
         recipientPhone: parcel.recipientPhone || "01711000000",
         message: `আসসালামু আলাইকুম ${parcel.recipientName}, আপনার পার্সেল (${trackingCode}) সফলভাবে ডেলিভারি হয়েছে। সঠিক ব্যবহার করার জন্য ধন্যবাদ!`,
@@ -224,6 +316,7 @@ router.post("/v1/logistics/webhook", (req: Request, res: Response) => {
       trackingCode,
       status: parcel.status,
       statusBangla: parcel.statusBangla,
+      revenueCredit,
       whatsappPayload,
       updatedAt: new Date().toISOString(),
     });

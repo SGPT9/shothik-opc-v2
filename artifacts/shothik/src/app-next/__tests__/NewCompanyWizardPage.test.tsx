@@ -70,4 +70,38 @@ describe("Polsia Company Creation Wizard (/twin/new)", () => {
     expect(docs.length).toBe(1);
     expect(docs[0].title).toContain("FinFlow PRD");
   });
+
+  it("supports Track A: Connect Existing Business with Courier simulation & activation", async () => {
+    localStorage.clear();
+    render(<NewCompanyWizardPage />);
+
+    // Switch to Connect Existing Business
+    const connectTabBtn = screen.getByText("Connect Existing Business");
+    fireEvent.click(connectTabBtn);
+
+    expect(screen.getByText("1. Business Channels & Operations")).toBeInTheDocument();
+    expect(screen.getAllByText(/steadfast/i).length).toBeGreaterThan(0);
+
+    // Fill business name
+    const storeInput = screen.getByTestId("input-business-name");
+    fireEvent.change(storeInput, { target: { value: "Dhaka Craft Store" } });
+
+    // Run Courier simulation
+    const simBtn = screen.getByTestId("button-run-courier-simulation");
+    fireEvent.click(simBtn);
+
+    expect(screen.getByTestId("simulation-results")).toBeInTheDocument();
+    expect(screen.getByText("Courier API Verification: Successful")).toBeInTheDocument();
+
+    // Activate Commerce Twin
+    const activateBtn = screen.getByTestId("button-activate-commerce-twin");
+    expect(activateBtn).toBeEnabled();
+    fireEvent.click(activateBtn);
+
+    const savedProfile = localStorage.getItem("twin_commerce_dhaka-craft-store");
+    expect(savedProfile).toBeTruthy();
+    const parsed = JSON.parse(savedProfile!);
+    expect(parsed.businessName).toBe("Dhaka Craft Store");
+    expect(parsed.courierProvider).toBe("steadfast");
+  });
 });

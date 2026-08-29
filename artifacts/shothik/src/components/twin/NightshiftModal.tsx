@@ -38,7 +38,7 @@ export function NightshiftModal({ open, onOpenChange, onSave }: NightshiftModalP
         <DialogDescription className="sr-only">Configure autonomous Nightshift overnight policy</DialogDescription>
 
         <p className="mt-4 text-[15px] font-sans text-slate-700 dark:text-zinc-300 leading-relaxed">
-          Polsia works while you sleep. Choose how far it goes.
+          Shothik works while you sleep. Choose how far it goes.
         </p>
 
         <div className="mt-6 space-y-4 font-mono">

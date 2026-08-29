@@ -79,7 +79,7 @@ async function runPlaywrightE2ESuite() {
     assert(composerInput, "Primary composer textarea must be present");
 
     // Check starter prompts
-    const starterCards = await page.$$("button:has-text('Research'), button:has-text('Analysis'), button:has-text('Create')");
+    const starterCards = await page.$$("button:has-text('Commerce'), button:has-text('Academic'), button:has-text('Venture'), button:has-text('Research')");
     assert(starterCards.length >= 3, "Expected at least 3 intent starter prompt cards");
 
     results.push({ name: "1. Ask-First Home & Composer Surface", passed: true, durationMs: Date.now() - t1Start });

@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { logger } from "../lib/logger.js";
+import { logger } from "../lib/logger";
 
 export interface CRDTOperationPayload {
   id: string;

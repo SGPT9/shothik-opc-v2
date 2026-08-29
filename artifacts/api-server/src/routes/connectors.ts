@@ -1,10 +1,11 @@
 import { Router, type Request, type Response } from "express";
-import { userKeyVault } from "../lib/user-key-vault.js";
-import { SteadfastClient } from "../lib/logistics/steadfast-client.js";
-import { PathaoClient } from "../lib/logistics/pathao-client.js";
-import { BkashPgwClient } from "../lib/mfs/bkash-pgw-client.js";
-import { ragEngine } from "../lib/rag-engine.js";
-import { logger } from "../lib/logger.js";
+import { userKeyVault } from "../lib/user-key-vault";
+import { SteadfastClient } from "../lib/logistics/steadfast-client";
+import { PathaoClient } from "../lib/logistics/pathao-client";
+import { BkashPgwClient } from "../lib/mfs/bkash-pgw-client";
+import { ragEngine } from "../lib/rag-engine";
+import { logger } from "../lib/logger";
+import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 
 const router = Router();
 
@@ -52,7 +53,7 @@ router.get("/v1/connectors/status", async (req: Request, res: Response) => {
   const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
 
   try {
-    const activeProvidersMap = (await userKeyVault.listUserProviders(userId).catch(() => ({}))) || {};
+    const activeProvidersMap = ((await userKeyVault.listUserProviders(userId).catch(() => ({}))) || {}) as Record<string, boolean>;
     const supported = ["notion", "google_drive", "github", "steadfast", "bkash", "openai", "deepseek"];
 
     const connectorStatuses = supported.map((prov) => {
@@ -133,7 +134,7 @@ router.put("/v1/connectors/:provider", handleSaveConnector);
  * POST /api/v1/connectors/notion/sync
  * Live syncs Notion Workspace pages/databases into RAG Vector Store
  */
-router.post("/v1/connectors/notion/sync", async (req: Request, res: Response) => {
+router.post("/v1/connectors/notion/sync", idempotencyMiddleware, async (req: Request, res: Response) => {
   const startTime = Date.now();
   const { userId = "usr_default", databaseId = "notion_db_primary", pageLimit = 10 } = req.body;
 
@@ -189,7 +190,7 @@ router.post("/v1/connectors/notion/sync", async (req: Request, res: Response) =>
         sourceType: "markdown",
         sourceUrl: `notion://workspace/${databaseId}/${page.id}`,
       });
-      ingestedPages.push({ id: page.id, title: page.title, docId: doc?.id || (doc as any)?.docId || "doc_notion_01", chunks: doc?.chunkCount || 1 });
+      ingestedPages.push({ id: page.id, title: page.title, docId: doc?.document?.id || "doc_notion_01", chunks: doc?.chunksCreated || 1 });
     }
 
     const duration = Date.now() - startTime;
@@ -227,7 +228,7 @@ router.post("/v1/connectors/notion/sync", async (req: Request, res: Response) =>
  * POST /api/v1/connectors/gdrive/sync
  * Live syncs Google Drive documents, sheets, and PDFs into RAG Vector Store
  */
-router.post("/v1/connectors/gdrive/sync", async (req: Request, res: Response) => {
+router.post("/v1/connectors/gdrive/sync", idempotencyMiddleware, async (req: Request, res: Response) => {
   const startTime = Date.now();
   const { userId = "usr_default", folderId = "root_folder", fileTypes = ["docs", "sheets", "pdf"] } = req.body;
 
@@ -272,7 +273,7 @@ router.post("/v1/connectors/gdrive/sync", async (req: Request, res: Response) =>
         sourceType: "markdown",
         sourceUrl: `google_drive://${folderId}/${file.id}`,
       });
-      ingestedFiles.push({ id: file.id, title: file.title, docId: doc.id, chunks: doc.chunkCount });
+      ingestedFiles.push({ id: file.id, title: file.title, docId: doc.document.id, chunks: doc.chunksCreated });
     }
 
     const duration = Date.now() - startTime;
@@ -283,16 +284,18 @@ router.post("/v1/connectors/gdrive/sync", async (req: Request, res: Response) =>
       lastSyncedAt: new Date().toISOString(),
       itemsIndexed: ingestedFiles.length,
       lastSyncDurationMs: duration,
-      syncSummary: `Successfully indexed ${ingestedFiles.length} Google Drive files (${duration}ms)`,
+      syncSummary: `Successfully indexed ${ingestedFiles.length} Google Drive documents (${duration}ms)`,
     });
 
     return res.status(200).json({
       success: true,
       provider: "google_drive",
+      folderId,
       syncedCount: ingestedFiles.length,
       durationMs: duration,
+      items: ingestedFiles,
       files: ingestedFiles,
-      message: `Successfully synchronized ${ingestedFiles.length} Google Drive files into RAG vector memory.`,
+      message: `Successfully synchronized ${ingestedFiles.length} documents from Google Drive into RAG vector memory.`,
     });
   } catch (error: any) {
     syncLedger.set(getSyncKey(userId, "google_drive"), {
@@ -308,11 +311,17 @@ router.post("/v1/connectors/gdrive/sync", async (req: Request, res: Response) =>
 
 /**
  * POST /api/v1/connectors/github/sync
- * Live syncs GitHub repository tree, README, issues, and code into RAG Vector Store
+ * Ingests repository files or README docs into RAG memory
  */
-router.post("/v1/connectors/github/sync", async (req: Request, res: Response) => {
+router.post("/v1/connectors/github/sync", idempotencyMiddleware, async (req: Request, res: Response) => {
+  const userId = (req.headers["x-user-id"] as string) || req.body?.userId || "usr_default";
+  const { repo, branch = "main", files = [] } = req.body || {};
+
+  if (!repo) {
+    return res.status(400).json({ success: false, error: "Repository name is required (owner/repo)" });
+  }
+
   const startTime = Date.now();
-  const { userId = "usr_default", repo = "SGPT9/shothik-opc-v2", branch = "main" } = req.body;
 
   try {
     logger.info(`[connectors-github] Starting GitHub sync for user ${userId} (repo: ${repo})`);
@@ -362,7 +371,7 @@ Features 68 specialized agents, Boi Mela publishing, Nilkhet POD manufacturing, 
         sourceType: "markdown",
         sourceUrl: `github://${repo}/${branch}/${item.id}`,
       });
-      ingestedItems.push({ id: item.id, title: item.title, docId: doc.id, chunks: doc.chunkCount });
+      ingestedItems.push({ id: item.id, title: item.title, docId: doc.document.id, chunks: doc.chunksCreated });
     }
 
     const duration = Date.now() - startTime;
@@ -404,7 +413,7 @@ Features 68 specialized agents, Boi Mela publishing, Nilkhet POD manufacturing, 
  */
 router.get("/v1/connectors/:provider/items", async (req: Request, res: Response) => {
   const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
-  const { provider } = req.params;
+  const provider = String(req.params.provider);
 
   try {
     const allDocs = ragEngine.listDocuments(userId);

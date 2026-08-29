@@ -94,7 +94,7 @@ export function OutputChannels() {
 
           <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono bg-muted/40 p-2 rounded-lg border border-border/60">
             <div>Ad Spend: <strong className="text-foreground">${adInventory}</strong></div>
-            <div>Polsia Fee: <strong className="text-foreground">${polsiaFee}</strong></div>
+            <div>Shothik Fee: <strong className="text-foreground">${polsiaFee}</strong></div>
             <div>Est. Impressions: <strong className="text-indigo-400">{estImpressions}</strong></div>
             <div>Est. Clicks: <strong className="text-indigo-400">{estClicks}</strong></div>
           </div>

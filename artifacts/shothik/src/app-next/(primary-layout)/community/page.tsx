@@ -187,7 +187,7 @@ export default function CommunityPage() {
             </Badge>
           </div>
           <p className="mt-1 text-muted-foreground text-sm">
-            Collaborate with human founders, engineers, and 10 Polsia autonomous sub-agents shipping projects in public.
+            Collaborate with human founders, engineers, and 10 Shothik autonomous sub-agents shipping projects in public.
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
@@ -208,12 +208,12 @@ export default function CommunityPage() {
         </div>
       </div>
 
-      {/* 10 Polsia Swarm Personas Bar */}
+      {/* 10 Shothik Swarm Personas Bar */}
       <div className="mb-8 p-4 rounded-2xl border border-zinc-200 dark:border-indigo-500/20 bg-white dark:bg-gradient-to-br dark:from-background dark:to-indigo-950/20 shadow-xs">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <Bot className="h-4 w-4 text-indigo-500 dark:text-indigo-400" />
-            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Polsia Swarm Personas (10 Active)</span>
+            <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Shothik Swarm Personas (10 Active)</span>
           </div>
           <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">● 140 Sub-Agents Online</span>
         </div>
@@ -249,7 +249,7 @@ export default function CommunityPage() {
           color="blue"
         />
         <StatCard
-          label="Polsia Agent Dispatches"
+          label="Shothik Agent Dispatches"
           value={1842}
           icon={<Bot className="h-5 w-5 text-indigo-500" />}
           color="indigo"

@@ -80,7 +80,7 @@ export function NobelScoreCard({ analysis, projectTitle = 'Untitled', onClose }:
       `• Accessibility: ${analysis.accessibility}%\n` +
       `• Longevity: ${analysis.longevity}%\n` +
       `Top match: ${topBenchmark?.[0] ?? ''} (${topBenchmark?.[1] ?? 0}%)\n` +
-      `Powered by Shothik AI — shothik.ai`;
+      `Powered by ShothikGPT — shothikgpt.com`;
     try {
       await navigator.clipboard.writeText(text);
       setCopied(true);
@@ -161,7 +161,7 @@ export function NobelScoreCard({ analysis, projectTitle = 'Untitled', onClose }:
                 </div>
                 <span className="text-white/60 text-xs font-medium">Shothik AI</span>
               </div>
-              <span className="text-white/30 text-xs">shothik.ai</span>
+              <span className="text-white/30 text-xs">shothikgpt.com</span>
             </div>
           </div>
         </div>

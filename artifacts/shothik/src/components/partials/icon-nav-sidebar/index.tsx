@@ -27,7 +27,6 @@ import {
   X,
 } from "lucide-react";
 import { useSelector } from "react-redux";
-import { useChatSession } from "@/components/agents/hooks/useChatSession";
 import {
   getChatSessions,
   deleteChatSession,
@@ -88,7 +87,7 @@ export default function IconNavSidebar() {
   const [sessions, setSessions] = useState<StoredChatSession[]>([]);
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
-  const { conversationId: currentConvId } = useChatSession();
+  const currentConvId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("conversationId") : null;
 
   const handleStartRename = (e: React.MouseEvent, chat: StoredChatSession) => {
     e.stopPropagation();
@@ -129,7 +128,7 @@ export default function IconNavSidebar() {
 
   const startNewChat = () => {
     const newId = `conv_${Date.now()}`;
-    router.push(`/agents/chat?conversationId=${newId}`);
+    router.push(`/?conversationId=${newId}`);
   };
 
   return (
@@ -186,7 +185,7 @@ export default function IconNavSidebar() {
           <div className="space-y-1">
             {/* 1. Twin AI Cofounder */}
             <Link
-              href="/twin"
+              href={typeof window !== "undefined" && (localStorage.getItem("shothik_active_company") || localStorage.getItem("shothik_twin_has_setup")) ? "/twin" : "/twin/new"}
               title="Twin AI"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
@@ -385,7 +384,7 @@ export default function IconNavSidebar() {
                           key={chat.id}
                           onClick={() => {
                             if (editingSessionId !== chat.id) {
-                              router.push(`/agents/chat?conversationId=${chat.id}`);
+                              router.push(`/?conversationId=${chat.id}`);
                             }
                           }}
                           onDoubleClick={(e) => handleStartRename(e, chat)}
@@ -600,7 +599,7 @@ export default function IconNavSidebar() {
           }}
           onStartAgentFlow={(_type: any) => {
             setIsCreateProjectOpen(false);
-            router.push('/agents/chat');
+            router.push('/');
           }}
         />
       )}

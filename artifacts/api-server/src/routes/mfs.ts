@@ -3,6 +3,8 @@ import { eq } from "drizzle-orm";
 import { db, userSubscriptionsTable } from "@workspace/db";
 import { TrxVerificationRequestSchema, TIER_CREDIT_MAP } from "@workspace/hermes/contracts";
 import { bkashPgwClient } from "../lib/mfs/bkash-pgw-client";
+import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 
 const router = Router();
 
@@ -29,7 +31,7 @@ const processedTrxIds = new Set<string>();
  * POST /api/v1/mfs/verify-trx
  * Verifies bKash/Nagad 10-digit TrxID and credits user wallet with idempotency
  */
-router.post("/v1/mfs/verify-trx", async (req: Request, res: Response) => {
+router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
     const parseResult = TrxVerificationRequestSchema.safeParse(req.body);
     if (!parseResult.success) {
@@ -114,6 +116,14 @@ router.post("/v1/mfs/verify-trx", async (req: Request, res: Response) => {
     const newBalance = currentBalance + creditedCredits;
     const ledgerId = `LEDGER_${provider.toUpperCase()}_${trxId}_${Date.now()}`;
 
+    // Credit revenue to Twin's live telemetry revenue ledger
+    const revenueCredit = TwinRevenueLedger.creditRevenue({
+      amountBdt: amountBdt,
+      source: provider === "bkash" ? "bkash_trx" : "nagad_trx",
+      referenceId: trxId,
+      note: `${provider.toUpperCase()} MFS TrxID verified — ${tierConfig.label} tier (${creditedCredits} credits)`,
+    });
+
     return res.status(200).json({
       success: true,
       trxId,
@@ -122,8 +132,13 @@ router.post("/v1/mfs/verify-trx", async (req: Request, res: Response) => {
       creditedAmount: creditedCredits,
       newBalance,
       ledgerId,
+      revenueLedger: {
+        transactionId: revenueCredit.transaction.id,
+        creditedBdt: amountBdt,
+        newCompanyTotalBdt: revenueCredit.newTotalBdt,
+      },
       timestamp: new Date().toISOString(),
-      message: `Successfully verified TrxID ${trxId}. Credited ${creditedCredits} credits (${tierConfig.label}).`,
+      message: `Successfully verified TrxID ${trxId}. Credited ${creditedCredits} credits (${tierConfig.label}). Revenue ৳${amountBdt} BDT posted to Twin ledger.`,
     });
   } catch (error: any) {
     return res.status(500).json({
@@ -318,11 +333,55 @@ router.post("/v1/mfs/nagad/create-payment", async (req: Request, res: Response) 
       success: true,
       paymentRefId,
       orderId,
-      callBackUrl: "https://shothik.ai/api/v1/mfs/nagad/callback",
+      callBackUrl: "https://shothikgpt.com/api/v1/mfs/nagad/callback",
       redirectUrl: `https://sandbox.nagad.com.bd/checkout?paymentRefId=${paymentRefId}`,
       amount: String(amount || 990),
       currency: "BDT",
       status: "SUCCESS",
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/v1/mfs/ipn/webhook
+ * Automated Instant Payment Notification (IPN) webhook for bKash & Nagad
+ */
+router.post("/v1/mfs/ipn/webhook", async (req: Request, res: Response) => {
+  try {
+    const { trxId, amount, status, customerMsisdn } = req.body;
+
+    if (!trxId || status !== "Completed" && status !== "Successful") {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid or incomplete IPN payload",
+      });
+    }
+
+    // Idempotent registration
+    if (processedTrxIds.has(trxId)) {
+      return res.status(200).json({
+        success: true,
+        trxId,
+        status: "ALREADY_PROCESSED",
+        message: "IPN webhook already settled.",
+      });
+    }
+
+    processedTrxIds.add(trxId);
+
+    // Credit ledger
+    const ledgerId = `IPN_LEDGER_${Date.now()}`;
+    return res.status(200).json({
+      success: true,
+      trxId,
+      amount: Number(amount),
+      currency: "BDT",
+      status: "SETTLED",
+      ledgerId,
+      customerMsisdn: customerMsisdn || "017XXXXXXXX",
+      settledAt: new Date().toISOString(),
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });

@@ -13,7 +13,7 @@ router.get("/auth/session", (_req: Request, res: Response) => {
     user: {
       id: "usr_shothik_dev_01",
       name: "Hermes Lead Engineer",
-      email: "engineer@shothik.ai",
+      email: "engineer@shothikgpt.com",
       image: "https://api.dicebear.com/7.x/bottts/svg?seed=Hermes",
       credits: 14250,
       tier: "enterprise_pro",

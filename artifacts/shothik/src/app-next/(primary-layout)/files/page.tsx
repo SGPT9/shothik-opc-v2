@@ -44,16 +44,8 @@ export interface FileItem {
   extractedResult?: ParsedDocumentResult;
 }
 
-const DEFAULT_FILES: FileItem[] = [
-  { id: "seed-1", name: "Q3_Financials_v2.pdf", type: "pdf", size: "2.4 MB", date: "Today", source: "LiteParse" },
-  { id: "seed-2", name: "Competitor_Matrix_Analysis.xlsx", type: "sheet", size: "156 KB", date: "Yesterday", source: "Twin" },
-  { id: "seed-3", name: "Product_Roadmap_Draft.md", type: "markdown", size: "12 KB", date: "Oct 24, 2024", source: "Chat" },
-  { id: "seed-4", name: "Investor_Deck_Final.pptx", type: "slides", size: "5.1 MB", date: "Oct 22, 2024", source: "Twin" },
-  { id: "seed-5", name: "architecture_diagram.png", type: "image", size: "890 KB", date: "Oct 20, 2024", source: "Uploaded" },
-];
-
 export default function FilesPage() {
-  const [files, setFiles] = useState<FileItem[]>(DEFAULT_FILES);
+  const [files, setFiles] = useState<FileItem[]>([]);
   const [search, setSearch] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [parsingFileName, setParsingFileName] = useState("");
@@ -73,7 +65,7 @@ export default function FilesPage() {
         source: "Studio",
         content: d.content,
       }));
-      setFiles([...docFiles, ...DEFAULT_FILES]);
+      setFiles(docFiles);
     }
   }, []);
 

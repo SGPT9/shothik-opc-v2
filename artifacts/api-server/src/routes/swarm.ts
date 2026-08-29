@@ -1,8 +1,8 @@
 import { Router, Request, Response } from "express";
-import { swarmEngine } from "../lib/swarm-runner.js";
-import { dshRuntime } from "../lib/dsh-runtime.js";
-import { semanticMemory } from "../lib/semantic-memory.js";
-import { logger } from "../lib/logger.js";
+import { swarmEngine } from "../lib/swarm-runner";
+import { dshRuntime } from "../lib/dsh-runtime";
+import { semanticMemory } from "../lib/semantic-memory";
+import { logger } from "../lib/logger";
 
 export const swarmRouter = Router();
 

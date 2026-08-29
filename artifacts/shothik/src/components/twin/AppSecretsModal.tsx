@@ -185,14 +185,14 @@ export function AppSecretsModal({ open, onOpenChange, onSecretChange }: AppSecre
             </div>
           </div>
 
-          {/* System Secrets Provided by Polsia */}
+          {/* System Secrets Provided by Shothik */}
           <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-zinc-800">
             <div>
               <span className="font-serif font-bold text-sm text-black dark:text-white">
-                Provided by Polsia
+                Provided by Shothik
               </span>{" "}
               <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-400">
-                Read-only – set by Polsia.
+                Read-only – set by Shothik.
               </span>
             </div>
 

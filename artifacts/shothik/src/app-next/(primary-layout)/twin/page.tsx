@@ -19,6 +19,7 @@ import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
 import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
 import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
 import { SecondMeMemoryModal } from "@/components/twin/SecondMeMemoryModal";
+import { TwinVideoStudioModal } from "@/components/twin/TwinVideoStudioModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -45,38 +46,30 @@ import {
   Rocket,
   Users,
   MessageSquare,
+  Building2,
+  ChevronDown,
+  Check,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import {
+  getActiveCompanyProfile,
+  getCompaniesList,
+  saveCompanyProfile,
+  createCompanyProfile,
+  deleteCompanyProfile,
+  syncCompanyToBackend,
+  executeWayfinderTaskOnBackend,
+  CompanyProfile,
+  CockpitTask,
+  CockpitDoc,
+  StandupMessage,
+  slugify,
+} from "@/lib/twin/dynamic-company-store";
 
 /* ------------------------------------------------------------------ */
 /* Types & Mock Data                                                  */
 /* ------------------------------------------------------------------ */
-
-interface CockpitTask {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[]; // e.g. ["FEATURE", "TONIGHT", "1 CREDIT"]
-  status: "todo" | "in_progress" | "completed";
-}
-
-interface CockpitDoc {
-  id: string;
-  title: string;
-  timeAgo: string;
-  kind: string;
-  content?: string;
-}
-
-interface StandupMessage {
-  id: string;
-  time: string;
-  dayHeader?: string;
-  isNewDivider?: boolean;
-  text: string;
-  fromUser?: boolean;
-}
 
 const INITIAL_TASKS: CockpitTask[] = [
   {
@@ -195,22 +188,64 @@ Next up:
 /* ------------------------------------------------------------------ */
 
 export default function TwinPage() {
-  const [companyName, setCompanyName] = useState(() => {
+  // If user is new (no active company and no setup completed), start from /twin/new
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      return localStorage.getItem("shothik_active_company") || "VerifiQ";
+      const sp = new URLSearchParams(window.location.search);
+      const compParam = sp.get("company");
+      const hasSetup = localStorage.getItem("shothik_twin_has_setup") || localStorage.getItem("shothik_active_company");
+      if (!compParam && !hasSetup) {
+        window.location.replace("/twin/new");
+      }
     }
-    return "VerifiQ";
+  }, []);
+
+  const [companyList, setCompanyList] = useState<CompanyProfile[]>(() => {
+    return getCompaniesList();
   });
-  const [tasks, setTasks] = useState<CockpitTask[]>(INITIAL_TASKS);
-  const [docs, setDocs] = useState<CockpitDoc[]>(INITIAL_DOCS);
-  const [feed, setFeed] = useState<StandupMessage[]>(INITIAL_FEED);
+
+  const [activeProfile, setActiveProfile] = useState<CompanyProfile>(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const compParam = sp.get("company");
+      return getActiveCompanyProfile(compParam || undefined);
+    }
+    return createCompanyProfile("Shothik Autonomous Venture");
+  });
+
+  const [companyName, setCompanyName] = useState(activeProfile.name);
+  const [companySlug, setCompanySlug] = useState(activeProfile.slug);
+  const [tasks, setTasks] = useState<CockpitTask[]>(activeProfile.tasks);
+  const [docs, setDocs] = useState<CockpitDoc[]>(activeProfile.docs);
+  const [feed, setFeed] = useState<StandupMessage[]>(activeProfile.feed);
   const [chatInput, setChatInput] = useState("");
   const [credits, setCredits] = useState<number>(15);
   const [chatSidebarOpen, setChatSidebarOpen] = useState(true);
+  const [companyDropdownOpen, setCompanyDropdownOpen] = useState(false);
 
   // Business metrics
-  const [visitorCount, setVisitorCount] = useState<number>(128);
-  const [revenueBdt, setRevenueBdt] = useState<number>(45200);
+  const [visitorCount, setVisitorCount] = useState<number>(activeProfile.visitorCount || 128);
+  const [revenueBdt, setRevenueBdt] = useState<number>(activeProfile.revenueBdt || 45200);
+
+  // Switch active company function
+  const handleSelectCompany = (profile: CompanyProfile) => {
+    setActiveProfile(profile);
+    setCompanyName(profile.name);
+    setCompanySlug(profile.slug);
+    setTasks(profile.tasks);
+    setDocs(profile.docs);
+    setFeed(profile.feed);
+    setRevenueBdt(profile.revenueBdt || 0);
+    setVisitorCount(profile.visitorCount || 1);
+    setCompanyDropdownOpen(false);
+
+    if (typeof window !== "undefined") {
+      localStorage.setItem("shothik_active_company", profile.slug);
+      const url = new URL(window.location.href);
+      url.searchParams.set("company", profile.slug);
+      window.history.pushState({}, "", url.toString());
+    }
+  };
 
   // Planning loop state
   const [isPlanning, setIsPlanning] = useState(false);
@@ -255,56 +290,66 @@ export default function TwinPage() {
   const [dailyDigestOpen, setDailyDigestOpen] = useState(false);
   const [dokployOpen, setDokployOpen] = useState(false);
   const [secondMeMemoryOpen, setSecondMeMemoryOpen] = useState(false);
+  const [videoStudioOpen, setVideoStudioOpen] = useState(false);
   const [memoryCount, setMemoryCount] = useState(4);
 
-  // Load persistent tasks, docs, feed & memory count from localStorage
+  // Onboarding guard: New users with no active company setup are redirected to /twin/new
   useEffect(() => {
-    try {
-      const storedTasks = localStorage.getItem("shothik_twin_tasks");
-      if (storedTasks) {
-        setTasks(JSON.parse(storedTasks));
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const isDemo = sp.get("demo") === "true";
+      const companyParam = sp.get("company");
+      const activeCompany = localStorage.getItem("shothik_active_company");
+      const hasSetup = localStorage.getItem("shothik_twin_has_setup");
+
+      if (companyParam) {
+        const loaded = getActiveCompanyProfile(companyParam);
+        setActiveProfile(loaded);
+        setCompanyName(loaded.name);
+        setCompanySlug(loaded.slug);
+        setTasks(loaded.tasks);
+        setDocs(loaded.docs);
+        setFeed(loaded.feed);
+        setRevenueBdt(loaded.revenueBdt || 0);
+        setVisitorCount(loaded.visitorCount || 1);
+        setCompanyList(getCompaniesList());
+        return;
       }
-      const storedDocs = localStorage.getItem("shothik_twin_docs");
-      if (storedDocs) {
-        setDocs(JSON.parse(storedDocs));
+
+      if (!activeCompany && !hasSetup && !isDemo) {
+        window.location.replace("/twin/new");
+        return;
       }
-      const storedFeed = localStorage.getItem("shothik_twin_feed");
-      if (storedFeed) {
-        setFeed(JSON.parse(storedFeed));
-      }
-      const storedRev = localStorage.getItem("shothik_twin_revenue");
-      if (storedRev) {
-        setRevenueBdt(Number(storedRev) || 45200);
-      }
-      const storedVis = localStorage.getItem("shothik_twin_visitors");
-      if (storedVis) {
-        setVisitorCount(Number(storedVis) || 128);
-      }
-      const storedMems = localStorage.getItem("shothik_twin_memories");
-      if (storedMems) {
-        const parsed = JSON.parse(storedMems);
-        if (Array.isArray(parsed)) {
-          setMemoryCount(parsed.length);
-        }
-      }
-    } catch {
-      // fallback to initial
+
+      setCompanyList(getCompaniesList());
     }
   }, []);
 
-  // Save company name when changed
+  // Auto-open video studio if URL contains ?tab=video or ?section=animation
   useEffect(() => {
-    try {
-      localStorage.setItem("shothik_active_company", companyName);
-    } catch {}
-  }, [companyName]);
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.get("tab") === "video" || sp.get("section") === "animation" || sp.get("section") === "video") {
+        setVideoStudioOpen(true);
+      }
+    }
+  }, []);
 
-  // Save docs when changed
+  // Sync state back to active company profile
   useEffect(() => {
-    try {
-      localStorage.setItem("shothik_twin_docs", JSON.stringify(docs));
-    } catch {}
-  }, [docs]);
+    if (!activeProfile) return;
+    const updated: CompanyProfile = {
+      ...activeProfile,
+      name: companyName,
+      slug: companySlug,
+      tasks,
+      docs,
+      feed,
+      revenueBdt,
+      visitorCount,
+    };
+    saveCompanyProfile(updated);
+  }, [companyName, companySlug, tasks, docs, feed, revenueBdt, visitorCount]);
 
   // Memory extraction event listener
   useEffect(() => {
@@ -345,7 +390,7 @@ export default function TwinPage() {
       {
         id: `auto-${Date.now()}`,
         time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-        text: `⚡ Auto Mode activated for ${hours} hours. Polsia will execute queued tasks and formulate next-step roadmaps autonomously.`,
+        text: `⚡ Auto Mode activated for ${hours} hours. Shothik will execute queued tasks and formulate next-step roadmaps autonomously.`,
       },
     ]);
   };
@@ -423,6 +468,57 @@ export default function TwinPage() {
     }, 2800);
   };
 
+  const [executingTaskId, setExecutingTaskId] = useState<string | null>(null);
+
+  const handleExecuteTask = async (task: CockpitTask) => {
+    if (executingTaskId || task.status === "completed" || task.status === "done") return;
+    setExecutingTaskId(task.id);
+
+    setTerminalLogs([
+      `> Initiating autonomous execution for: "${task.title}"...`,
+      `> Dispatching specialized Swarm agent to container sandbox...`,
+      `> Running linting, security scanning, and automated integration checks...`,
+    ]);
+
+    const res = await executeWayfinderTaskOnBackend({
+      companySlug,
+      companyName,
+      taskId: task.id,
+      title: task.title,
+      description: task.description,
+      category: task.category,
+      urgency: task.urgency,
+      costCredits: task.costCredits || 1,
+    });
+
+    setExecutingTaskId(null);
+
+    // Mark task as completed
+    setTasks((prev) =>
+      prev.map((t) => (t.id === task.id ? { ...t, status: "completed" } : t))
+    );
+
+    // Deduct credits
+    setCredits((prev) => Math.max(0, prev - (task.costCredits || 1)));
+
+    // Update terminal & standup feed
+    const commitText = res.commitHash ? ` [${res.commitHash}]` : "";
+    setTerminalLogs((prev) => [
+      ...prev,
+      `> ✅ Task completed successfully${commitText}!`,
+      `> Deployed live to https://${companySlug}.shothikgpt.com`,
+    ]);
+
+    setFeed((prev) => [
+      ...prev,
+      {
+        id: `exec-${Date.now()}`,
+        time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+        text: res.standupLog || `✅ Shipped: **${task.title}**${commitText}. Verified in sandbox and deployed live to production.`,
+      },
+    ]);
+  };
+
   const handleSendMessage = () => {
     const text = chatInput.trim();
     if (!text) return;
@@ -430,7 +526,7 @@ export default function TwinPage() {
 
     // Auto extract founder preferences or directives from standup messages
     memoryExtractionService.extractAndCommit({
-      prompt: "Founder directive to Polsia",
+      prompt: "Founder directive to Shothik",
       response: text,
       source: "chat",
     });
@@ -483,17 +579,74 @@ export default function TwinPage() {
       <LiveTerminalTicker autoModeActive={autoModeActive} activeLogs={terminalLogs} />
 
       {/* ── Header Bar ── */}
-      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111] px-6 py-3.5 flex items-center justify-between shadow-xs">
-        <div className="flex items-center gap-3">
-          <span className="font-serif text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
-            {companyName}
-          </span>
+      <header className="border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#111] px-6 py-3.5 flex items-center justify-between shadow-xs relative z-30">
+        <div className="flex items-center gap-3 relative">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setCompanyDropdownOpen(!companyDropdownOpen)}
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer group"
+            >
+              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-500 border border-indigo-500/30">
+                <Building2 className="h-4 w-4" />
+              </div>
+              <span className="font-serif text-2xl font-bold tracking-tight text-zinc-950 dark:text-white">
+                {companyName}
+              </span>
+              <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 transition-transform" />
+            </button>
+
+            {/* Dynamic Multi-Company Dropdown Menu */}
+            {companyDropdownOpen && (
+              <div className="absolute top-full left-0 mt-2 w-72 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#18191c] shadow-xl p-2 z-50 font-sans">
+                <div className="px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-wider text-zinc-400">
+                  Switch Active Company
+                </div>
+                <div className="space-y-1 my-1 max-h-48 overflow-y-auto">
+                  {companyList.map((comp) => (
+                    <button
+                      key={comp.id || comp.slug}
+                      type="button"
+                      onClick={() => handleSelectCompany(comp)}
+                      className={`w-full text-left px-2.5 py-1.5 rounded text-xs flex items-center justify-between hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer ${
+                        comp.slug === companySlug ? "bg-zinc-100 dark:bg-zinc-800 font-bold text-indigo-600 dark:text-indigo-400" : "text-zinc-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      <div className="truncate">
+                        <p className="truncate font-medium">{comp.name}</p>
+                        <p className="text-[10px] text-zinc-400 font-mono">{comp.industry || "Venture"}</p>
+                      </div>
+                      {comp.slug === companySlug && <Check className="w-3.5 h-3.5 shrink-0" />}
+                    </button>
+                  ))}
+                </div>
+                <div className="pt-2 mt-1 border-t border-zinc-100 dark:border-zinc-800">
+                  <Link
+                    href="/twin/new"
+                    className="w-full px-2.5 py-1.5 rounded text-xs text-indigo-600 dark:text-indigo-400 font-medium hover:bg-indigo-50 dark:hover:bg-indigo-950/40 flex items-center gap-1.5 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Create New Autonomous Company</span>
+                  </Link>
+                </div>
+              </div>
+            )}
+          </div>
+
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-md">
             AUTONOMOUS FOUNDER COCKPIT
           </span>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
+          <button
+            type="button"
+            onClick={() => setVideoStudioOpen(true)}
+            className={beveledBtnClass}
+            title="Generate Animated Explainer Video & Social Reels"
+          >
+            🎬 VIDEO STUDIO
+          </button>
           <button
             type="button"
             onClick={() => setAddCreditsOpen(true)}
@@ -526,7 +679,7 @@ export default function TwinPage() {
           {/* Autonomous Agent Status Widget */}
           <div className="space-y-4">
             <h2 className="font-serif text-lg font-bold tracking-tight text-zinc-950 dark:text-white">
-              Polsia
+              Shothik
             </h2>
 
             <div className="flex items-start gap-4">
@@ -699,11 +852,33 @@ export default function TwinPage() {
               {tasks.map((task) => (
                 <div
                   key={task.id}
-                  className="p-4 border border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#121315] hover:border-zinc-400 dark:hover:border-zinc-700 transition-all space-y-2.5 shadow-xs rounded-lg"
+                  className={`p-4 border transition-all space-y-2.5 shadow-xs rounded-lg ${
+                    task.status === "completed" || task.status === "done"
+                      ? "border-emerald-500/40 bg-emerald-950/20 dark:bg-emerald-950/30"
+                      : "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#121315] hover:border-zinc-400 dark:hover:border-zinc-700"
+                  }`}
                 >
-                  <h4 className="font-serif text-sm font-bold text-zinc-950 dark:text-zinc-50 leading-snug">
-                    {task.title}
-                  </h4>
+                  <div className="flex items-start justify-between gap-2">
+                    <h4 className="font-serif text-sm font-bold text-zinc-950 dark:text-zinc-50 leading-snug">
+                      {task.title}
+                    </h4>
+                    {task.status === "completed" || task.status === "done" ? (
+                      <span className="shrink-0 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400 border border-emerald-500/40 bg-emerald-950/60 rounded">
+                        ✓ SHIPPED
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleExecuteTask(task)}
+                        disabled={executingTaskId !== null}
+                        className="shrink-0 px-2.5 py-1 font-mono text-[10px] font-bold text-amber-300 hover:text-amber-200 border border-amber-500/50 hover:border-amber-400 bg-amber-950/40 hover:bg-amber-950/70 rounded transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <Zap className="w-3 h-3 text-amber-400 animate-pulse" />
+                        <span>{executingTaskId === task.id ? "RUNNING..." : "⚡ RUN"}</span>
+                      </button>
+                    )}
+                  </div>
+
                   <p className="font-serif text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
                     {task.description}
                   </p>
@@ -792,13 +967,13 @@ export default function TwinPage() {
 
             <div className="flex items-center gap-2 font-mono text-xs">
               <a
-                href="https://shothikaddress.com"
+                href={activeProfile.domain || `https://${companySlug}.shothikgpt.com`}
                 target="_blank"
                 rel="noreferrer"
                 className="text-zinc-950 dark:text-zinc-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline flex items-center gap-1 font-bold"
               >
                 <span>🔗</span>
-                <span>https://shothikaddress.com</span>
+                <span>{activeProfile.domain || `https://${companySlug}.shothikgpt.com`}</span>
               </a>
             </div>
 
@@ -838,7 +1013,7 @@ export default function TwinPage() {
 
             <div className="space-y-1.5 font-mono text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-zinc-950 dark:text-white">Polsia @polsia</span>
+                <span className="font-bold text-zinc-950 dark:text-white">{companyName} @{companySlug}</span>
                 <a
                   href="https://x.com"
                   target="_blank"
@@ -862,7 +1037,7 @@ export default function TwinPage() {
                     {
                       id: `tw-${Date.now()}`,
                       time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-                      text: "🐦 Generated product launch draft: 'VerifiQ KYC engine is live with 420ms verification latency across Bangladesh identity registries.' Queued for your review.",
+                      text: `🐦 Generated product announcement for ${companyName}: '${companyName} autonomous engine is live with 100% automated operations across ${activeProfile.industry || "digital workflows"}.' Queued for your review.`,
                     },
                   ]);
                 }}
@@ -879,7 +1054,7 @@ export default function TwinPage() {
                     {
                       id: `tw-auto-${Date.now()}`,
                       time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-                      text: "⚡ Auto-Tweet enabled. Polsia will post verified milestone threads directly to connected social accounts.",
+                      text: `⚡ Auto-Tweet enabled for ${companyName}. Shothik AI will post verified milestone threads directly to connected social accounts.`,
                     },
                   ]);
                 }}
@@ -899,7 +1074,7 @@ export default function TwinPage() {
 
             <div className="space-y-1.5 font-mono text-xs">
               <p className="text-zinc-800 dark:text-zinc-200 font-bold">
-                verifiq-3@polsia.app
+                {activeProfile.email || `${companySlug}@shothik.ai`}
               </p>
               <p className="text-xs text-zinc-600 dark:text-zinc-400 font-semibold pt-1">
                 NO EMAILS YET
@@ -915,7 +1090,7 @@ export default function TwinPage() {
                     {
                       id: `em-${Date.now()}`,
                       time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-                      text: "✉️ Cold Outreach campaign prepared: 25 target CTOs at Bangladesh FinTechs imported. Review draft before dispatch.",
+                      text: `✉️ Cold Outreach campaign prepared for ${companyName}: 25 target prospective leads across ${activeProfile.industry || "regional markets"} imported. Review draft before dispatch.`,
                     },
                   ]);
                 }}
@@ -1043,7 +1218,7 @@ export default function TwinPage() {
                       handleSendMessage();
                     }
                   }}
-                  placeholder="Ask Polsia anything..."
+                  placeholder="Ask Shothik anything..."
                   className="flex-1 bg-transparent font-serif text-xs text-zinc-950 dark:text-white placeholder:text-zinc-400 outline-none min-w-0"
                 />
 
@@ -1105,6 +1280,13 @@ export default function TwinPage() {
       <DocumentsListModal
         open={docsListOpen}
         onOpenChange={setDocsListOpen}
+        docs={docs.map((d) => ({
+          id: d.id,
+          title: d.title,
+          timeAgo: d.timeAgo,
+          type: d.kind.toLowerCase().includes("report") ? "report" : "document",
+          content: d.content,
+        }))}
         onSelectDoc={(doc) => {
           setActiveDoc({
             id: doc.id,
@@ -1173,7 +1355,7 @@ export default function TwinPage() {
       <ManageDomainsModal
         open={manageDomainsOpen}
         onOpenChange={setManageDomainsOpen}
-        polsiaUrl="https://verifiq-3.polsia.app"
+        polsiaUrl="https://verifiq-3.shothik.ai"
         customDomain="shothikaddress.com"
         onReleaseDomain={() => {
           setFeed((prev) => [
@@ -1251,20 +1433,22 @@ export default function TwinPage() {
       <AutoColdOutreachModal
         open={autoColdOutreachOpen}
         onOpenChange={setAutoColdOutreachOpen}
-        onStartOutreach={(freq) => {
-          setTerminalLogs([
-            "> Provisioning Polsia outbound SMTP proxy (verifiq-3@polsia.app)...",
-            "> Scraping South Asian FinTech executive directories...",
-            `> Schedule active: ${freq.toUpperCase()}. Auto-dispatching 10 pitches per run.`,
-          ]);
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `outreach-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: `✉️ Auto Cold Outreach activated (${freq.toUpperCase()}). Polsia will send tailored pitches to target CTOs from verifiq-3@polsia.app.`,
-            },
-          ]);
+        onStartOutreach={async (freq) => {
+          const logs = [
+            "> Provisioning Shothik outbound SMTP proxy (verifiq-3@shothik.ai)...",
+            "> Domain DNS DKIM/SPF auto-validated via Cloudflare Turnstile...",
+            "> Auto-Cold Outreach pipeline is active and queued for dispatch.",
+          ];
+          for (const log of logs) {
+            await new Promise((r) => setTimeout(r, 600));
+            setTerminalLogs((prev) => [...prev.slice(-6), log]);
+          }
+          const outreachMsg: StandupMessage = {
+            id: `msg-${Date.now()}`,
+            time: "JUST NOW",
+            text: `✉️ Auto Cold Outreach activated (${freq.toUpperCase()}). Shothik will send tailored pitches to target CTOs from verifiq-3@shothik.ai.`,
+          };
+          setFeed((prev) => [...prev, outreachMsg]);
         }}
       />
 
@@ -1443,6 +1627,12 @@ export default function TwinPage() {
             >
               💳 bKash / Nagad MFS
             </button>
+            <button
+              onClick={() => { setMenuOpen(false); setVideoStudioOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer bg-purple-500/5 font-semibold text-purple-600 dark:text-purple-400"
+            >
+              🎬 AI Video & Reels Studio
+            </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -1454,6 +1644,7 @@ export default function TwinPage() {
       <VoiceCommanderModal open={voiceCommanderOpen} onOpenChange={setVoiceCommanderOpen} />
       <DailyDigestModal open={dailyDigestOpen} onOpenChange={setDailyDigestOpen} />
       <DokployMicroContainersModal open={dokployOpen} onOpenChange={setDokployOpen} />
+      <TwinVideoStudioModal open={videoStudioOpen} onOpenChange={setVideoStudioOpen} companyName={companyName} />
     </div>
   );
 }

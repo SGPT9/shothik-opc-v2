@@ -23,6 +23,11 @@ export default defineConfig({
       'reference-repos/**',
       'scratch/**',
       'tmp/**',
+      'shothik-opc-v2/**',
+      'openworker/**',
+      'temp-open-design/**',
+      'deepseek-harness/**',
+      'inkos-clone/**',
     ],
     coverage: {
       provider: 'v8',

@@ -52,6 +52,7 @@ const SecondMePage = lazy(() => import('@/app-next/(primary-layout)/second-me/pa
 const SlideGenerationPage = lazy(() => import('@/app-next/(primary-layout)/slide-generation/page'));
 const AnimationPage = lazy(() => import('@/app-next/(primary-layout)/animation/page'));
 const TwinPage = lazy(() => import('@/app-next/(primary-layout)/twin/page'));
+const TwinNewPage = lazy(() => import('@/app-next/(primary-layout)/twin/new/page'));
 const ResearchPage = lazy(() => import('@/app-next/(primary-layout)/research/page'));
 const AccountPage = lazy(() => import('@/app-next/(primary-layout)/account/page'));
 const AccountBillingPage = lazy(() => import('@/app-next/(primary-layout)/account/billing/page'));
@@ -173,6 +174,7 @@ const SlideGenerationPageWithLayout = withPrimaryLayout(SlideGenerationPage);
 const SummarizePageWithLayout = withPrimaryLayout(SummarizePage);
 const TranslatorPageWithLayout = withPrimaryLayout(TranslatorPage);
 const TwinPageWithLayout = withPrimaryLayout(TwinPage);
+const TwinNewPageWithLayout = withPrimaryLayout(TwinNewPage);
 const WritingStudioChatPageWithLayout = withPrimaryLayout(WritingStudioChatPage);
 const WritingStudioPageWithLayout = withPrimaryLayout(WritingStudioPage);
 
@@ -233,8 +235,8 @@ function AppRoutes() {
       </div>
     }>
       <Switch>
-        {/* Root route exact match */}
-        <Route path="/" component={RootRedirect} />
+        {/* Layer 1: Universal Entry Canvas */}
+        <Route path="/" component={AgentsChatPageWithLayout} />
 
         {/* Auth routes (no layout) */}
         <Route path="/auth/login" component={LoginPage} />
@@ -247,11 +249,16 @@ function AppRoutes() {
         <Route path="/auth/reset-password/:token" component={ResetPasswordPage} />
 
         {/* Dashboard routes */}
-        <Route path="/canvas" component={CanvasPage} />
+        <Route path="/canvas">
+          <Redirect to="/" replace />
+        </Route>
         <Route path="/tonight-engine" component={TonightEnginePage} />
 
         {/* Slide layout routes */}
-        <Route path="/_edit-slides" component={EditSlidesPage} />
+        <Route path="/_edit-slides">
+          <Redirect to="/slides/edit" replace />
+        </Route>
+        <Route path="/slides/edit" component={EditSlidesPage} />
         <Route path="/slides" component={SlidesPage} />
         <Route path="/slide-share/:shareLink" component={SlideSharePage} />
         <Route path="/slide/replay" component={SlideReplayPage} />
@@ -264,7 +271,7 @@ function AppRoutes() {
 
         {/* Voice */}
         <Route path="/voice">
-          <PlaceholderPage name="Voice" />
+          <Redirect to="/twin?tab=video" replace />
         </Route>
 
         {/* Secondary layout routes */}
@@ -288,30 +295,17 @@ function AppRoutes() {
         <Route path="/privacy" component={PrivacyPageWithLayout} />
         <Route path="/tutorials" component={TutorialsPageWithLayout} />
         <Route path="/reseller-panel" component={ResellerPanelPageWithLayout} />
-        <Route path="/payment/bkash">
-          <PlaceholderPage name="BKash Payment" />
-        </Route>
-        <Route path="/payment/razor">
-          <PlaceholderPage name="Razorpay" />
-        </Route>
-        <Route path="/payment/stripe">
-          <PlaceholderPage name="Stripe Payment" />
-        </Route>
-        <Route path="/payment/success">
-          <PlaceholderPage name="Payment Success" />
-        </Route>
-        <Route path="/payment/failed">
-          <PlaceholderPage name="Payment Failed" />
-        </Route>
-        <Route path="/payment/payment-policy">
-          <PlaceholderPage name="Payment Policy" />
-        </Route>
-        <Route path="/payment/refund-policy">
-          <PlaceholderPage name="Refund Policy" />
+        <Route path="/payment/:path*">
+          <Redirect to="/pricing/checkout" replace />
         </Route>
 
         {/* Primary layout routes — wrapped in PrimaryLayout */}
-        <Route path="/agents/chat" component={AgentsChatPageWithLayout} />
+        <Route path="/agents/chat">
+          {() => {
+            const search = typeof window !== 'undefined' ? window.location.search : '';
+            return <Redirect to={`/${search}`} replace />;
+          }}
+        </Route>
         <Route path="/agents/share-agent/:shareId" component={AgentSharePageWithLayout} />
         <Route path="/agents/share-ai-detector/:shareId" component={AiDetectorSharePageWithLayout} />
         <Route path="/agents/shared-sheet/:shareId" component={SharedSheetPageWithLayout} />
@@ -327,6 +321,7 @@ function AppRoutes() {
         <Route path="/summarize" component={SummarizePageWithLayout} />
         <Route path="/translator" component={TranslatorPageWithLayout} />
         <Route path="/books/:bookId" component={BookPageWithLayout} />
+        <Route path="/books" component={BookPageWithLayout} />
         <Route path="/community/:forumId" component={CommunityForumPageWithLayout} />
         <Route path="/community" component={CommunityPageWithLayout} />
         <Route path="/explore/channels/:slug" component={ExploreChannelSlugPageWithLayout} />
@@ -336,23 +331,39 @@ function AppRoutes() {
         <Route path="/marketplace" component={MarketplacePageWithLayout} />
         <Route path="/second-me" component={SecondMePageWithLayout} />
         <Route path="/slide-generation" component={SlideGenerationPageWithLayout} />
-        <Route path="/animation" component={AnimationPageWithLayout} />
+        <Route path="/animation">
+          <Redirect to="/twin?tab=video" replace />
+        </Route>
+        
+        {/* Layer 2: Twin Workspace & Sub-workspaces */}
+        <Route path="/twin/new" component={TwinNewPageWithLayout} />
+        <Route path="/twin/:twinId/:section" component={TwinPageWithLayout} />
+        <Route path="/twin/:twinId" component={TwinPageWithLayout} />
         <Route path="/twin" component={TwinPageWithLayout} />
+        <Route path="/research/:researchId" component={ResearchPageWithLayout} />
         <Route path="/research" component={ResearchPageWithLayout} />
+        
         <Route path="/account/billing" component={AccountBillingPageWithLayout} />
         <Route path="/account/agents" component={AccountAgentsPageWithLayout} />
         <Route path="/account/settings" component={AccountSettingsPageWithLayout} />
         <Route path="/account/review/:bookId" component={AccountReviewPageWithLayout} />
         <Route path="/account" component={AccountPageWithLayout} />
         <Route path="/agent-studio" component={AgentStudioPageWithLayout} />
+        
+        {/* Layer 2/3: Writing Studio Workspace & Resources */}
         <Route path="/writing-studio/chat" component={WritingStudioChatPageWithLayout} />
+        <Route path="/writing-studio/:documentId" component={WritingStudioPageWithLayout} />
         <Route path="/writing-studio" component={WritingStudioPageWithLayout} />
         
         <Route path="/files" component={FilesPageWithLayout} />
+        <Route path="/connector">
+          <Redirect to="/connectors" replace />
+        </Route>
         <Route path="/connectors" component={ConnectorsPageWithLayout} />
-        <Route path="/connector" component={ConnectorsPageWithLayout} />
         <Route path="/saved-reports" component={SavedReportsPageWithLayout} />
-        <Route path="/deep-research" component={DeepResearchPageWithLayout} />
+        <Route path="/deep-research">
+          <Redirect to="/research" replace />
+        </Route>
         <Route path="/settings" component={SettingsWorkspacePageWithLayout} />
         <Route path="/admin" component={AdminControlCenterWithLayout} />
 

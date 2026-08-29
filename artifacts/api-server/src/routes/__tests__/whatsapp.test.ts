@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import whatsappRouter from "../whatsapp.js";
+import whatsappRouter from "../whatsapp";
 
 describe("WhatsApp Business Webhook Router", () => {
   it("verifies Meta webhook handshake on GET with valid token", () => {

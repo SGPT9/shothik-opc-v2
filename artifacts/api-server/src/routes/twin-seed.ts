@@ -370,7 +370,7 @@ async function requireIdentity(req: Request, res: Response): Promise<string | nu
  * Returns the persisted seed for the caller: the given conversation's seed,
  * or the most recently updated one when no conversationId is provided.
  */
-router.get("/twin/seed", async (req: Request, res: Response) => {
+router.get(["/v1/twin/seed", "/twin/seed"], async (req: Request, res: Response) => {
   if (!guardOrigin(req, res, false)) return;
   const identity = await requireIdentity(req, res);
   if (!identity) return;
@@ -392,11 +392,11 @@ router.get("/twin/seed", async (req: Request, res: Response) => {
 });
 
 /**
- * PUT /api/twin/seed
+ * PUT /api/v1/twin/seed or /api/twin/seed
  * Saves the caller's edits (company name, summary, plan, task list with
  * completion state) for a conversation.
  */
-router.put("/twin/seed", async (req: Request, res: Response) => {
+router.put(["/v1/twin/seed", "/twin/seed"], async (req: Request, res: Response) => {
   if (!guardOrigin(req, res, true)) return;
   const identity = await requireIdentity(req, res);
   if (!identity) return;
@@ -452,7 +452,7 @@ router.put("/twin/seed", async (req: Request, res: Response) => {
   }
 });
 
-router.post("/twin/seed", async (req: Request, res: Response) => {
+router.post(["/v1/twin/seed", "/twin/seed"], async (req: Request, res: Response) => {
   // Scope CORS on this route to the exact allowlist: any permissive header a
   // global cors() middleware may have set is removed, and the origin is only
   // reflected back when it passed the strict check.

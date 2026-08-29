@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { X, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 
@@ -23,6 +23,10 @@ export function CompanySettingsModal({
   const [isPaused, setIsPaused] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setName(companyName);
+  }, [companyName]);
 
   const handleSave = () => {
     setIsSaving(true);

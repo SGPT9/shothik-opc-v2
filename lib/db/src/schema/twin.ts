@@ -105,3 +105,35 @@ export const insertTwinPendingApprovalSchema = createInsertSchema(twinPendingApp
 });
 export type InsertTwinPendingApproval = z.infer<typeof insertTwinPendingApprovalSchema>;
 export type TwinPendingApproval = typeof twinPendingApprovalsTable.$inferSelect;
+
+/**
+ * Autonomous Companies table — Multi-venture autonomous companies, subdomains, metrics, and state.
+ */
+export const companiesTable = pgTable("companies", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().default("usr_default"),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  industry: text("industry").notNull().default("Technology"),
+  businessModel: text("business_model").notNull().default("SaaS"),
+  businessType: text("business_type").default("Digital Venture"),
+  problemStatement: text("problem_statement").default(""),
+  domain: text("domain").notNull(),
+  email: text("email").notNull(),
+  revenueBdt: integer("revenue_bdt").notNull().default(0),
+  visitorCount: integer("visitor_count").notNull().default(1),
+  isPaused: boolean("is_paused").notNull().default(false),
+  tasks: jsonb("tasks").$type<Record<string, unknown>[]>().notNull().default([]),
+  docs: jsonb("docs").$type<Record<string, unknown>[]>().notNull().default([]),
+  feed: jsonb("feed").$type<Record<string, unknown>[]>().notNull().default([]),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertCompanySchema = createInsertSchema(companiesTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+export type Company = typeof companiesTable.$inferSelect;

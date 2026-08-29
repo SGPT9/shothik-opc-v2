@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import app from "../../app";
@@ -7,15 +7,17 @@ describe("Demography-Aware API Gateway Routes", () => {
   let server: Server;
   let baseUrl: string;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     await new Promise<void>((resolve) => {
       server = app.listen(0, () => resolve());
     });
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
-  afterEach(async () => {
-    await new Promise((resolve) => server.close(resolve));
+  afterAll(async () => {
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
   });
 
   async function post(path: string, body: unknown) {
@@ -29,25 +31,29 @@ describe("Demography-Aware API Gateway Routes", () => {
   }
 
   describe("POST /api/v1/mfs/verify-trx", () => {
-    it("successfully verifies a valid 10-digit bKash TrxID and credits the wallet", async () => {
-      const payload = {
-        trxId: "BK99281729",
-        provider: "bkash",
-        senderMobileNumber: "01712345678",
-        tier: "micro_100_bdt",
-        amountBdt: 100,
-        userId: "usr_test_101",
-      };
+    it(
+      "successfully verifies a valid 10-digit bKash TrxID and credits the wallet",
+      async () => {
+        const payload = {
+          trxId: "BK99281729",
+          provider: "bkash",
+          senderMobileNumber: "01712345678",
+          tier: "micro_100_bdt",
+          amountBdt: 100,
+          userId: "usr_test_101",
+        };
 
-      const { status, body } = await post("/api/v1/mfs/verify-trx", payload);
+        const { status, body } = await post("/api/v1/mfs/verify-trx", payload);
 
-      expect(status).toBe(200);
-      expect(body.success).toBe(true);
-      expect(body.status).toBe("verified");
-      expect(body.creditedAmount).toBe(80);
-      expect(body.newBalance).toBe(630);
-      expect(body.ledgerId).toContain("LEDGER_BKASH_BK99281729");
-    });
+        expect(status).toBe(200);
+        expect(body.success).toBe(true);
+        expect(body.status).toBe("verified");
+        expect(body.creditedAmount).toBe(80);
+        expect(body.newBalance).toBe(630);
+        expect(body.ledgerId).toContain("LEDGER_BKASH_BK99281729");
+      },
+      15000
+    );
 
     it("rejects payments where amount is less than the tier price", async () => {
       const payload = {

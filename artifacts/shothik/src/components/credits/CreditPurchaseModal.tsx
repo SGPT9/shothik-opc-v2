@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Coins, Sparkles, Zap, Crown, CreditCard, Smartphone, Landmark, CheckCircle2 } from "lucide-react";
+import { Coins, Sparkles, Zap, Crown, CreditCard, Smartphone, Landmark, CheckCircle2, GraduationCap, Rocket, ShoppingBag } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   CREDIT_PACKS,
@@ -22,6 +22,46 @@ declare global {
     Razorpay: any;
   }
 }
+
+export interface OutcomePassItem {
+  id: string;
+  name: string;
+  priceBdt: number;
+  credits: number;
+  outcome: string;
+  tag: string;
+  icon: typeof GraduationCap;
+}
+
+export const OUTCOME_PASSES_LIST: OutcomePassItem[] = [
+  {
+    id: "THESIS_PLAGIARISM_PASS",
+    name: "Thesis Plagiarism & IEEE Export",
+    priceBdt: 49,
+    credits: 50,
+    outcome: "Full thesis audit report with Turnitin-equivalent similarity index & PDF export",
+    tag: "৳49 • Academic",
+    icon: GraduationCap,
+  },
+  {
+    id: "PROJECT_VENTURE_PASS",
+    name: "Founder Project Pass",
+    priceBdt: 299,
+    credits: 300,
+    outcome: "Editable PPTX pitch deck, 3-year model spreadsheet & container deployment",
+    tag: "৳299 • Venture",
+    icon: Rocket,
+  },
+  {
+    id: "F_COMMERCE_MONTHLY_PASS",
+    name: "Autonomous F-Commerce Operations",
+    priceBdt: 999,
+    credits: 1200,
+    outcome: "24/7 Steadfast/Pathao courier tracking & WhatsApp query resolution",
+    tag: "৳999/mo • Commerce",
+    icon: ShoppingBag,
+  },
+];
 
 const PACK_LIST: { id: PackId; icon: typeof Coins; popular?: boolean; tier: "starter" | "pro" | "team" | "enterprise" }[] = [
   { id: "starter", icon: Coins, tier: "starter" },
@@ -54,6 +94,9 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
   const [manualTrxId, setManualTrxId] = useState("");
   const [selectedTier, setSelectedTier] = useState<"starter" | "pro" | "team" | "enterprise">("pro");
   const [showTrxInput, setShowTrxInput] = useState(false);
+
+  const [activeTab, setActiveTab] = useState<"outcome_passes" | "credit_packs">("outcome_passes");
+  const [selectedPass, setSelectedPass] = useState<OutcomePassItem | null>(null);
 
   const fetchBalance = useCallback(() => {
     const userId = user?.id || user?._id || "guest";
@@ -88,6 +131,40 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
     setPurchasing("manual_trx");
     setError(null);
     setSuccessMsg(null);
+
+    // If an outcome-based pass is selected
+    if (selectedPass) {
+      try {
+        const userId = user?.id || user?._id || "usr_default";
+        const idemKey = `pass_${selectedPass.id}_${Date.now()}`;
+        const res = await fetch("/api/v1/subscriptions/passes:purchase", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": idemKey,
+          },
+          body: JSON.stringify({
+            userId,
+            passId: selectedPass.id,
+            trxId: manualTrxId.trim().toUpperCase(),
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || data.error || "Failed to activate outcome pass.");
+        }
+        setSuccessMsg(`Pass Activated! ${data.name} unlocked. (${data.outcomeUnlocked})`);
+        setManualTrxId("");
+        setSelectedPass(null);
+        fetchBalance();
+        return;
+      } catch (err: any) {
+        setError(err.message || "Failed to activate outcome pass.");
+        return;
+      } finally {
+        setPurchasing(null);
+      }
+    }
 
     try {
       const tierBdtMap: Record<string, number> = {
@@ -129,7 +206,6 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
   };
 
   const handleBkashCheckout = async (packId: PackId) => {
-    // If backend direct gateway checkout exists:
     try {
       const res = await fetch("/api/bkash/credits/checkout", {
         method: "POST",
@@ -144,13 +220,14 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
         }
       }
     } catch {
-      // Fallback to manual TrxID dialog
+      // Fallback
     }
     setShowTrxInput(true);
   };
 
   const handlePurchase = async (packId: PackId, tier: "starter" | "pro" | "team" | "enterprise") => {
     setSelectedTier(tier);
+    setSelectedPass(null);
     setError(null);
     setSuccessMsg(null);
     trackCreditPurchaseStarted(provider, packId);
@@ -162,6 +239,13 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
     }
   };
 
+  const handleSelectPass = (pass: OutcomePassItem) => {
+    setSelectedPass(pass);
+    setShowTrxInput(true);
+    setError(null);
+    setSuccessMsg(null);
+  };
+
   const availableProviders: PaymentProvider[] = ["bkash", "stripe", "razorpay"];
 
   return (
@@ -170,19 +254,53 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl font-bold text-foreground">
             <Coins className="h-6 w-6 fill-amber-400 text-amber-400" />
-            Get Credits & Upgrades
+            Outcome Passes & Wallet
           </DialogTitle>
         </DialogHeader>
 
-        <div className="mb-4 flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
-          <span className="text-sm text-muted-foreground">Your Balance</span>
+        {/* Top Balance Bar */}
+        <div className="mb-3 flex items-center justify-between rounded-xl bg-muted/50 px-4 py-3">
+          <span className="text-sm text-muted-foreground">Available Credits</span>
           <div className="flex items-center gap-1.5 text-lg font-bold text-amber-400">
             <Coins className="h-5 w-5 fill-amber-400" />
             {balance.toLocaleString()}
           </div>
         </div>
 
-        <div className="mb-4 flex gap-1 rounded-lg bg-muted/30 p-1" role="tablist" aria-label="Payment method">
+        {/* Mode Switcher: Outcome Passes vs Credit Packs */}
+        <div className="mb-3 flex gap-2 rounded-lg bg-muted/40 p-1">
+          <button
+            onClick={() => {
+              setActiveTab("outcome_passes");
+              setError(null);
+            }}
+            className={cn(
+              "flex-1 rounded-md py-1.5 text-xs font-semibold transition-all",
+              activeTab === "outcome_passes"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Outcome Micro-Passes
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("credit_packs");
+              setError(null);
+            }}
+            className={cn(
+              "flex-1 rounded-md py-1.5 text-xs font-semibold transition-all",
+              activeTab === "credit_packs"
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            Compute Packs
+          </button>
+        </div>
+
+        {/* Payment Provider Selector */}
+        <div className="mb-3 flex gap-1 rounded-lg bg-muted/30 p-1" role="tablist" aria-label="Payment method">
           {availableProviders.map((p) => {
             const { label, icon: Icon } = PROVIDER_LABELS[p];
             return (
@@ -196,7 +314,7 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
                   setSuccessMsg(null);
                 }}
                 className={cn(
-                  "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-2 text-xs font-medium transition-all",
+                  "flex flex-1 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all",
                   provider === p
                     ? "bg-background text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -209,13 +327,16 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
           })}
         </div>
 
+        {/* Instant TrxID Verification Drawer */}
         {showTrxInput && (
-          <div className="mb-4 rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <div className="mb-3 rounded-xl border border-primary/20 bg-primary/5 p-4">
             <h4 className="text-sm font-semibold text-foreground mb-1">
-              bKash / Nagad Instant TrxID Verification
+              {selectedPass
+                ? `Activate ${selectedPass.name} (৳${selectedPass.priceBdt} BDT)`
+                : "bKash / Nagad Instant TrxID Verification"}
             </h4>
             <p className="text-xs text-muted-foreground mb-3">
-              Send payment to Merchant Number <strong className="text-foreground">01700-000000</strong> and enter the 10-digit TrxID below:
+              Send <strong>৳{selectedPass ? selectedPass.priceBdt : "your tier amount"} BDT</strong> to Merchant Number <strong className="text-foreground">01700-000000</strong> and enter TrxID:
             </p>
             <div className="flex gap-2">
               <input
@@ -230,66 +351,109 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
                 disabled={purchasing === "manual_trx"}
                 className="rounded-lg bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
               >
-                {purchasing === "manual_trx" ? "Verifying..." : "Verify & Credit"}
+                {purchasing === "manual_trx" ? "Verifying..." : "Verify & Unlock"}
               </button>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3" role="list" aria-label="Credit packs available for purchase">
-          {PACK_LIST.map((packEntry) => {
-            const pack = CREDIT_PACKS[packEntry.id];
-            const Icon = packEntry.icon;
-            const isLoading = purchasing === packEntry.id;
-            const priceDisplay = getPackPrice(packEntry.id, provider);
-            return (
-              <button
-                key={packEntry.id}
-                onClick={() => handlePurchase(packEntry.id, packEntry.tier)}
-                disabled={!!purchasing}
-                role="listitem"
-                className={cn(
-                  "relative flex flex-col items-center gap-2 rounded-xl p-5 text-center transition-all",
-                  "bg-muted/50 hover:bg-muted",
-                  "disabled:cursor-not-allowed disabled:opacity-50",
-                  packEntry.popular && "ring-2 ring-amber-500/40"
-                )}
-              >
-                {packEntry.popular && (
-                  <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-2.5 py-0.5 text-[10px] font-bold text-background">
-                    BEST VALUE
-                  </span>
-                )}
-
-                {pack.bonus && (
-                  <span className="rounded-full bg-emerald-950/30 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
-                    {pack.bonus}
-                  </span>
-                )}
-
-                <Icon className="h-8 w-8 text-amber-400" />
-
-                <div>
-                  <div className="text-2xl font-bold text-foreground">
-                    {pack.credits.toLocaleString()}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Credits ({packEntry.tier.toUpperCase()})</div>
-                </div>
-
-                <div className="mt-1 w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-                  {isLoading ? (
-                    <span className="inline-flex items-center gap-1">
-                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                      Processing
-                    </span>
-                  ) : (
-                    priceDisplay
+        {/* TAB 1: OUTCOME PASSES */}
+        {activeTab === "outcome_passes" && (
+          <div className="grid grid-cols-1 gap-2.5" role="list">
+            {OUTCOME_PASSES_LIST.map((pass) => {
+              const Icon = pass.icon;
+              const isSelected = selectedPass?.id === pass.id;
+              return (
+                <div
+                  key={pass.id}
+                  onClick={() => handleSelectPass(pass)}
+                  className={cn(
+                    "relative flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all",
+                    isSelected
+                      ? "border-primary bg-primary/10 shadow-sm"
+                      : "border-border bg-muted/40 hover:border-primary/50 hover:bg-muted/60"
                   )}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                      <Icon className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-semibold text-foreground">{pass.name}</span>
+                        <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary">
+                          {pass.tag}
+                        </span>
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">{pass.outcome}</p>
+                    </div>
+                  </div>
+                  <button className="rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground shrink-0">
+                    ৳{pass.priceBdt}
+                  </button>
                 </div>
-              </button>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* TAB 2: CREDIT PACKS */}
+        {activeTab === "credit_packs" && (
+          <div className="grid grid-cols-2 gap-3" role="list" aria-label="Credit packs available for purchase">
+            {PACK_LIST.map((packEntry) => {
+              const pack = CREDIT_PACKS[packEntry.id];
+              const Icon = packEntry.icon;
+              const isLoading = purchasing === packEntry.id;
+              const priceDisplay = getPackPrice(packEntry.id, provider);
+              return (
+                <button
+                  key={packEntry.id}
+                  onClick={() => handlePurchase(packEntry.id, packEntry.tier)}
+                  disabled={!!purchasing}
+                  role="listitem"
+                  className={cn(
+                    "relative flex flex-col items-center gap-2 rounded-xl p-5 text-center transition-all",
+                    "bg-muted/50 hover:bg-muted",
+                    "disabled:cursor-not-allowed disabled:opacity-50",
+                    packEntry.popular && "ring-2 ring-amber-500/40"
+                  )}
+                >
+                  {packEntry.popular && (
+                    <span className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-amber-500 px-2.5 py-0.5 text-[10px] font-bold text-background">
+                      BEST VALUE
+                    </span>
+                  )}
+
+                  {pack.bonus && (
+                    <span className="rounded-full bg-emerald-950/30 px-2 py-0.5 text-[10px] font-medium text-emerald-400">
+                      {pack.bonus}
+                    </span>
+                  )}
+
+                  <Icon className="h-8 w-8 text-amber-400" />
+
+                  <div>
+                    <div className="text-2xl font-bold text-foreground">
+                      {pack.credits.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Credits ({packEntry.tier.toUpperCase()})</div>
+                  </div>
+
+                  <div className="mt-1 w-full rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+                    {isLoading ? (
+                      <span className="inline-flex items-center gap-1">
+                        <span className="h-3 w-3 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
+                        Processing
+                      </span>
+                    ) : (
+                      priceDisplay
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        )}
 
         {successMsg && (
           <div className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs font-semibold text-emerald-500">

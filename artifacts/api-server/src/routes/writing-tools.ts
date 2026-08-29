@@ -1,7 +1,36 @@
 import { Router, Request, Response } from "express";
 import { logger } from "../lib/logger";
+import { createApiCanonicalizer } from "../lib/middleware/deprecation-canonicalizer";
 
 const router = Router();
+
+// Apply enterprise RFC 8594 deprecation and canonical route alignment
+router.use(createApiCanonicalizer([
+  {
+    legacyPrefixes: ["/paraphrase", "/api/paraphrase", "/paraphraseV2", "/api/paraphraseV2", "/v1/tools/paraphrase", "/api/v1/tools/paraphrase"],
+    canonicalPath: "/api/v1/nlp/paraphrase",
+  },
+  {
+    legacyPrefixes: ["/grammar/check", "/api/grammar/check", "/v1/tools/grammar", "/api/v1/tools/grammar"],
+    canonicalPath: "/api/v1/nlp/grammar:check",
+  },
+  {
+    legacyPrefixes: ["/summarize", "/api/summarize", "/v1/tools/summarize", "/api/v1/tools/summarize"],
+    canonicalPath: "/api/v1/nlp/summarize",
+  },
+  {
+    legacyPrefixes: ["/translate", "/api/translate", "/tools/translator", "/api/tools/translator", "/v1/tools/translate", "/api/v1/tools/translate"],
+    canonicalPath: "/api/v1/nlp/translate",
+  },
+  {
+    legacyPrefixes: ["/ai-detector", "/api/ai-detector", "/ai-detector/check", "/api/ai-detector/check", "/v1/tools/ai-detector", "/api/v1/tools/ai-detector"],
+    canonicalPath: "/api/v1/nlp/ai-detector:check",
+  },
+  {
+    legacyPrefixes: ["/api/tools/plagiarism/analyze", "/analyze-local", "/api/plagiarism/analyze"],
+    canonicalPath: "/api/v1/nlp/plagiarism:analyze",
+  }
+]));
 
 interface GrammarIssue {
   error: string;
@@ -115,7 +144,7 @@ function detectLanguage(text: string): "bn" | "ar" | "hi" | "es" | "fr" | "de" |
 }
 
 // --- 1. Multi-Lingual Grammar & Spell Checker ---
-router.post(["/grammar/check", "/api/grammar/check", "/v1/tools/grammar", "/api/v1/tools/grammar"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/v1/nlp/grammar:check", "/v1/nlp/grammar/check", "/grammar/check", "/api/grammar/check", "/v1/tools/grammar", "/api/v1/tools/grammar"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", language = "auto" } = req.body;
 
@@ -236,7 +265,7 @@ router.get("/api/grammar/sections", (_req: Request, res: Response): void => {
 });
 
 // --- 2. Multi-Lingual Neural Paraphraser ---
-router.post(["/paraphrase", "/api/paraphrase", "/paraphraseV2", "/api/paraphraseV2", "/paraphrase/api/paraphraseV2", "/paraphrase-for-tagging", "/api/paraphrase-for-tagging", "/v1/tools/paraphrase", "/api/v1/tools/paraphrase"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/v1/nlp/paraphrase", "/paraphrase", "/api/paraphrase", "/paraphraseV2", "/api/paraphraseV2", "/paraphrase/api/paraphraseV2", "/paraphrase-for-tagging", "/api/paraphrase-for-tagging", "/v1/tools/paraphrase", "/api/v1/tools/paraphrase"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", mode = "standard", language = "auto" } = req.body;
 
@@ -292,7 +321,7 @@ router.post(["/paraphrase", "/api/paraphrase", "/paraphraseV2", "/api/paraphrase
 });
 
 // --- 3. Text & Document Summarizer ---
-router.post(["/summarize", "/api/summarize", "/v1/tools/summarize", "/api/v1/tools/summarize"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/v1/nlp/summarize", "/summarize", "/api/summarize", "/v1/tools/summarize", "/api/v1/tools/summarize"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", length = "medium" } = req.body;
 
@@ -320,7 +349,7 @@ router.post(["/summarize", "/api/summarize", "/v1/tools/summarize", "/api/v1/too
 });
 
 // --- 4. Multi-Language Neural Translator ---
-router.post(["/translate", "/api/translate", "/tools/translator", "/api/tools/translator", "/v1/tools/translate", "/api/v1/tools/translate"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/v1/nlp/translate", "/translate", "/api/translate", "/tools/translator", "/api/tools/translator", "/v1/tools/translate", "/api/v1/tools/translate"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", sourceLang = "auto", targetLang = "bn" } = req.body;
 
@@ -351,7 +380,7 @@ router.post(["/translate", "/api/translate", "/tools/translator", "/api/tools/tr
 });
 
 // --- 5. AI Content & Plagiarism Detector ---
-router.post(["/ai-detector", "/api/ai-detector", "/ai-detector/check", "/api/ai-detector/check", "/v1/tools/ai-detector", "/api/v1/tools/ai-detector"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/v1/nlp/ai-detector:check", "/v1/nlp/ai-detector/check", "/ai-detector", "/api/ai-detector", "/ai-detector/check", "/api/ai-detector/check", "/v1/tools/ai-detector", "/api/v1/tools/ai-detector"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "" } = req.body;
 
@@ -419,7 +448,7 @@ router.get(["/api/ai-detector/section/:id", "/ai-detector/section/:id"], (req: R
 });
 
 // --- 6. Plagiarism Analyzer & Similarity Engine ---
-router.post(["/api/tools/plagiarism/analyze", "/analyze-local", "/api/plagiarism/analyze"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/v1/nlp/plagiarism:analyze", "/v1/nlp/plagiarism/analyze", "/api/tools/plagiarism/analyze", "/analyze-local", "/api/plagiarism/analyze"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "" } = req.body;
 
@@ -441,7 +470,7 @@ router.post(["/api/tools/plagiarism/analyze", "/analyze-local", "/api/plagiarism
       matchedSources: [
         {
           title: "Academic & Journal Index",
-          url: "https://shothik.ai/research/index",
+          url: "https://shothikgpt.com/research/index",
           similarity: `${similarityPercent}%`,
           matchedText: words.slice(0, Math.min(12, words.length)).join(" "),
         },

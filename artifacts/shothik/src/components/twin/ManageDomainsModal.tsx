@@ -95,10 +95,10 @@ export function ManageDomainsModal({
         </DialogDescription>
 
         <div className="space-y-6 pt-1 font-serif">
-          {/* ── Section 1: Polsia URL ── */}
+          {/* ── Section 1: Shothik URL ── */}
           <div className="space-y-2.5">
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
-              Polsia URL
+              Shothik URL
             </h3>
 
             <div className="p-3 border border-slate-300 dark:border-zinc-800 bg-[#fcfcfc] dark:bg-zinc-900/60 flex items-center justify-between shadow-sm">
@@ -295,7 +295,7 @@ export function ManageDomainsModal({
                 Buy a new domain
               </h4>
               <p className="font-serif text-xs text-slate-600 dark:text-zinc-400">
-                Search and register one without leaving Polsia.
+                Search and register one without leaving Shothik.
               </p>
             </div>
 
