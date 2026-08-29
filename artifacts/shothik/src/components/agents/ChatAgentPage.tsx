@@ -29,6 +29,7 @@ import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywa
 import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal";
 import { CommandPaletteModal } from "@/components/chat/CommandPaletteModal";
 import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
+import { DeveloperWebhookSandboxModal } from "@/components/common/DeveloperWebhookSandboxModal";
 import { ShareArtifactModal } from "@/components/chat/ShareArtifactModal";
 import { PwaInstallBanner } from "@/components/pwa/PwaInstallBanner";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
@@ -160,6 +161,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isWebhookModalOpen, setIsWebhookModalOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
@@ -1478,11 +1480,18 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               // Open SecondMe memory drawer or tab
               setActiveTab("twin");
               setArtifactOpen(true);
+            } else if (act === "webhook_sandbox") {
+              setIsWebhookModalOpen(true);
             } else if (["slides", "sheet", "research", "doc", "code"].includes(act)) {
               setActiveTab(act as ArtifactTab);
               setArtifactOpen(true);
             }
           }}
+        />
+
+        <DeveloperWebhookSandboxModal
+          isOpen={isWebhookModalOpen}
+          onClose={() => setIsWebhookModalOpen(false)}
         />
 
         <UniversalPrintModal

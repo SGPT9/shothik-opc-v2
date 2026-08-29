@@ -27,6 +27,7 @@ export class CRDTProvider {
   private clientId: string;
   private state: CRDTDocumentState;
   private broadcastChannel: BroadcastChannel | null = null;
+  private eventSource: EventSource | null = null;
   private subscribers: Set<(state: Record<string, any>) => void> = new Set();
 
   constructor(docId: string, initialData: Record<string, any> = {}) {
@@ -40,6 +41,7 @@ export class CRDTProvider {
       history: [],
     };
 
+    // 1. Tab-to-Tab Instant BroadcastChannel Coordination
     if (typeof window !== "undefined" && "BroadcastChannel" in window) {
       try {
         this.broadcastChannel = new BroadcastChannel(`shothik_crdt_${docId}`);
@@ -47,6 +49,21 @@ export class CRDTProvider {
           if (event.data?.type === "CRDT_DELTA") {
             this.applyRemoteOperation(event.data.op);
           }
+        };
+      } catch {}
+    }
+
+    // 2. Multi-Device Real-Time SSE Relay Coordination
+    if (typeof window !== "undefined" && "EventSource" in window) {
+      try {
+        this.eventSource = new EventSource(`/api/v1/crdt/stream/${docId}`);
+        this.eventSource.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data);
+            if (payload.type === "CRDT_DELTA" && payload.op) {
+              this.applyRemoteOperation(payload.op);
+            }
+          } catch {}
         };
       } catch {}
     }
@@ -94,6 +111,15 @@ export class CRDTProvider {
     // Broadcast delta to peer tabs / web workers
     if (this.broadcastChannel) {
       this.broadcastChannel.postMessage({ type: "CRDT_DELTA", op });
+    }
+
+    // Broadcast delta to remote multi-device backend relay
+    if (typeof window !== "undefined" && typeof fetch !== "undefined") {
+      fetch("/api/v1/crdt/delta", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...op, docId: this.docId }),
+      }).catch(() => {});
     }
 
     this.notify();
@@ -155,12 +181,16 @@ export class CRDTProvider {
   }
 
   /**
-   * Clean up broadcast channels and subscribers
+   * Clean up broadcast channels, event streams, and subscribers
    */
   public destroy(): void {
     if (this.broadcastChannel) {
       this.broadcastChannel.close();
       this.broadcastChannel = null;
+    }
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
     }
     this.subscribers.clear();
   }

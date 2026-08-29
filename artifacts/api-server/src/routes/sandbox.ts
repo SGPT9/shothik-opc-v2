@@ -57,3 +57,67 @@ sandboxRouter.post("/v1/sandbox/run", async (req: Request, res: Response): Promi
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+/**
+ * POST /api/v1/sandbox/simulate-webhook
+ * Simulates real-time inbound webhooks for bKash PGW, Steadfast Courier, and Pathao Logistics.
+ */
+sandboxRouter.post("/v1/sandbox/simulate-webhook", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      provider = "steadfast",
+      event = "delivered",
+      invoiceNumber = `NLK_INV_${Date.now()}`,
+      trackingCode = `ST-POD-${Math.floor(100000 + Math.random() * 900000)}`,
+      amount = 450,
+    } = req.body;
+
+    logger.info({ provider, event, invoiceNumber, trackingCode }, "[sandbox-webhook] Simulating inbound webhook");
+
+    let simulatedPayload: Record<string, any> = {};
+
+    if (provider === "bkash") {
+      simulatedPayload = {
+        paymentID: `TRX_${Date.now()}`,
+        trxID: `BK_${Math.random().toString(36).slice(2, 9).toUpperCase()}`,
+        transactionStatus: event === "failed" ? "Failed" : "Completed",
+        amount: String(amount),
+        currency: "BDT",
+        intent: "sale",
+        merchantInvoiceNumber: invoiceNumber,
+        customerMsisdn: "01700000000",
+        dateTime: new Date().toISOString(),
+      };
+    } else if (provider === "steadfast") {
+      simulatedPayload = {
+        tracking_code: trackingCode,
+        invoice: invoiceNumber,
+        status: event, // "delivered" | "in_transit" | "cancelled" | "return"
+        updated_at: new Date().toISOString(),
+        delivery_charge: 60,
+        cod_amount: Number(amount),
+        recipient_phone: "01700000000",
+      };
+    } else if (provider === "pathao") {
+      simulatedPayload = {
+        consignment_id: `PTH_${Math.random().toString(36).slice(2, 8).toUpperCase()}`,
+        merchant_order_id: invoiceNumber,
+        order_status: event === "delivered" ? "Delivered" : "In_Transit",
+        collected_amount: Number(amount),
+        delivery_fee: 60,
+        updated_at: new Date().toISOString(),
+      };
+    }
+
+    res.json({
+      success: true,
+      provider,
+      event,
+      simulatedPayload,
+      timestamp: Date.now(),
+      statusMessage: `Simulated ${provider.toUpperCase()} [${event.toUpperCase()}] webhook processed successfully.`,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
