@@ -36,7 +36,7 @@ export class CloudflareR2Adapter {
     const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
     const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
     const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || `cdn.shothik.ai`;
+    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || "cdn.shothikgpt.com";
 
     if (accountId && accessKeyId && secretAccessKey) {
       try {
@@ -90,7 +90,7 @@ export class CloudflareR2Adapter {
    * Generates public CDN URL for an R2 object key.
    */
   static getPublicCdnUrl(key: string): string {
-    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || "cdn.shothik.ai";
+    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || "cdn.shothikgpt.com";
     return `https://${publicDomain}/${key}`;
   }
 }
