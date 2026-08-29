@@ -1263,8 +1263,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             </ResizablePanel>
           </ResizablePanelGroup>
         ) : messages.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center min-h-0 w-full overflow-y-auto px-3 sm:px-4 py-4 sm:py-8 custom-scrollbar animate-fade-in">
-            <div className="w-full max-w-3xl space-y-4 sm:space-y-6 text-center">
+          <div className="flex flex-1 flex-col items-center min-h-0 w-full overflow-y-auto px-3 sm:px-6 pt-6 sm:pt-10 pb-24 custom-scrollbar animate-fade-in">
+            <div className="w-full max-w-5xl space-y-4 sm:space-y-6 text-center">
               {/* ── Empty State Greeting & Intent Starter Prompts ── */}
               <EmptyChatGreeting
                 isArtifactOpen={artifactOpen}
