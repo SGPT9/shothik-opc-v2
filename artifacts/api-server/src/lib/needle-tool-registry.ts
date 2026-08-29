@@ -24,7 +24,7 @@ export interface NeedleToolCallResult {
   reasoning: string;
   output: string;
   artifact?: {
-    type: 'slides' | 'sheet' | 'research' | 'code' | 'doc';
+    type: 'slides' | 'sheet' | 'research' | 'code' | 'doc' | 'boimela';
     title: string;
     subtitle: string;
     content?: string;

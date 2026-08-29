@@ -115,7 +115,7 @@ function detectLanguage(text: string): "bn" | "ar" | "hi" | "es" | "fr" | "de" |
 }
 
 // --- 1. Multi-Lingual Grammar & Spell Checker ---
-router.post(["/api/grammar/check", "/api/v1/tools/grammar"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/grammar/check", "/api/grammar/check", "/v1/tools/grammar", "/api/v1/tools/grammar"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", language = "auto" } = req.body;
 
@@ -236,7 +236,7 @@ router.get("/api/grammar/sections", (_req: Request, res: Response): void => {
 });
 
 // --- 2. Multi-Lingual Neural Paraphraser ---
-router.post(["/api/paraphrase", "/api/v1/tools/paraphrase"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/paraphrase", "/api/paraphrase", "/paraphraseV2", "/api/paraphraseV2", "/paraphrase/api/paraphraseV2", "/paraphrase-for-tagging", "/api/paraphrase-for-tagging", "/v1/tools/paraphrase", "/api/v1/tools/paraphrase"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", mode = "standard", language = "auto" } = req.body;
 
@@ -292,7 +292,7 @@ router.post(["/api/paraphrase", "/api/v1/tools/paraphrase"], async (req: Request
 });
 
 // --- 3. Text & Document Summarizer ---
-router.post(["/api/summarize", "/api/v1/tools/summarize"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/summarize", "/api/summarize", "/v1/tools/summarize", "/api/v1/tools/summarize"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", length = "medium" } = req.body;
 
@@ -320,7 +320,7 @@ router.post(["/api/summarize", "/api/v1/tools/summarize"], async (req: Request, 
 });
 
 // --- 4. Multi-Language Neural Translator ---
-router.post(["/api/translate", "/api/v1/tools/translate", "/api/tools/translator"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/translate", "/api/translate", "/tools/translator", "/api/tools/translator", "/v1/tools/translate", "/api/v1/tools/translate"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", sourceLang = "auto", targetLang = "bn" } = req.body;
 
@@ -351,7 +351,7 @@ router.post(["/api/translate", "/api/v1/tools/translate", "/api/tools/translator
 });
 
 // --- 5. AI Content & Plagiarism Detector ---
-router.post(["/api/ai-detector", "/api/v1/tools/ai-detector", "/ai-detector/check", "/api/ai-detector/check"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/ai-detector", "/api/ai-detector", "/ai-detector/check", "/api/ai-detector/check", "/v1/tools/ai-detector", "/api/v1/tools/ai-detector"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "" } = req.body;
 
