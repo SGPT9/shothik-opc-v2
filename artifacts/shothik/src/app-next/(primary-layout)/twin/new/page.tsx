@@ -216,7 +216,7 @@ export default function NewCompanyWizardPage() {
     const profile = createCompanyProfile(name, industry, businessModel, "Autonomous SaaS", problemStatement);
     profile.slug = slug;
     profile.domain = `https://${slug}.shothikgpt.com`;
-    profile.email = `founder@${slug}.shothik.ai`;
+    profile.email = `founder@${slug}.shothikgpt.com`;
     saveCompanyProfile(profile);
 
     INITIAL_WAYFINDER_TICKETS.forEach((t) => {
@@ -276,7 +276,7 @@ ${problemStatement || "Single-operator startups require 100% continuous autonomo
     const profile = createCompanyProfile(name, "Commerce & Retail", "Direct Sales & COD", businessType, "Automated courier dispatch and bKash payment verification");
     profile.slug = slug;
     profile.domain = `https://${slug}.shothikgpt.com`;
-    profile.email = `sales@${slug}.shothik.ai`;
+    profile.email = `sales@${slug}.shothikgpt.com`;
     saveCompanyProfile(profile);
 
     const commerceProfile = {
