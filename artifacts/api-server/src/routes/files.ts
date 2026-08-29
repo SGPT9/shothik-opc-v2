@@ -34,6 +34,30 @@ router.post("/v1/files/upload", idempotencyMiddleware, async (req: Request, res:
 
       if (lower.endsWith(".pdf")) {
         parsedResult = await openDataLoader.parsePdf(buffer, filename);
+      } else if (lower.endsWith(".docx") || lower.endsWith(".doc")) {
+        try {
+          const { OfficeParser } = await import("@workspace/office-engine");
+          const extractedText = lower.endsWith(".docx") ? await OfficeParser.docxToText(buffer) : await OfficeParser.docToText(buffer);
+          parsedResult = openDataLoader.parseTextDocument(extractedText || "", filename);
+        } catch {
+          parsedResult = openDataLoader.parseTextDocument(buffer.toString("utf8"), filename);
+        }
+      } else if (lower.endsWith(".xlsx")) {
+        try {
+          const { OfficeParser } = await import("@workspace/office-engine");
+          const extractedText = await OfficeParser.xlsxToText(buffer);
+          parsedResult = openDataLoader.parseTextDocument(extractedText || "", filename);
+        } catch {
+          parsedResult = openDataLoader.parseTextDocument(buffer.toString("utf8"), filename);
+        }
+      } else if (lower.endsWith(".pptx") || lower.endsWith(".ppt")) {
+        try {
+          const { OfficeParser } = await import("@workspace/office-engine");
+          const extractedText = lower.endsWith(".pptx") ? await OfficeParser.pptxToText(buffer) : await OfficeParser.pptToText(buffer);
+          parsedResult = openDataLoader.parseTextDocument(extractedText || "", filename);
+        } catch {
+          parsedResult = openDataLoader.parseTextDocument(buffer.toString("utf8"), filename);
+        }
       } else {
         parsedResult = openDataLoader.parseTextDocument(buffer.toString("utf8"), filename);
       }
