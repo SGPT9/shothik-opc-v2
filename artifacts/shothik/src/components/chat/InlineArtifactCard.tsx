@@ -126,6 +126,17 @@ const CONFIGS: Partial<Record<ArtifactTab, ArtifactMeta>> = {
     borderHover: "hover:border-purple-500/50 hover:shadow-purple-500/10",
     previewPills: ["Architect Agent", "Security Auditor", "Financial Analyst", "Consensus Score: 96%"],
   },
+  twin: {
+    label: "Digital Twin",
+    badge: "Autonomous Cockpit",
+    actionText: "Open Twin Cockpit",
+    defaultTitle: "SecondMe 2.0 Autonomous Company Twin",
+    defaultSubtitle: "Autonomous task queue, epistemic DAG memory & operational telemetry",
+    Icon: Sparkles,
+    gradient: "from-amber-500/10 via-yellow-500/5 to-transparent",
+    borderHover: "hover:border-amber-500/50 hover:shadow-amber-500/10",
+    previewPills: ["Epistemic DAG", "Autonomous Queue", "Zero Hallucinations", "Founder Preferences"],
+  },
 };
 
 export function InlineArtifactCard({
