@@ -149,7 +149,7 @@ export class McpManager {
         return {
           id,
           file: safeFile,
-          content: `# Server Node and Port Audit\n\nAudit blockchain workloads, listeners, and effective network exposure.\n\n## Instructions\n1. Check port bindings\n2. Audit open listeners\n`,
+          content: `# Server node and port audit\n\nAudit blockchain workloads, listeners, and effective network exposure.\n\n## Instructions\n1. Check port bindings\n2. Audit open listeners\n`,
         };
       }
       return null;
