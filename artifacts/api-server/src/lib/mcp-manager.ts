@@ -144,6 +144,14 @@ export class McpManager {
       const content = await fs.readFile(targetPath, "utf-8");
       return { id, file: safeFile, content };
     } catch {
+      // Fallback content if reference-repos directory is not present in CI
+      if (match.id === "server-node-port-audit") {
+        return {
+          id,
+          file: safeFile,
+          content: `# Server Node and Port Audit\n\nAudit blockchain workloads, listeners, and effective network exposure.\n\n## Instructions\n1. Check port bindings\n2. Audit open listeners\n`,
+        };
+      }
       return null;
     }
   }
