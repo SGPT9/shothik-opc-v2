@@ -4,7 +4,7 @@ compatibility_date = "2026-08-01"
 compatibility_flags = []
 
 [site]
-bucket = "./artifacts/shothik/dist"
+bucket = "./artifacts/shothik/dist/public"
 
 [vars]
 ENVIRONMENT = "production"
