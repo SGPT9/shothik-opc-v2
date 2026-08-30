@@ -1,7 +1,7 @@
 export type WritingStudioSeedIntent = "book" | "research" | "assignment";
 
 export interface WritingStudioSeed {
-  source: "twin" | "tool";
+  source: "twin" | "tool" | "grammar" | "humanizer" | "deep-research" | "chat" | string;
   title?: string;
   description?: string;
   intent: WritingStudioSeedIntent;
@@ -9,7 +9,7 @@ export interface WritingStudioSeed {
 }
 
 export interface WritingStudioSeedInput {
-  source: "twin" | "tool";
+  source: "twin" | "tool" | "grammar" | "humanizer" | "deep-research" | "chat" | string;
   title?: string;
   description?: string;
   intent: WritingStudioSeedIntent;

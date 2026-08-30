@@ -14,7 +14,7 @@ interface SendToWritingStudioButtonProps {
   text: string;
   intent?: WritingStudioSeedIntent;
   title?: string;
-  source?: "tool" | "twin";
+  source?: "twin" | "tool" | "grammar" | "humanizer" | "deep-research" | "chat" | string;
   label?: string;
   variant?: "default" | "outline" | "ghost";
   size?: "default" | "sm" | "lg" | "icon";
