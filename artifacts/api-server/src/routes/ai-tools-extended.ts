@@ -6,13 +6,13 @@ const router = Router();
 
 router.use(createApiCanonicalizer([
   {
-    legacyPrefixes: ["/humanizerV5", "/humanizerV4", "/api/humanize", "/api/tools/humanize", "/api/v1/tools/humanize"],
+    legacyPrefixes: ["/humanizerV5", "/humanizerV4", "/api/humanize", "/api/tools/humanize", "/api/v1/tools/humanize", "/tools/humanize", "/v1/tools/humanize"],
     canonicalPath: "/api/v1/nlp/humanize",
   }
 ]));
 
 // --- 1. AI Text Humanizer Engine (Humanizer V5) ---
-router.post(["/v1/nlp/humanize", "/humanizerV5", "/humanizerV4", "/api/humanize", "/api/tools/humanize", "/api/v1/tools/humanize"], async (req: Request, res: Response): Promise<void> => {
+router.post(["/v1/nlp/humanize", "/v1/tools/humanize", "/tools/humanize", "/humanize", "/humanizerV5", "/humanizerV4", "/api/humanize", "/api/tools/humanize", "/api/v1/tools/humanize", "/api/v1/nlp/humanize"], async (req: Request, res: Response): Promise<void> => {
   try {
     const { text = "", mode = "standard", language = "auto" } = req.body;
 

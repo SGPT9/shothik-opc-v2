@@ -38,6 +38,7 @@ import { DshExecutionDrawer } from "@/components/chat/DshExecutionDrawer";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
 import { getStoredChatSessions } from "@/lib/chat-sessions-store";
 import type { ChatPersona } from "@/lib/chat/types";
+import { parseResponseToArtifacts } from "@/lib/artifacts/responseParser";
 import { 
   Sparkles, 
   ShoppingBag, 
@@ -144,7 +145,10 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
 
   // ── Artifact Context Handoff Data ──
   const [slidesTopic, setSlidesTopic] = useState<string | undefined>("AI-Powered E-Commerce & Retail in Bangladesh");
+  const [slides, setSlides] = useState<any[] | undefined>();
   const [researchQuery, setResearchQuery] = useState<string | undefined>("Dhaka Logistics & Courier Competitor Analysis");
+  const [researchSummary, setResearchSummary] = useState<string | undefined>();
+  const [researchSources, setResearchSources] = useState<any[] | undefined>();
   const [sheetData, setSheetData] = useState<string[][] | undefined>();
   const [sheetTitle, setSheetTitle] = useState<string | undefined>("3-Scenario Financial Model (BDT)");
   const [codeSnippet, setCodeSnippet] = useState<string | undefined>();
@@ -153,6 +157,46 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [docPage, setDocPage] = useState<number | undefined>(1);
   const [docBbox, setDocBbox] = useState<[number, number, number, number] | undefined>();
   const [docSourceRef, setDocSourceRef] = useState<string | undefined>();
+
+  // ── Auto-Parse Real AI Messages into Live Artifacts (Sheets, Slides, Research, Code, Docs) ──
+  useEffect(() => {
+    if (!messages || messages.length === 0) return;
+
+    const assistantMessages = messages.filter((m) => m.role === "assistant");
+    const userMessages = messages.filter((m) => m.role === "user");
+
+    const lastAssistant = assistantMessages[assistantMessages.length - 1];
+    const lastUser = userMessages[userMessages.length - 1];
+
+    if (!lastAssistant || !lastAssistant.content) return;
+
+    const parsed = parseResponseToArtifacts(lastAssistant.content, lastUser?.content);
+
+    if (parsed.hasTable && parsed.sheetData) {
+      setSheetData(parsed.sheetData);
+      if (parsed.sheetTitle) setSheetTitle(parsed.sheetTitle);
+    }
+
+    if (parsed.hasSlides) {
+      if (parsed.slidesTopic) setSlidesTopic(parsed.slidesTopic);
+      if (parsed.slides) setSlides(parsed.slides);
+    }
+
+    if (parsed.hasResearch) {
+      if (parsed.researchQuery) setResearchQuery(parsed.researchQuery);
+      if (parsed.researchSummary) setResearchSummary(parsed.researchSummary);
+      if (parsed.researchSources) setResearchSources(parsed.researchSources);
+    }
+
+    if (parsed.hasCode && parsed.codeSnippet) {
+      setCodeSnippet(parsed.codeSnippet);
+    }
+
+    if (parsed.hasDocument && parsed.docContent) {
+      setDocContent(parsed.docContent);
+      if (parsed.docTitle) setDocTitle(parsed.docTitle);
+    }
+  }, [messages]);
 
   const [voiceActive, setVoiceActive] = useState(false);
   const [isVoiceOrbOpen, setIsVoiceOrbOpen] = useState(false);
@@ -1249,7 +1293,10 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   onClose={() => setArtifactOpen(false)}
                   isStreaming={streamState.isStreaming}
                   slidesTopic={slidesTopic}
+                  slides={slides}
                   researchQuery={researchQuery}
+                  researchSummary={researchSummary}
+                  researchSources={researchSources}
                   sheetData={sheetData}
                   sheetTitle={sheetTitle}
                   codeSnippet={codeSnippet}
@@ -1275,10 +1322,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     handleOpenArtifact(tab);
                   }
                 }}
-              />
-
-              {/* ── Center Dominant Minimalist Composer ── */}
-              <div className="w-full text-left">
+              >
+                {/* ── Center Dominant Minimalist Composer ── */}
                 <ComponentErrorBoundary title="Composer Input Interrupted">
                   <Composer
                     onAction={handleComposerAction}
@@ -1293,7 +1338,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     onOpenTool={handleOpenTool}
                   />
                 </ComponentErrorBoundary>
-              </div>
+              </EmptyChatGreeting>
             </div>
           </div>
         ) : (

@@ -9,6 +9,7 @@ import { CodeArtifact }         from "@/components/chat/artifacts/CodeArtifact";
 import { ApprovalsArtifact }    from "@/components/chat/artifacts/ApprovalsArtifact";
 import { DiagramArtifact }      from "@/components/chat/artifacts/DiagramArtifact";
 import { DocArtifact }          from "@/components/chat/artifacts/DocArtifact";
+import { CanvasSkeletonPreview } from "@/components/chat/artifacts/CanvasSkeletonPreview";
 import { PonytailSynthesizerCard } from "@/components/canvas/PonytailSynthesizerCard";
 import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
@@ -77,7 +78,10 @@ interface ArtifactPanelProps {
 
   // Handoff: pre-populate from chat context
   slidesTopic?: string;
+  slides?: any[];
   researchQuery?: string;
+  researchSummary?: string;
+  researchSources?: any[];
   sheetData?: string[][];
   sheetTitle?: string;
   codeSnippet?: string;
@@ -103,7 +107,10 @@ export function ArtifactPanel({
   isMaximized = false,
   onToggleMaximize,
   slidesTopic,
+  slides,
   researchQuery,
+  researchSummary,
+  researchSources,
   sheetData,
   sheetTitle,
   codeSnippet,
@@ -422,15 +429,38 @@ export function ArtifactPanel({
           </div>
         )}
 
+        {mounted.has("slides") && (
+          <div className={`absolute inset-0 overflow-hidden ${activeTab === "slides" ? "block" : "hidden"}`}>
+            {isStreaming && (!slides || slides.length === 0) ? (
+              <CanvasSkeletonPreview tab="slides" topic={slidesTopic} />
+            ) : (
+              <SlidesArtifact initialTopic={slidesTopic} slides={slides} isStreaming={isStreaming} />
+            )}
+          </div>
+        )}
+
         {mounted.has("sheet") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "sheet" ? "block" : "hidden"}`}>
-            <SheetArtifact initialData={sheetData} title={sheetTitle} isStreaming={isStreaming} />
+            {isStreaming && (!sheetData || sheetData.length === 0) ? (
+              <CanvasSkeletonPreview tab="sheet" topic={sheetTitle} />
+            ) : (
+              <SheetArtifact initialData={sheetData} title={sheetTitle} isStreaming={isStreaming} />
+            )}
           </div>
         )}
 
         {mounted.has("research") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "research" ? "block" : "hidden"}`}>
-            <DeepResearchArtifact initialQuery={researchQuery} isStreaming={isStreaming} />
+            {isStreaming && !researchSummary ? (
+              <CanvasSkeletonPreview tab="research" topic={researchQuery} />
+            ) : (
+              <DeepResearchArtifact
+                initialQuery={researchQuery}
+                summary={researchSummary}
+                sources={researchSources}
+                isStreaming={isStreaming}
+              />
+            )}
           </div>
         )}
 

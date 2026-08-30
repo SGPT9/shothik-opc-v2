@@ -9,6 +9,7 @@ import { SwarmVisualizer } from "@/components/hermes/swarm-visualizer";
 import { getSlashCommandDisplayText } from "@/lib/chat/commands";
 import { SourcesBadge } from "./SourcesBadge";
 import { ThinkBox } from "./ThinkBox";
+import { AgentActivityTimeline } from "./AgentActivityTimeline";
 import { AssistantSteps } from "./AssistantSteps";
 import { InlineArtifactCard } from "./InlineArtifactCard";
 import { ReplitAgentActivityBar } from "./ReplitAgentActivityBar";
@@ -33,14 +34,14 @@ const STYLEX_MAP = {
   container: "mx-auto max-w-3xl px-3 sm:px-4 py-4 sm:py-6 space-y-6 sm:space-y-8",
   userRow: "flex justify-end gap-2 sm:gap-3 group",
   userCol: "flex flex-col items-end gap-1.5 max-w-[92%] sm:max-w-[80%]",
-  userBubble: "rounded-2xl rounded-tr-sm bg-white/[0.08] dark:bg-white/[0.06] backdrop-blur-xl border border-zinc-300 dark:border-white/[0.12] px-3.5 sm:px-4.5 py-2.5 sm:py-3.5 text-sm text-zinc-900 dark:text-zinc-100 shadow-[0_4px_20px_rgba(0,0,0,0.25)] break-words",
-  userAttachmentPill: "inline-flex items-center gap-1.5 rounded-lg border border-white/20 bg-white/10 px-2 py-1 text-[10px]",
+  userBubble: "rounded-2xl rounded-tr-sm bg-muted/60 dark:bg-zinc-800/80 backdrop-blur-xl border border-border/80 px-3.5 sm:px-4.5 py-2.5 sm:py-3.5 text-sm text-foreground shadow-2xs break-words",
+  userAttachmentPill: "inline-flex items-center gap-1.5 rounded-lg border border-border/80 bg-muted/40 px-2 py-1 text-[10px]",
   userTimestamp: "text-[10px] text-muted-foreground/50 pr-1 opacity-0 group-hover:opacity-100 transition-opacity",
-  userAvatar: "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.08] border border-white/[0.15] text-zinc-200 backdrop-blur-md shadow-sm mt-0.5",
+  userAvatar: "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-muted border border-border/80 text-foreground backdrop-blur-md shadow-2xs mt-0.5",
   
   assistantRow: "flex gap-2.5 sm:gap-3.5 group",
-  assistantAvatar: "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 backdrop-blur-md shadow-[0_0_15px_rgba(16,185,129,0.2)] mt-0.5",
-  assistantCol: "flex-1 min-w-0 space-y-4 sm:space-y-5 rounded-2xl bg-zinc-900/40 dark:bg-black/50 backdrop-blur-2xl border border-zinc-200/80 dark:border-white/[0.08] p-3.5 sm:p-5 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden",
+  assistantAvatar: "flex h-7 w-7 sm:h-8 sm:w-8 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 border border-border/80 font-bold backdrop-blur-md shadow-2xs mt-0.5",
+  assistantCol: "flex-1 min-w-0 space-y-4 sm:space-y-5 rounded-2xl bg-card/90 dark:bg-zinc-900/90 backdrop-blur-2xl border border-border/80 p-3.5 sm:p-5 shadow-xs relative overflow-hidden",
   planContainer: "rounded-xl border border-border bg-muted/20 px-3 py-2 sm:px-3.5 sm:py-2.5",
   planTitle: "flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground mb-1.5",
   planList: "space-y-1 text-xs text-foreground",
@@ -488,12 +489,15 @@ export function Transcript({
                     />
                   )}
 
-                  {/* Thinking state */}
-                  {isMsgStreaming && !displayContent && (
-                    <ThinkingDots label={safeStatusLabel(statusLabel)} />
+                  {/* ── Multi-Stage Agent Activity Timeline (Perplexity & Genspark telemetry) ── */}
+                  {(isMsgStreaming || message.metadata?.thinking || extractedThinking) && (
+                    <AgentActivityTimeline
+                      query={displayContent.slice(0, 100)}
+                      isCompleted={!isMsgStreaming}
+                    />
                   )}
 
-                  {/* ── ThinkBox: chain-of-thought (Tier 2) ── */}
+                  {/* ── ThinkBox: chain-of-thought (DeepSeek R1 live stream) ── */}
                   {(message.metadata?.thinking || extractedThinking) && (
                     <ThinkBox
                       content={message.metadata?.thinking || extractedThinking || ""}

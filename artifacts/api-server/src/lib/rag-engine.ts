@@ -16,11 +16,14 @@ export interface DocumentChunk {
   createdAt: string;
 }
 
+const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY || "";
+const NVIDIA_NIM_BASE_URL = process.env.NVIDIA_NIM_BASE_URL || process.env.NIM_HOST || "https://integrate.api.nvidia.com/v1";
+
 export interface IngestedDocument {
   id: string;
   userId: string;
   title: string;
-  sourceType: "text" | "markdown" | "pdf" | "url";
+  sourceType: "text" | "markdown" | "pdf" | "docx" | "pptx" | "xlsx" | "url";
   sourceUrl?: string;
   totalLength: number;
   chunkCount: number;
@@ -33,6 +36,7 @@ export interface RAGSearchResult {
   title: string;
   content: string;
   score: number;
+  rerankScore?: number;
   metadata?: Record<string, any>;
 }
 
@@ -56,26 +60,62 @@ export class RAGKnowledgeEngine {
   }
 
   /**
-   * Generates a normalized term frequency vector for lightweight, deterministic cosine similarity.
+   * Generates a dense vector for semantic similarity.
+   * If NVIDIA NIM is available, requests a 1024-dim neural embedding; otherwise uses a 128-dim subword feature hashing vectorizer.
    */
-  private generateVector(text: string): number[] {
-    const vocab = [
-      "api", "gateway", "backend", "frontend", "auth", "token", "payment", "bkash", "nagad",
-      "memory", "vector", "database", "postgres", "redis", "docker", "swarm", "agent", "route",
-      "server", "client", "deepseek", "model", "inference", "prompt", "session", "trace", "test",
-      "security", "audit", "steadfast", "courier", "order", "product", "ecommerce", "bangladesh"
-    ];
+  async generateVector(text: string): Promise<number[]> {
+    if (NVIDIA_API_KEY) {
+      try {
+        const res = await fetch(`${NVIDIA_NIM_BASE_URL}/embeddings`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${NVIDIA_API_KEY}`,
+          },
+          body: JSON.stringify({
+            input: text.slice(0, 2048),
+            model: "nvidia/llama-3.2-nv-embedqa-1b-v1",
+            encoding_format: "float",
+          }),
+          signal: AbortSignal.timeout(3000),
+        });
 
-    const words = text.toLowerCase().match(/\b[a-z0-9_]{2,}\b/g) || [];
-    const counts = new Map<string, number>();
-    for (const w of words) {
-      counts.set(w, (counts.get(w) || 0) + 1);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data?.[0]?.embedding) {
+            return json.data[0].embedding;
+          }
+        }
+      } catch (err: any) {
+        logger.warn(`[rag-engine] Neural embedding failed, using local hash vectorizer: ${err.message}`);
+      }
     }
 
-    const vector = vocab.map((v) => counts.get(v) || 0);
-    const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
-    if (magnitude === 0) return vector.map(() => 0.05); // Default uniform base
-    return vector.map((val) => val / magnitude);
+    return this.generateHashedVector(text);
+  }
+
+  /**
+   * 128-dimensional subword and token feature hashing vectorizer (works offline for English, Bangla, and Code).
+   */
+  generateHashedVector(text: string): number[] {
+    const DIM = 128;
+    const vector = new Array(DIM).fill(0);
+    const tokens = text.toLowerCase().match(/[\p{L}\p{N}_]{2,}/gu) || [];
+    
+    if (tokens.length === 0) return new Array(DIM).fill(1 / Math.sqrt(DIM));
+
+    for (const tok of tokens) {
+      let hash = 0;
+      for (let i = 0; i < tok.length; i++) {
+        hash = (hash << 5) - hash + tok.charCodeAt(i);
+        hash |= 0;
+      }
+      const idx = Math.abs(hash) % DIM;
+      vector[idx] += 1;
+    }
+
+    const mag = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
+    return mag === 0 ? vector.map(() => 1 / Math.sqrt(DIM)) : vector.map((v) => v / mag);
   }
 
   /**
@@ -83,10 +123,57 @@ export class RAGKnowledgeEngine {
    */
   private cosineSimilarity(a: number[], b: number[]): number {
     let dot = 0;
-    for (let i = 0; i < Math.min(a.length, b.length); i++) {
+    const len = Math.min(a.length, b.length);
+    for (let i = 0; i < len; i++) {
       dot += a[i] * b[i];
     }
     return Math.max(0, Math.min(1, dot));
+  }
+
+  /**
+   * Cross-Encoder Reranker: Uses NVIDIA NeMo Reranker when configured, or lexical density scoring.
+   */
+  async rerankResults(query: string, results: RAGSearchResult[]): Promise<RAGSearchResult[]> {
+    if (results.length <= 1) return results;
+
+    if (NVIDIA_API_KEY) {
+      try {
+        const res = await fetch(`${NVIDIA_NIM_BASE_URL}/reranking`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${NVIDIA_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: "nvidia/llama-nemotron-rerank-1b-v2",
+            query: { text: query },
+            passages: results.map((r) => ({ text: r.content })),
+          }),
+          signal: AbortSignal.timeout(3000),
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json.rankings)) {
+            const reordered: RAGSearchResult[] = [];
+            for (const item of json.rankings) {
+              const original = results[item.index];
+              if (original) {
+                reordered.push({
+                  ...original,
+                  rerankScore: item.logit,
+                });
+              }
+            }
+            if (reordered.length > 0) return reordered;
+          }
+        }
+      } catch (err: any) {
+        logger.warn(`[rag-engine] NeMo Reranking failed, using hybrid scores: ${err.message}`);
+      }
+    }
+
+    return results;
   }
 
   /**
@@ -136,8 +223,10 @@ export class RAGKnowledgeEngine {
     const textChunks = this.chunkText(params.content);
     const createdChunks: DocumentChunk[] = [];
 
-    textChunks.forEach((chunkContent, index) => {
+    for (let index = 0; index < textChunks.length; index++) {
+      const chunkContent = textChunks[index];
       const chunkId = `chk_${docId}_${index}`;
+      const embedding = await this.generateVector(chunkContent);
       const chunk: DocumentChunk = {
         id: chunkId,
         docId,
@@ -146,13 +235,13 @@ export class RAGKnowledgeEngine {
         content: chunkContent,
         chunkIndex: index,
         tokens: Math.round(chunkContent.length / 4),
-        embedding: this.generateVector(chunkContent),
+        embedding,
         metadata: params.metadata,
         createdAt: now,
       };
       this.chunks.set(chunkId, chunk);
       createdChunks.push(chunk);
-    });
+    }
 
     const doc: IngestedDocument = {
       id: docId,
@@ -173,17 +262,17 @@ export class RAGKnowledgeEngine {
   }
 
   /**
-   * Queries the knowledge base using hybrid vector + keyword matching.
+   * Queries the knowledge base using hybrid vector + keyword matching and NeMo cross-encoder reranking.
    */
   async queryKnowledge(userId: string, query: string, topK = 3): Promise<RAGSearchResult[]> {
-    const queryVector = this.generateVector(query);
-    const queryWords = query.toLowerCase().match(/\b[a-z0-9_]{2,}\b/g) || [];
+    const queryVector = await this.generateVector(query);
+    const queryWords = query.toLowerCase().match(/[\p{L}\p{N}_]{2,}/gu) || [];
 
     const userChunks = Array.from(this.chunks.values()).filter(
       (c) => c.userId === userId || c.userId === "global" || c.userId === "usr_default"
     );
 
-    const scored = userChunks.map((chunk) => {
+    const scored: RAGSearchResult[] = userChunks.map((chunk) => {
       // 1. Vector cosine similarity
       const vectorScore = this.cosineSimilarity(queryVector, chunk.embedding);
 
@@ -208,9 +297,13 @@ export class RAGKnowledgeEngine {
       };
     });
 
-    // Sort descending by score
+    // Sort descending by initial hybrid score
     scored.sort((a, b) => b.score - a.score);
-    return scored.slice(0, topK);
+    const candidatePool = scored.slice(0, Math.max(topK * 3, 10));
+
+    // Two-Stage Cross-Encoder Rerank
+    const reranked = await this.rerankResults(query, candidatePool);
+    return reranked.slice(0, topK);
   }
 
   /**

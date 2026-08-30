@@ -44,10 +44,10 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
             href="/twin"
             className="group flex items-center gap-2 px-3 py-1.5 rounded-xl hover:bg-muted/60 transition-colors"
           >
-            <div className="p-1 rounded-lg bg-orange-500/10 text-orange-500 border border-orange-500/20 group-hover:scale-105 transition-transform">
+            <div className="p-1 rounded-lg bg-muted text-muted-foreground border border-border/50 group-hover:text-foreground transition-colors">
               <Users className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-semibold text-foreground group-hover:text-orange-500 transition-colors">
+            <span className="text-xs font-medium text-foreground transition-colors">
               Twin Co-Founder
             </span>
           </Link>
@@ -71,10 +71,10 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
             onClick={() => onNavigateTab?.("sheet")}
             className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors"
           >
-            <div className="p-1 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 group-hover:scale-105 transition-transform">
+            <div className="p-1 rounded-lg bg-muted text-muted-foreground border border-border/50 group-hover:text-foreground transition-colors">
               <FileSpreadsheet className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground group-hover:text-emerald-500 transition-colors">
+            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
               AI Sheets
             </span>
           </Link>
@@ -84,10 +84,10 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
             onClick={() => onNavigateTab?.("slides")}
             className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors"
           >
-            <div className="p-1 rounded-lg bg-amber-500/10 text-amber-500 border border-amber-500/20 group-hover:scale-105 transition-transform">
+            <div className="p-1 rounded-lg bg-muted text-muted-foreground border border-border/50 group-hover:text-foreground transition-colors">
               <Presentation className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground group-hover:text-amber-500 transition-colors">
+            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
               AI Slides
             </span>
           </Link>
@@ -96,10 +96,10 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
             href="/writing-studio"
             className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors"
           >
-            <div className="p-1 rounded-lg bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 group-hover:scale-105 transition-transform">
+            <div className="p-1 rounded-lg bg-muted text-muted-foreground border border-border/50 group-hover:text-foreground transition-colors">
               <FileText className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground group-hover:text-cyan-500 transition-colors">
+            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
               AI Docs
             </span>
           </Link>
@@ -116,13 +116,13 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
                   className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+                    <FileSpreadsheet className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <div className="text-xs font-semibold text-foreground">AI Spreadsheets</div>
                       <div className="text-[10px] text-muted-foreground">Formulas, Smart Charts, 2D Pivot Tables</div>
                     </div>
                   </div>
-                  <span className="text-[9px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded">.XLSX</span>
+                  <span className="text-[9px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/40">.XLSX</span>
                 </Link>
 
                 <Link
@@ -130,13 +130,13 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
                   className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <Presentation className="w-4 h-4 text-amber-500" />
+                    <Presentation className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <div className="text-xs font-semibold text-foreground">AI Pitch Decks</div>
                       <div className="text-[10px] text-muted-foreground">Vector slide masters & typography</div>
                     </div>
                   </div>
-                  <span className="text-[9px] font-semibold text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded">.PPTX</span>
+                  <span className="text-[9px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/40">.PPTX</span>
                 </Link>
 
                 <Link
@@ -144,13 +144,13 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
                   className="flex items-center justify-between p-2 rounded-xl hover:bg-muted/50 transition-colors"
                 >
                   <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-cyan-500" />
+                    <FileText className="w-4 h-4 text-muted-foreground" />
                     <div>
                       <div className="text-xs font-semibold text-foreground">AI Writing & Book Typesetting</div>
                       <div className="text-[10px] text-muted-foreground">Nilkhet print-ready & APA 7 manuscripts</div>
                     </div>
                   </div>
-                  <span className="text-[9px] font-semibold text-cyan-500 bg-cyan-500/10 px-1.5 py-0.5 rounded">.DOCX</span>
+                  <span className="text-[9px] font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/40">.DOCX</span>
                 </Link>
               </div>
 
@@ -159,7 +159,7 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
                   Ecosystem Compatibility
                 </div>
                 <div className="flex items-center gap-2 px-1 text-[11px] text-muted-foreground">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground" />
                   <span>100% Microsoft 365 & Google Workspace compatible</span>
                 </div>
               </div>
@@ -178,10 +178,10 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
             onClick={() => onNavigateTab?.("code")}
             className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors"
           >
-            <div className="p-1 rounded-lg bg-blue-500/10 text-blue-500 border border-blue-500/20 group-hover:scale-105 transition-transform">
+            <div className="p-1 rounded-lg bg-muted text-muted-foreground border border-border/50 group-hover:text-foreground transition-colors">
               <Code2 className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground group-hover:text-blue-500 transition-colors">
+            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
               Code Sandbox
             </span>
           </button>
@@ -190,10 +190,10 @@ export default function SuiteNavigationRail({ onNavigateTab }: SuiteNavigationRa
             href="/connectors"
             className="group flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl hover:bg-muted/60 transition-colors"
           >
-            <div className="p-1 rounded-lg bg-purple-500/10 text-purple-500 border border-purple-500/20 group-hover:scale-105 transition-transform">
+            <div className="p-1 rounded-lg bg-muted text-muted-foreground border border-border/50 group-hover:text-foreground transition-colors">
               <Plug className="w-3.5 h-3.5" />
             </div>
-            <span className="text-xs font-medium text-foreground group-hover:text-purple-500 transition-colors">
+            <span className="text-xs font-medium text-muted-foreground group-hover:text-foreground transition-colors">
               Connectors
             </span>
           </Link>

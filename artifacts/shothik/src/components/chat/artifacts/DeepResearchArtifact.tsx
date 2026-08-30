@@ -22,10 +22,13 @@ import {
   Building2,
   Quote,
   X,
+  Network,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
+import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
+import { ResearchKnowledgeGraph } from "./ResearchKnowledgeGraph";
 
 interface Source {
   title: string;
@@ -308,7 +311,7 @@ export function DeepResearchArtifact({
   const queryTopic = initialQuery || "Dhaka Logistics & Courier Competitor Intelligence";
   const [copied, setCopied] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"report" | "sources" | "steps" | "matrix">("report");
+  const [activeTab, setActiveTab] = useState<"report" | "sources" | "steps" | "matrix" | "graph">("report");
   const [selectedSource, setSelectedSource] = useState<Source | null>(null);
 
   const dynamicData = buildDynamicResearch(queryTopic);
@@ -341,15 +344,15 @@ export function DeepResearchArtifact({
   return (
     <div className="flex flex-col h-full bg-background text-foreground overflow-hidden select-none transition-colors duration-200 relative">
       {/* ── Top Header Bar ── */}
-      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 backdrop-blur-md px-3.5 py-2 shrink-0">
-        <div className="flex items-center gap-2 min-w-0 flex-1 pr-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-violet-500/10 text-violet-500 dark:text-violet-400 border border-violet-500/30 shrink-0">
+      <div className="flex items-center justify-between border-b border-border/80 bg-card px-3.5 py-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1 pr-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shrink-0">
             <BookOpen className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
             <h3 className="text-xs font-bold text-foreground truncate">{queryTopic}</h3>
             <p className="text-[10px] text-muted-foreground font-mono truncate">
-              Deep Research · {sourcesList.length} Verified Sources Audited
+              Deep Research · {sourcesList.length} Verified Primary Sources Audited
             </p>
           </div>
         </div>
@@ -359,40 +362,40 @@ export function DeepResearchArtifact({
           <button
             type="button"
             onClick={handlePrint}
-            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground transition cursor-pointer"
             title="Print / Save PDF Report"
           >
-            <Printer className="h-3 w-3" />
+            <Printer className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={handleDownload}
-            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground transition cursor-pointer"
             title="Download Research Report (.md)"
           >
-            <Download className="h-3 w-3" />
+            <Download className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             onClick={handleCopy}
-            className="p-1.5 rounded-lg border border-zinc-200 dark:border-white/[0.08] bg-zinc-100 dark:bg-white/[0.04] hover:bg-zinc-200 dark:hover:bg-white/[0.08] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+            className="p-1.5 rounded-lg border border-border bg-card hover:bg-muted text-foreground transition cursor-pointer"
             title="Copy Report Text"
           >
-            {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+            {copied ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
           </button>
         </div>
       </div>
 
       {/* ── Sub Navigation Tabs ── */}
-      <div className="flex items-center justify-between border-b border-zinc-200 dark:border-white/[0.06] bg-zinc-100/70 dark:bg-black/20 px-3.5 py-1 text-xs shrink-0">
+      <div className="flex items-center justify-between border-b border-border/80 bg-muted/40 px-3.5 py-1.5 text-xs shrink-0">
         <div className="flex items-center gap-1">
           <button
             onClick={() => setActiveTab("report")}
             className={cn(
               "px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5",
               activeTab === "report"
-                ? "bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/30 font-bold"
-                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             <FileText className="w-3 h-3" />
@@ -404,8 +407,8 @@ export function DeepResearchArtifact({
             className={cn(
               "px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5",
               activeTab === "matrix"
-                ? "bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/30 font-bold"
-                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             <ShieldCheck className="w-3 h-3" />
@@ -417,8 +420,8 @@ export function DeepResearchArtifact({
             className={cn(
               "px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5",
               activeTab === "sources"
-                ? "bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/30 font-bold"
-                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             <Globe className="w-3 h-3" />
@@ -426,12 +429,25 @@ export function DeepResearchArtifact({
           </button>
 
           <button
+            onClick={() => setActiveTab("graph")}
+            className={cn(
+              "px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5",
+              activeTab === "graph"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            )}
+          >
+            <Network className="w-3 h-3" />
+            <span>Citation Graph</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("steps")}
             className={cn(
               "px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer flex items-center gap-1.5",
               activeTab === "steps"
-                ? "bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/30 font-bold"
-                : "text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200"
+                ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted"
             )}
           >
             <Clock className="w-3 h-3" />
@@ -446,15 +462,41 @@ export function DeepResearchArtifact({
 
       {/* ── Tab Content Area ── */}
       <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4">
+        {/* GRAPH TAB */}
+        {activeTab === "graph" && (
+          <div className="h-[520px] w-full">
+            <ResearchKnowledgeGraph topic={queryTopic} sources={sourcesList} />
+          </div>
+        )}
         {/* REPORT TAB */}
         {activeTab === "report" && (
           <div className="space-y-4 max-w-2xl mx-auto">
-            <div className="p-4 rounded-xl bg-card border border-border space-y-2.5 shadow-xs">
+            {/* Top Export Toolbar */}
+            <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/80 shadow-xs">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-foreground">Executive Synthesis</span>
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                  Grounded Report
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <SendToWritingStudioButton
+                  text={summaryText}
+                  title={`Research: ${queryTopic}`}
+                  source="deep-research"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2.5 text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-card border border-border/80 space-y-2.5 shadow-xs">
               <div className="flex items-center justify-between border-b border-border/60 pb-2">
                 <span className="text-xs font-bold text-foreground">Synthesis Digest</span>
-                <span className="text-[10px] font-mono text-muted-foreground">DeepSeek R1 + Perplexity Mode</span>
+                <span className="text-[10px] font-mono text-muted-foreground">NVIDIA AI-Q + DeepSeek R1</span>
               </div>
-              <div className="text-xs leading-relaxed text-muted-foreground whitespace-pre-wrap font-sans">
+              <div className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap font-sans">
                 {summaryText}
               </div>
             </div>
@@ -462,26 +504,26 @@ export function DeepResearchArtifact({
             {/* Quick Citations Grid */}
             <div className="space-y-2">
               <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-violet-400" /> Grounded Verification Sources:
+                <Globe className="w-3.5 h-3.5 text-muted-foreground" /> Grounded Verification Sources:
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {sourcesList.map((source, idx) => (
                   <div
                     key={idx}
                     onClick={() => setSelectedSource(source)}
-                    className="p-3 rounded-xl border border-border bg-card hover:border-violet-500/40 transition cursor-pointer space-y-1 group"
+                    className="p-3 rounded-xl border border-border/80 bg-card hover:border-zinc-500/40 transition cursor-pointer space-y-1 group shadow-xs"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-violet-500 truncate max-w-[150px]">
+                      <span className="text-[10px] font-mono font-bold text-foreground truncate max-w-[150px]">
                         {source.domain}
                       </span>
                       {source.reliability && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-bold">
+                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold">
                           {source.reliability}
                         </span>
                       )}
                     </div>
-                    <p className="text-xs font-semibold text-foreground truncate group-hover:text-violet-400 transition-colors">
+                    <p className="text-xs font-semibold text-foreground truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
                       {source.title}
                     </p>
                     <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
@@ -497,19 +539,19 @@ export function DeepResearchArtifact({
         {/* FACT MATRIX TAB */}
         {activeTab === "matrix" && (
           <div className="space-y-4 max-w-2xl mx-auto">
-            <div className="rounded-xl border border-violet-500/30 bg-violet-500/5 p-3 flex items-center justify-between">
+            <div className="rounded-xl border border-border/80 bg-muted/40 p-3 flex items-center justify-between">
               <div>
-                <h4 className="text-xs font-bold text-violet-400">Epistemic Grounding & Fact Matrix</h4>
+                <h4 className="text-xs font-bold text-foreground">Epistemic Grounding & Fact Matrix</h4>
                 <p className="text-[11px] text-muted-foreground">Every claim audited against primary statutory orders, corporate disclosures, and empirical datasets.</p>
               </div>
-              <span className="text-[10px] font-mono font-bold bg-violet-500/20 text-violet-300 px-2 py-1 rounded">
+              <span className="text-[10px] font-mono font-bold bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 px-2 py-1 rounded">
                 100% Verifiable
               </span>
             </div>
 
-            <div className="rounded-xl border border-border/80 bg-card overflow-hidden">
+            <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-xs">
               <table className="w-full text-left text-xs border-collapse divide-y divide-border/60">
-                <thead className="bg-muted/40 text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
+                <thead className="bg-muted/50 text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
                   <tr>
                     <th className="p-3">Audited Claim</th>
                     <th className="p-3">Verified Source</th>
@@ -519,22 +561,22 @@ export function DeepResearchArtifact({
                 </thead>
                 <tbody className="divide-y divide-border/40 font-mono text-[11px]">
                   {sourcesList.map((s, idx) => (
-                    <tr key={idx} className="hover:bg-muted/20 transition-colors">
+                    <tr key={idx} className="hover:bg-muted/30 transition-colors">
                       <td className="p-3 text-foreground font-sans max-w-[200px]">
-                        <span className="font-semibold text-xs">{s.title}</span>
+                        <span className="font-semibold text-xs text-foreground">{s.title}</span>
                         <p className="text-[10px] text-muted-foreground line-clamp-2 mt-0.5">{s.snippet}</p>
                       </td>
-                      <td className="p-3 text-violet-400 font-bold">
+                      <td className="p-3 text-foreground font-bold font-mono">
                         <a href={s.url} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1">
                           <span>{s.domain}</span>
                           <ExternalLink className="w-2.5 h-2.5" />
                         </a>
                       </td>
-                      <td className="p-3 text-emerald-400 font-bold">
+                      <td className="p-3 text-emerald-600 dark:text-emerald-400 font-bold">
                         {s.reliability || "99.2%"}
                       </td>
                       <td className="p-3 text-right">
-                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold border border-emerald-500/20">
+                        <span className="inline-flex items-center gap-1 text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full font-bold border border-emerald-500/20">
                           <CheckCircle2 className="w-2.5 h-2.5" /> Grounded
                         </span>
                       </td>
@@ -552,33 +594,33 @@ export function DeepResearchArtifact({
             {sourcesList.map((s, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl border border-border bg-card hover:border-violet-500/40 transition space-y-2"
+                className="p-4 rounded-xl border border-border/80 bg-card hover:border-zinc-500/40 transition space-y-2 shadow-xs"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <h4 className="text-sm font-bold text-foreground">{s.title}</h4>
-                    <p className="text-xs text-violet-500 font-mono mt-0.5">{s.url}</p>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5">{s.url}</p>
                   </div>
                   {s.doi && (
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-purple-500/10 text-purple-400 border border-purple-500/20 shrink-0 font-bold">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground border border-border/80 shrink-0 font-bold">
                       DOI: {s.doi}
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{s.snippet}</p>
                 {s.verbatimQuote && (
-                  <div className="p-2.5 rounded-lg bg-muted/40 border-l-2 border-violet-500 text-[11px] text-foreground italic flex items-start gap-2">
-                    <Quote className="w-3.5 h-3.5 text-violet-400 shrink-0 mt-0.5" />
+                  <div className="p-2.5 rounded-lg bg-muted/40 border-l-2 border-foreground text-[11px] text-foreground italic flex items-start gap-2">
+                    <Quote className="w-3.5 h-3.5 text-muted-foreground shrink-0 mt-0.5" />
                     <span>"{s.verbatimQuote}"</span>
                   </div>
                 )}
                 <div className="pt-2 flex items-center justify-between border-t border-border/50 text-[11px]">
-                  <span className="text-emerald-500 font-semibold font-mono">Reliability: {s.reliability || "99.0%"}</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-semibold font-mono">Reliability: {s.reliability || "99.0%"}</span>
                   <a
                     href={s.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-violet-500 hover:underline font-semibold"
+                    className="flex items-center gap-1 text-foreground hover:underline font-semibold"
                   >
                     <span>View Primary Source</span>
                     <ExternalLink className="w-3 h-3" />

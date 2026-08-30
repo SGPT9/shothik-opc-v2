@@ -122,6 +122,8 @@ export interface ComposerProps {
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 const MODELS = [
+  { value: "nvidia-deepseek-r1", label: "DeepSeek R1 (NVIDIA NIM)", badge: "🟢 NIM 100 T/s", desc: "TensorRT-LLM Accelerated Frontier Reasoning" },
+  { value: "nvidia-llama-3.3-70b", label: "Llama 3.3 70B (NVIDIA NIM)", badge: "🟢 NIM Fast", desc: "Enterprise High-Throughput Generalist Agent" },
   { value: "gemini-3.7-flash",  label: "Gemini 3.7 Flash",  badge: "✨ Default", desc: "Frontier Hybrid Reasoning · High Speed" },
   { value: "deepseek-v4-flash", label: "DeepSeek V4 Flash", badge: "⚡ Fast", desc: "Ultra-low cost MoE · Instant Reasoning" },
   { value: "ollama-local",      label: "Ollama Local (DeepSeek-R1 / Coder)", badge: "🦙 Local VRAM", desc: "Private On-Device LLM Inference (Port 11434)" },
@@ -542,14 +544,14 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         <input ref={pdfInputRef} type="file" accept=".pdf,.doc,.docx,.txt,.md" multiple className="hidden" onChange={handleFileChange} />
         <input ref={folderInputRef} type="file" {...({ webkitdirectory: "", directory: "" } as any)} className="hidden" onChange={handleFileChange} />
 
-        {/* Outer Composer Container — Shothik Orbital Glass Circle */}
+        {/* Outer Composer Container — High Contrast Shothik Surface */}
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={cn(
-            "relative w-full max-w-3xl mx-auto flex flex-col rounded-3xl border transition-all duration-300 bg-white/80 dark:bg-black/75 shadow-[0_12px_40px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-3xl focus-within:border-blue-500/50 focus-within:ring-2 focus-within:ring-blue-500/10 focus-within:shadow-[0_16px_50px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.15)]",
-            isDraggingOver ? "border-dashed border-blue-500 bg-blue-500/5 ring-2 ring-blue-500/30" : "border-zinc-200 dark:border-white/[0.12]"
+            "relative w-full max-w-3xl mx-auto flex flex-col rounded-2xl border transition-all duration-150 bg-white dark:bg-zinc-900 shadow-sm border-zinc-200 dark:border-zinc-800 focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:ring-1 focus-within:ring-zinc-400/20",
+            isDraggingOver ? "border-dashed border-emerald-500 bg-emerald-500/5 ring-1 ring-emerald-500/20" : "border-zinc-200 dark:border-zinc-800"
           )}
         >
           {/* Drag and Drop Active Overlay */}
@@ -741,18 +743,15 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               disabled={disabled || activeStreaming}
               placeholder={placeholder}
               rows={isExpanded ? 2 : 1}
-              className="w-full bg-transparent resize-none outline-none text-base sm:text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/60 custom-scrollbar max-h-36 transition-all duration-200"
+              className="w-full bg-transparent resize-none outline-none text-base sm:text-sm leading-relaxed text-zinc-900 dark:text-zinc-50 placeholder:text-zinc-400 dark:placeholder:text-zinc-500 custom-scrollbar max-h-36 transition-all duration-200"
             />
           </div>
 
-          {/* ── Bottom Toolbar (Progressive Disclosure) ── */}
-          <div className={cn(
-            "flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 border-t border-border/40 mt-1 transition-all duration-300 gap-1.5",
-            isExpanded ? "opacity-100 max-h-32 sm:max-h-20" : "opacity-0 max-h-0 overflow-hidden py-0 border-transparent mt-0"
-          )}>
+          {/* ── Bottom Toolbar (Always Visible & Stably Positioned) ── */}
+          <div className="flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 border-t border-zinc-100 dark:border-zinc-800/80 mt-0.5 transition-colors duration-200 gap-1.5">
             {/* Left Controls: Attach + Voice Input + Tools Dropdown + Focus Selector */}
             <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-              {/* ➕ Unified ChatGPT-Style Action & Attachment Menu */}
+              {/* ➕ Unified Action & Attachment Menu */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
@@ -765,7 +764,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   disabled={disabled || activeStreaming}
                   aria-label="Add attachment or open workspace"
                   title="Attach file or open workspace (+)"
-                  className="flex items-center justify-center h-8 w-8 rounded-full border border-border/60 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
+                  className="flex items-center justify-center h-8 w-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white transition cursor-pointer"
                 >
                   <Plus className={cn("h-4 w-4 transition-transform duration-200", attachMenuOpen && "rotate-45")} />
                 </button>
@@ -1000,12 +999,12 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 <Button
                   type="button"
                   size="icon"
-                  className="h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/25 scale-100 active:scale-95 transition-all duration-150 cursor-pointer animate-in zoom-in-95 font-bold"
+                  className="h-8 w-8 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-150 cursor-pointer shadow-2xs font-medium"
                   onClick={handleTextSubmit}
                   disabled={disabled}
                   aria-label="Send message"
                 >
-                  <Send className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
+                  <Send className="h-3.5 w-3.5" />
                 </Button>
               ) : (
                 <button
@@ -1017,10 +1016,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   disabled={disabled}
                   aria-label="Start Voice Mode"
                   title="Start Realtime Conversational Voice Mode"
-                  className="group relative flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 hover:border-emerald-400 text-emerald-400 hover:text-emerald-300 shadow-xs transition-all duration-200 cursor-pointer active:scale-95"
+                  className="flex items-center justify-center h-8 w-8 rounded-xl bg-muted/60 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer"
                 >
-                  <span className="absolute inset-0 rounded-xl bg-emerald-500/10 animate-ping opacity-30 pointer-events-none" />
-                  <Phone className="h-4 w-4 sm:h-3.5 sm:w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
               )}
             </div>

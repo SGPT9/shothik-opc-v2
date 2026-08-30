@@ -97,5 +97,13 @@ tmp_*
 test-memori-store.json
 test-dsh-traces.json
 worker-startup.cpuprofile
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+.data/
+data/
+artifacts/api-server/.data/
+artifacts/api-server/data/
 
 
