@@ -547,7 +547,8 @@ export function BookAgentStart({
                   </div>
                 </div>
 
-                <div className="relative mb-2">
+                {/* Unified Input Card */}
+                <div className="w-full rounded-2xl border border-border/80 bg-card/80 dark:bg-zinc-900/80 shadow-md backdrop-blur-xl transition-all focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/15 mb-4">
                   <textarea
                     ref={textareaRef}
                     value={description}
@@ -555,104 +556,85 @@ export function BookAgentStart({
                     onKeyDown={handleKeyDown}
                     placeholder={config.placeholder}
                     rows={4}
-                    className="w-full bg-muted border border-border rounded-t-2xl px-5 pt-4 pb-10 text-foreground placeholder:text-muted-foreground text-sm leading-relaxed outline-none focus:border-brand/50 focus:bg-muted/80 transition-all resize-none"
+                    className="w-full bg-transparent px-5 pt-4 pb-2 text-foreground placeholder:text-muted-foreground/60 text-sm leading-relaxed outline-none transition-all resize-none custom-scrollbar"
                   />
                   {/* Textarea footer bar */}
-                  <div className="absolute bottom-0 inset-x-0 flex items-center justify-between px-4 py-2 rounded-b-2xl bg-muted border border-t-0 border-border">
+                  <div className="flex items-center justify-between px-4 py-2.5 border-t border-border/40">
                     <button
+                      type="button"
                       onClick={() => setPhase('sources')}
-                      className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer"
                       title="Add reference sources (optional)"
                     >
-                      <Paperclip className="w-4 h-4" />
-                      {sources.length > 0 && (
-                        <span className="text-[10px] text-brand/70 font-medium">
+                      <Paperclip className="w-3.5 h-3.5" />
+                      {sources.length > 0 ? (
+                        <span className="text-[11px] text-emerald-500 font-semibold">
                           {sources.length} attached
                         </span>
+                      ) : (
+                        <span className="text-[11px]">Attach sources</span>
                       )}
                     </button>
-                    <span className="text-[10px] text-muted-foreground select-none">⌘ Enter to generate plan</span>
+                    <span className="text-[11px] font-mono text-muted-foreground/60 select-none">⌘ Enter to plan</span>
                   </div>
                 </div>
 
-                {/* Tool tiles — Genspark style */}
-                <div className="flex flex-wrap items-center gap-2 mb-4">
+                {/* Tool tiles — clean quick access */}
+                <div className="w-full flex flex-wrap items-center justify-center gap-2 mb-5">
                   {TOOL_TILES.map((tool) => (
                     <Link
                       key={tool.href}
                       href={tool.href}
-                      className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-muted border border-border hover:bg-muted/80 hover:border-border transition-all no-underline group"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card/50 hover:bg-card border border-border/60 hover:border-emerald-500/30 transition-all no-underline group shadow-2xs"
                     >
                       <SvgColor
                         src={`/navbar/${tool.icon}.svg`}
-                        className="h-5 w-5 bg-muted-foreground group-hover:bg-foreground transition-colors"
+                        className="h-3.5 w-3.5 bg-muted-foreground group-hover:bg-emerald-400 transition-colors"
                       />
-                      <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors whitespace-nowrap font-medium">
+                      <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors whitespace-nowrap font-medium">
                         {tool.label}
                       </span>
                     </Link>
                   ))}
 
-                  {/* Divider */}
-                  <div className="flex-shrink-0 w-px h-10 bg-border self-center mx-1" />
-
-                  {/* Agent tiles */}
-                  {AGENT_TILES.map((agent) => {
-                    const Icon = agent.Icon;
-                    return (
-                      <Link
-                        key={agent.href}
-                        href={agent.href}
-                        className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-muted border border-border hover:bg-muted/80 hover:border-border transition-all no-underline group"
-                      >
-                        <Icon className="h-5 w-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                        <span className="text-[10px] text-muted-foreground group-hover:text-foreground transition-colors whitespace-nowrap font-medium">
-                          {agent.label}
-                        </span>
-                      </Link>
-                    );
-                  })}
-
-                  <div className="flex-shrink-0 w-px h-10 bg-border self-center mx-1" />
-
                   {/* 1-Click Bijoy Converter Tile */}
                   <button
                     type="button"
                     onClick={() => setShowBijoyModal(true)}
-                    className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 hover:border-emerald-500/40 hover:from-emerald-500/15 hover:to-teal-500/15 transition-all group cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 hover:border-emerald-500/40 transition-all group cursor-pointer shadow-2xs"
                     title="Convert Bijoy keyboard text to clean Unicode Bengali"
                   >
-                    <BookOpen className="h-5 w-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-                    <span className="text-[10px] text-emerald-400 group-hover:text-emerald-300 transition-colors whitespace-nowrap font-medium">
+                    <BookOpen className="h-3.5 w-3.5 text-emerald-400 group-hover:scale-105 transition-transform" />
+                    <span className="text-xs text-emerald-400 font-semibold whitespace-nowrap">
                       Bijoy ➔ Uni
                     </span>
                   </button>
 
                   <Link
                     href="/twin"
-                    className="flex-shrink-0 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl bg-gradient-to-br from-violet-500/10 to-blue-500/10 border border-violet-500/20 hover:border-violet-500/40 hover:from-violet-500/15 hover:to-blue-500/15 transition-all no-underline group"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 hover:bg-violet-500/15 border border-violet-500/20 hover:border-violet-500/40 transition-all no-underline group shadow-2xs"
                   >
-                    <Brain className="h-5 w-5 text-violet-400 group-hover:text-violet-300 transition-colors" />
-                    <span className="text-[10px] text-violet-400 group-hover:text-violet-300 transition-colors whitespace-nowrap font-medium">
-                      {t('sidebar.twin')}
+                    <Brain className="h-3.5 w-3.5 text-violet-400 group-hover:scale-105 transition-transform" />
+                    <span className="text-xs text-violet-400 font-semibold whitespace-nowrap">
+                      Twin AI
                     </span>
                   </Link>
                 </div>
 
                 {error && (
-                  <div className="flex items-center gap-2 p-3 mb-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                  <div className="flex items-center gap-2 p-3 mb-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs w-full">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     {error}
                   </div>
                 )}
 
-                <div className="flex flex-col gap-2 mb-6">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Or try one of these</p>
+                <div className="flex flex-col gap-2 mb-6 w-full">
+                  <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-semibold text-left">Or try one of these</p>
                   {SUGGESTIONS[projectType].map((s, i) => (
                     <button
                       key={i}
                       onClick={() => setDescription(s)}
-                      className="text-left px-4 py-2.5 rounded-xl border border-border bg-card hover:bg-muted hover:border-border transition-all text-sm text-muted-foreground hover:text-foreground"
+                      className="text-left px-4 py-2.5 rounded-xl border border-border/60 bg-card/60 hover:bg-card hover:border-emerald-500/30 hover:shadow-xs transition-all text-xs sm:text-sm text-muted-foreground hover:text-foreground cursor-pointer"
                     >
                       {s}
                     </button>

@@ -488,8 +488,50 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
     const blob   = new Blob([lines.join("\n")], { type: "text/csv" });
     const url    = URL.createObjectURL(blob);
     const a      = document.createElement("a");
-    a.href = url; a.download = "shothik-financial-model.csv"; a.click();
+    a.href = url; a.download = `${(title || "financial-model").toLowerCase().replace(/[^a-z0-9]/g, "-")}.csv`; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportXLSX = async () => {
+    try {
+      const XLSX = await import("xlsx");
+      const wsData = [headers, ...grid];
+      const ws = XLSX.utils.aoa_to_sheet(wsData);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Financial Model");
+      XLSX.writeFile(wb, `${(title || "financial-model").toLowerCase().replace(/[^a-z0-9]/g, "-")}.xlsx`);
+    } catch {
+      exportCSV();
+    }
+  };
+
+  const handleExcelImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      if (file.name.endsWith(".xlsx") || file.name.endsWith(".xls")) {
+        const XLSX = await import("xlsx");
+        const buffer = await file.arrayBuffer();
+        const wb = XLSX.read(buffer, { type: "array" });
+        const firstSheetName = wb.SheetNames[0];
+        const ws = wb.Sheets[firstSheetName];
+        const rawData: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1 });
+        if (rawData.length >= 2) {
+          const parsedHeaders = rawData[0].map(String);
+          const parsedGrid = rawData.slice(1).map((row) =>
+            parsedHeaders.map((_, colIdx) => (row[colIdx] !== undefined ? String(row[colIdx]) : ""))
+          );
+          setHeaders(parsedHeaders);
+          setGrid(parsedGrid);
+        }
+      } else {
+        handleCSVImport(e);
+      }
+    } catch (err) {
+      console.error("Failed to parse Excel file:", err);
+      handleCSVImport(e);
+    }
+    e.target.value = "";
   };
 
   const copyMarkdown = () => {
@@ -541,10 +583,10 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
   return (
     <div className="flex flex-col h-full bg-background overflow-hidden select-none">
       
-      {/* ── Genspark Sheet Header Bar ── */}
-      <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-4 py-2 shrink-0">
-        <div className="flex items-center gap-2 min-w-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
+      {/* ── Sheet Header Bar ── */}
+      <div className="flex items-center justify-between border-b border-border/80 bg-card px-3.5 py-2.5 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shrink-0">
             <Table2 className="h-4 w-4" />
           </div>
           <div className="min-w-0">
@@ -560,14 +602,14 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
         {/* Controls & View Switcher */}
         <div className="flex items-center gap-1.5 shrink-0">
           {/* View Mode Toggle */}
-          <div className="flex items-center rounded-lg border border-border/60 bg-card p-0.5 mr-1">
+          <div className="flex items-center rounded-lg border border-border/80 bg-muted/40 p-0.5 mr-1">
             <button
               type="button"
               onClick={() => setViewMode("table")}
               className={cn(
                 "flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium transition cursor-pointer",
                 viewMode === "table"
-                  ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -580,7 +622,7 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
               className={cn(
                 "flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium transition cursor-pointer",
                 viewMode === "chart"
-                  ? "bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30"
+                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-2xs"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
@@ -593,10 +635,10 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
             size="sm"
             variant="outline"
             onClick={copyMarkdown}
-            className="h-7 px-2 text-[11px] font-semibold gap-1"
+            className="h-7 px-2 text-[11px] font-semibold gap-1 border-border/80"
             title="Copy as Markdown table"
           >
-            {copiedMd ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+            {copiedMd ? <Check className="h-3 w-3 text-emerald-500" /> : <Copy className="h-3 w-3" />}
             <span>{copiedMd ? "Copied" : "MD"}</span>
           </Button>
 
@@ -604,7 +646,7 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
             size="sm"
             variant="outline"
             onClick={addRow}
-            className="h-7 px-2 text-[11px] font-semibold gap-1"
+            className="h-7 px-2 text-[11px] font-semibold gap-1 border-border/80"
           >
             <Plus className="h-3 w-3" /> Row
           </Button>
@@ -613,36 +655,47 @@ export function SheetArtifact({ initialData, title, isStreaming }: SheetArtifact
             size="sm"
             variant="outline"
             onClick={addCol}
-            className="h-7 px-2 text-[11px] font-semibold gap-1"
+            className="h-7 px-2 text-[11px] font-semibold gap-1 border-border/80"
           >
             <Plus className="h-3 w-3" /> Col
           </Button>
 
-          {/* Hidden CSV File Input */}
+          {/* Hidden Excel / CSV File Input */}
           <input
             ref={csvFileInputRef}
             type="file"
-            accept=".csv,.tsv,.txt"
+            accept=".xlsx,.xls,.csv,.tsv,.txt"
             className="hidden"
-            onChange={handleCSVImport}
+            onChange={handleExcelImport}
           />
 
           <Button
             size="sm"
             variant="outline"
             onClick={() => csvFileInputRef.current?.click()}
-            className="h-7 px-2 text-[11px] font-semibold gap-1"
-            title="Import CSV or TSV spreadsheet"
+            className="h-7 px-2 text-[11px] font-semibold gap-1 border-border/80"
+            title="Import Excel (.xlsx) or CSV spreadsheet"
           >
-            <Upload className="h-3 w-3" /> Import CSV
+            <Upload className="h-3 w-3" /> Import (.xlsx/.csv)
           </Button>
 
           <Button
             size="sm"
+            variant="outline"
             onClick={exportCSV}
-            className="h-7 px-2.5 text-[11px] font-semibold gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white"
+            className="h-7 px-2 text-[11px] font-semibold gap-1 border-border/80"
+            title="Export as CSV"
           >
-            <Download className="h-3 w-3" /> Export CSV
+            <Download className="h-3 w-3" /> CSV
+          </Button>
+
+          <Button
+            size="sm"
+            onClick={exportXLSX}
+            className="h-7 px-2.5 text-[11px] font-semibold gap-1.5 bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-100 shadow-2xs"
+            title="Export as native Microsoft Excel .xlsx"
+          >
+            <Download className="h-3 w-3" /> Export Excel (.xlsx)
           </Button>
         </div>
       </div>

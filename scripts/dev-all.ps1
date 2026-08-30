@@ -13,6 +13,19 @@ $repoRoot = (Get-Item -Path $PSScriptRoot).Parent.FullName
 Set-Location $repoRoot
 
 Write-Host ""
+Write-Host "Cleaning up stale processes on ports 5000, 5001 and 8080..." -ForegroundColor DarkYellow
+foreach ($port in @(5000, 5001, 8080)) {
+    $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
+    foreach ($conn in $conns) {
+        $pid_ = $conn.OwningProcess
+        if ($pid_ -and $pid_ -gt 0) {
+            Stop-Process -Id $pid_ -Force -ErrorAction SilentlyContinue
+            Write-Host "  Killed PID $pid_ on port $port" -ForegroundColor DarkGray
+        }
+    }
+}
+Start-Sleep -Seconds 1
+Write-Host ""
 Write-Host "Starting Frontend (Port 5000) and API Gateway (Port 8080)..." -ForegroundColor Yellow
 
 # Launch API Server in new window

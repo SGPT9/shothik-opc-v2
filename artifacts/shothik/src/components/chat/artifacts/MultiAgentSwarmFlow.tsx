@@ -249,9 +249,9 @@ export function MultiAgentSwarmFlow({
 
         <div className="flex items-center gap-2">
           {isSwarmRunning && (
-            <span className="text-xs font-mono text-purple-400 font-semibold flex items-center gap-1.5 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20">
-              <Clock className="h-3.5 w-3.5 animate-spin" />
-              <span>Elapsed: {swarmDuration}s</span>
+            <span className="text-xs font-mono text-foreground font-semibold flex items-center gap-1.5 bg-muted px-2.5 py-1 rounded-lg border border-border/80">
+              <Clock className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+              <span>OpenManus Loop: {swarmDuration}s</span>
             </span>
           )}
 
@@ -260,21 +260,21 @@ export function MultiAgentSwarmFlow({
             disabled={isSwarmRunning}
             onClick={handleLaunchSwarm}
             className={cn(
-              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-md cursor-pointer",
+              "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition shadow-xs cursor-pointer select-none",
               isSwarmRunning
-                ? "bg-purple-600/40 text-purple-200 border border-purple-500/30"
-                : "bg-purple-600 hover:bg-purple-500 text-white"
+                ? "bg-muted text-muted-foreground border border-border/80"
+                : "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950 hover:bg-zinc-800 dark:hover:bg-zinc-100"
             )}
           >
             {isSwarmRunning ? (
               <>
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                <span>Executing Swarm...</span>
+                <span>Executing Multi-Agent Loop...</span>
               </>
             ) : (
               <>
-                <Zap className="h-3.5 w-3.5 fill-current text-amber-300" />
-                <span>⚡ Launch Full Venture Swarm</span>
+                <Zap className="h-3.5 w-3.5 fill-current" />
+                <span>⚡ Run OpenManus Swarm Loop</span>
               </>
             )}
           </button>
@@ -408,6 +408,32 @@ export function MultiAgentSwarmFlow({
             </LiquidGlassCard>
           );
         })}
+      </div>
+
+      {/* ── OpenManus Autonomous Tool Execution Terminal ── */}
+      <div className="rounded-xl border border-border/80 bg-zinc-950 text-zinc-300 font-mono text-xs overflow-hidden shadow-xl">
+        <div className="flex items-center justify-between px-3.5 py-2 border-b border-zinc-800 bg-zinc-900/90 text-zinc-400">
+          <div className="flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[11px] font-bold text-white">OpenManus Autonomous Runtime Loop</span>
+          </div>
+          <span className="text-[10px] text-zinc-500">Python 3.12 · Multi-Tool Loop</span>
+        </div>
+
+        <div className="p-3.5 space-y-1.5 max-h-48 overflow-y-auto custom-scrollbar text-[11px] leading-relaxed">
+          <p className="text-zinc-500"># Initializing OpenManus multi-step workspace loop...</p>
+          {isSwarmRunning && (
+            <>
+              <p className="text-purple-400">➜ [Planner] Formulated 4-agent DAG execution plan for: "{topic}"</p>
+              <p className="text-cyan-400">➜ [Browser Tool] Crawling NBR gazette & Steadfast logistics endpoints...</p>
+              <p className="text-amber-400">➜ [Python Sandbox] Executing financial_model.py (bKash 1.5% + return buffer)...</p>
+              <p className="text-emerald-400">➜ [Office Engine] Generating 8-slide vector deck & FortuneSheet table...</p>
+            </>
+          )}
+          {allCompleted && (
+            <p className="text-emerald-400 font-bold">✔ [OpenManus Loop] Execution converged in {swarmDuration}s. All 4 artifacts populated.</p>
+          )}
+        </div>
       </div>
 
       {/* Full Swarm Sync Summary */}
