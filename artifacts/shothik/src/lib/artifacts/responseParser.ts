@@ -7,6 +7,7 @@ export interface SlideData {
   bullets?: string[];
   metrics?: { label: string; value: string; trend?: string }[];
   speakerNotes: string;
+  wordart?: string;
 }
 
 export interface ResearchSource {

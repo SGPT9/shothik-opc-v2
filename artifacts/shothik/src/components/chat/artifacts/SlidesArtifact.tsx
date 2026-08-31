@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VTuberPresentationStage } from "./VTuberPresentationStage";
+import { WORDART_PRESETS } from "@/components/presentation/wordartPresets";
 import { cn } from "@/lib/utils";
 
 export type SlideLayout = "hero" | "split" | "stats" | "timeline" | "process" | "quote" | "grid";
@@ -44,6 +45,7 @@ export interface SlideData {
   metrics?: { label: string; value: string; trend?: string }[];
   speakerNotes: string;
   bgGradient?: string;
+  wordart?: string;
 }
 
 interface SlidesArtifactProps {
@@ -1738,34 +1740,139 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
           </div>
         </div>
 
-        {/* ── Filmstrip ── */}
-        <div className="flex items-center gap-2 mt-3 w-full max-w-2xl px-1">
+        {/* ── Slide Layout & WordArt Control Strip ── */}
+        <div className="flex items-center justify-between w-full max-w-2xl px-1 text-xs">
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            <span className="text-[10px] font-mono text-muted-foreground uppercase">Layout:</span>
+            {(["hero", "split", "stats", "timeline", "process", "quote", "grid"] as SlideLayout[]).map((lyt) => (
+              <button
+                key={lyt}
+                type="button"
+                onClick={() => handleUpdateActiveSlide({ layout: lyt })}
+                className={cn(
+                  "px-2 py-0.5 rounded text-[10px] uppercase font-mono font-bold transition cursor-pointer border",
+                  active.layout === lyt
+                    ? "bg-indigo-500/20 border-indigo-500/60 text-indigo-300"
+                    : "bg-white/[0.02] border-white/[0.06] text-zinc-400 hover:text-zinc-200"
+                )}
+              >
+                {lyt}
+              </button>
+            ))}
+          </div>
+
+          {/* WordArt Preset Dropdown */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            <select
+              value={active.wordart || "default"}
+              onChange={(e) => handleUpdateActiveSlide({ wordart: e.target.value })}
+              className="appearance-none bg-zinc-900 border border-zinc-700/60 text-zinc-200 text-[10px] font-medium rounded px-2 py-0.5 outline-none cursor-pointer"
+              title="Select WordArt Typographic Preset"
+            >
+              <option value="default">Default Text</option>
+              {WORDART_PRESETS.map((wa) => (
+                <option key={wa.id} value={wa.id}>
+                  {wa.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* ── Filmstrip & Slide Operations ── */}
+        <div className="flex items-center gap-2 mt-2 w-full max-w-2xl px-1">
           <Button
             size="sm"
             variant="outline"
             disabled={currentSlide === 0}
             onClick={() => setCurrentSlide((prev) => Math.max(0, prev - 1))}
             className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white shrink-0 cursor-pointer"
+            title="Previous Slide (←)"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
 
           <div className="flex-1 flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
             {slideList.map((slide, idx) => (
-              <button
+              <div
                 key={slide.id || idx}
-                type="button"
-                onClick={() => setCurrentSlide(idx)}
                 className={cn(
-                  "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-medium transition cursor-pointer shrink-0",
+                  "group/thumb relative flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[10px] font-medium transition cursor-pointer shrink-0",
                   currentSlide === idx
                     ? "bg-indigo-500/20 border-indigo-500/60 text-white shadow-sm"
                     : "bg-white/[0.03] border-white/[0.06] text-zinc-400 hover:bg-white/[0.08]"
                 )}
+                onClick={() => setCurrentSlide(idx)}
               >
                 <span className="font-mono text-[9px] opacity-70">#{idx + 1}</span>
-                <span className="truncate max-w-[90px]">{slide.tag || slide.title}</span>
-              </button>
+                <span className="truncate max-w-[80px]">{slide.tag || slide.title}</span>
+
+                {/* Hover Reorder / Duplicate / Delete Actions */}
+                <div className="hidden group-hover/thumb:flex items-center gap-1 ml-1 pl-1 border-l border-white/20">
+                  {idx > 0 && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const next = [...slideList];
+                        const temp = next[idx - 1];
+                        next[idx - 1] = next[idx];
+                        next[idx] = temp;
+                        setSlideList(next);
+                        setCurrentSlide(idx - 1);
+                      }}
+                      className="hover:text-cyan-400 text-zinc-400 text-[9px]"
+                      title="Move Left"
+                    >
+                      ◀
+                    </span>
+                  )}
+                  {idx < slideList.length - 1 && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const next = [...slideList];
+                        const temp = next[idx + 1];
+                        next[idx + 1] = next[idx];
+                        next[idx] = temp;
+                        setSlideList(next);
+                        setCurrentSlide(idx + 1);
+                      }}
+                      className="hover:text-cyan-400 text-zinc-400 text-[9px]"
+                      title="Move Right"
+                    >
+                      ▶
+                    </span>
+                  )}
+                  <span
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const clone = { ...slide, id: Date.now() };
+                      const next = [...slideList.slice(0, idx + 1), clone, ...slideList.slice(idx + 1)];
+                      setSlideList(next);
+                      setCurrentSlide(idx + 1);
+                    }}
+                    className="hover:text-indigo-400 text-zinc-400 text-[9px]"
+                    title="Duplicate Slide"
+                  >
+                    ⧉
+                  </span>
+                  {slideList.length > 1 && (
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const next = slideList.filter((_, i) => i !== idx);
+                        setSlideList(next);
+                        setCurrentSlide(Math.min(currentSlide, next.length - 1));
+                      }}
+                      className="hover:text-rose-400 text-zinc-400 text-[9px]"
+                      title="Delete Slide"
+                    >
+                      ✕
+                    </span>
+                  )}
+                </div>
+              </div>
             ))}
           </div>
 
@@ -1775,6 +1882,7 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
             disabled={currentSlide === slideList.length - 1}
             onClick={() => setCurrentSlide((prev) => Math.min(slideList.length - 1, prev + 1))}
             className="h-7 w-7 p-0 rounded-full border-zinc-700 bg-zinc-900 text-zinc-300 hover:text-white shrink-0 cursor-pointer"
+            title="Next Slide (→)"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
