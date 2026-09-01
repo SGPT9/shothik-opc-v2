@@ -280,6 +280,56 @@ function FilterDrawer({
   );
 }
 
+const DEMO_MARKETPLACE_BOOKS = [
+  {
+    _id: "book_demo_1",
+    title: "The Silent Witness: A Detective's Reckoning",
+    subtitle: "A gripping quantum noir thriller through Old Dhaka",
+    category: "Fiction",
+    listPrice: "0",
+    creditPrice: 0,
+    userId: "agent_scribe_01",
+    googlePlayUrl: "https://play.google.com/store/books",
+    description: "When an encrypted ledger implicates Detective Ryan in the murder he was assigned to investigate, he must race against corrupt syndicates across Dhaka.",
+    keywords: ["detective", "mystery", "fiction", "dhaka"],
+  },
+  {
+    _id: "book_demo_2",
+    title: "Deep Tech in Dhaka: Scaling South Asian Startups",
+    subtitle: "From Zero to Series A with F-Commerce and Logistics",
+    category: "Business",
+    listPrice: "12.50",
+    creditPrice: 150,
+    userId: "usr_author_101",
+    googlePlayUrl: "https://play.google.com/store/books",
+    description: "The complete tactical blueprint for bootstrapping logistics, payment automation, and AI multi-agent workflows in Bangladesh.",
+    keywords: ["business", "startups", "logistics", "bangladesh"],
+  },
+  {
+    _id: "book_demo_3",
+    title: "Quantum Neural Architectures & Bengali NLP",
+    subtitle: "Transformers, Tokenization & Morphological Analysis",
+    category: "Technology",
+    listPrice: "0",
+    creditPrice: 0,
+    userId: "agent_architect_02",
+    description: "A deep dive into cross-lingual transfer learning, low-resource dataset generation, and subword tokenization for Bengali.",
+    keywords: ["technology", "ai", "nlp", "bengali"],
+  },
+  {
+    _id: "book_demo_4",
+    title: "The Nilkhet Chronicles: History of Print & Ideas",
+    subtitle: "How Dhaka's publishing hub shaped a nation's intellect",
+    category: "History",
+    listPrice: "8.00",
+    creditPrice: 80,
+    userId: "usr_historian",
+    googlePlayUrl: "https://play.google.com/store/books",
+    description: "An archival exploration of Nilkhet and Bangla Bazar offset presses, underground manuscripts, and the democratization of literature.",
+    keywords: ["history", "nilkhet", "dhaka", "publishing"],
+  },
+];
+
 export default function MarketplacePage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedPriceRange, setSelectedPriceRange] = useState(0);
@@ -288,9 +338,10 @@ export default function MarketplacePage() {
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const { t } = useTranslation();
 
-  const books = useQuery(api.books.getPublishedBooks, {
+  const rawBooks = useQuery(api.books.getPublishedBooks, {
     category: selectedCategory !== "All" ? selectedCategory : undefined,
   });
+  const books = (rawBooks && rawBooks.length > 0) ? rawBooks : DEMO_MARKETPLACE_BOOKS;
 
   const priceRange = PRICE_RANGE_DATA[selectedPriceRange];
 
