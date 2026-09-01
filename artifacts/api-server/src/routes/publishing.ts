@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from "express";
+import { eq, and } from "drizzle-orm";
 import { BoiMelaExportRequestSchema } from "@workspace/hermes/contracts";
 import { db, nilkhetOrdersTable } from "@workspace/db";
 import { steadfastClient } from "../lib/logistics/steadfast-client";
@@ -103,6 +104,8 @@ router.post(
     "/api/v1/publishing/create-order",
     "/v1/publishing/nilkhet/orders",
     "/api/v1/publishing/nilkhet/orders",
+    "/v1/publishing/orders",
+    "/api/v1/publishing/orders",
   ],
   idempotencyMiddleware,
   async (req: Request, res: Response): Promise<void> => {
@@ -203,17 +206,39 @@ router.post(
  */
 router.get("/v1/publishing/orders", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
-    const status = req.query.status as string;
+    const rawUserId = req.headers["x-user-id"] || req.query.userId;
+    const userId = rawUserId ? String(rawUserId) : undefined;
+    const status = req.query.status ? String(req.query.status) : undefined;
 
-    const orders = await db
-      .select()
-      .from(nilkhetOrdersTable)
-      .where(status ? undefined : undefined); // Returns orders
+    const conditions = [];
+    if (userId && userId !== "usr_all") {
+      conditions.push(eq(nilkhetOrdersTable.userId, userId));
+    }
+    if (status) {
+      conditions.push(eq(nilkhetOrdersTable.status, status));
+    }
+
+    let orders: any[] = [];
+    try {
+      orders = conditions.length > 0
+        ? await db.select().from(nilkhetOrdersTable).where(and(...conditions))
+        : await db.select().from(nilkhetOrdersTable);
+    } catch (dbErr: any) {
+      logger.warn({ error: dbErr.message }, "[publishing] Postgres unavailable, reading from offline SQLite table");
+      try {
+        const { sqliteDb, offlineNilkhetOrdersTable } = await import("@workspace/db");
+        orders = await sqliteDb.select().from(offlineNilkhetOrdersTable);
+        if (status) {
+          orders = orders.filter((o: any) => o.status === status);
+        }
+      } catch {
+        orders = [];
+      }
+    }
 
     res.status(200).json({
       success: true,
-      userId,
+      userId: userId || "all",
       count: orders.length,
       orders,
     });
@@ -228,24 +253,38 @@ router.get("/v1/publishing/orders", async (req: Request, res: Response): Promise
  */
 router.patch("/v1/publishing/orders/:invoiceNumber/status", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { invoiceNumber } = req.params;
-    const { status = "IN_PRINT" } = req.body;
+    const invoiceNumber = String(req.params.invoiceNumber);
+    const { status = "IN_PRINT", notes } = req.body;
 
-    const banglaMap: Record<string, string> = {
-      PROCESSING_PRINT: "মুদ্রণ ও বাঁধাই প্রক্রিয়াধীন",
-      IN_PRINT: "ছাপাখানা প্রেসে প্রিন্ট হচ্ছে",
-      BOUND_READY: "বাঁধাই সম্পন্ন — কুরিয়ার পিকআপের অপেক্ষায়",
-      DISPATCHED: "কুরিয়ারে হস্তান্তর সম্পন্ন",
-      DELIVERED: "গ্রাহকের কাছে পৌঁছে দেওয়া হয়েছে",
-    };
+    try {
+      await db
+        .update(nilkhetOrdersTable)
+        .set({ status: String(status), updatedAt: new Date() })
+        .where(eq(nilkhetOrdersTable.invoiceNumber, invoiceNumber));
+    } catch (dbErr: any) {
+      logger.warn({ error: dbErr.message }, "[publishing] DB order status update warning");
+    }
+
+    // Mirror status update to local offline SQLite
+    try {
+      const { sqliteDb, offlineNilkhetOrdersTable } = await import("@workspace/db");
+      await sqliteDb
+        .update(offlineNilkhetOrdersTable)
+        .set({ status: String(status) })
+        .where(eq(offlineNilkhetOrdersTable.orderId, invoiceNumber));
+    } catch {
+      // SQLite offline update
+    }
 
     res.status(200).json({
       success: true,
-      invoiceNumber,
-      status,
-      statusBangla: banglaMap[status] || status,
-      updatedAt: new Date().toISOString(),
-      message: `Order ${invoiceNumber} status updated to ${status}.`,
+      message: `Order ${invoiceNumber} status updated to ${status}`,
+      order: {
+        invoiceNumber,
+        status,
+        notes: notes || "Press status updated",
+        updatedAt: new Date().toISOString(),
+      },
     });
   } catch (error: any) {
     res.status(500).json({ success: false, error: error.message });

@@ -40,14 +40,16 @@ import { PriceWatcherArtifact } from "@/components/chat/artifacts/PriceWatcherAr
 import { OvernightReconciliationArtifact } from "@/components/chat/artifacts/OvernightReconciliationArtifact";
 import { WebGpuEngineArtifact } from "@/components/chat/artifacts/WebGpuEngineArtifact";
 import { MarketingGrowthArtifact } from "@/components/chat/artifacts/MarketingGrowthArtifact";
+import { StoryGraphTreeArtifact } from "@/components/chat/artifacts/StoryGraphTreeArtifact";
+import { NarrativeForecastView } from "@/components/chat/artifacts/NarrativeForecastView";
 import { LiveAgentTraceTimeline } from "@/components/chat/LiveAgentTraceTimeline";
-import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp, Activity } from "lucide-react";
+import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp, Activity, GitBranch } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 import { cn } from "@/lib/utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ArtifactTab = "slides" | "traces" | "approvals" | "boimela" | "commerce" | "overnight" | "webgpu" | "marketing" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
+export type ArtifactTab = "slides" | "traces" | "approvals" | "boimela" | "storytree" | "forecast" | "commerce" | "overnight" | "webgpu" | "marketing" | "whatsapp" | "career" | "voicepitch" | "promptlab" | "legal" | "arena" | "twin" | "leads" | "seo" | "flows" | "video" | "vattax" | "photo" | "inventory" | "dubbing" | "broadcast" | "disputes" | "pricewatcher" | "swarm" | "synthesizer" | "sheet" | "research" | "code" | "diagram" | "doc" | "community" | "sources" | "history";
 
 
 interface TabConfig {
@@ -64,6 +66,7 @@ const TABS: TabConfig[] = [
   { id: "research",    label: "Research",            Icon: BookOpen,     color: "text-violet-400" },
   { id: "code",        label: "Code",                Icon: Code2,        color: "text-emerald-400"},
   { id: "boimela",     label: "বই ও প্রকাশনা",        Icon: Sparkles,     color: "text-rose-400"   },
+  { id: "storytree",   label: "Narrative Tree",      Icon: GitFork,      color: "text-emerald-400"},
 ];
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -95,6 +98,11 @@ interface ArtifactPanelProps {
   docBbox?: [number, number, number, number];
   docSourceRef?: string;
   conversationId?: string;
+
+  // Bi-directional Canvas Mutation Callbacks
+  onDocContentChange?: (content: string) => void;
+  onSheetDataChange?: (data: string[][]) => void;
+  onCodeSnippetChange?: (code: string) => void;
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -122,6 +130,9 @@ export function ArtifactPanel({
   docBbox,
   docSourceRef,
   conversationId = "dsh_live_session",
+  onDocContentChange,
+  onSheetDataChange,
+  onCodeSnippetChange,
 }: ArtifactPanelProps) {
   // Version History State (Pillar 5)
   const [selectedVersion, setSelectedVersion] = useState<string>("v3");
@@ -260,7 +271,7 @@ export function ArtifactPanel({
       <div className="flex items-center justify-between shrink-0 border-b border-border/60 bg-muted/20 px-3.5 py-2">
         <div className="flex items-center gap-2 flex-1 min-w-0">
           {(() => {
-            const currentTab = TABS.find((t) => t.id === activeTab) || TABS[5];
+            const currentTab = TABS.find((t) => t.id === activeTab) || TABS[0];
             const TabIcon = currentTab.Icon;
             return (
               <div className="flex items-center gap-2 px-2.5 py-1 rounded-xl bg-background border border-border/70 shadow-xs shrink-0">
@@ -270,20 +281,45 @@ export function ArtifactPanel({
             );
           })()}
 
-          {/* Clean Unified Canvas Mode Switcher */}
+          {/* Quick Tab Switch Pills (Desktop) */}
+          <div className="hidden lg:flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border/40">
+            {TABS.slice(0, 5).map((t) => {
+              const Icon = t.Icon;
+              const isActive = activeTab === t.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => handleTabChange(t.id)}
+                  className={cn(
+                    "flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium transition cursor-pointer",
+                    isActive
+                      ? "bg-background text-foreground shadow-xs font-semibold"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                  title={`Switch to ${t.label}`}
+                >
+                  <Icon className={cn("h-3 w-3", t.color)} />
+                  <span>{t.label}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Clean Unified Canvas Mode Switcher Dropdown */}
           <div className="relative flex items-center min-w-0">
             <select
-              value={activeTab || "slides"}
+              value={activeTab || "doc"}
               onChange={(e) => handleTabChange(e.target.value as ArtifactTab)}
-              className="h-7 pl-2 pr-6 rounded-lg text-[11px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none truncate max-w-[140px] sm:max-w-[200px]"
+              className="h-7 pl-2 pr-6 rounded-lg text-[11px] font-semibold bg-muted/60 text-muted-foreground border border-border/40 hover:text-foreground focus:outline-none focus:ring-1 focus:ring-brand/40 transition cursor-pointer appearance-none truncate max-w-[130px] sm:max-w-[170px]"
               aria-label="Switch Artifact Canvas"
             >
               <optgroup label="Core Studios">
-                <option value="slides">📽️ Slides Studio</option>
-                <option value="sheet">📊 Financial Spreadsheet</option>
-                <option value="research">🔬 Deep Research Dossier</option>
                 <option value="doc">📄 Document Studio</option>
                 <option value="code">💻 Python & Code REPL</option>
+                <option value="sheet">📊 Financial Spreadsheet</option>
+                <option value="slides">📽️ Slides Studio</option>
+                <option value="research">🔬 Deep Research Dossier</option>
                 <option value="diagram">📐 Architecture Diagram</option>
               </optgroup>
               <optgroup label="Specialized Engines">
@@ -296,6 +332,12 @@ export function ArtifactPanel({
               </optgroup>
             </select>
             <ChevronDown className="h-3 w-3 text-muted-foreground absolute right-1.5 pointer-events-none" />
+          </div>
+
+          {/* Realtime CRDT Live State Badge */}
+          <div className="hidden xl:flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] font-mono shrink-0">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span>CRDT Synced</span>
           </div>
         </div>
 
@@ -444,7 +486,7 @@ export function ArtifactPanel({
             {isStreaming && (!sheetData || sheetData.length === 0) ? (
               <CanvasSkeletonPreview tab="sheet" topic={sheetTitle} />
             ) : (
-              <SheetArtifact initialData={sheetData} title={sheetTitle} isStreaming={isStreaming} />
+              <SheetArtifact initialData={sheetData} title={sheetTitle} isStreaming={isStreaming} onDataChange={onSheetDataChange} />
             )}
           </div>
         )}
@@ -471,6 +513,7 @@ export function ArtifactPanel({
               initialLanguage={codeLanguage}
               filename={codeFilename}
               isStreaming={isStreaming}
+              onCodeChange={onCodeSnippetChange}
             />
           </div>
         )}
@@ -490,6 +533,7 @@ export function ArtifactPanel({
               targetBbox={docBbox}
               sourceRef={docSourceRef}
               isStreaming={isStreaming}
+              onContentChange={onDocContentChange}
             />
           </div>
         )}
@@ -623,6 +667,18 @@ export function ArtifactPanel({
         {mounted.has("marketing") && (
           <div className={`absolute inset-0 overflow-y-auto ${activeTab === "marketing" ? "block" : "hidden"}`}>
             <MarketingGrowthArtifact />
+          </div>
+        )}
+
+        {mounted.has("storytree") && (
+          <div className={`absolute inset-0 overflow-hidden ${activeTab === "storytree" ? "block" : "hidden"}`}>
+            <StoryGraphTreeArtifact />
+          </div>
+        )}
+
+        {mounted.has("forecast") && (
+          <div className={`absolute inset-0 overflow-hidden ${activeTab === "forecast" ? "block" : "hidden"}`}>
+            <NarrativeForecastView />
           </div>
         )}
 

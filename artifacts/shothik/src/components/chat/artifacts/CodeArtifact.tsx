@@ -183,17 +183,20 @@ interface Props {
   initialLanguage?: string;
   filename?: string;
   isStreaming?: boolean;
+  onCodeChange?: (code: string) => void;
 }
 
 export function CodeArtifact({
   initialCode,
   initialLanguage = "python",
   filename = "interactive_python.py",
+  onCodeChange,
 }: Props) {
   const [selectedPreset, setSelectedPreset] = useState<string>("logistics");
   const [code, setCode] = useState<string>(initialCode || PYTHON_PRESETS.logistics.code);
   const [copied, setCopied] = useState<boolean>(false);
   const [isRunning, setIsRunning] = useState<boolean>(false);
+  const [rightTab, setRightTab] = useState<"console" | "charts" | "variables">("charts");
   const [executionOutput, setExecutionOutput] = useState<string>("");
   const [executionMetrics, setExecutionMetrics] = useState<{ durationMs: number; memoryMb: number }>({
     durationMs: 14,
@@ -216,6 +219,7 @@ export function CodeArtifact({
     setSelectedPreset(key);
     if (PYTHON_PRESETS[key]) {
       setCode(PYTHON_PRESETS[key].code);
+      if (onCodeChange) onCodeChange(PYTHON_PRESETS[key].code);
       handleRunPython(PYTHON_PRESETS[key].code);
     }
   };
@@ -485,20 +489,57 @@ export function CodeArtifact({
           <div className="flex-1 p-3 overflow-auto font-mono text-xs leading-relaxed text-emerald-300/90 bg-[#050505]">
             <textarea
               value={code}
-              onChange={(e) => setCode(e.target.value)}
+              onChange={(e) => {
+                const newCode = e.target.value;
+                setCode(newCode);
+                if (onCodeChange) onCodeChange(newCode);
+              }}
               className="h-full w-full bg-transparent resize-none outline-none font-mono text-xs text-emerald-300/90 leading-relaxed selection:bg-emerald-500/30"
               spellCheck={false}
             />
           </div>
         </div>
 
-        {/* ── Interactive Python REPL Console Stage ── */}
+        {/* ── Interactive Python REPL Console & Visual Charts Stage ── */}
         <div className="flex flex-col h-full bg-[#090a0b] overflow-hidden">
+          {/* Sub-header Navigation Tabs */}
           <div className="flex items-center justify-between px-3 py-1.5 border-b border-white/[0.06] bg-black/60 text-[10px] font-mono text-zinc-400 shrink-0">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-zinc-200 font-semibold">Hermes Python Execution Console</span>
+            <div className="flex items-center gap-1 bg-white/[0.04] p-0.5 rounded-lg border border-white/[0.06]">
+              <button
+                type="button"
+                onClick={() => setRightTab("charts")}
+                className={`px-2 py-0.5 rounded text-[10.5px] font-semibold transition cursor-pointer ${
+                  rightTab === "charts"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                📊 Visual Charts
+              </button>
+              <button
+                type="button"
+                onClick={() => setRightTab("console")}
+                className={`px-2 py-0.5 rounded text-[10.5px] font-semibold transition cursor-pointer ${
+                  rightTab === "console"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                💻 Output ({replHistory.length} events)
+              </button>
+              <button
+                type="button"
+                onClick={() => setRightTab("variables")}
+                className={`px-2 py-0.5 rounded text-[10.5px] font-semibold transition cursor-pointer ${
+                  rightTab === "variables"
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
+                    : "text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                ⚡ Variables
+              </button>
             </div>
+
             <div className="flex items-center gap-2">
               <button
                 type="button"
@@ -512,24 +553,238 @@ export function CodeArtifact({
             </div>
           </div>
 
-          {/* Terminal History Log */}
-          <div className="flex-1 p-3 overflow-auto font-mono text-xs space-y-2 bg-[#090a0b] text-zinc-300 select-text">
-            {replHistory.map((item, index) => (
-              <div key={index} className="space-y-1">
-                {item.type === "in" ? (
-                  <div className="flex items-start gap-1.5 text-cyan-400">
-                    <span className="select-none text-zinc-500">{'>>>'}</span>
-                    <span className="font-semibold">{item.text}</span>
+          {/* ── TAB 1: Visual Charts & Simulation Curves ── */}
+          {rightTab === "charts" && (
+            <div className="flex-1 p-4 overflow-auto space-y-4 bg-[#070809] text-zinc-100 animate-fade-in">
+              {selectedPreset === "logistics" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                    <div>
+                      <h4 className="text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                        Cash-On-Delivery (COD) Reconciliation Ledger
+                      </h4>
+                      <p className="text-[11px] text-zinc-400">4 Verified Merchant Dispatches across Dhaka & Chittagong</p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold">
+                      ✓ MFS VERIFIED
+                    </span>
                   </div>
-                ) : (
-                  <pre className="font-mono text-[11px] leading-relaxed text-zinc-300 whitespace-pre-wrap bg-white/[0.02] p-2 rounded-lg border border-white/[0.04]">
-                    {item.text}
-                  </pre>
-                )}
+
+                  {/* Summary Metric Cards */}
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+                      <p className="text-[10px] text-zinc-400 uppercase font-mono">Gross Volume</p>
+                      <p className="text-base font-bold text-zinc-100 font-mono">৳10,500</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-rose-500/5 border border-rose-500/20">
+                      <p className="text-[10px] text-rose-400 uppercase font-mono">Courier Fees (3.1%)</p>
+                      <p className="text-base font-bold text-rose-300 font-mono">৳330</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                      <p className="text-[10px] text-emerald-400 uppercase font-mono">Net Payout</p>
+                      <p className="text-base font-bold text-emerald-300 font-mono">৳10,170</p>
+                    </div>
+                  </div>
+
+                  {/* Distribution Bar Chart */}
+                  <div className="space-y-2 p-3 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+                    <span className="text-[11px] font-bold text-zinc-300">Courier Payout Breakdown</span>
+                    <div className="space-y-2 pt-1">
+                      <div>
+                        <div className="flex justify-between text-[10px] font-mono text-zinc-400 mb-1">
+                          <span>Paperfly (1 Parcel)</span>
+                          <span className="font-bold text-zinc-200">৳4,500 (42.8%)</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-white/[0.04] overflow-hidden">
+                          <div className="h-full bg-indigo-500 rounded-full" style={{ width: "42.8%" }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-[10px] font-mono text-zinc-400 mb-1">
+                          <span>Pathao Express (1 Parcel)</span>
+                          <span className="font-bold text-zinc-200">৳3,200 (30.5%)</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-white/[0.04] overflow-hidden">
+                          <div className="h-full bg-emerald-500 rounded-full" style={{ width: "30.5%" }} />
+                        </div>
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-[10px] font-mono text-zinc-400 mb-1">
+                          <span>Steadfast Courier (2 Parcels)</span>
+                          <span className="font-bold text-zinc-200">৳2,800 (26.7%)</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-white/[0.04] overflow-hidden">
+                          <div className="h-full bg-cyan-500 rounded-full" style={{ width: "26.7%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedPreset === "monte_carlo" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                    <div>
+                      <h4 className="text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                        12-Month SaaS ARR Monte Carlo Trajectory
+                      </h4>
+                      <p className="text-[11px] text-zinc-400">10,000 Stochastic Iterations (Normal Distribution)</p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 text-[10px] font-mono font-bold">
+                      p=0.884 {'>'}$250K
+                    </span>
+                  </div>
+
+                  {/* SVG Confidence Curve */}
+                  <div className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-2">
+                    <div className="flex justify-between text-[11px] font-bold text-zinc-300">
+                      <span>ARR Trajectory Fan Chart ($)</span>
+                      <span className="text-[10px] font-mono text-emerald-400">Base p50: $246,800</span>
+                    </div>
+
+                    <svg viewBox="0 0 400 140" className="w-full h-32 overflow-visible">
+                      <defs>
+                        <linearGradient id="bullGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#10b981" stopOpacity="0.25" />
+                          <stop offset="100%" stopColor="#10b981" stopOpacity="0.0" />
+                        </linearGradient>
+                      </defs>
+                      {/* Grid Lines */}
+                      <line x1="0" y1="120" x2="400" y2="120" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+                      <line x1="0" y1="70" x2="400" y2="70" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="3 3" />
+                      <line x1="0" y1="20" x2="400" y2="20" stroke="rgba(255,255,255,0.06)" strokeWidth="1" strokeDasharray="3 3" />
+                      
+                      {/* Shaded Area */}
+                      <path d="M 20 100 Q 150 70 380 20 L 380 90 Q 150 105 20 100 Z" fill="url(#bullGrad)" />
+                      {/* Bull Line (p90) */}
+                      <path d="M 20 100 Q 150 70 380 20" fill="none" stroke="#10b981" strokeWidth="2.5" />
+                      {/* Base Line (p50) */}
+                      <path d="M 20 100 Q 150 85 380 50" fill="none" stroke="#06b6d4" strokeWidth="2" strokeDasharray="4 2" />
+                      {/* Bear Line (p10) */}
+                      <path d="M 20 100 Q 150 95 380 90" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
+                      
+                      {/* Points */}
+                      <circle cx="20" cy="100" r="3" fill="#fff" />
+                      <circle cx="380" cy="20" r="4" fill="#10b981" />
+                      <circle cx="380" cy="50" r="3.5" fill="#06b6d4" />
+                      <circle cx="380" cy="90" r="3" fill="#f59e0b" />
+                    </svg>
+
+                    <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/[0.04] text-[10px] font-mono text-center">
+                      <div>
+                        <span className="text-amber-400 font-bold">● Bear (p10)</span>
+                        <p className="text-zinc-200 font-bold">$184,520</p>
+                      </div>
+                      <div>
+                        <span className="text-cyan-400 font-bold">● Base (p50)</span>
+                        <p className="text-zinc-200 font-bold">$246,800</p>
+                      </div>
+                      <div>
+                        <span className="text-emerald-400 font-bold">● Bull (p90)</span>
+                        <p className="text-zinc-200 font-bold">$312,400</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedPreset === "nlp" && (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-white/[0.06]">
+                    <div>
+                      <h4 className="text-xs font-bold text-zinc-200 uppercase tracking-wider">
+                        Bangla NLP Token Compression Benchmark
+                      </h4>
+                      <p className="text-[11px] text-zinc-400">DeepSeek V4 vs Generic LLaMA Tokenizer Efficiency</p>
+                    </div>
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-mono font-bold">
+                      -68% COST REDUCTION
+                    </span>
+                  </div>
+
+                  <div className="p-3 rounded-lg bg-white/[0.02] border border-white/[0.06] space-y-3">
+                    <span className="text-[11px] font-bold text-zinc-300">Prompt Token Inflation Comparison</span>
+                    
+                    <div className="space-y-2">
+                      <div>
+                        <div className="flex justify-between text-[10px] font-mono text-zinc-400 mb-1">
+                          <span>Generic LLaMA 3 (3.85 tokens/word)</span>
+                          <span className="text-rose-400 font-bold">38 Tokens</span>
+                        </div>
+                        <div className="w-full h-3 rounded-full bg-white/[0.04] overflow-hidden">
+                          <div className="h-full bg-rose-500/80 rounded-full" style={{ width: "100%" }} />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between text-[10px] font-mono text-zinc-400 mb-1">
+                          <span>DeepSeek V4 / Shothik (1.15 tokens/word)</span>
+                          <span className="text-emerald-400 font-bold">12 Tokens (3.17x faster)</span>
+                        </div>
+                        <div className="w-full h-3 rounded-full bg-white/[0.04] overflow-hidden">
+                          <div className="h-full bg-emerald-400 rounded-full" style={{ width: "31.5%" }} />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ── TAB 2: Terminal Output Log ── */}
+          {rightTab === "console" && (
+            <div className="flex-1 p-3 overflow-auto font-mono text-xs space-y-2 bg-[#090a0b] text-zinc-300 select-text animate-fade-in">
+              {replHistory.map((item, index) => (
+                <div key={index} className="space-y-1">
+                  {item.type === "in" ? (
+                    <div className="flex items-start gap-1.5 text-cyan-400">
+                      <span className="select-none text-zinc-500">{'>>>'}</span>
+                      <span className="font-semibold">{item.text}</span>
+                    </div>
+                  ) : (
+                    <pre className="font-mono text-[11px] leading-relaxed text-zinc-300 whitespace-pre-wrap bg-white/[0.02] p-2 rounded-lg border border-white/[0.04]">
+                      {item.text}
+                    </pre>
+                  )}
+                </div>
+              ))}
+              <div ref={terminalEndRef} />
+            </div>
+          )}
+
+          {/* ── TAB 3: Variables Inspector ── */}
+          {rightTab === "variables" && (
+            <div className="flex-1 p-3 overflow-auto font-mono text-xs space-y-2 bg-[#070809] text-zinc-300 animate-fade-in">
+              <div className="flex items-center justify-between pb-1.5 border-b border-white/[0.06] text-[10px] text-zinc-400 uppercase font-bold">
+                <span>Variable Name</span>
+                <span>Type & Value</span>
               </div>
-            ))}
-            <div ref={terminalEndRef} />
-          </div>
+              <div className="space-y-1.5 text-[11px]">
+                <div className="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/[0.04]">
+                  <span className="text-cyan-400 font-bold">total_gross</span>
+                  <span className="text-emerald-300 font-mono">float · ৳10,500.00</span>
+                </div>
+                <div className="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/[0.04]">
+                  <span className="text-cyan-400 font-bold">total_fees</span>
+                  <span className="text-rose-300 font-mono">float · ৳330.00</span>
+                </div>
+                <div className="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/[0.04]">
+                  <span className="text-cyan-400 font-bold">net_payout</span>
+                  <span className="text-emerald-400 font-bold font-mono">float · ৳10,170.00</span>
+                </div>
+                <div className="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/[0.04]">
+                  <span className="text-cyan-400 font-bold">p50</span>
+                  <span className="text-cyan-300 font-mono">int · $246,800</span>
+                </div>
+                <div className="flex items-center justify-between p-1.5 rounded bg-white/[0.02] border border-white/[0.04]">
+                  <span className="text-cyan-400 font-bold">compression</span>
+                  <span className="text-amber-300 font-mono">float · 3.17x</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Interactive REPL Prompt Input Bar */}
           <form onSubmit={handleReplSubmit} className="flex items-center gap-2 p-2 border-t border-white/[0.08] bg-black/80 shrink-0">

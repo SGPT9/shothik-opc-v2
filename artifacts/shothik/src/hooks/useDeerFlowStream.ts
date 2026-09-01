@@ -147,17 +147,26 @@ export function useDeerFlowStream(options: UseDeerFlowStreamOptions = {}) {
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let accumulatedText = "";
+        let buffer = "";
 
         while (true) {
           const { value, done } = await reader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split("\n");
+          buffer = lines.pop() || "";
 
           for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              const dataStr = line.slice(6);
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith(":")) continue;
+
+            const isDataLine = trimmed.startsWith("data:") || trimmed.startsWith("data: ");
+            if (isDataLine) {
+              const dataStr = trimmed.startsWith("data: ")
+                ? trimmed.slice(6).trim()
+                : trimmed.slice(5).trim();
+
               if (dataStr === "[DONE]") continue;
 
               try {

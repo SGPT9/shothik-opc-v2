@@ -36,8 +36,12 @@ router.post(["/chat", "/chat/stream"], async (req: Request, res: Response) => {
   const promptText = rawPrompt.slice(0, 4000);
 
   res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
   res.setHeader("Connection", "keep-alive");
+  res.setHeader("X-Accel-Buffering", "no");
+  if (typeof (res as any).flushHeaders === "function") {
+    (res as any).flushHeaders();
+  }
 
   if (!promptText) {
     res.write(`data: ${JSON.stringify({ token: "Hello! How can I help you today?", content: "Hello! How can I help you today?" })}\n\n`);
@@ -228,6 +232,59 @@ router.post(["/chat", "/chat/stream"], async (req: Request, res: Response) => {
 
   let fullResponse = "";
   let fullThinking = "";
+
+  // ── Hermes ☤ Living Agent Gateway Integration ──
+  const hermesGatewayUrl = process.env.HERMES_GATEWAY_URL || "http://127.0.0.1:8642";
+  let streamedViaHermes = false;
+
+  try {
+    const probe = await fetch(`${hermesGatewayUrl}/health`, { signal: AbortSignal.timeout(500) });
+    if (probe.ok) {
+      const hermesRes = await fetch(`${hermesGatewayUrl}/v1/chat/completions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.HERMES_API_KEY || "hermes_local_dev_key"}`,
+          "X-Hermes-Session-Id": activeSessionId,
+        },
+        body: JSON.stringify({
+          model: model || "hermes-agent",
+          messages: safeMessages,
+          stream: true,
+          temperature,
+        }),
+      });
+
+      if (hermesRes.ok && hermesRes.body) {
+        streamedViaHermes = true;
+        res.write(`data: ${JSON.stringify({ thinking: "Connected to Hermes ☤ Living Agent Gateway" })}\n\n`);
+        const reader = hermesRes.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          res.write(chunk);
+          fullResponse += chunk;
+        }
+        res.end();
+      }
+    }
+  } catch {}
+
+  if (streamedViaHermes) {
+    try {
+      await recordAgentTrace({
+        sessionId: activeSessionId,
+        agentName: `hermes-gateway:${chatMode || "chat"}`,
+        prompt: promptText,
+        response: fullResponse,
+        status: "completed",
+        durationMs: Date.now() - startTime,
+      });
+    } catch {}
+    return;
+  }
 
   try {
     for await (const chunk of OllamaService.streamChat({ messages: safeMessages, model, temperature })) {

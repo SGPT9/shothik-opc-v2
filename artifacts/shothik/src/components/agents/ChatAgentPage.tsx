@@ -212,7 +212,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isDshDrawerOpen, setIsDshDrawerOpen] = useState(false);
   const [webGpuInfo, setWebGpuInfo] = useState<WebGpuCapability | null>(null);
 
-  // Global Cmd+K / Ctrl+K and Cmd+P / Ctrl+P listeners
+  // Global Cmd+K, Cmd+P, and Cmd+\ shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -221,6 +221,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
         e.preventDefault();
         setIsPrintModalOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key === "\\") {
+        e.preventDefault();
+        setArtifactOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -1213,6 +1216,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   docPage={docPage}
                   docBbox={docBbox}
                   docSourceRef={docSourceRef}
+                  onDocContentChange={setDocContent}
+                  onSheetDataChange={setSheetData}
+                  onCodeSnippetChange={setCodeSnippet}
                 />
               </ComponentErrorBoundary>
             </div>
@@ -1305,6 +1311,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   docPage={docPage}
                   docBbox={docBbox}
                   docSourceRef={docSourceRef}
+                  onDocContentChange={setDocContent}
+                  onSheetDataChange={setSheetData}
+                  onCodeSnippetChange={setCodeSnippet}
                 />
               </ComponentErrorBoundary>
             </ResizablePanel>

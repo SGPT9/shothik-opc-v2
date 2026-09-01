@@ -13,12 +13,19 @@ import {
   Crosshair,
   Sparkles,
   Printer,
+  Edit3,
+  Eye,
+  RefreshCw,
+  Quote,
+  BookMarked,
+  GitBranch,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
 import { DiffEngine, type DiffChunk } from "@/lib/canvas/DiffEngine";
 import { SpeculativeEngine } from "@/lib/inference/SpeculativeEngine";
+import { NarrativeForecastView, type ForecastBranch } from "./NarrativeForecastView";
 
 export interface DocumentPage {
   pageNumber: number;
@@ -35,6 +42,7 @@ export interface DocArtifactProps {
   sourceRef?: string;
   pages?: DocumentPage[];
   isStreaming?: boolean;
+  onContentChange?: (content: string) => void;
 }
 
 const DEFAULT_PAGES: DocumentPage[] = [
@@ -93,6 +101,7 @@ export function DocArtifact({
   sourceRef,
   pages,
   isStreaming = false,
+  onContentChange,
 }: DocArtifactProps) {
   const dynamicPages: DocumentPage[] = useMemo(() => {
     if (pages && pages.length > 0) return pages;
@@ -127,8 +136,66 @@ export function DocArtifact({
   const [activeBbox, setActiveBbox] = useState<[number, number, number, number] | undefined>(targetBbox);
   const [copied, setCopied] = useState<boolean>(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
+  const [isCitationModalOpen, setIsCitationModalOpen] = useState<boolean>(false);
+  const [isForecastOpen, setIsForecastOpen] = useState<boolean>(false);
+  const [citationFormat, setCitationFormat] = useState<"apa" | "ieee" | "harvard" | "bangla" | "bibtex">("apa");
+  const [copiedCitation, setCopiedCitation] = useState<boolean>(false);
   const [highlightPulse, setHighlightPulse] = useState<boolean>(true);
+  const [isDirectEditing, setIsDirectEditing] = useState<boolean>(false);
   const pageContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleAdoptForecastBranch = (branch: ForecastBranch) => {
+    const newBeatsText = `\n\n---\n\n### 🔮 Adopted Narrative Beats (${branch.title})\n\n` +
+      branch.beats.map((b) => `**Chapter ${b.chapter}: ${b.title}**\n${b.summary}`).join("\n\n");
+    
+    setCustomPages((prev) => {
+      const current = prev || dynamicPages;
+      const updated = current.map((p, idx) => {
+        if (idx === current.length - 1) {
+          return { ...p, content: p.content + newBeatsText };
+        }
+        return p;
+      });
+      return updated;
+    });
+    setIsForecastOpen(false);
+  };
+
+  // ── Document Telemetry ──
+  const docTelemetry = useMemo(() => {
+    const fullText = effectivePages.map((p) => p.content).join(" ");
+    const words = fullText.split(/\s+/).filter(Boolean).length;
+    const chars = fullText.length;
+    const readTimeMin = Math.max(0.5, Number((words / 200).toFixed(1)));
+    return { words, chars, readTimeMin };
+  }, [effectivePages]);
+
+  // ── Academic Citations Generator ──
+  const getFormattedCitation = () => {
+    const author = "Rahman, S.";
+    const year = "2026";
+    const title = initialTitle || "Digital Amar Ekushey & AI Commerce Architecture";
+    const publisher = "Shothik Academic Press, Dhaka";
+
+    switch (citationFormat) {
+      case "apa":
+        return `${author} (${year}). ${title}. ${publisher}. https://doi.org/10.5555/shothik.${Date.now()}`;
+      case "ieee":
+        return `[1] S. Rahman, "${title}," ${publisher}, ${year}.`;
+      case "harvard":
+        return `${author}, ${year}. ${title}. Dhaka: Shothik Academic Press.`;
+      case "bangla":
+        return `রহমান, সাইফুর. (২০২৬). ${title}. ঢাকা: সঠিক একাডেমিক প্রেস.`;
+      case "bibtex":
+        return `@article{rahman2026shothik,
+  title={${title}},
+  author={${author}},
+  journal={Shothik Academic Press},
+  year={${year}},
+  publisher={Shothik AI}
+}`;
+    }
+  };
 
   // ── Inline Visual Diff State (OpenAI Canvas Standard) ──
   const [activeDiff, setActiveDiff] = useState<{
@@ -137,6 +204,24 @@ export function DocArtifact({
     proposedContent: string;
     chunks: DiffChunk[];
   } | null>(null);
+
+  const notifyContentChange = (updatedPages: DocumentPage[]) => {
+    if (onContentChange) {
+      const fullText = updatedPages.map((p) => p.content).join("\n\n---\n\n");
+      onContentChange(fullText);
+    }
+  };
+
+  const handleContentEdit = (newText: string) => {
+    setCustomPages((prev) => {
+      const current = prev || dynamicPages;
+      const updated = current.map((p) =>
+        p.pageNumber === currentPage ? { ...p, content: newText } : p
+      );
+      notifyContentChange(updated);
+      return updated;
+    });
+  };
 
   // ── Floating Selection Bubble Menu State ──
   const [selectionMenu, setSelectionMenu] = useState<{
@@ -217,9 +302,11 @@ export function DocArtifact({
     if (!activeDiff) return;
     setCustomPages((prev) => {
       const current = prev || dynamicPages;
-      return current.map((p) =>
+      const updated = current.map((p) =>
         p.pageNumber === activeDiff.pageNumber ? { ...p, content: activeDiff.proposedContent } : p
       );
+      notifyContentChange(updated);
+      return updated;
     });
     setActiveDiff(null);
   };
@@ -416,6 +503,47 @@ export function DocArtifact({
             </button>
           </div>
 
+          {/* Edit / Preview Toggle */}
+          <Button
+            size="sm"
+            variant={isDirectEditing ? "default" : "outline"}
+            onClick={() => setIsDirectEditing(!isDirectEditing)}
+            className={cn(
+              "h-7 px-2 text-[11px] font-semibold gap-1 transition",
+              isDirectEditing
+                ? "bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
+                : "border-slate-800 text-slate-300 hover:bg-slate-800"
+            )}
+            title={isDirectEditing ? "Switch to Preview Mode" : "Directly Edit Document"}
+          >
+            {isDirectEditing ? <Eye className="h-3 w-3" /> : <Edit3 className="h-3 w-3 text-amber-400" />}
+            <span>{isDirectEditing ? "Preview" : "Edit"}</span>
+          </Button>
+
+          {/* Academic Citation Generator Button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsCitationModalOpen(true)}
+            className="h-7 px-2 text-[11px] font-semibold border-slate-800 text-slate-300 hover:bg-slate-800 gap-1 cursor-pointer"
+            title="Generate Academic Citation (APA, IEEE, Harvard, Bangla)"
+          >
+            <Quote className="h-3 w-3 text-cyan-400" />
+            <span className="hidden sm:inline">Cite</span>
+          </Button>
+
+          {/* InkOS 3-Scenario Plot Forecast Button */}
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsForecastOpen(true)}
+            className="h-7 px-2 text-[11px] font-semibold border-indigo-500/40 text-indigo-300 bg-indigo-500/10 hover:bg-indigo-950/40 gap-1 cursor-pointer"
+            title="InkOS 3-Scenario Narrative Forecast & Canon Guard"
+          >
+            <GitBranch className="h-3 w-3 text-indigo-400" />
+            <span className="hidden sm:inline">Forecast</span>
+          </Button>
+
           <Button
             size="sm"
             variant="outline"
@@ -444,6 +572,19 @@ export function DocArtifact({
         ref={pageContainerRef}
         className="flex-1 min-h-0 p-4 sm:p-6 overflow-auto bg-slate-950/90 flex flex-col items-center custom-scrollbar print:p-0 print:bg-white print:text-black"
       >
+        {/* Document Telemetry Strip */}
+        <div className="w-full max-w-2xl flex items-center justify-between pb-2 text-[10px] font-mono text-slate-400 print:hidden">
+          <div className="flex items-center gap-3">
+            <span>📝 {docTelemetry.words} words</span>
+            <span>🔤 {docTelemetry.chars} chars</span>
+            <span>⏱️ ~{docTelemetry.readTimeMin} min read</span>
+          </div>
+          <span className="text-emerald-400 flex items-center gap-1 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Academic Citations Ready
+          </span>
+        </div>
+
         <div
           style={{ transform: `scale(${zoomLevel / 100})`, transformOrigin: "top center" }}
           className="relative w-full max-w-2xl rounded-xl border border-slate-800 bg-slate-900/90 p-6 sm:p-8 shadow-2xl transition-transform duration-200 print:shadow-none print:border-0 print:bg-white print:p-0 print:max-w-none"
@@ -536,6 +677,24 @@ export function DocArtifact({
                   }
                   return <span key={chunk.id}>{chunk.value}</span>;
                 })}
+              </div>
+            ) : isDirectEditing ? (
+              <div className="space-y-2">
+                <textarea
+                  value={activeDocPage.content}
+                  onChange={(e) => handleContentEdit(e.target.value)}
+                  rows={14}
+                  className="w-full rounded-lg border border-slate-700 bg-slate-950/90 p-4 text-xs sm:text-sm text-slate-100 font-mono leading-relaxed focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50 resize-y"
+                  placeholder="Type or paste markdown content directly..."
+                  aria-label="Directly edit document section content"
+                />
+                <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                  <span>{activeDocPage.content.split(/\s+/).filter(Boolean).length} words · {activeDocPage.content.length} characters</span>
+                  <span className="text-emerald-400 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Auto-saved
+                  </span>
+                </div>
               </div>
             ) : (
               activeDocPage.content
@@ -632,6 +791,79 @@ export function DocArtifact({
           </button>
         ))}
       </div>
+
+      {/* ── Academic Citation Generator Modal ── */}
+      {isCitationModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in">
+          <div className="w-full max-w-lg rounded-2xl bg-slate-900 border border-slate-700 p-6 space-y-4 shadow-2xl text-slate-100 font-sans">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <Quote className="w-4 h-4 text-cyan-400" />
+                <h3 className="text-sm font-bold text-slate-100">Academic & Research Citation Generator</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsCitationModalOpen(false)}
+                className="text-slate-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Format selector */}
+            <div className="flex gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-xs font-mono">
+              {(["apa", "ieee", "harvard", "bangla", "bibtex"] as const).map((fmt) => (
+                <button
+                  key={fmt}
+                  type="button"
+                  onClick={() => setCitationFormat(fmt)}
+                  className={cn(
+                    "flex-1 py-1 rounded-lg font-semibold uppercase transition cursor-pointer",
+                    citationFormat === fmt ? "bg-cyan-600 text-white" : "text-slate-400 hover:text-white"
+                  )}
+                >
+                  {fmt}
+                </button>
+              ))}
+            </div>
+
+            {/* Citation box */}
+            <div className="p-3.5 rounded-xl bg-black/60 border border-white/10 font-mono text-xs text-slate-200 leading-relaxed break-all select-all">
+              {getFormattedCitation()}
+            </div>
+
+            {/* Copy button */}
+            <div className="flex justify-end gap-2">
+              <Button
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(getFormattedCitation());
+                  setCopiedCitation(true);
+                  setTimeout(() => setCopiedCitation(false), 2000);
+                }}
+                className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold cursor-pointer"
+              >
+                {copiedCitation ? <Check className="w-3.5 h-3.5 mr-1" /> : <Quote className="w-3.5 h-3.5 mr-1" />}
+                <span>{copiedCitation ? "Copied Citation!" : "Copy Citation"}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── InkOS 3-Scenario Narrative Forecast Modal ── */}
+      {isForecastOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="relative w-full max-w-4xl h-[85vh] rounded-2xl border border-indigo-500/30 bg-slate-950/95 shadow-2xl overflow-hidden flex flex-col">
+            <NarrativeForecastView
+              initialTopic={initialTitle}
+              currentChapter={effectivePages.length}
+              onAdoptBranch={handleAdoptForecastBranch}
+              onClose={() => setIsForecastOpen(false)}
+            />
+          </div>
+        </div>
+      )}
 
       {/* ── Universal Print & POD Modal ── */}
       <UniversalPrintModal

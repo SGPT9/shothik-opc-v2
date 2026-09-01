@@ -79,7 +79,7 @@ const router = Router();
 /**
  * GET /api/v1/approvals/pending
  */
-router.get("/v1/approvals/pending", (req: Request, res: Response) => {
+router.get(["/v1/approvals/pending", "/v1/approvals/queue", "/api/v1/approvals/pending", "/api/v1/approvals/queue"], (req: Request, res: Response) => {
   return res.status(200).json({
     success: true,
     totalPending: pendingQueue.filter((a) => a.status === "PENDING").length,

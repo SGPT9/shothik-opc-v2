@@ -182,8 +182,8 @@ const PricingHeader: React.FC<PricingHeaderProps> = ({
             </div>
           </div>
         </div>
-        {/* Token Badge - NEW */}
-        {tokenAmount && (
+        {/* Token Badge */}
+        {Boolean(tokenAmount && tokenAmount > 0) && (
           <div className="bg-primary/10 text-primary inline-flex items-center gap-1.5 rounded-full px-3 py-1.5">
             <svg
               className="size-4"
@@ -387,18 +387,20 @@ const PackageFeatures: React.FC<PackageFeaturesProps> = ({ features }) => {
   if (!features || features.length === 0) return null;
 
   return (
-    <div className="space-y-2">
-      <strong className="block text-sm font-semibold">Features:</strong>
-      <ul className="space-y-1">
-        {features?.map((feature, index) => {
+    <div className="space-y-2 pt-2 border-t border-border/40">
+      <strong className="block text-xs font-bold uppercase tracking-wider text-muted-foreground">What's Included:</strong>
+      <ul className="space-y-2">
+        {features?.map((feature: any, index) => {
           const featureName =
-            typeof feature === "string" ? feature : feature?.name || "Feature";
+            typeof feature === "string"
+              ? feature
+              : feature?.feature?.name || feature?.name || "Feature";
           const featureId =
             typeof feature === "string" ? feature : feature?._id || index;
 
           return (
-            <li key={featureId} className="flex items-center gap-2 text-sm">
-              <Check className="text-primary size-5 shrink-0" />
+            <li key={featureId} className="flex items-start gap-2 text-sm text-foreground/90">
+              <Check className="text-primary size-4 shrink-0 mt-0.5" />
               <span>{featureName}</span>
             </li>
           );
@@ -599,7 +601,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         <PackagePoints points={pkg?.points} />
 
         {/* Features */}
-        {/* <PackageFeatures features={pkg?.features} /> */}
+        <PackageFeatures features={pkg?.features} />
       </CardContent>
       <CardFooter>
         <CheckoutButton

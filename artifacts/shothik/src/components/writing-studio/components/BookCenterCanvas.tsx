@@ -19,16 +19,22 @@ import {
   MousePointerClick,
   Copy,
   Check,
+  Truck,
+  GitBranch,
+  GitFork,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
 import { PrintPreflightModal } from "./PrintPreflightModal";
 import { CommercializeBookModal } from "./CommercializeBookModal";
+import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
+import { NarrativeForecastView, type ForecastBranch } from "@/components/chat/artifacts/NarrativeForecastView";
+import { StoryGraphTreeArtifact } from "@/components/chat/artifacts/StoryGraphTreeArtifact";
 import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
 import { exportManuscriptToMarkdown, exportManuscriptToHTML } from "../utils/epubPdfExporter";
 
-export type CanvasTab = "editor" | "sheet" | "mindmap" | "slides" | "web_preview";
+export type CanvasTab = "editor" | "sheet" | "mindmap" | "slides" | "storytree" | "web_preview";
 
 export interface BookCenterCanvasProps {
   activeTab: CanvasTab;
@@ -81,7 +87,16 @@ export function BookCenterCanvas({
   const [isPreflightOpen, setIsPreflightOpen] = useState(false);
   const [isVTuberOpen, setIsVTuberOpen] = useState(false);
   const [isCommercializeOpen, setIsCommercializeOpen] = useState(false);
+  const [isUniversalPrintOpen, setIsUniversalPrintOpen] = useState(false);
+  const [isForecastOpen, setIsForecastOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const handleAdoptForecastBranch = (branch: ForecastBranch) => {
+    const appendedOutline = `\n\n## 🔮 [Adopted InkOS Forecast: ${branch.title}]\n*Strategy: ${branch.intentRationale}*\n\n` +
+      branch.beats.map((b) => `### Chapter ${b.chapter}: ${b.title}\n- **Key Narrative Beat**: ${b.summary}`).join("\n\n");
+    onEditorTextChange(editorText + appendedOutline);
+    setIsForecastOpen(false);
+  };
 
   // December Adaptation: Cmd + \ or Ctrl + \ split/switch shortcut between Writing Studio and Web Preview
   useEffect(() => {
@@ -178,6 +193,7 @@ export function BookCenterCanvas({
 
   const tabs: { key: CanvasTab; label: string; icon: React.ElementType }[] = [
     { key: "editor", label: "Writing Studio", icon: FileText },
+    { key: "storytree", label: "Story Tree", icon: GitFork },
     { key: "sheet", label: "Fortune Sheet", icon: Table },
     { key: "mindmap", label: "Mind Map", icon: Network },
     { key: "slides", label: "Slides Pitch", icon: Presentation },
@@ -245,6 +261,28 @@ export function BookCenterCanvas({
           <Button
             size="sm"
             variant="outline"
+            onClick={() => setIsForecastOpen(true)}
+            className="h-7 px-2 text-[10px] font-semibold border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 gap-1 cursor-pointer"
+            title="InkOS 3-Scenario Narrative Forecast"
+          >
+            <GitBranch className="h-3 w-3 text-indigo-400" />
+            Forecast
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setIsUniversalPrintOpen(true)}
+            className="h-7 px-2 text-[10px] font-semibold border-emerald-500/40 text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 gap-1 cursor-pointer"
+            title="Nilkhet Print-on-Demand (POD) & Courier Dispatch"
+          >
+            <Truck className="h-3 w-3 text-emerald-400" />
+            Nilkhet POD
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
             onClick={() => setIsPreflightOpen(true)}
             className="h-7 px-2 text-[10px] font-semibold border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 gap-1 cursor-pointer"
           >
@@ -285,6 +323,12 @@ export function BookCenterCanvas({
               </div>
               <span className="text-emerald-500 font-semibold">UTF-8 Bengali & English</span>
             </div>
+          </div>
+        )}
+
+        {activeTab === "storytree" && (
+          <div className="flex flex-col h-full rounded-xl border border-border overflow-hidden bg-card">
+            <StoryGraphTreeArtifact initialTitle="Book Narrative Branching Tree & Story Player" />
           </div>
         )}
 
@@ -466,6 +510,30 @@ export function BookCenterCanvas({
       {isScenarioLabOpen && <ScenarioLabModal isOpen={isScenarioLabOpen} onClose={() => setIsScenarioLabOpen(false)} />}
       {isPreflightOpen && <PrintPreflightModal isOpen={isPreflightOpen} onClose={() => setIsPreflightOpen(false)} />}
       {isCommercializeOpen && <CommercializeBookModal open={isCommercializeOpen} onOpenChange={setIsCommercializeOpen} />}
+      <UniversalPrintModal
+        isOpen={isUniversalPrintOpen}
+        onClose={() => setIsUniversalPrintOpen(false)}
+        defaultPreset="book"
+        title="Shothik Book Manuscript"
+        author="Writing Studio Author"
+        content={editorText}
+      />
+      {isForecastOpen && (
+        <div
+          onClick={() => setIsForecastOpen(false)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200 cursor-pointer"
+        >
+          <div
+            className="relative w-full max-w-5xl h-[88vh] rounded-3xl border border-white/10 bg-zinc-950/95 shadow-2xl backdrop-blur-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150 cursor-default"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <NarrativeForecastView
+              onClose={() => setIsForecastOpen(false)}
+              onAdoptBranch={handleAdoptForecastBranch}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
