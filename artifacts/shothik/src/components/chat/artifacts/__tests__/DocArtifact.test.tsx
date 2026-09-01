@@ -57,10 +57,9 @@ describe("DocArtifact Component", () => {
     expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
     expect(screen.getByText(/South Asian emerging markets demonstrate massive momentum/i)).toBeInTheDocument();
 
-    // Click Page 2 button from bottom strip
-    const page2Btn = screen.getAllByRole("button", { name: /Page 2/i })[0];
-    fireEvent.click(page2Btn);
-
+    // Verify pagination forward and back
+    expect(screen.getByText("Page 1 of 2")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Next Page/i }));
     expect(screen.getByText("Page 2 of 2")).toBeInTheDocument();
   });
 

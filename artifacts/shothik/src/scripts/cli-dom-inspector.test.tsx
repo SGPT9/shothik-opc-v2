@@ -50,7 +50,12 @@ describe("CLI DOM & ARIA Tree Audit", () => {
   });
 
   it("audits PerplexitySourcesGrid domain cards and links", () => {
-    const sourcesRes = render(<PerplexitySourcesGrid />);
+    const mockSources = [
+      { id: 1, title: "TechCrunch Bangladesh", domain: "techcrunch.com", url: "https://techcrunch.com" },
+      { id: 2, title: "GitHub Shothik", domain: "github.com", url: "https://github.com" },
+      { id: 3, title: "Daily Star Business", domain: "thedailystar.net", url: "https://thedailystar.net" },
+    ];
+    const sourcesRes = render(<PerplexitySourcesGrid sources={mockSources} />);
     const sourceCards = sourcesRes.container.querySelectorAll("a");
     expect(sourceCards.length).toBe(3);
 
@@ -58,7 +63,12 @@ describe("CLI DOM & ARIA Tree Audit", () => {
   });
 
   it("audits PerplexityRelatedQueries follow-up question pills", () => {
-    const relatedRes = render(<PerplexityRelatedQueries onSelectQuery={() => {}} />);
+    const mockQueries = [
+      "What is the Nilkhet POD forme sizing specification?",
+      "How to connect Steadfast parcel webhook API?",
+      "Export 5-year financial model to Excel spreadsheet",
+    ];
+    const relatedRes = render(<PerplexityRelatedQueries queries={mockQueries} onSelectQuery={() => {}} />);
     const relatedButtons = relatedRes.container.querySelectorAll("button");
     expect(relatedButtons.length).toBe(3);
 
