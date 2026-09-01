@@ -30,6 +30,7 @@ import { PrintPreflightModal } from "./PrintPreflightModal";
 import { CommercializeBookModal } from "./CommercializeBookModal";
 import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
 import { NarrativeForecastView, type ForecastBranch } from "@/components/chat/artifacts/NarrativeForecastView";
+import { PreflightAuditModal } from "@/components/books/PreflightAuditModal";
 import { StoryGraphTreeArtifact } from "@/components/chat/artifacts/StoryGraphTreeArtifact";
 import { VTuberVoiceAvatarOverlay } from "@/components/voice/VTuberVoiceAvatarOverlay";
 import { exportManuscriptToMarkdown, exportManuscriptToHTML } from "../utils/epubPdfExporter";
@@ -508,7 +509,15 @@ export function BookCenterCanvas({
 
       {/* Modals */}
       {isScenarioLabOpen && <ScenarioLabModal isOpen={isScenarioLabOpen} onClose={() => setIsScenarioLabOpen(false)} />}
-      {isPreflightOpen && <PrintPreflightModal isOpen={isPreflightOpen} onClose={() => setIsPreflightOpen(false)} />}
+      {isPreflightOpen && (
+        <PreflightAuditModal
+          isOpen={isPreflightOpen}
+          onClose={() => setIsPreflightOpen(false)}
+          bookTitle="Shothik Book Manuscript"
+          pageCount={Math.max(16, Math.ceil(editorText.trim().split(/\s+/).length / 250))}
+          onProceedToPrint={() => setIsUniversalPrintOpen(true)}
+        />
+      )}
       {isCommercializeOpen && <CommercializeBookModal open={isCommercializeOpen} onOpenChange={setIsCommercializeOpen} />}
       <UniversalPrintModal
         isOpen={isUniversalPrintOpen}
