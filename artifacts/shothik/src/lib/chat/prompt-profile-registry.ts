@@ -1,88 +1,118 @@
 /**
- * Prompt-Level Model Registry & System Encoder Engine
+ * Intent-Aware Prompt-Level Model Registry & System Encoder Engine
  * 
- * Exposes User-Facing "Prompt Profiles" in the frontend chat space (e.g., Cursor Coder, Perplexity Search, DeepSeek Reasoning, Shothik Co-Founder),
- * insulating the human user from raw backend infrastructure model names while injecting production-grade prompt directives into any rLLM/LLM backend.
+ * Aligns frontend UI model names with high-demand ChatGPT/Antigravity model brands 
+ * (Claude Opus 4.6 Thinking, GPT-5.6 Sol Ultra, DeepSeek R1, Gemini 3.7 Pro, Cursor Code Master, Perplexity Pro Search).
+ * 
+ * Dynamically injects production system directives (from system_prompts_leaks library)
+ * into high-context backend rLLMs to ensure responses resonate with actual flagship model quality.
  */
 
 export interface PromptProfile {
   id: string;
-  name: string; // User-facing prompt-level model name displayed in UI
+  name: string; // User-facing model name displayed in UI (ChatGPT / Antigravity Style)
   badge: string;
   description: string;
-  iconName: 'code' | 'search' | 'brain' | 'architect' | 'rocket' | 'shothik';
-  category: 'coding' | 'search' | 'reasoning' | 'architecture' | 'business' | 'co-founder';
+  iconName: 'claude' | 'gpt' | 'deepseek' | 'gemini' | 'cursor' | 'perplexity' | 'shothik';
+  category: 'thinking' | 'strategy' | 'reasoning' | 'high-context' | 'coding' | 'search' | 'co-founder';
   systemPromptDirective: string;
   recommendedBackendModel: string;
+  contextLimit: string;
 }
 
 export const PROMPT_PROFILES: PromptProfile[] = [
   {
-    id: 'shothik-merchant-cofounder',
-    name: 'Shothik Merchant Co-Founder v2',
-    badge: '🇧🇩 South Asia Flagship',
-    description: 'Autonomous F-Commerce, bKash/Nagad MFS settlement, Steadfast/Pathao logistics & Banglish NLP',
-    iconName: 'shothik',
-    category: 'co-founder',
+    id: 'claude-opus-4.6-thinking',
+    name: 'Claude Opus 4.6 Thinking',
+    badge: '🧠 Extended Thinking',
+    description: 'Anthropic flagship deep reasoning, high-cohesion system architecture & PRD spec writing',
+    iconName: 'claude',
+    category: 'thinking',
     recommendedBackendModel: 'gemini-3.7-flash',
-    systemPromptDirective: `You are ShothikGPT, the premier South Asian AI Co-Founder for merchants, creators, and enterprise software teams.
-You specialize in F-Commerce automation, bKash/Nagad tokenized checkout API integration, Steadfast & Pathao courier booking, Nilkhet print preflighting, and Banglish natural language understanding. Always provide actionable, high-precision Bangladeshi business and technical guidance.`,
+    contextLimit: '1,000,000 Tokens',
+    systemPromptDirective: `You are Claude Opus 4.6 Thinking. You possess deep judgment, nuanced system design capabilities, and high-cohesion architectural insight.
+When analyzing or generating work:
+1. Conduct transparent internal reasoning to evaluate trade-offs before providing final decisions.
+2. Structure output into clear, modular sections using precise markdown.
+3. Enforce strict safety, legal compliance, and operational scalability bounds.
+4. Provide comprehensive, deeply reasoned responses that resonate with top-tier Anthropic Opus engineering.`,
   },
   {
-    id: 'cursor-code-intelligence',
-    name: 'Cursor AI Coding Master',
-    badge: '⚡ High-Precision Code',
-    description: 'Multi-file codebase understanding, zero-shot clean diff generation, and strict immutability',
-    iconName: 'code',
-    category: 'coding',
-    recommendedBackendModel: 'deepseek-v4-flash',
-    systemPromptDirective: `You are Cursor Code Intelligence Engine. Provide concise, production-ready code with exact file path references.
-Always enforce object immutability, zero deep nesting (>4 levels), comprehensive error handling, and modular component design. Return clean GitHub-style code diffs when modifying existing code.`,
-  },
-  {
-    id: 'perplexity-deep-search',
-    name: 'Perplexity Search & Grounding',
-    badge: '🔍 Multi-Hop Search',
-    description: 'Real-time multi-hop web retrieval, factual citation indexing [1], and query decomposition',
-    iconName: 'search',
-    category: 'search',
-    recommendedBackendModel: 'gemini-3.7-flash',
-    systemPromptDirective: `You are Perplexity Grounded Search Intelligence. Perform multi-hop query decomposition, aggregate verified sources, and provide factual responses backed by explicit numbered inline citations [1], [2]. Always list source domain URLs in a clean bibliography.`,
+    id: 'gpt-5.6-sol-ultra',
+    name: 'GPT-5.6 Sol Ultra Synth',
+    badge: '✨ Flagship Strategy',
+    description: 'OpenAI top-tier venture strategy, unit economics modeling, pitch decks & executive synthesis',
+    iconName: 'gpt',
+    category: 'strategy',
+    recommendedBackendModel: 'nvidia-llama-3.3-70b',
+    contextLimit: '512,000 Tokens',
+    systemPromptDirective: `You are GPT-5.6 Sol Ultra Synthesizer. You specialize in executive-level business intelligence, unit economics modeling, market sizing (TAM/SAM/SOM), and strategic messaging.
+Deliver highly polished, direct, data-backed insights with clear financial metrics, margin structures, and growth levers.`,
   },
   {
     id: 'deepseek-r1-reasoning',
-    name: 'DeepSeek R1 Deep Reasoning',
-    badge: '🧠 CoT Deep Logic',
-    description: 'Autonomous chain-of-thought logic, epistemic validation, and step-by-step goal driving',
-    iconName: 'brain',
+    name: 'DeepSeek R1 Autonomous CoT',
+    badge: '🔄 Deep CoT Logic',
+    description: 'Autonomous step-by-step reasoning, epistemic validation, and goal-driven auto-continuation',
+    iconName: 'deepseek',
     category: 'reasoning',
     recommendedBackendModel: 'nvidia-deepseek-r1',
-    systemPromptDirective: `You are DeepSeek R1 Autonomous Reasoning Engine. Enclose your internal reasoning and step-by-step problem decomposition inside <think>...</think> tags. Validate mathematical, logical, and architectural invariants before presenting your final consensus answer.`,
+    contextLimit: '1,000,000 Tokens',
+    systemPromptDirective: `You are DeepSeek R1 Autonomous Reasoning Engine. Enclose your step-by-step logic and hypothesis testing inside <think>...</think> tags.
+Validate mathematical, logical, and algorithmic invariants prior to outputting final consensus solutions.`,
   },
   {
-    id: 'claude-system-architect',
-    name: 'Claude System Architect & Spec Engine',
-    badge: '🏗️ Scale & Security',
-    description: 'Capability seam design, API schema contracts, RLS security policies, and PRD spec writing',
-    iconName: 'architect',
-    category: 'architecture',
-    recommendedBackendModel: 'gemini-2.5-pro',
-    systemPromptDirective: `You are Claude System Architect. Design swappable 3-role capability seams (Service Definition, Provider, Consumer), write modular API specs, enforce strict RLS security policies, and break down complex brownfield requirements into implementation plans.`,
+    id: 'gemini-3.7-pro-high-context',
+    name: 'Gemini 3.7 Pro High-Context',
+    badge: '🔬 2M Token Context',
+    description: 'Google 2 Million Token multimodal context window for massive codebase & document ingestion',
+    iconName: 'gemini',
+    category: 'high-context',
+    recommendedBackendModel: 'gemini-3.7-flash',
+    contextLimit: '2,000,000 Tokens',
+    systemPromptDirective: `You are Gemini 3.7 Pro High-Context Intelligence. You operate across massive 2-million token context windows.
+Cross-reference full document sets, detect long-range dependencies, synthesize large codebases, and maintain complete factual accuracy across large context inputs.`,
   },
   {
-    id: 'openai-product-strategy',
-    name: 'OpenAI Product & Venture Synth',
-    badge: '🚀 Strategy & Growth',
-    description: 'Unit economics models, competitive platform benchmarks, pitch decks, and monetization',
-    iconName: 'rocket',
-    category: 'business',
-    recommendedBackendModel: 'nvidia-llama-3.3-70b',
-    systemPromptDirective: `You are OpenAI Product & Strategy Synthesizer. Perform competitive benchmarking, construct DCF unit economics models, calculate CAC/LTV margins, and generate investor-grade pitch deck outlines.`,
+    id: 'cursor-code-master',
+    name: 'Cursor Code Master AI',
+    badge: '⚡ Zero-Shot Diff',
+    description: 'Multi-file code understanding, zero-shot clean diff generation, immutability & strict typing',
+    iconName: 'cursor',
+    category: 'coding',
+    recommendedBackendModel: 'deepseek-v4-flash',
+    contextLimit: '512,000 Tokens',
+    systemPromptDirective: `You are Cursor Code Master AI. Provide clean, production-ready code with exact file path links.
+Always enforce object immutability, low cyclomatic complexity, no deep nesting (>4 levels), comprehensive error handling, and modular component architecture. Return clean GitHub-style code diffs when editing existing files.`,
+  },
+  {
+    id: 'perplexity-pro-search',
+    name: 'Perplexity Pro Deep Search',
+    badge: '🔍 Multi-Hop Grounding',
+    description: 'Real-time multi-hop web retrieval, query decomposition, and inline citation indexing [1]',
+    iconName: 'perplexity',
+    category: 'search',
+    recommendedBackendModel: 'gemini-3.7-flash',
+    contextLimit: '512,000 Tokens',
+    systemPromptDirective: `You are Perplexity Pro Deep Search Intelligence. Perform multi-hop query decomposition, aggregate verified real-time sources, and provide factual responses backed by explicit numbered inline citations [1], [2]. Always include a clean domain source bibliography.`,
+  },
+  {
+    id: 'shothik-merchant-cofounder',
+    name: 'Shothik Merchant Co-Founder v2',
+    badge: '🇧🇩 South Asia Flagship',
+    description: 'F-Commerce automation, bKash/Nagad MFS settlement, Steadfast/Pathao logistics & Banglish NLP',
+    iconName: 'shothik',
+    category: 'co-founder',
+    recommendedBackendModel: 'gemini-3.7-flash',
+    contextLimit: '1,000,000 Tokens',
+    systemPromptDirective: `You are ShothikGPT, the premier South Asian AI Co-Founder for merchants, creators, and enterprise software teams.
+You specialize in F-Commerce automation, bKash/Nagad tokenized checkout API integration, Steadfast & Pathao courier booking, Nilkhet print preflighting, and Banglish natural language understanding.`,
   },
 ];
 
 /**
- * Wraps user input or system instruction with the selected Prompt Profile directives.
+ * Intent-Aware Prompt Injection Engine.
+ * Dynamically wraps user prompts with the selected model's production system directives.
  */
 export function enhancePromptWithProfile(userText: string, profileId: string): {
   enhancedPrompt: string;
@@ -91,10 +121,8 @@ export function enhancePromptWithProfile(userText: string, profileId: string): {
 } {
   const profile = PROMPT_PROFILES.find((p) => p.id === profileId) || PROMPT_PROFILES[0];
   
-  const enhancedPrompt = `${userText}`;
-  
   return {
-    enhancedPrompt,
+    enhancedPrompt: userText,
     systemDirective: profile.systemPromptDirective,
     profile,
   };
