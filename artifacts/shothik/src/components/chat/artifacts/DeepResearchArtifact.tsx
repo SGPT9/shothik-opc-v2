@@ -29,6 +29,9 @@ import { cn } from "@/lib/utils";
 import { UniversalPrintModal } from "@/components/common/UniversalPrintModal";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { ResearchKnowledgeGraph } from "./ResearchKnowledgeGraph";
+import { SourceCardCarousel } from "../SourceCardCarousel";
+import { LivePrintRoiCalculator } from "./LivePrintRoiCalculator";
+import { ScrollSpyTOC, type TOCHeading } from "./ScrollSpyTOC";
 
 interface Source {
   title: string;
@@ -470,7 +473,7 @@ export function DeepResearchArtifact({
         )}
         {/* REPORT TAB */}
         {activeTab === "report" && (
-          <div className="space-y-4 max-w-2xl mx-auto">
+          <div className="space-y-4 max-w-3xl mx-auto">
             {/* Top Export Toolbar */}
             <div className="flex items-center justify-between p-3 rounded-xl bg-card border border-border/80 shadow-xs">
               <div className="flex items-center gap-2">
@@ -491,46 +494,88 @@ export function DeepResearchArtifact({
               </div>
             </div>
 
-            <div className="p-4 rounded-xl bg-card border border-border/80 space-y-2.5 shadow-xs">
-              <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                <span className="text-xs font-bold text-foreground">Synthesis Digest</span>
-                <span className="text-[10px] font-mono text-muted-foreground">NVIDIA AI-Q + DeepSeek R1</span>
-              </div>
-              <div className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap font-sans">
-                {summaryText}
-              </div>
-            </div>
+            {/* Perplexity-Style Verified Source Carousel */}
+            <SourceCardCarousel
+              sources={sourcesList.map((s, idx) => ({
+                id: idx,
+                title: s.title,
+                url: s.url,
+                domain: s.domain,
+                snippet: s.snippet,
+                verbatimQuote: s.verbatimQuote,
+                reliability: s.reliability,
+                doi: s.doi,
+              }))}
+              onSelectSource={(s) => setSelectedSource(s as any)}
+            />
 
-            {/* Quick Citations Grid */}
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                <Globe className="w-3.5 h-3.5 text-muted-foreground" /> Grounded Verification Sources:
-              </span>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {sourcesList.map((source, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => setSelectedSource(source)}
-                    className="p-3 rounded-xl border border-border/80 bg-card hover:border-zinc-500/40 transition cursor-pointer space-y-1 group shadow-xs"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-bold text-foreground truncate max-w-[150px]">
-                        {source.domain}
-                      </span>
-                      {source.reliability && (
-                        <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold">
-                          {source.reliability}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs font-semibold text-foreground truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
-                      {source.title}
-                    </p>
-                    <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
-                      {source.snippet}
-                    </p>
+            {/* Main Content Layout with Genspark Sticky TOC */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
+              {/* Sticky TOC Sidebar */}
+              <div className="hidden lg:block lg:col-span-1">
+                <ScrollSpyTOC
+                  headings={[
+                    { id: "synthesis-digest", title: "1. Executive Digest", level: 1 },
+                    { id: "verified-sources", title: "2. Verified Sources", level: 1 },
+                    { id: "nilkhet-roi-model", title: "3. Manufacturing ROI", level: 1 },
+                  ]}
+                  activeId="synthesis-digest"
+                  onSelect={(id) => {
+                    const el = document.getElementById(id);
+                    el?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                />
+              </div>
+
+              {/* Report Body */}
+              <div className="lg:col-span-3 space-y-4">
+                <div id="synthesis-digest" className="p-4 rounded-xl bg-card border border-border/80 space-y-2.5 shadow-xs">
+                  <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                    <span className="text-xs font-bold text-foreground">Synthesis Digest</span>
+                    <span className="text-[10px] font-mono text-muted-foreground">NVIDIA AI-Q + DeepSeek R1</span>
                   </div>
-                ))}
+                  <div className="text-xs leading-relaxed text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap font-sans">
+                    {summaryText}
+                  </div>
+                </div>
+
+                {/* Embedded Genspark-style Live Interactive ROI Slider */}
+                <div id="nilkhet-roi-model">
+                  <LivePrintRoiCalculator initialPages={160} initialQuantity={50} />
+                </div>
+
+                {/* Quick Citations Grid */}
+                <div id="verified-sources" className="space-y-2">
+                  <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-muted-foreground" /> Grounded Verification Sources:
+                  </span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {sourcesList.map((source, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setSelectedSource(source)}
+                        className="p-3 rounded-xl border border-border/80 bg-card hover:border-zinc-500/40 transition cursor-pointer space-y-1 group shadow-xs"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-mono font-bold text-foreground truncate max-w-[150px]">
+                            {source.domain}
+                          </span>
+                          {source.reliability && (
+                            <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold">
+                              {source.reliability}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-semibold text-foreground truncate group-hover:text-zinc-600 dark:group-hover:text-zinc-300 transition-colors">
+                          {source.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                          {source.snippet}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
