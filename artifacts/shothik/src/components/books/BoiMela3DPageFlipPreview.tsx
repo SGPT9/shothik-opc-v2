@@ -17,9 +17,13 @@ import {
   Sliders, 
   ExternalLink,
   ShieldCheck,
-  Maximize2
+  Maximize2,
+  GitBranch,
+  Truck,
 } from "lucide-react";
 import { LiquidGlassCard } from "../chat/LiquidGlassCard";
+import { NarrativeForecastView } from "../chat/artifacts/NarrativeForecastView";
+import { UniversalPrintModal } from "../common/UniversalPrintModal";
 
 export interface BookChapter {
   id: string;
@@ -99,14 +103,49 @@ export function BoiMela3DPageFlipPreview({
   const [currentPage, setCurrentPage] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
   const [exportSuccess, setExportSuccess] = useState(false);
-  const [viewMode, setViewMode] = useState<"book_view" | "spec_view">("book_view");
+  const [viewMode, setViewMode] = useState<"book_view" | "spec_view" | "forecast_view">("book_view");
   const [isFlipping, setIsFlipping] = useState(false);
+  const [isPodModalOpen, setIsPodModalOpen] = useState(false);
   const [selectedCoverColor, setSelectedCoverColor] = useState<string>(book.coverColor || "#4338ca");
 
   // Print Spec Interactive Overlays
   const [showCmykGuides, setShowCmykGuides] = useState(false);
   const [showGutterMargin, setShowGutterMargin] = useState(false);
   const [showBleedGuides, setShowBleedGuides] = useState(false);
+
+  // ── Nilkhet Print-on-Demand Calculator State ──
+  const [printQty, setPrintQty] = useState<number>(100);
+  const [paperType, setPaperType] = useState<"70_offset" | "80_munken" | "100_art">("80_munken");
+  const [coverFinish, setCoverFinish] = useState<"gloss" | "matte_spot_uv" | "gold_foil">("matte_spot_uv");
+  const [bindingType, setBindingType] = useState<"perfect" | "hardcover">("perfect");
+  const [bookPages, setBookPages] = useState<number>(160);
+
+  // Calculate unit and batch cost in BDT
+  const calculateNilkhetCosts = () => {
+    const formes = Math.ceil(bookPages / 16);
+    const paperCostPerForme = paperType === "70_offset" ? 1.8 : paperType === "80_munken" ? 2.4 : 3.2;
+    const innerCost = formes * paperCostPerForme;
+    const coverCost = coverFinish === "gloss" ? 14 : coverFinish === "matte_spot_uv" ? 22 : 32;
+    const bindCost = bindingType === "perfect" ? 18 : 65;
+    const plateFixedCost = (formes * 280 + 650) / printQty; // Plate setup amortized
+    
+    const unitCost = Math.round(innerCost + coverCost + bindCost + plateFixedCost);
+    const totalCost = unitCost * printQty;
+    const suggestedMrp = Math.round(unitCost * 2.6); // Standard 2.6x publisher markup
+    const netProfitPerBook = Math.round(suggestedMrp * 0.70 - unitCost); // After 30% bookstore discount
+    const totalBatchProfit = netProfitPerBook * printQty;
+
+    return {
+      formes,
+      unitCost,
+      totalCost,
+      suggestedMrp,
+      netProfitPerBook,
+      totalBatchProfit,
+    };
+  };
+
+  const costs = calculateNilkhetCosts();
 
   const totalPages = book.chapters.length + 1; // 0 = Cover, 1..N = Chapters
 
@@ -239,12 +278,28 @@ export function BoiMela3DPageFlipPreview({
             <Sliders className="w-3.5 h-3.5" />
             <span>প্রিন্ট স্পেক্স</span>
           </button>
+          <button
+            onClick={() => setViewMode("forecast_view")}
+            className={`px-3 py-1.5 rounded-lg font-semibold transition cursor-pointer flex items-center gap-1.5 ${
+              viewMode === "forecast_view" ? "bg-indigo-600 text-white shadow-md" : "text-slate-400 hover:text-white"
+            }`}
+          >
+            <GitBranch className="w-3.5 h-3.5 text-indigo-400" />
+            <span>প্লট ফোরকাস্ট</span>
+          </button>
         </div>
       </div>
 
       {/* ── 2. Main Work Area ── */}
-      <div className="flex-1 flex flex-col items-center justify-center my-6">
-        {viewMode === "book_view" ? (
+      <div className="flex-1 flex flex-col items-center justify-center my-6 w-full">
+        {viewMode === "forecast_view" ? (
+          <div className="w-full max-w-4xl h-[520px] rounded-2xl border border-indigo-500/30 overflow-hidden shadow-2xl bg-slate-950/95">
+            <NarrativeForecastView
+              initialTopic={book.titleBn || "Amar Ekushey Boi Mela AI Publication"}
+              currentChapter={book.chapters.length}
+            />
+          </div>
+        ) : viewMode === "book_view" ? (
           <div className="relative w-full max-w-lg perspective-1000 flex flex-col items-center select-none">
             
             {/* Book Edition / Cover Preset Selector */}
@@ -443,6 +498,102 @@ export function BoiMela3DPageFlipPreview({
           /* ── Print Spec & Distribution Engine View ── */
           <div className="w-full max-w-lg space-y-4">
             <LiquidGlassCard intensity="vibrant" palette="indigo" className="p-5 space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 text-indigo-300 font-bold text-sm">
+                  <Printer className="w-4 h-4 text-indigo-400" />
+                  <span>নীলক্ষেত প্রিন্ট-অন-ডিমান্ড ও রয়্যালটি ক্যালকুলেটর</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-[10px] font-mono font-bold">
+                  {toBengaliNumber(bookPages)} পৃষ্ঠা · {toBengaliNumber(costs.formes)} ফর্মা
+                </span>
+              </div>
+
+              {/* Quantity Selector */}
+              <div className="space-y-1.5 pt-1">
+                <div className="flex justify-between text-[11px] text-slate-300">
+                  <span>মুদ্রণ সংখ্যা (Print Run):</span>
+                  <span className="font-bold text-indigo-400 font-mono">{toBengaliNumber(printQty)} কপি</span>
+                </div>
+                <div className="grid grid-cols-5 gap-1 text-[10px] font-mono">
+                  {[50, 100, 300, 500, 1000].map((qty) => (
+                    <button
+                      key={qty}
+                      type="button"
+                      onClick={() => setPrintQty(qty)}
+                      className={`py-1 rounded-md border text-center transition cursor-pointer ${
+                        printQty === qty
+                          ? "bg-indigo-600 border-indigo-500 text-white font-bold"
+                          : "bg-black/30 border-white/10 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      {qty}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Paper Selection */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] text-slate-300">কাগজের ধরন (Paper Type):</span>
+                <div className="grid grid-cols-3 gap-1 text-[10px]">
+                  <button
+                    type="button"
+                    onClick={() => setPaperType("70_offset")}
+                    className={`py-1 px-1.5 rounded-md border text-center transition cursor-pointer ${
+                      paperType === "70_offset"
+                        ? "bg-indigo-600 border-indigo-500 text-white font-bold"
+                        : "bg-black/30 border-white/10 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    ৭০ GSM অফসেট
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaperType("80_munken")}
+                    className={`py-1 px-1.5 rounded-md border text-center transition cursor-pointer ${
+                      paperType === "80_munken"
+                        ? "bg-indigo-600 border-indigo-500 text-white font-bold"
+                        : "bg-black/30 border-white/10 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    ৮০ GSM মুনকেন (ক্রিম)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaperType("100_art")}
+                    className={`py-1 px-1.5 rounded-md border text-center transition cursor-pointer ${
+                      paperType === "100_art"
+                        ? "bg-indigo-600 border-indigo-500 text-white font-bold"
+                        : "bg-black/30 border-white/10 text-slate-400 hover:text-white"
+                    }`}
+                  >
+                    ১০০ GSM আর্ট পেপার
+                  </button>
+                </div>
+              </div>
+
+              {/* Live Cost Output Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2 border-t border-white/10 text-center">
+                <div className="p-2 rounded-xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-mono">প্রতি বই প্রিন্ট খরচ</span>
+                  <p className="text-sm font-bold text-slate-100 font-mono">৳{toBengaliNumber(costs.unitCost)}</p>
+                </div>
+                <div className="p-2 rounded-xl bg-black/40 border border-white/10">
+                  <span className="text-[10px] text-slate-400 uppercase font-mono">মোট মুদ্রণ বাজেট</span>
+                  <p className="text-sm font-bold text-slate-100 font-mono">৳{toBengaliNumber(costs.totalCost)}</p>
+                </div>
+                <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/30">
+                  <span className="text-[10px] text-indigo-300 uppercase font-mono">প্রস্তাবিত গায়ের দাম</span>
+                  <p className="text-sm font-bold text-indigo-300 font-mono">৳{toBengaliNumber(costs.suggestedMrp)}</p>
+                </div>
+                <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30">
+                  <span className="text-[10px] text-emerald-400 uppercase font-mono">সম্ভাব্য মোট লাভ</span>
+                  <p className="text-sm font-bold text-emerald-300 font-mono">৳{toBengaliNumber(costs.totalBatchProfit)}</p>
+                </div>
+              </div>
+            </LiquidGlassCard>
+
+            <LiquidGlassCard intensity="vibrant" palette="indigo" className="p-5 space-y-3 text-xs">
               <div className="flex items-center gap-2 text-indigo-300 font-bold text-sm">
                 <Printer className="w-4 h-4 text-indigo-400" />
                 <span>অমর একুশে প্রিন্ট স্পেসিফিকেশন (Print Specifications)</span>
@@ -528,8 +679,8 @@ export function BoiMela3DPageFlipPreview({
         )}
       </div>
 
-      {/* ── 3. Bottom 1-Click Print PDF Export Action ── */}
-      <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-3">
+      {/* ── 3. Bottom 1-Click Print PDF Export & Nilkhet POD Dispatch Actions ── */}
+      <div className="pt-4 border-t border-white/10 flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={handleExportPDF}
           disabled={isExporting}
@@ -552,7 +703,25 @@ export function BoiMela3DPageFlipPreview({
             </>
           )}
         </button>
+
+        <button
+          onClick={() => setIsPodModalOpen(true)}
+          className="py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white text-xs sm:text-sm font-bold transition flex items-center justify-center gap-2 shadow-xl shadow-emerald-600/30 cursor-pointer"
+        >
+          <Truck className="w-4 h-4" />
+          <span>নীলক্ষেত ফিজিক্যাল প্রিন্ট অর্ডার (POD Dispatch)</span>
+        </button>
       </div>
+
+      {/* ── Universal Nilkhet POD Fulfillment Modal ── */}
+      <UniversalPrintModal
+        isOpen={isPodModalOpen}
+        onClose={() => setIsPodModalOpen(false)}
+        defaultPreset="book"
+        title={book.titleBn}
+        author={book.authorBn}
+        content={book.chapters.map((c) => `### ${c.titleBn}\n\n${c.content.join("\n\n")}`).join("\n\n---\n\n")}
+      />
     </div>
   );
 }

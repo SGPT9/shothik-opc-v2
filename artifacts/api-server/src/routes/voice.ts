@@ -64,7 +64,7 @@ router.post("/v1/voice/transcribe", async (req: Request, res: Response) => {
     const intent = inferVoiceIntent(normalizedText);
 
     // Extract potential TrxIDs or phone numbers
-    const trxMatch = normalizedText.match(/\b([A-Z0-9]{8,12})\b/);
+    const trxMatch = normalizedText.match(/TrxID\s*([A-Z0-9]+)/i) || normalizedText.match(/\b([A-Z0-9]{6,16})\b/);
     const phoneMatch = normalizedText.match(/\b(01[3-9]\d{8})\b/);
     const amountMatch = normalizedText.match(/৳\s*(\d+)|(\d+)\s*৳/);
 

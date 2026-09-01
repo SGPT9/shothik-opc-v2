@@ -179,4 +179,51 @@ describe("useChatStreamEngine — Deep Module Seam Tests", () => {
       "Rate limit exceeded on InsForge Edge Gateway"
     );
   });
+
+  it("handles OpenAI format choices delta content and reasoning_content correctly", async () => {
+    const receivedChunks: string[] = [];
+    const receivedThinking: string[] = [];
+    let receivedArtifact: any = null;
+
+    const openAiTransport: StreamTransport = {
+      async sendStream(_endpoint, _payload, _signal, callbacks: StreamCallbacks) {
+        callbacks.onThinking?.("Analyzing user intent via Hermes CoT...");
+        callbacks.onChunk("Here is the solution to your task.");
+        callbacks.onArtifact?.({
+          type: "code",
+          title: "live_script.py",
+          content: "print('Streaming live to canvas')",
+        });
+        callbacks.onComplete();
+      },
+    };
+
+    const { result } = renderHook(() =>
+      useChatStreamEngine({ transport: openAiTransport })
+    );
+
+    await act(async () => {
+      await result.current.startStream(
+        "/api/chat",
+        { message: "test query" },
+        (chunk) => receivedChunks.push(chunk),
+        vi.fn(),
+        vi.fn(),
+        {
+          onThinking: (thought) => receivedThinking.push(thought),
+          onArtifact: (art) => {
+            receivedArtifact = art;
+          },
+        }
+      );
+    });
+
+    expect(receivedChunks).toEqual(["Here is the solution to your task."]);
+    expect(receivedThinking).toEqual(["Analyzing user intent via Hermes CoT..."]);
+    expect(receivedArtifact).toEqual({
+      type: "code",
+      title: "live_script.py",
+      content: "print('Streaming live to canvas')",
+    });
+  });
 });

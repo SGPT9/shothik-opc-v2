@@ -313,19 +313,19 @@ function sanitizeTasks(value: unknown): TwinSeedTask[] | null {
   if (!Array.isArray(value) || value.length > MAX_TASKS) return null;
   const tasks: TwinSeedTask[] = [];
   for (const t of value) {
-    const task = t as { id?: unknown; title?: unknown; completed?: unknown };
+    const rawTask = typeof t === "string" ? { title: t, completed: false } : (t as { id?: unknown; title?: unknown; completed?: unknown });
     if (
-      !task ||
-      typeof task.title !== "string" ||
-      !task.title.trim() ||
-      task.title.length > 500
+      !rawTask ||
+      typeof rawTask.title !== "string" ||
+      !rawTask.title.trim() ||
+      rawTask.title.length > 500
     ) {
       return null;
     }
     tasks.push({
-      id: typeof task.id === "number" ? task.id : tasks.length + 1,
-      title: task.title.trim(),
-      completed: task.completed === true,
+      id: typeof rawTask.id === "number" ? rawTask.id : tasks.length + 1,
+      title: rawTask.title.trim(),
+      completed: rawTask.completed === true,
     });
   }
   return tasks;

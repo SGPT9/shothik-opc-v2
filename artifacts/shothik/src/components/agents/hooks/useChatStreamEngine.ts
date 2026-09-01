@@ -180,7 +180,6 @@ export const defaultFetchTransport: StreamTransport = {
       let buffer = "";
 
       // ── High-FPS requestAnimationFrame Token Batcher ──
-      // Batches high-frequency SSE token chunks into 16ms animation frames to eliminate DOM thrashing
       let pendingTokens = "";
       let rafId: number | null = null;
 
@@ -201,6 +200,43 @@ export const defaultFetchTransport: StreamTransport = {
         }
       };
 
+      // ── Inline <think>...</think> Stream Parser State Machine ──
+      let inThinkTag = false;
+      let thinkBuffer = "";
+
+      const processTextToken = (text: string) => {
+        if (!text) return;
+        let remaining = text;
+
+        while (remaining) {
+          if (!inThinkTag) {
+            const thinkStartIndex = remaining.indexOf("<think>");
+            if (thinkStartIndex !== -1) {
+              const preThink = remaining.slice(0, thinkStartIndex);
+              if (preThink) queueToken(preThink);
+              inThinkTag = true;
+              remaining = remaining.slice(thinkStartIndex + 7);
+            } else {
+              queueToken(remaining);
+              remaining = "";
+            }
+          } else {
+            const thinkEndIndex = remaining.indexOf("</think>");
+            if (thinkEndIndex !== -1) {
+              const thought = remaining.slice(0, thinkEndIndex);
+              thinkBuffer += thought;
+              if (thinkBuffer) onThinking?.(thinkBuffer);
+              inThinkTag = false;
+              remaining = remaining.slice(thinkEndIndex + 8);
+            } else {
+              thinkBuffer += remaining;
+              onThinking?.(thinkBuffer);
+              remaining = "";
+            }
+          }
+        }
+      };
+
       try {
         while (true) {
           const { done, value } = await reader.read();
@@ -214,8 +250,12 @@ export const defaultFetchTransport: StreamTransport = {
             const trimmed = line.trim();
             if (!trimmed || trimmed.startsWith(":")) continue;
 
-            if (trimmed.startsWith("data: ")) {
-              const dataStr = trimmed.slice(6).trim();
+            const isDataLine = trimmed.startsWith("data:") || trimmed.startsWith("data: ");
+            if (isDataLine) {
+              const dataStr = trimmed.startsWith("data: ")
+                ? trimmed.slice(6).trim()
+                : trimmed.slice(5).trim();
+
               if (dataStr === "[DONE]") {
                 flushTokens();
                 onComplete();
@@ -224,6 +264,12 @@ export const defaultFetchTransport: StreamTransport = {
 
               try {
                 const event = JSON.parse(dataStr);
+
+                // ── Universal OpenAI / Hermes / Shothik Choice Extraction ──
+                const choice = Array.isArray(event.choices) ? event.choices[0] : undefined;
+                const deltaContent = choice?.delta?.content;
+                const deltaReasoning = choice?.delta?.reasoning_content || choice?.delta?.reasoning;
+
                 const chunkText =
                   typeof event.token === "string"
                     ? event.token
@@ -231,6 +277,8 @@ export const defaultFetchTransport: StreamTransport = {
                     ? event.content
                     : typeof event.text === "string"
                     ? event.text
+                    : typeof deltaContent === "string"
+                    ? deltaContent
                     : typeof event.delta === "string"
                     ? event.delta
                     : typeof event.response === "string"
@@ -238,9 +286,19 @@ export const defaultFetchTransport: StreamTransport = {
                     : typeof event.message?.content === "string"
                     ? event.message.content
                     : "";
-                if (chunkText) queueToken(chunkText);
-                if (typeof event.thinking === "string") onThinking?.(event.thinking);
-                else if (typeof event.reasoning === "string") onThinking?.(event.reasoning);
+
+                const directThinking =
+                  typeof deltaReasoning === "string"
+                    ? deltaReasoning
+                    : typeof event.thinking === "string"
+                    ? event.thinking
+                    : typeof event.reasoning === "string"
+                    ? event.reasoning
+                    : "";
+
+                if (directThinking) onThinking?.(directThinking);
+                if (chunkText) processTextToken(chunkText);
+
                 if (event.event === "assistant_step" && event.step) onStep?.(event.step);
                 if (event.event === "sources_retrieved" && Array.isArray(event.sources)) onSources?.(event.sources);
                 if (event.event === "trace_milestone") {
@@ -259,6 +317,16 @@ export const defaultFetchTransport: StreamTransport = {
                     content: event.content || event.data || event.output,
                   } as any);
                 }
+                if (event.event === "artifact_delta" || event.event === "code_stream" || event.event === "doc_stream") {
+                  onArtifact?.({
+                    type: event.type || (event.event === "code_stream" ? "code" : "doc"),
+                    title: event.title || "Live Stream",
+                    subtitle: event.subtitle,
+                    data: event.data || event.content || event.delta,
+                    content: event.content || event.delta || event.code,
+                    isStreaming: true,
+                  } as any);
+                }
                 if (event.event === "await_checkpoint") {
                   onCheckpoint?.({
                     checkpointId: event.checkpointId,
@@ -268,10 +336,10 @@ export const defaultFetchTransport: StreamTransport = {
                   });
                 }
               } catch {
-                queueToken(dataStr);
+                processTextToken(dataStr);
               }
             } else {
-              queueToken(line);
+              processTextToken(line);
             }
           }
         }
@@ -1136,9 +1204,9 @@ export const defaultFetchTransport: StreamTransport = {
 };
 
 /**
- * Asynchronously persist client-side trace step to backend /api/v1/agent/traces
+ * Debounced batch telemetry queue to prevent network congestion
  */
-export async function persistTraceToBackend(trace: {
+const traceQueue: Array<{
   sessionId: string;
   agentName: string;
   prompt: string;
@@ -1146,18 +1214,50 @@ export async function persistTraceToBackend(trace: {
   status?: string;
   durationMs?: number;
   metadata?: Record<string, unknown>;
-}): Promise<void> {
+}> = [];
+
+let traceFlushTimer: any = null;
+
+const flushTraceQueue = async () => {
+  if (traceQueue.length === 0) return;
+  const batch = traceQueue.splice(0, 20);
   try {
     if (typeof fetch !== "undefined") {
       await fetch("/api/v1/agent/traces", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(trace),
+        body: JSON.stringify({ traces: batch }),
+      }).catch(async () => {
+        // Fallback to single requests if batch endpoint isn't supported
+        for (const item of batch) {
+          await fetch("/api/v1/agent/traces", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(item),
+          }).catch(() => {});
+        }
       });
     }
   } catch {
     // Non-blocking telemetry
   }
+};
+
+/**
+ * Asynchronously persist client-side trace step to backend with debounced batching
+ */
+export function persistTraceToBackend(trace: {
+  sessionId: string;
+  agentName: string;
+  prompt: string;
+  response?: string;
+  status?: string;
+  durationMs?: number;
+  metadata?: Record<string, unknown>;
+}): void {
+  traceQueue.push(trace);
+  if (traceFlushTimer) clearTimeout(traceFlushTimer);
+  traceFlushTimer = setTimeout(flushTraceQueue, 350);
 }
 
 export interface StreamState {

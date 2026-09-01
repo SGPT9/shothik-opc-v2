@@ -65,6 +65,8 @@ export function UniversalPrintModal({
   const [deliveryAddress, setDeliveryAddress] = useState("");
   const [deliveryCity, setDeliveryCity] = useState("Dhaka");
   const [paymentMethod, setPaymentMethod] = useState<"cod" | "bkash">("cod");
+  const [podQty, setPodQty] = useState<number>(1);
+  const [podPaperType, setPodPaperType] = useState<"70_offset" | "80_munken" | "100_art">("80_munken");
 
   // Compute estimated physical print page count & POD price (BDT)
   const estimatedPages = useMemo(() => {
@@ -78,12 +80,20 @@ export function UniversalPrintModal({
     return Math.max(1, Math.ceil(wordCount / wordsPerPage) + (includeCover ? 1 : 0));
   }, [content, chatMessages, preset, paperSize, includeCover]);
 
-  // Nilkhet POD Pricing Formula: Base ৳80 + ৳1.5 per page + ৳120 binding
+  // Forme (ফর্মা) calculation: 16 pages per signature
+  const formeCount = useMemo(() => Math.max(1, Math.ceil(estimatedPages / 16)), [estimatedPages]);
+
+  // Nilkhet POD Pricing Formula: Base ৳80 + ৳1.5 per page + paper multiplier + binding + courier
   const estimatedPriceBdt = useMemo(() => {
     const isInsideDhaka = deliveryCity.toLowerCase().includes("dhaka");
     const courierFee = isInsideDhaka ? 60 : 120;
-    return 80 + estimatedPages * 1.5 + (paperSize === "RoyalDemy" ? 140 : 80) + courierFee;
-  }, [estimatedPages, paperSize, deliveryCity]);
+    const paperMult = podPaperType === "100_art" ? 2.2 : podPaperType === "80_munken" ? 1.8 : 1.2;
+    const unitPrintCost = 50 + (formeCount * 8 * paperMult) + (paperSize === "RoyalDemy" ? 60 : 30);
+    // Quantity volume scale
+    const discountFactor = podQty >= 100 ? 0.75 : podQty >= 50 ? 0.85 : podQty >= 10 ? 0.92 : 1.0;
+    const totalPrintCost = unitPrintCost * podQty * discountFactor;
+    return Math.round(totalPrintCost + courierFee);
+  }, [formeCount, paperSize, deliveryCity, podPaperType, podQty]);
 
   const handleOrderPod = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -530,6 +540,80 @@ export function UniversalPrintModal({
                 </div>
               ) : (
                 <form onSubmit={handleOrderPod} className="space-y-3">
+                  {/* Bangladesh-only Notice */}
+                  <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[10px] text-amber-300 flex items-center justify-between">
+                    <span className="font-semibold">🇧🇩 বাংলাদেশ ডেলিভারি ও নীলক্ষেত প্রেস</span>
+                    <span className="font-mono">{formeCount} ফর্মা ({estimatedPages} পৃষ্ঠা)</span>
+                  </div>
+
+                  {/* Quantity Selector */}
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-[11px] font-medium text-foreground">
+                      <span>কপি সংখ্যা (Quantity):</span>
+                      <span className="font-bold text-emerald-400 font-mono">{podQty} Copies</span>
+                    </div>
+                    <div className="grid grid-cols-4 gap-1 text-[10px] font-mono">
+                      {[1, 5, 10, 50, 100, 300, 500, 1000].map((qty) => (
+                        <button
+                          key={qty}
+                          type="button"
+                          onClick={() => setPodQty(qty)}
+                          className={cn(
+                            "py-1 rounded-md border text-center transition cursor-pointer",
+                            podQty === qty
+                              ? "bg-emerald-600 border-emerald-500 text-white font-bold"
+                              : "bg-muted/30 border-border/60 text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          {qty}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Paper Type Selection */}
+                  <div className="space-y-1">
+                    <label className="text-[11px] font-medium text-foreground">কাগজের ধরন (Paper Grade)</label>
+                    <div className="grid grid-cols-3 gap-1 text-[10px]">
+                      <button
+                        type="button"
+                        onClick={() => setPodPaperType("70_offset")}
+                        className={cn(
+                          "py-1 px-1.5 rounded-md border text-center transition cursor-pointer truncate",
+                          podPaperType === "70_offset"
+                            ? "bg-emerald-600/20 border-emerald-500 text-emerald-300 font-bold"
+                            : "bg-muted/30 border-border/60 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        70 GSM Offset
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPodPaperType("80_munken")}
+                        className={cn(
+                          "py-1 px-1.5 rounded-md border text-center transition cursor-pointer truncate",
+                          podPaperType === "80_munken"
+                            ? "bg-emerald-600/20 border-emerald-500 text-emerald-300 font-bold"
+                            : "bg-muted/30 border-border/60 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        80 GSM Munken
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPodPaperType("100_art")}
+                        className={cn(
+                          "py-1 px-1.5 rounded-md border text-center transition cursor-pointer truncate",
+                          podPaperType === "100_art"
+                            ? "bg-emerald-600/20 border-emerald-500 text-emerald-300 font-bold"
+                            : "bg-muted/30 border-border/60 text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        100 GSM Art
+                      </button>
+                    </div>
+                  </div>
+
                   <div className="space-y-1">
                     <label className="text-[11px] font-medium text-foreground">Full Name</label>
                     <input
@@ -568,48 +652,53 @@ export function UniversalPrintModal({
 
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-foreground">City Area</label>
+                      <label className="text-[11px] font-medium text-foreground">Courier Area</label>
                       <select
                         value={deliveryCity}
                         onChange={(e) => setDeliveryCity(e.target.value)}
                         className="w-full h-8 px-2 rounded-lg text-xs bg-background border border-border/60 text-foreground outline-none"
                       >
-                        <option value="Dhaka">Dhaka (৳60)</option>
+                        <option value="Dhaka">Dhaka Metro (৳60)</option>
                         <option value="Chittagong">Chittagong (৳120)</option>
                         <option value="Sylhet">Sylhet (৳120)</option>
-                        <option value="Other">Other 61 Districts (৳120)</option>
+                        <option value="Rajshahi">Rajshahi (৳120)</option>
+                        <option value="Khulna">Khulna (৳120)</option>
+                        <option value="Barisal">Barisal (৳120)</option>
+                        <option value="Rangpur">Rangpur (৳120)</option>
+                        <option value="Mymensingh">Mymensingh (৳120)</option>
+                        <option value="Other">All Other 56 Districts (৳120)</option>
                       </select>
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[11px] font-medium text-foreground">Payment</label>
+                      <label className="text-[11px] font-medium text-foreground">Payment Method</label>
                       <select
                         value={paymentMethod}
                         onChange={(e) => setPaymentMethod(e.target.value as "cod" | "bkash")}
                         className="w-full h-8 px-2 rounded-lg text-xs bg-background border border-border/60 text-foreground outline-none"
                       >
-                        <option value="cod">Cash on Delivery</option>
-                        <option value="bkash">bKash Instant</option>
+                        <option value="cod">Cash on Delivery (COD)</option>
+                        <option value="bkash">bKash Instant Checkout</option>
                       </select>
                     </div>
                   </div>
 
                   <div className="pt-2 border-t border-border/50 flex items-center justify-between text-xs font-bold text-foreground">
-                    <span>Total Cost:</span>
+                    <span>Total Estimated Cost:</span>
                     <span className="text-emerald-500 font-mono text-sm">৳{estimatedPriceBdt.toFixed(0)} BDT</span>
                   </div>
 
                   <Button
                     type="submit"
                     disabled={podSubmitting}
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 text-xs gap-1.5 cursor-pointer"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-9 text-xs gap-1.5 cursor-pointer shadow-lg shadow-emerald-600/20"
                   >
                     {podSubmitting ? (
-                      <span>Dispatching to Nilkhet...</span>
+                      <span>Dispatching to Nilkhet Offset Press...</span>
                     ) : (
                       <>
                         <Truck className="h-3.5 w-3.5" />
-                        <span>Confirm & Dispatch Parcel</span>
+                        <span>Approve & Dispatch Physical Print (৳{estimatedPriceBdt.toFixed(0)} BDT)</span>
                       </>
                     )}
                   </Button>

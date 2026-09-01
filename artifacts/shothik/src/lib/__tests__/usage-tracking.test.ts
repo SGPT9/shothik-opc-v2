@@ -1,22 +1,25 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import { trackUsageSafe } from '../usage-tracking';
 import { getChatRuntimeSummary, resetMetrics } from '../runtime-metrics';
 
-vi.mock('@/convex/_generated/api', () => ({
-  api: {
-    llmUsage: {
-      trackUsage: 'llmUsage.trackUsage',
-    },
-  },
-}));
-
 describe('trackUsageSafe', () => {
-  it('records runtime usage metrics after a successful write', async () => {
-    resetMetrics();
+  const originalFetch = global.fetch;
 
-    const convex = {
-      mutation: vi.fn(),
-    };
+  beforeEach(() => {
+    resetMetrics();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
+    vi.restoreAllMocks();
+  });
+
+  it('records runtime usage metrics after a successful write', async () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true }),
+    });
 
     const payload = {
       userId: 'u1',
@@ -28,7 +31,7 @@ describe('trackUsageSafe', () => {
       costUsd: 0.01,
     };
 
-    await trackUsageSafe(convex as any, payload);
+    await trackUsageSafe(payload);
 
     const summary = getChatRuntimeSummary();
 
@@ -39,10 +42,13 @@ describe('trackUsageSafe', () => {
     expect(summary.usageTracking.perCall.count).toBe(1);
   });
 
-  it('calls the llmUsage.trackUsage mutation', async () => {
-    const convex = {
-      mutation: vi.fn(),
-    };
+  it('calls the REST endpoint /api/v1/subscriptions/llm-track with payload and headers', async () => {
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ success: true }),
+    });
+    global.fetch = mockFetch;
 
     const payload = {
       userId: 'u1',
@@ -54,9 +60,19 @@ describe('trackUsageSafe', () => {
       costUsd: 0.01,
     };
 
-    await expect(trackUsageSafe(convex as any, payload)).resolves.toBeUndefined();
+    await expect(trackUsageSafe(payload)).resolves.toBeUndefined();
 
-    expect(convex.mutation).toHaveBeenCalledTimes(1);
-    expect(convex.mutation).toHaveBeenCalledWith('llmUsage.trackUsage', payload);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/subscriptions/llm-track'),
+      expect.objectContaining({
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': 'u1',
+        },
+        body: JSON.stringify(payload),
+      })
+    );
   });
 });

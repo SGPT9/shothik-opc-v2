@@ -13,8 +13,16 @@ router.get("/status", (_req, res) => {
     platform: "Shothik Unified AI Platform",
     domain: "shothikgpt.com",
     overallHealth: "healthy",
-    activeSubsystems: 26,
-    version: "2.0.0",
+    activeSubsystems: 30,
+    version: "2.2.0",
+    subsystems: {
+      inkosNarrativeForecast: "operational",
+      nilkhetPodEngine: "operational",
+      boimela3DStudio: "operational",
+      storyGraphTreeStudio: "operational",
+      steadfastCourierGateway: "operational",
+      writingStudio3Fold: "operational",
+    },
     uptimeSeconds: Math.floor(process.uptime()),
   });
 });
