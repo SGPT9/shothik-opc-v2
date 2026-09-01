@@ -128,16 +128,17 @@ export interface ComposerProps {
 
 // ─── Models ───────────────────────────────────────────────────────────────────
 
-const MODELS = [
-  { value: "nvidia-deepseek-r1", label: "DeepSeek R1 (NVIDIA NIM)", badge: "🟢 NIM 100 T/s", desc: "TensorRT-LLM Accelerated Frontier Reasoning" },
-  { value: "nvidia-llama-3.3-70b", label: "Llama 3.3 70B (NVIDIA NIM)", badge: "🟢 NIM Fast", desc: "Enterprise High-Throughput Generalist Agent" },
-  { value: "gemini-3.7-flash",  label: "Gemini 3.7 Flash",  badge: "✨ Default", desc: "Frontier Hybrid Reasoning · High Speed" },
-  { value: "deepseek-v4-flash", label: "DeepSeek V4 Flash", badge: "⚡ Fast", desc: "Ultra-low cost MoE · Instant Reasoning" },
-  { value: "ollama-local",      label: "Ollama Local (DeepSeek-R1 / Coder)", badge: "🦙 Local VRAM", desc: "Private On-Device LLM Inference (Port 11434)" },
-  { value: "loop-engineering",  label: "Loop Engineering (5-Stage Auto-Repair)", badge: "🔄 Agentic Loop", desc: "Closed-loop Perceive ➔ Act ➔ Self-Heal ➔ Consensus" },
-  { value: "deepseek-v4-pro",   label: "DeepSeek V4 Pro",   badge: "🧠 Flagship", desc: "1M Context MoE · Deep Reasoning" },
-  { value: "gemini-2.5-pro",    label: "Gemini 2.5 Pro",    badge: "🔬 Complex", desc: "Deep Thinking Engine" },
-];
+import { PROMPT_PROFILES, type PromptProfile } from "@/lib/chat/prompt-profile-registry";
+
+// ─── Prompt-Level Models (User-Facing UI Profiles) ───────────────────────────
+
+const MODELS = PROMPT_PROFILES.map((p) => ({
+  value: p.id,
+  label: p.name,
+  badge: p.badge,
+  desc: p.description,
+  recommendedBackend: p.recommendedBackendModel,
+}));
 
 // ─── Voice languages for South Asia ──────────────────────────────────────────
 
