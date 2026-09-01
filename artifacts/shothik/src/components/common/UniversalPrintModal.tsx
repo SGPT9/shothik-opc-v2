@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { CourierTrackingModal } from "./CourierTrackingModal";
 
 export type PrintPreset = "research" | "book" | "chat";
 export type PaperSize = "A4" | "Letter" | "RoyalDemy";
@@ -53,6 +54,7 @@ export function UniversalPrintModal({
   const [copied, setCopied] = useState(false);
   const [showPodForm, setShowPodForm] = useState(false);
   const [podSubmitting, setPodSubmitting] = useState(false);
+  const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [podOrderResult, setPodOrderResult] = useState<{
     trackingId?: string;
     totalPayableBdt?: number;
@@ -528,15 +530,25 @@ export function UniversalPrintModal({
                       <span className="font-bold text-foreground">{podOrderResult.deliveryEstimate}</span>
                     </div>
                   </div>
-                  <Button
-                    onClick={() => {
-                      setShowPodForm(false);
-                      setPodOrderResult(null);
-                    }}
-                    className="w-full bg-brand text-white font-bold h-8 text-xs"
-                  >
-                    Done
-                  </Button>
+                  <div className="flex items-center gap-2 pt-1">
+                    <Button
+                      onClick={() => setIsTrackingOpen(true)}
+                      className="flex-1 bg-amber-500 hover:bg-amber-400 text-black font-bold h-8 text-xs gap-1 cursor-pointer"
+                    >
+                      <Truck className="h-3.5 w-3.5" />
+                      <span>Track Live Courier</span>
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        setShowPodForm(false);
+                        setPodOrderResult(null);
+                      }}
+                      variant="outline"
+                      className="flex-1 border-border/80 text-foreground font-bold h-8 text-xs"
+                    >
+                      Done
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleOrderPod} className="space-y-3">
@@ -708,6 +720,12 @@ export function UniversalPrintModal({
           </div>
         )}
       </div>
+
+      <CourierTrackingModal
+        isOpen={isTrackingOpen}
+        onClose={() => setIsTrackingOpen(false)}
+        initialTrackingCode={podOrderResult?.trackingId || "BD_ST_755448"}
+      />
     </div>
   );
 }
