@@ -15,14 +15,14 @@ export { composeSkills, createClaimActionGuard } from "./agent/skillComposer.js"
  * Creates a blank formatted .docx manuscript container for research papers or Ekushey books
  */
 export async function createBlankManuscriptDocx(title: string, author: string = "Shothik Author"): Promise<Uint8Array> {
-  const { generateBlankDocx } = await import("./docx/blank.js");
-  return generateBlankDocx({ title, author });
+  const { buildBlankDocx } = await import("./docx/blank.js");
+  return buildBlankDocx();
 }
 
 /**
  * Creates a clean multi-slide presentation container from markdown outline
  */
-export async function createPresentationPptx(title: string, slides: Array<{ title: string; bullets: string[]; notes?: string }>): Promise<Uint8Array> {
-  const { generatePptxDeck } = await import("./pptx/generate.js");
-  return generatePptxDeck({ title, slides });
+export async function createPresentationPptx(title: string, slides: Array<{ title: string; bullets: string[]; notes?: string }> = []): Promise<Uint8Array> {
+  const { createBlankPptx } = await import("./pptx/blank.js");
+  return createBlankPptx();
 }

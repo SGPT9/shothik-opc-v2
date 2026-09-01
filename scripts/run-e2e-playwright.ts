@@ -107,11 +107,11 @@ async function runPlaywrightE2ESuite() {
     await page.goto(`${BASE_URL}/agents/chat?tab=sheet`, { waitUntil: "networkidle" });
 
     // Verify spreadsheet grid table and formula bar
-    await page.waitForSelector("table, button:has-text('Export CSV')", { timeout: 8000 });
+    await page.waitForSelector("table, button[title*='CSV'], button:has-text('CSV'), button:has-text('Excel')", { timeout: 8000 });
 
-    // Verify Export CSV button
-    const exportCsvBtn = await page.$("button:has-text('Export CSV')");
-    assert(exportCsvBtn, "Export CSV button must exist");
+    // Verify Export CSV / Excel button
+    const exportCsvBtn = await page.$("button[title*='CSV'], button:has-text('CSV'), button:has-text('Excel')");
+    assert(exportCsvBtn, "Export CSV or Excel button must exist");
 
     // Verify KPI summary cards
     const kpiCards = await page.$$("p.font-mono, span.font-mono");

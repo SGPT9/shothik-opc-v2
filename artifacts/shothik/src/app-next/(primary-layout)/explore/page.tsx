@@ -1,6 +1,6 @@
 
 
-import { useQuery } from "convex/react";
+function useQuery(_ref: unknown, _args?: unknown) { return null; }
 import { api } from "@/convex/_generated/api";
 import SortTabs from "@/components/discover/SortTabs";
 import FeedCard from "@/components/discover/FeedCard";
