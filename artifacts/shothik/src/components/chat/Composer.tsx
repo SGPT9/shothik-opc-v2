@@ -45,6 +45,10 @@ import { PerplexityFocusSelector, PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocus
 import type { ChatPersona } from "@/lib/chat/types";
 import { RagKnowledgeVaultModal } from "./RagKnowledgeVaultModal";
 import { CourierTrackingModal } from "@/components/common/CourierTrackingModal";
+import { AgentMentionOverlay, type AgentOption } from "./AgentMentionOverlay";
+import { SlashCommandOverlay, type SlashCommandOption } from "./SlashCommandOverlay";
+import { ContextUsageIndicator } from "./ContextUsageIndicator";
+import { ConversationIntelligencePanel, type FollowUpSuggestion } from "./ConversationIntelligencePanel";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
