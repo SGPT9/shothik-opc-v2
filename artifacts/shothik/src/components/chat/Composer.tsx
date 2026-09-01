@@ -29,6 +29,7 @@ import {
   Cpu,
   RefreshCw,
   Plus,
+  Database,
 } from "lucide-react";
 import {
   forwardRef,
@@ -42,6 +43,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PerplexityFocusSelector, PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
 import type { ChatPersona } from "@/lib/chat/types";
+import { RagKnowledgeVaultModal } from "./RagKnowledgeVaultModal";
+import { CourierTrackingModal } from "@/components/common/CourierTrackingModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -202,6 +205,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [modelMenuOpen, setModelMenuOpen] = useState(false);
     const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
     const [focusMenuOpen, setFocusMenuOpen] = useState(false);
+    const [isVaultOpen, setIsVaultOpen] = useState(false);
+    const [isTrackingOpen, setIsTrackingOpen] = useState(false);
     const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const lastPromptRef = useRef<string>("");
@@ -813,7 +818,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       { Icon: Table2, label: "Smart Spreadsheet", action: () => dispatchArtifact("sheet"), color: "text-cyan-400" },
                       { Icon: Search, label: "Deep Research", action: () => dispatchArtifact("research"), color: "text-violet-400" },
                       { Icon: Code2, label: "Code Assistant", action: () => dispatchArtifact("code"), color: "text-emerald-400" },
-                      { Icon: BookOpen, label: "বই ও প্রকাশনা", action: () => dispatchArtifact("boimela"), color: "text-rose-400" },
+                      { Icon: BookOpen, label: "বই ও প্রকাশনা (BoiMela)", action: () => dispatchArtifact("boimela"), color: "text-rose-400" },
+                      { Icon: Database, label: "RAG Knowledge Vault", action: () => setIsVaultOpen(true), color: "text-cyan-400" },
+                      { Icon: Truck, label: "Steadfast Parcel Tracker", action: () => setIsTrackingOpen(true), color: "text-amber-400" },
                     ].map(({ Icon, label, action, color }) => (
                       <button
                         key={label}
@@ -1062,6 +1069,16 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         )}
 
         {footer && <p className="text-center text-[10px] text-muted-foreground/70 mt-1">{footer}</p>}
+
+        {/* Knowledge & Logistics Modals */}
+        <RagKnowledgeVaultModal
+          isOpen={isVaultOpen}
+          onClose={() => setIsVaultOpen(false)}
+        />
+        <CourierTrackingModal
+          isOpen={isTrackingOpen}
+          onClose={() => setIsTrackingOpen(false)}
+        />
       </div>
     );
   }
