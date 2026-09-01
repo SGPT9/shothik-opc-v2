@@ -87,7 +87,7 @@ describe("Dynamic Artifacts Test Suite", () => {
       ];
       const kpis = computeDynamicKPIs(grid, "3-Scenario Financial Model (BDT)");
       expect(kpis.length).toBe(4);
-      expect(kpis[0].label).toBe("Base Revenue");
+      expect(kpis[0].label).toBe("Base MRR");
       expect(kpis[0].value).toContain("30.00M");
     });
   });

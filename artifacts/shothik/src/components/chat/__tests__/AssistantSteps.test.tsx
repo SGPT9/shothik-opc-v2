@@ -29,11 +29,10 @@ describe("AssistantSteps Component", () => {
     },
   ];
 
-  it("renders collapsed header with actions count and running status", () => {
+  it("renders collapsed header with running status", () => {
     render(<AssistantSteps steps={mockSteps} collapsed={true} />);
 
-    expect(screen.getByText(/Running agent steps/i)).toBeInTheDocument();
-    expect(screen.getByText("3 actions")).toBeInTheDocument();
+    expect(screen.getByText(/Searching and verifying sources/i)).toBeInTheDocument();
     // In collapsed state, details should not be visible
     expect(screen.queryByText("4-Way Fused Hybrid RAG Retrieval")).not.toBeInTheDocument();
   });

@@ -9,8 +9,8 @@ vi.mock("@/components/scenariolab/ScenarioLabModal", () => ({
     isOpen ? <div data-testid="mock-scenariolab-modal">ScenarioLab Modal</div> : null,
 }));
 
-vi.mock("../PrintPreflightModal", () => ({
-  PrintPreflightModal: ({ isOpen }: { isOpen: boolean }) =>
+vi.mock("@/components/books/PreflightAuditModal", () => ({
+  PreflightAuditModal: ({ isOpen }: { isOpen: boolean }) =>
     isOpen ? <div data-testid="mock-preflight-modal">Preflight Modal</div> : null,
 }));
 

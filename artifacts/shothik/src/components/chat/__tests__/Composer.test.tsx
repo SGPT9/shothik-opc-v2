@@ -70,9 +70,9 @@ describe("Composer", () => {
     const handleAction = vi.fn();
     render(<Composer onAction={handleAction} />);
 
-    // Open tools dropdown
-    const toolsButton = screen.getByRole("button", { name: /Tools/i });
-    fireEvent.click(toolsButton);
+    // Open tools / attachment dropdown
+    const attachButton = screen.getByRole("button", { name: /Add attachment or open workspace/i });
+    fireEvent.click(attachButton);
 
     // Deep Research
     const deepResearchOption = screen.getByText("Deep Research");

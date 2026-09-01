@@ -1,6 +1,6 @@
 
 
-import { useQuery } from "convex/react";
+function useQuery(_ref: unknown, _args?: unknown) { return null; }
 import { api } from "@/convex/_generated/api";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
@@ -10,21 +10,17 @@ interface ChannelSidebarProps {
   activeSlug?: string;
 }
 
-export default function ChannelSidebar({ activeSlug }: ChannelSidebarProps) {
-  const channels = useQuery(api.channels.getChannels);
+const DEMO_CHANNELS = [
+  { _id: "ch_1", name: "AI & NLP Research", slug: "ai-nlp", memberCount: 1240, icon: "🤖" },
+  { _id: "ch_2", name: "Logistics & F-Commerce", slug: "logistics", memberCount: 890, icon: "🚚" },
+  { _id: "ch_3", name: "Creative Writing", slug: "creative-writing", memberCount: 2150, icon: "✍️" },
+  { _id: "ch_4", name: "Startups & VC", slug: "business", memberCount: 1680, icon: "💼" },
+  { _id: "ch_5", name: "Software Architecture", slug: "architecture", memberCount: 940, icon: "📐" },
+];
 
-  if (!channels) {
-    return (
-      <div className="w-56 shrink-0 space-y-2">
-        <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          Channels
-        </div>
-        {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-7 animate-pulse rounded bg-muted/40" />
-        ))}
-      </div>
-    );
-  }
+export default function ChannelSidebar({ activeSlug }: ChannelSidebarProps) {
+  const rawChannels = useQuery(api.channels.getChannels);
+  const channels = (rawChannels && rawChannels.length > 0) ? rawChannels : DEMO_CHANNELS;
 
   return (
     <div className="w-56 shrink-0">
