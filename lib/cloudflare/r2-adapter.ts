@@ -1,10 +1,12 @@
-import { InsForgeStorageAdapter } from "@/lib/insforge/storage-adapter";
-import logger from "@/lib/logger";
+import { InsForgeStorageAdapter } from "../insforge/storage-adapter";
+import logger from "../logger";
+
+declare const process: any;
 
 export interface R2UploadOptions {
   bucketName?: string;
   key: string;
-  fileBuffer: Buffer;
+  fileBuffer: Uint8Array | ArrayBuffer | any;
   contentType: string;
   workspaceId: string;
 }
@@ -18,6 +20,13 @@ export interface R2UploadResult {
   provider: "cloudflare_r2" | "insforge_storage_fallback";
 }
 
+function getEnv(key: string, defaultValue = ""): string {
+  if (typeof process !== "undefined" && process.env && process.env[key]) {
+    return process.env[key] || defaultValue;
+  }
+  return defaultValue;
+}
+
 export class CloudflareR2Adapter {
   /**
    * Uploads a file to Cloudflare R2 object storage (Zero Egress CDN).
@@ -26,17 +35,19 @@ export class CloudflareR2Adapter {
   static async uploadObject(options: R2UploadOptions): Promise<R2UploadResult> {
     const startTime = Date.now();
     const {
-      bucketName = process.env.CLOUDFLARE_R2_BUCKET || "shothik-r2-assets",
+      bucketName = getEnv("CLOUDFLARE_R2_BUCKET", "shothik-r2-assets"),
       key,
       fileBuffer,
       contentType,
       workspaceId,
     } = options;
 
-    const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-    const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
-    const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || "cdn.shothikgpt.com";
+    const accountId = getEnv("CLOUDFLARE_ACCOUNT_ID");
+    const accessKeyId = getEnv("CLOUDFLARE_R2_ACCESS_KEY_ID");
+    const secretAccessKey = getEnv("CLOUDFLARE_R2_SECRET_ACCESS_KEY");
+    const publicDomain = getEnv("CLOUDFLARE_R2_PUBLIC_DOMAIN", "cdn.shothikgpt.com");
+
+    const sizeBytes = fileBuffer?.byteLength || fileBuffer?.length || 0;
 
     if (accountId && accessKeyId && secretAccessKey) {
       try {
@@ -45,7 +56,7 @@ export class CloudflareR2Adapter {
         logger.info("[r2-adapter] Uploading object to Cloudflare R2", {
           bucketName,
           key,
-          sizeBytes: fileBuffer.length,
+          sizeBytes,
           workspaceId,
         });
 
@@ -56,7 +67,7 @@ export class CloudflareR2Adapter {
           key,
           url: cdnUrl,
           bucket: bucketName,
-          sizeBytes: fileBuffer.length,
+          sizeBytes,
           uploadedAt: Date.now(),
           provider: "cloudflare_r2",
         };
@@ -80,7 +91,7 @@ export class CloudflareR2Adapter {
       key: insforgeResult.key,
       url: insforgeResult.url,
       bucket: insforgeResult.bucket,
-      sizeBytes: fileBuffer.length,
+      sizeBytes,
       uploadedAt: Date.now(),
       provider: "insforge_storage_fallback",
     };
@@ -90,7 +101,7 @@ export class CloudflareR2Adapter {
    * Generates public CDN URL for an R2 object key.
    */
   static getPublicCdnUrl(key: string): string {
-    const publicDomain = process.env.CLOUDFLARE_R2_PUBLIC_DOMAIN || "cdn.shothikgpt.com";
+    const publicDomain = getEnv("CLOUDFLARE_R2_PUBLIC_DOMAIN", "cdn.shothikgpt.com");
     return `https://${publicDomain}/${key}`;
   }
 }

@@ -1,15 +1,18 @@
-import type { IncomingMessage, ServerResponse } from "node:http";
-
-interface VercelRequest extends IncomingMessage {
-  query: Record<string, string | string[]>;
-  cookies: Record<string, string>;
-  body: any;
+export interface VercelRequest {
+  url?: string;
+  method?: string;
+  headers?: Record<string, string | string[] | undefined>;
+  query?: Record<string, string | string[]>;
+  cookies?: Record<string, string>;
+  body?: any;
 }
 
-interface VercelResponse extends ServerResponse {
+export interface VercelResponse {
+  setHeader: (name: string, value: string) => VercelResponse;
   status: (statusCode: number) => VercelResponse;
   json: (body: any) => VercelResponse;
   send: (body: any) => VercelResponse;
+  end: (body?: any) => VercelResponse;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -28,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const rawUrl = req.url || "/";
-  const url = new URL(rawUrl, `http://${req.headers.host || "localhost"}`);
+  const url = new URL(rawUrl, `http://${req.headers?.host || "localhost"}`);
   let pathname = url.pathname;
   
   // Normalize pathname to strip leading /api

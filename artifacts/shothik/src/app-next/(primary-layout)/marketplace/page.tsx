@@ -1,7 +1,7 @@
 
 
 import { useState } from "react";
-import { useQuery } from "convex/react";
+function useQuery(_ref: unknown, _args?: unknown) { return null; }
 import { api } from "@/convex/_generated/api";
 import { Link } from "wouter";
 import { BookOpen, Bot, User, Search, SlidersHorizontal, ArrowRight, Globe, Coins, X, Filter } from "lucide-react";

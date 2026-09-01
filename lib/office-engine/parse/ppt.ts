@@ -1,3 +1,7 @@
+function normalizeText(text: string): string {
+  return text.replace(/\r\n?/g, '\n').trim()
+}
+
 export async function pptToText(bytes: Uint8Array): Promise<string> {
   try {
     // @ts-ignore
