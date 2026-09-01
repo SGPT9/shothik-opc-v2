@@ -1,4 +1,4 @@
-import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt, ChevronDown, Volume2, VolumeX, ThumbsUp, ThumbsDown, Pencil, Check } from "lucide-react";
+import { Command, Copy, Link2, Loader2, Paperclip, RefreshCw, Search, Sparkles, Square, User, FlaskConical, Globe, Lightbulb, ListChecks, Receipt, ChevronDown, Volume2, VolumeX, ThumbsUp, ThumbsDown, Pencil, Check, BookOpen, Languages, GitBranch } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MarkdownMessage } from "./MarkdownMessage";
 import { OvernightJobCard } from "./OvernightJobCard";
@@ -834,38 +834,65 @@ export function Transcript({
                         >
                           <span className="text-sm font-bold leading-none">⋯</span>
                         </button>
-                        <div className="absolute bottom-full left-0 mb-1 z-50 hidden group-hover/overflow:block w-44 rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100">
+                        <div className="absolute bottom-full left-0 mb-1 z-50 hidden group-hover/overflow:block w-48 rounded-xl border border-border/80 bg-popover shadow-xl py-1 animate-in fade-in zoom-in-95 duration-100 text-left">
                           <button
                             onClick={() => onActionClick?.("deep-research", message)}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition cursor-pointer"
                           >
-                            <Search className="h-3 w-3 text-brand" />
+                            <Search className="h-3.5 w-3.5 text-brand" />
                             Research this further
                           </button>
                           <button
                             onClick={() => onOpenArtifact?.("slides", message)}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition cursor-pointer"
                           >
-                            <Sparkles className="h-3 w-3 text-indigo-400" />
+                            <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
                             Turn into slides
                           </button>
                           <button
                             onClick={() => onOpenArtifact?.("sheet", message)}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition cursor-pointer"
                           >
-                            <Sparkles className="h-3 w-3 text-cyan-400" />
+                            <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
                             Turn into spreadsheet
                           </button>
-                          {/* Receipt — admin audit surface, inside overflow per DeepSeek-close spec */}
+                          <button
+                            onClick={() => {
+                              window.location.href = "/writing-studio?projectId=default-book";
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition cursor-pointer"
+                          >
+                            <BookOpen className="h-3.5 w-3.5 text-rose-400" />
+                            Send to Writing Studio
+                          </button>
+                          <button
+                            onClick={() => {
+                              onSelectPrompt?.("এই বিশ্লেষণটি স্পষ্ট, প্রাতিষ্ঠানিক ও প্রমিত বাংলায় অনুবাদ করুন।", "cofounder");
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition cursor-pointer"
+                          >
+                            <Languages className="h-3.5 w-3.5 text-emerald-400" />
+                            অনুবাদ (Translate to বাংলা)
+                          </button>
+                          <button
+                            onClick={() => {
+                              onSelectPrompt?.(`[Branch]: Explore deeper alternatives from: "${displayContent.slice(0, 80)}..."`, "cofounder");
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition cursor-pointer"
+                          >
+                            <GitBranch className="h-3.5 w-3.5 text-amber-400" />
+                            Fork New Branch
+                          </button>
+                          {/* Receipt — admin audit surface */}
                           <button
                             onClick={() => {
                               setTrajectoryModel(((message.metadata as any)?.model as string) || "DeepSeek V4 Flash");
                               setTrajectoryOpen(true);
                             }}
-                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition border-t border-border/40 mt-0.5 pt-2"
+                            className="flex w-full items-center gap-2 px-3 py-2 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/60 transition border-t border-border/40 mt-0.5 pt-2 cursor-pointer"
                             title="View execution trajectory & audit receipt"
                           >
-                            <Receipt className="h-3 w-3" />
+                            <Receipt className="h-3.5 w-3.5" />
                             View receipt
                           </button>
                         </div>
