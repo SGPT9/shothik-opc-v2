@@ -25,6 +25,7 @@ import {
   Pencil,
   Check,
   X,
+  BookOpen,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import {
@@ -309,6 +310,22 @@ export default function IconNavSidebar() {
             >
               <FileText className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
               {!effectiveCollapsed && <span>Saved Reports</span>}
+            </Link>
+
+            {/* 6. Agentic Study Standards */}
+            <Link
+              href="/marketplace"
+              title="Agentic Study Standards"
+              className={cn(
+                "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                isActive('/marketplace')
+                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+              )}
+            >
+              <BookOpen className="h-5 w-5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+              {!effectiveCollapsed && <span>Agentic Study Standards</span>}
             </Link>
           </div>
 
