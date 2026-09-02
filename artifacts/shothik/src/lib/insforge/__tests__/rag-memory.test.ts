@@ -1,4 +1,45 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+const mockRows: any[] = [];
+vi.mock("@/lib/insforge/server", () => ({
+  createInsforgeServerClient: vi.fn().mockResolvedValue({
+    database: {
+      from: vi.fn(() => ({
+        insert: vi.fn((rows: any[]) => {
+          mockRows.push(...rows);
+          return {
+            select: vi.fn(() => ({
+              single: vi.fn().mockResolvedValue({ data: { id: rows[0]?.document_id || "doc-mock-1" }, error: null }),
+            })),
+          };
+        }),
+        select: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            limit: vi.fn().mockResolvedValue({
+              data: mockRows.map((r) => ({
+                id: r.document_id,
+                twin_id: r.twin_id,
+                document_id: r.document_id,
+                content_type: r.content_type,
+                title: r.title,
+                content: r.content,
+                metadata: r.metadata,
+                created_at: r.created_at,
+              })),
+              error: null,
+            }),
+          })),
+        })),
+        delete: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            eq: vi.fn().mockResolvedValue({ error: null }),
+          })),
+        })),
+      })),
+    },
+  }),
+}));
+
 import { InsForgeTwinRagMemory, indexChapterToRagMemory } from "@/lib/insforge/rag-memory";
 
 describe("InsForge Twin RAG Memory System", () => {

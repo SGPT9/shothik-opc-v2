@@ -1,4 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+vi.mock("@/lib/tonight-engine/tonight-graph-runtime", () => ({
+  TonightGraphRuntime: {
+    executeGraph: vi.fn().mockResolvedValue({
+      runId: "run_test_mock_123",
+      activeNode: "deploy_node",
+      topology: { nodes: [], edges: [] },
+      plan: ["step1", "step2"],
+      finalReport: "Execution report",
+      leadsCount: 12,
+      postsCount: 3,
+    }),
+  },
+}));
+
+vi.mock("@/lib/insforge/auth-rls-service", () => ({
+  InsForgeAuthRlsService: {
+    verifyWorkspaceRlsPolicy: vi.fn().mockResolvedValue({ allowed: true }),
+  },
+}));
+
 import { POST } from "../route";
 import { NextRequest } from "next/server";
 

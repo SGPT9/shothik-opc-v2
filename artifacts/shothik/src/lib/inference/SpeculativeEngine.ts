@@ -83,7 +83,9 @@ export class SpeculativeEngine {
     };
 
     let result = text;
-    for (const [en, bn] of Object.entries(dictionary)) {
+    // Sort keys by descending length so multi-word phrases (e.g. "cash on delivery") match before sub-words ("delivery")
+    const sortedEntries = Object.entries(dictionary).sort((a, b) => b[0].length - a[0].length);
+    for (const [en, bn] of sortedEntries) {
       const regex = new RegExp(`\\b${en}\\b`, "gi");
       result = result.replace(regex, bn);
     }

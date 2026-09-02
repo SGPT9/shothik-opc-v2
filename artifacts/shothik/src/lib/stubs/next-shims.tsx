@@ -117,20 +117,68 @@ export function cookies() {
 
 /* ---- next/server ---- */
 export class NextResponse extends Response {
+  private _cookiesMap = new Map<string, { name: string; value: string; options?: any }>();
+
+  get cookies() {
+    return {
+      set: (name: string, value: string, options?: any) => {
+        this._cookiesMap.set(name, { name, value, options });
+        const serialized = `${name}=${encodeURIComponent(value)}; Path=${options?.path ?? '/'}`;
+        this.headers.append('set-cookie', serialized);
+      },
+      delete: (name: string) => {
+        this._cookiesMap.delete(name);
+        this.headers.append('set-cookie', `${name}=; Path=/; Max-Age=0`);
+      },
+      get: (name: string) => this._cookiesMap.get(name),
+      getAll: () => Array.from(this._cookiesMap.values()),
+      has: (name: string) => this._cookiesMap.has(name),
+    };
+  }
+
   static json(body: unknown, init?: ResponseInit) {
-    return new Response(JSON.stringify(body), {
+    const res = new NextResponse(JSON.stringify(body), {
       ...init,
       headers: { 'content-type': 'application/json', ...(init?.headers as object) },
     });
+    return res;
   }
   static redirect(url: string | URL, status = 307) {
-    return new Response(null, { status, headers: { location: String(url) } });
+    const res = new NextResponse(null, { status, headers: { location: String(url) } });
+    return res;
   }
   static next() {
-    return new Response(null);
+    const res = new NextResponse(null);
+    return res;
   }
 }
-export class NextRequest extends Request {}
+
+export class NextRequest extends Request {
+  get nextUrl() {
+    const parsed = new URL(this.url);
+    if (parsed.hostname === '127.0.0.1') {
+      parsed.hostname = 'localhost';
+    }
+    return parsed;
+  }
+  get cookies() {
+    const cookieHeader = this.headers.get('cookie') || '';
+    const map = new Map<string, { name: string; value: string }>();
+    cookieHeader.split(';').forEach((part) => {
+      const [key, ...vals] = part.trim().split('=');
+      if (key) {
+        map.set(key, { name: key, value: decodeURIComponent(vals.join('=')) });
+      }
+    });
+    return {
+      get: (name: string) => map.get(name),
+      getAll: () => Array.from(map.values()),
+      has: (name: string) => map.has(name),
+      set: () => {},
+      delete: () => {},
+    };
+  }
+}
 export type { NextRequest as NextRequestType };
 
 /* ---- default exports for module aliases ---- */
