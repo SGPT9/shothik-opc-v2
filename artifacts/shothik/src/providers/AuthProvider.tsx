@@ -219,24 +219,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
             setUser(null);
             setIsAuthenticated(false);
             setIsLoading(false);
-          }
-
-          // #region debug-point A:no-session-found
-          fetch("http://127.0.0.1:7777/event", {
-            method: "POST",
-            body: JSON.stringify({
-              sessionId: "chat-auth-session",
-              runId: "pre-fix",
-              hypothesisId: "A",
-              location: "providers/AuthProvider.tsx:hydrateAuth:no-session",
-              msg: "[DEBUG] Auth hydration found no usable browser session",
-              data: {
-                path: window.location.pathname,
-              },
-              ts: Date.now(),
-            }),
-          }).catch(() => undefined);
-          // #endregion
           return;
         }
 
