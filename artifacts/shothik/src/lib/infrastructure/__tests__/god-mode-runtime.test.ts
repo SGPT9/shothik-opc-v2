@@ -1,5 +1,38 @@
 import { describe, it, expect, vi } from "vitest";
 
+vi.mock("@/lib/tonight-engine/tonight-graph-runtime", () => ({
+  TonightGraphRuntime: {
+    executeGraph: vi.fn().mockResolvedValue({
+      runId: "run_god_mock_123",
+      status: "completed",
+    }),
+  },
+}));
+
+vi.mock("../coolify-deployer", () => ({
+  CoolifyDokployDeployer: {
+    deployWebsite: vi.fn().mockResolvedValue({
+      liveUrl: "https://shothik-preview.dokploy.app",
+      docsUrl: "https://shothik-preview.dokploy.app/docs",
+      canvasUrl: "https://shothik-preview.dokploy.app/canvas",
+    }),
+  },
+}));
+
+vi.mock("../poltiz-social-engine", () => ({
+  PoltizSocialEngine: {
+    generateGrowthCampaign: vi.fn().mockResolvedValue({
+      campaignId: "camp_social_123",
+    }),
+  },
+}));
+
+vi.mock("../deployment-notification-mailer", () => ({
+  DeploymentNotificationMailer: {
+    sendDeploymentEmail: vi.fn().mockResolvedValue(true),
+  },
+}));
+
 vi.mock("@/lib/hermes", () => ({
   getHermesOrchestrator: vi.fn().mockReturnValue({
     artifactManager: {

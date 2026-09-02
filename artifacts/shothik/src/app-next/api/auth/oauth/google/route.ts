@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (error || !data?.url || !data.codeVerifier) {
-    return NextResponse.redirect(new URL("/auth/login?error=oauth", request.url));
+    return NextResponse.redirect(new URL("/auth/login?error=oauth", request.nextUrl.origin));
   }
 
   const response = NextResponse.redirect(data.url);

@@ -21,6 +21,12 @@ vi.mock("@/lib/hermes", () => ({
   })),
 }));
 
+vi.mock("@/lib/hermes/modules/research-orchestrator", () => ({
+  getHermesResearchOrchestrator: vi.fn(() => ({
+    generateResearch: mockGenerateResearch,
+  })),
+}));
+
 import { getChatAuthenticatedUser } from "@/lib/server-auth";
 import { POST } from "./route";
 

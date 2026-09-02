@@ -47,6 +47,7 @@ export const FEATURE_RATE_CARDS: CreditRateCard[] = [
 export const CREDIT_PACKAGES: CreditPackage[] = [
   { packageId: "starter_49", name: "24h Sprint Pass", priceBdt: 49, priceUsd: 0.40, credits: 300, bonusCredits: 50, badge: "INSTANT PASS" },
   { packageId: "pro_290", name: "Pro Studio Pack", priceBdt: 290, priceUsd: 2.40, credits: 2500, bonusCredits: 500, badge: "MOST POPULAR" },
+  { packageId: "pro_500", name: "Pro Founder Pack", priceBdt: 500, priceUsd: 4.15, credits: 3000, bonusCredits: 500, badge: "POWER FOUNDER" },
   { packageId: "business_990", name: "Business Power Pack", priceBdt: 990, priceUsd: 8.25, credits: 10000, bonusCredits: 2500, badge: "BEST VALUE" },
 ];
 

@@ -1,5 +1,14 @@
 import { describe, it, expect, vi } from "vitest";
 
+vi.mock("@/lib/tonight-engine/tonight-graph-runtime", () => ({
+  TonightGraphRuntime: {
+    executeGraph: vi.fn().mockResolvedValue({
+      runId: "run_mock_trigger_123",
+      status: "completed",
+    }),
+  },
+}));
+
 vi.mock("@/lib/hermes", () => ({
   getHermesOrchestrator: vi.fn().mockReturnValue({
     artifactManager: {

@@ -12,21 +12,23 @@ function normalizeNextPath(nextPath: string | null) {
 }
 
 function buildFailureResponse(request: NextRequest) {
-  const response = NextResponse.redirect(new URL("/auth/login?error=oauth", request.url));
+  const origin = request.nextUrl?.origin ?? "http://localhost:3000";
+  const response = NextResponse.redirect(new URL("/auth/login?error=oauth", origin));
   response.cookies.delete("insforge_code_verifier");
   return response;
 }
 
 export async function GET(request: NextRequest) {
-  const code = request.nextUrl.searchParams.get("insforge_code");
+  const url = request.nextUrl ?? new URL(request.url);
+  const code = url.searchParams.get("insforge_code");
   const verifier = request.cookies.get("insforge_code_verifier")?.value;
 
   if (!code || !verifier) {
     return buildFailureResponse(request);
   }
 
-  const nextPath = normalizeNextPath(request.nextUrl.searchParams.get("next"));
-  const response = NextResponse.redirect(new URL(nextPath, request.url));
+  const nextPath = normalizeNextPath(url.searchParams.get("next"));
+  const response = NextResponse.redirect(new URL(nextPath, url.origin));
   const auth = createAuthActions({
     requestCookies: request.cookies,
     responseCookies: response.cookies,
