@@ -81,6 +81,80 @@ function localDevApiPlugin(): Plugin {
           return;
         }
 
+        // 4.1. GET /api/v1/subscriptions/me
+        if (req.method === 'GET' && url === '/api/v1/subscriptions/me') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            success: true,
+            data: {
+              subscription: {
+                tier: 'pro',
+                status: 'active',
+                credits: 15000,
+                expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+              }
+            }
+          }));
+          return;
+        }
+
+        // 4.2. POST /api/bkash/credits/checkout
+        if (req.method === 'POST' && url === '/api/bkash/credits/checkout') {
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', () => {
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({
+              success: true,
+              paymentId: `BK_${Date.now()}`,
+              bkashURL: null, // Triggers manual TrxID dialog seamlessly
+              message: 'bKash payment initialized. Please enter your Merchant Transaction ID.'
+            }));
+          });
+          return;
+        }
+
+        // 4.3. POST /api/v1/mfs/verify-trx
+        if (req.method === 'POST' && url === '/api/v1/mfs/verify-trx') {
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', () => {
+            const body = JSON.parse(bodyStr || '{}');
+            const trxId = body.trxId || 'TRX_DEV_SUCCESS';
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({
+              success: true,
+              message: `bKash TrxID ${trxId} verified successfully! Your account has been credited.`,
+              data: {
+                trxId,
+                tier: body.tier || 'pro',
+                amountBdt: body.amountBdt || 1499,
+                creditsAdded: 15000,
+                status: 'COMPLETED'
+              }
+            }));
+          });
+          return;
+        }
+
+        // 4.4. POST /api/v1/subscriptions/passes:purchase
+        if (req.method === 'POST' && url === '/api/v1/subscriptions/passes:purchase') {
+          let bodyStr = '';
+          req.on('data', (chunk: any) => { bodyStr += chunk; });
+          req.on('end', () => {
+            const body = JSON.parse(bodyStr || '{}');
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({
+              success: true,
+              name: body.passId || 'Outcome Pass',
+              outcomeUnlocked: 'Instant Turnitin-equivalent audit & export unlocked',
+              trxId: body.trxId || 'TRX_PASS_OK',
+              status: 'ACTIVE'
+            }));
+          });
+          return;
+        }
+
         // 3. POST /api/book-agent
         if (req.method === 'POST' && url === '/api/book-agent') {
           let bodyStr = '';
