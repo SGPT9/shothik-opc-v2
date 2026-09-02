@@ -1,0 +1,16 @@
+name: Question
+description: Anything about using, installing, or adapting the stack
+labels: [question]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: Installation, routing between skills, adapting a skill to your workflow, anything else
+    validations:
+      required: true
+  - type: input
+    id: context
+    attributes:
+      label: Harness (if relevant)
+      description: e.g. Claude Code, Codex, other Agent Skills tool

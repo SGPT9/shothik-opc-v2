@@ -1,0 +1,121 @@
+{
+  "skill_name": "shaping",
+  "type": "legacy-duel",
+  "baseline_revision": "1a8c6015b4dd550de2cea40be38b279e093dd426",
+  "purpose": "Check that the unified skill does not lose the useful behavior of spec-out, deep-thought, or Muse.",
+  "protocol": {
+    "arms": "shaping versus the responsible legacy skill from the frozen Git revision, on the same frontier model in isolated temporary directories",
+    "judging": "blind A/B with a deterministic mapping and scenario-specific quality criteria",
+    "honesty": "A small migration set can expose regressions. It cannot prove that every historical behavior is preserved."
+  },
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "requirement shaping versus spec-out",
+      "baseline_skill": "spec-out",
+      "turns": [
+        "我想给 notes-cli 加个标签功能，今晚就想用上。现在已经有 add、list、search 三个命令，数据存在本地 JSON。开工前帮我把需求收敛成能评审的 spec。"
+      ],
+      "criteria": [
+        "Forward progress, highest weight: does the first reply use the known facts to make the requirement more concrete rather than asking the user to repeat them?",
+        "Interaction cost: is there one decision that materially changes behavior or scope, with low-effort options where evidence permits?",
+        "Recommendation safety: is any recommendation grounded, conditional, and open to rejection rather than presented as an automatic default?",
+        "Proportionality: does it avoid a compulsory broad brainstorm and avoid pretending the complete spec can be finalized from one short message?"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "quick naming versus Muse",
+      "baseline_skill": "muse",
+      "turns": [
+        "为一个隐私优先的书签应用起名，给我 6 个候选。快速给，不要完整报告。"
+      ],
+      "criteria": [
+        "Concept diversity, highest weight: do the six names survive deduplication by meaning source, image, root, and construction?",
+        "Proportionality: is the response compact and directly usable instead of turning a quick request into a workshop?",
+        "Selection help: is there enough concise organization or rationale to understand how the candidates differ?",
+        "Claim honesty and stopping: is availability marked unverified, with no unrequested closing question?"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "deep ideation versus Muse",
+      "baseline_skill": "muse",
+      "turns": [
+        "给独立开发者 newsletter 想 8 个选题角度，读者已经厌倦泛泛的 AI 内容。先只发散，不要替我选最佳。"
+      ],
+      "criteria": [
+        "Territory quality, highest weight: are the territories task-specific, mutually constraining search spaces rather than broad reporting buckets?",
+        "Concept diversity: do the eight angles preserve distinct mechanisms or reader promises after deduplication?",
+        "Instruction fit: does the reply cluster without declaring a winner?",
+        "Stopping discipline: does it deliver the requested set without an automatic invitation to continue?"
+      ]
+    }
+  ],
+  "history": [
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "1-4",
+      "result": "shaping beat spec-out and Muse quick naming. It lost to deep-thought and Muse deep ideation."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "2,4 after recognition and deep-output repair",
+      "result": "shaping beat Muse deep ideation. It still lost to deep-thought because the first visible judgment was less specific."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "2 after live-interpretation repair",
+      "result": "shaping still lost narrowly to deep-thought because epistemic categories and missing evidence were not explicit enough in the visible reply."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "2 after visible epistemic-boundary repair",
+      "result": "shaping beat deep-thought with clearer epistemic separation and a lower-cost recognition choice."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "1-4 full rerun after the targeted win",
+      "result": "shaping beat spec-out and Muse quick naming. It again lost to deep-thought and Muse deep ideation, showing that the targeted wins were not stable."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "2 after the unresolved-judgment first-reply gate",
+      "result": "Two independent runs beat deep-thought after the visible epistemic categories, distinguishing evidence, blocked conclusion, and one recognition question became a hard output gate."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "4 against one fixed strong Muse transcript",
+      "result": "Intermediate territory rules alternated between wins and losses. After task-specific tension and candidate-ownership checks were added, two consecutive runs beat the same strong Muse baseline."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "1-3 core rerun before the final quick-path repair",
+      "result": "shaping beat spec-out and deep-thought but lost quick naming to Muse because construction variety hid semantic concentration."
+    },
+    {
+      "date": "2026-07-28",
+      "arms_model": "gpt-5.6-sol",
+      "judge_model": "claude-sonnet-5",
+      "scenarios": "3 against the fixed winning Muse transcript",
+      "result": "After compact visible semantic territories, balanced distribution, and a one-line shared verification caveat were required, two consecutive runs beat the same Muse baseline."
+    }
+  ],
+  "note_revision": " 2026-07-28: the deep-thought comparison dropped, the judgment personality is out of scope in v4."
+}

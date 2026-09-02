@@ -1,0 +1,10 @@
+{
+  "name": "vibemaster",
+  "version": "0.3.0",
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "vibemaster",
+    "shortDescription": "Thinking and dev-workflow skill stack for indie hackers"
+  }
+}

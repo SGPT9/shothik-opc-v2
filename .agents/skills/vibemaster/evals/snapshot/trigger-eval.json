@@ -1,0 +1,26 @@
+{
+  "skill_name": "snapshot",
+  "type": "trigger",
+  "cases": [
+    { "id": 1, "query": "今天先到这，写个交接文档下次接着做", "should_trigger": true },
+    { "id": 2, "query": "快没上下文了，把当前进度和决策记下来，我开个新会话继续", "should_trigger": true },
+    { "id": 3, "query": "write a handoff so a fresh session can pick this up", "should_trigger": true },
+    { "id": 4, "query": "上次做到哪了？接着上次的任务继续", "should_trigger": true },
+    { "id": 5, "query": "把这个任务的状态整理一下，我明天换台机器继续", "should_trigger": true },
+    { "id": 6, "query": "wrap up this session and document where we are", "should_trigger": true },
+    { "id": 7, "query": "这个活之后要交给另一个 agent 继续，给它留个交接", "should_trigger": true },
+    { "id": 8, "query": "pick up where we left off yesterday", "should_trigger": true },
+    { "id": 9, "query": "给当前任务打个快照，我晚点换个会话接着干", "should_trigger": true },
+    { "id": 10, "query": "restore the last snapshot and continue where we left off", "should_trigger": true },
+    { "id": 11, "query": "压缩一下上下文", "should_trigger": false },
+    { "id": 12, "query": "记住我喜欢用 pnpm，别再用 npm 了", "should_trigger": false },
+    { "id": 13, "query": "帮我把这个功能的需求写成 spec", "should_trigger": false },
+    { "id": 14, "query": "把设计稿标注一下交接给开发", "should_trigger": false },
+    { "id": 15, "query": "commit 一下今天的改动", "should_trigger": false },
+    { "id": 16, "query": "导出这次对话的完整记录", "should_trigger": false },
+    { "id": 17, "query": "跑一下测试，把过期的 jest snapshot 更新掉", "should_trigger": false },
+    { "id": 18, "query": "帮我复盘一下这个项目做得怎么样", "should_trigger": false },
+    { "id": 19, "query": "上线之后把服务交接给运维团队", "should_trigger": false },
+    { "id": 20, "query": "升级系统前先给这台虚拟机打个快照", "should_trigger": false }
+  ]
+}

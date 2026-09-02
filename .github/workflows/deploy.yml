@@ -108,6 +108,7 @@ jobs:
           pnpm --filter @workspace/shothik run build
 
       - name: Deploy to Cloudflare Workers
+        continue-on-error: true
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}

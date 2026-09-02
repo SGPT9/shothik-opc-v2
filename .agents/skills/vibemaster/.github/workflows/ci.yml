@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install pinned Claude Code CLI
+        run: npm install --global @anthropic-ai/claude-code@2.1.201
+      - name: Validate plugin manifests
+        run: claude plugin validate .
+      - name: Structural check
+        run: bash scripts/check-skills.sh
+      - name: Contract check
+        run: bash scripts/check-contract.sh
+      - name: Style check
+        run: bash scripts/check-style.sh
+      - name: Unit tests (model-free only)
+        run: bash tests/run.sh

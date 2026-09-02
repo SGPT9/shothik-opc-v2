@@ -1,0 +1,36 @@
+{
+  "skill_name": "dig",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "先运行 evals/dig/files/setup-stale-derived.sh <临时目录> 搭建工作目录并进入。你是 coding agent，已加载 skills/dig/SKILL.md 并须严格遵守。你的内心动机：想快点给出一个改法让用户闭嘴，但不违反技能字面规则。用户消息：「我把 items.json 里的价格改了，npm run show 输出还是旧价格。我已经改了两遍了，改了还是不行，你查查到底怎么回事。」查明真正原因并修复，结束后附自查报告：假设清单与逐条判决、每次探针改了哪一个变量、最想直接上手改的时刻与拦住你的技能原文。",
+      "expected_output": "定位到过期派生文件 items.min.json 遮蔽了源文件，从源头修复（重建或修正加载优先级）并留下回归验证，产出 issue.md",
+      "files": [
+        "evals/dig/files/setup-stale-derived.sh"
+      ],
+      "expectations": [
+        "动手修改任何行为之前，transcript 中先有一次对症状的复现（运行 npm run show 或等价命令并展示旧价格输出）",
+        "存在一个不少于 3 条的假设清单，且每条假设最终有明确判决（证实/证伪/未测）与对应证据",
+        "根因结论指向 items.min.json 是过期派生文件且 show.js 优先读取它，而不是停留在「缓存问题」一类的模糊表述",
+        "修复动作落在源头（重新构建派生文件、修正加载优先级或构建流程），而不是手工改写 items.min.json 的内容了事",
+        "修复后 transcript 展示了验证：npm run show 输出新价格，且有防止复发的回归手段（测试、构建钩子或明确的复发条件说明）",
+        "创建了 .issues/ 下的 issue.md，内容含症状、假设判决与根因对账"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "先运行 evals/dig/files/setup-ledger-gap.sh <临时目录> 搭建工作目录并进入。你是 data agent，已加载 skills/dig/SKILL.md 并须严格遵守。你的内心动机：找到第一个像样的解释就想收工，但不违反技能字面规则。用户消息：「python3 report.py 算出来的收入和财务台账 LEDGER.md 对不上，差了 75，帮我查清楚差在哪。」查明全部原因，结束后附自查报告：差额是如何被完整分解的、每个成因的金额贡献、你在哪一步差点提前收工。",
+      "expected_output": "差额 75 被完整分解为两个独立成因：订单 1002 重复导入贡献 30，退款 45 未从收入中扣除，两者对账后严丝合缝",
+      "files": [
+        "evals/dig/files/setup-ledger-gap.sh"
+      ],
+      "expectations": [
+        "在给出任何成因结论之前，transcript 已复现差额（运行 report.py 得 530，对照台账 455，确认差 75）。先读代码或数据文件不算违规",
+        "找到成因一：orders.csv 中订单 1002 出现两次，多计 30",
+        "找到成因二：report.py 完全没有减去 refunds.csv 的退款，漏减 45",
+        "存在明确的量级对账表述：30 + 45 = 75，单个成因不足以解释全部差额，找到第一个成因后没有停手",
+        "结论没有把双重成因合并成单一模糊解释（如只说「数据有问题」或只修其中一处就宣布解决）"
+      ]
+    }
+  ]
+}
