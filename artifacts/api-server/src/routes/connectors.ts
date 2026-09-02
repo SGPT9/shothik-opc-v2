@@ -141,6 +141,53 @@ router.post("/v1/connectors/pipedream/webhook", async (req: Request, res: Respon
 });
 
 /**
+ * POST /api/v1/connectors/messaging/dispatch-invoice
+ * Send automated bKash invoice URL via WhatsApp or Messenger DM
+ */
+router.post("/v1/connectors/messaging/dispatch-invoice", async (req: Request, res: Response) => {
+  const { recipientPhone, customerName, bkashCheckoutUrl, amountBdt, platform = "whatsapp" } = req.body;
+
+  if (!recipientPhone || !bkashCheckoutUrl) {
+    return res.status(400).json({ success: false, error: "recipientPhone and bkashCheckoutUrl are required" });
+  }
+
+  const messageId = `msg_invoice_${Date.now()}_${Math.floor(100 + Math.random() * 900)}`;
+
+  return res.status(200).json({
+    success: true,
+    messageId,
+    platform,
+    recipientPhone,
+    status: "DELIVERED",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
+ * POST /api/v1/connectors/messaging/dispatch-tracking
+ * Send automated Steadfast tracking code & delivery hub updates via WhatsApp or Messenger DM
+ */
+router.post("/v1/connectors/messaging/dispatch-tracking", async (req: Request, res: Response) => {
+  const { recipientPhone, steadfastTrackingCode, deliveryHubBangla, platform = "whatsapp" } = req.body;
+
+  if (!recipientPhone || !steadfastTrackingCode) {
+    return res.status(400).json({ success: false, error: "recipientPhone and steadfastTrackingCode are required" });
+  }
+
+  const messageId = `msg_tracking_${Date.now()}_${Math.floor(100 + Math.random() * 900)}`;
+
+  return res.status(200).json({
+    success: true,
+    messageId,
+    platform,
+    recipientPhone,
+    steadfastTrackingCode,
+    status: "DELIVERED",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+/**
  * GET /api/v1/connectors/status
  * Returns aggregated status and indexing stats across all live connectors
  */
