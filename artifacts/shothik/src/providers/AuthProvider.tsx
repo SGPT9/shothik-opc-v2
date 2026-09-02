@@ -219,6 +219,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
             setUser(null);
             setIsAuthenticated(false);
             setIsLoading(false);
+          }
           return;
         }
 
@@ -247,23 +248,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           if (!cancelled) {
             setIsLoading(false);
           }
-
-          // #region debug-point A:legacy-fallback-complete
-          fetch("http://127.0.0.1:7777/event", {
-            method: "POST",
-            body: JSON.stringify({
-              sessionId: "chat-auth-session",
-              runId: "pre-fix",
-              hypothesisId: "A",
-              location: "providers/AuthProvider.tsx:hydrateAuth:legacy-complete",
-              msg: "[DEBUG] Auth hydration completed legacy fallback path",
-              data: {
-                path: window.location.pathname,
-              },
-              ts: Date.now(),
-            }),
-          }).catch(() => undefined);
-          // #endregion
         }
       }
     }
