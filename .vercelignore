@@ -35,3 +35,9 @@ data
 *.db
 *.db-shm
 *.db-wal
+docs/**
+attached_assets/**
+scripts/**
+tests/**
+api
+api/**
