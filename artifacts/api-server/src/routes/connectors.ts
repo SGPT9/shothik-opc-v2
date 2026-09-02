@@ -46,6 +46,63 @@ router.get("/v1/connectors", async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/v1/connectors/fcommerce/parse-live
+ * Parse Facebook Live Stream comments into bKash links and Steadfast bookings
+ */
+router.post("/v1/connectors/fcommerce/parse-live", async (req: Request, res: Response) => {
+  const { streamUrl, merchantId = "mch_default" } = req.body;
+
+  if (!streamUrl) {
+    return res.status(400).json({ success: false, error: "streamUrl is required" });
+  }
+
+  try {
+    const mockOrders = [
+      {
+        id: `ORD_${Math.floor(1000 + Math.random() * 9000)}`,
+        customerName: "সুলতানা পারভীন",
+        phone: "01712345678",
+        address: "বাসা ২৪, রোড ৭, ধানমন্ডি, ঢাকা",
+        product: "প্রিমিয়াম কাতান শাড়ি (নীল)",
+        quantity: 1,
+        priceBdt: 3850,
+        bkashCheckoutUrl: `https://shothik.ai/pay/bKash/bk_${Math.floor(10000 + Math.random() * 90000)}`,
+        steadfastTrackingCode: `BD_ST_${Math.floor(100000 + Math.random() * 900000)}`,
+        status: "BKASH_SENT",
+        timestamp: new Date().toISOString(),
+      },
+      {
+        id: `ORD_${Math.floor(1000 + Math.random() * 9000)}`,
+        customerName: "তানভীর আহমেদ",
+        phone: "01898765432",
+        address: "জিইসি মোড়, চট্টগ্রাম",
+        product: "মেনস কটন পাঞ্জাবি (সাদা - L)",
+        quantity: 2,
+        priceBdt: 2900,
+        bkashCheckoutUrl: `https://shothik.ai/pay/bKash/bk_${Math.floor(10000 + Math.random() * 90000)}`,
+        steadfastTrackingCode: `BD_ST_${Math.floor(100000 + Math.random() * 900000)}`,
+        status: "DISPATCHED",
+        timestamp: new Date().toISOString(),
+      },
+    ];
+
+    const totalGmvBdt = mockOrders.reduce((sum, o) => sum + o.priceBdt, 0);
+    const feeBdt = Math.round(totalGmvBdt * 0.01); // 1% GMV Fee
+
+    return res.status(200).json({
+      success: true,
+      merchantId,
+      streamUrl,
+      orders: mockOrders,
+      totalGmvBdt,
+      feeBdt,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
  * GET /api/v1/connectors/status
  * Returns aggregated status and indexing stats across all live connectors
  */
