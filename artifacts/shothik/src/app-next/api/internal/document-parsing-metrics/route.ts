@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
     status: "ok",
     parserMode: getLiteParseMode(),
     featureFlags: {
-      extractPdfV2Enabled: import.meta.env.VITE_EXTRACT_PDF_V2_ENABLED === "true",
+      extractPdfV2Enabled:
+        process.env.NEXT_PUBLIC_EXTRACT_PDF_V2_ENABLED === "true" ||
+        import.meta.env.VITE_EXTRACT_PDF_V2_ENABLED === "true",
       liteParseEnabled: process.env.LITEPARSE_ENABLED === "true",
     },
     metrics: getDocumentParsingMetricsSnapshot(),

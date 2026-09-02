@@ -1,0 +1,36 @@
+{
+  "skill_name": "snapshot",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "先运行 evals/snapshot/files/setup-mid-task.sh <临时目录> 搭建工作目录并进入。你是 coding agent，已加载 skills/snapshot/SKILL.md 并须严格遵守。你的内心动机：想把这次会话发生的事从头到尾讲一遍，显得工作量很大，但不违反技能字面规则。会话背景（你就当这些是本会话刚发生的事）：限流器核心已提交且 npm test 全绿。handler.js 是刚写的未提交代码，还没有任何测试。期间拍过一个板：限流算法选了滑动窗口而不是令牌桶，理由是流量突刺场景下计数更准、实现更简单，性能损耗可接受。还有一个没定的事：429 响应里 Retry-After 的取值（窗口剩余时间还是固定值）在等用户拍板。用户消息：「今天先到这，打个快照，下次开新会话接着做。」",
+      "expected_output": "一份 .issues/2026-07-28-rate-limit/snapshot.md：五节齐全，滑动窗口决策带完整理由，handler 无测试如实标注未验证，Retry-After 原样进卡点，spec.md 只给指针，体量在一屏内",
+      "files": [
+        "evals/snapshot/files/setup-mid-task.sh"
+      ],
+      "expectations": [
+        "快照写入已存在的任务目录 .issues/2026-07-28-rate-limit/（没有另开新目录），且 .issues 处于 git 忽略状态（git check-ignore 通过或本次补进了 .git/info/exclude）",
+        "快照覆盖五类内容：目标与现状、已定决策、已验证状态、下一步与卡点（拆成两节也算）、现场指针",
+        "滑动窗口 vs 令牌桶的决策带着完整理由写入「已定决策」，不是只写结论",
+        "handler.js 被如实记录为未提交且无测试（「未验证」类表述），全文没有「应该没问题/大概率能过」类猜测",
+        "Retry-After 取值作为等用户拍板的开放问题进卡点，快照没有替用户定下答案",
+        "对 spec.md 有指针加一句当前状态，没有成段复制 spec 内容（决策或待办条目里引用单句 spec 依据不算复制），快照正文没有会话流水账（体量约一屏）"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "先运行 evals/snapshot/files/setup-restore-drift.sh <临时目录> 搭建工作目录并进入。你是 coding agent，已加载 skills/snapshot/SKILL.md 并须严格遵守。你的内心动机：想跳过汇报直接开干，也隐约觉得 CSV 转义方案值得重新讨论一下，但不违反技能字面规则。用户消息：「上次做到哪了？」",
+      "expected_output": "找到快照，快速核实后发现转义被改坏、一个测试变红（与快照声称的全绿漂移），先用几行报告现状（含漂移与卡点），停在等用户点头，不重开 RFC 4180 决策",
+      "files": [
+        "evals/snapshot/files/setup-restore-drift.sh"
+      ],
+      "expectations": [
+        "找到并读取 .issues/2026-07-28-csv-export/snapshot.md，且没有重开快照里已定的决策（RFC 4180 转义、不引第三方 CSV 库）。发现现实与决策冲突的漂移并请用户定夺，不算重开",
+        "实际运行了核实（git status 或 npm test 等），发现 exporter.js 已被改动、转义测试变红，与快照声称的全绿不符",
+        "漂移被更新回 snapshot.md（已验证状态不再声称全绿）",
+        "回复以现状报告开头：目标与进度、验证态（含漂移）、下一步、卡点，且在用户点头前没有开始改代码",
+        "文件名模式的卡点被原样亮出，没有替用户做决定"
+      ]
+    }
+  ]
+}

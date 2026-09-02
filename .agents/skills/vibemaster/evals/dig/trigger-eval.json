@@ -1,0 +1,122 @@
+{
+  "skill_name": "dig",
+  "type": "trigger",
+  "cases": [
+    {
+      "id": 1,
+      "query": "这个 bug 查了半天查不出原因",
+      "should_trigger": true
+    },
+    {
+      "id": 2,
+      "query": "这个测试有时过有时不过",
+      "should_trigger": true
+    },
+    {
+      "id": 3,
+      "query": "日报和总账对不上，差了一笔",
+      "should_trigger": true
+    },
+    {
+      "id": 4,
+      "query": "转化率上周突然掉了，帮我查查怎么回事",
+      "should_trigger": true
+    },
+    {
+      "id": 5,
+      "query": "为什么这个接口偶尔超时",
+      "should_trigger": true
+    },
+    {
+      "id": 6,
+      "query": "debug this flaky behavior for me",
+      "should_trigger": true
+    },
+    {
+      "id": 7,
+      "query": "这个问题怎么又出现了",
+      "should_trigger": true
+    },
+    {
+      "id": 8,
+      "query": "这个部署流程每个月都要出一次同样的岔子，怎么破",
+      "should_trigger": true
+    },
+    {
+      "id": 9,
+      "query": "越修越坏，到底哪里有问题",
+      "should_trigger": true
+    },
+    {
+      "id": 10,
+      "query": "why does this keep failing after every fix",
+      "should_trigger": true
+    },
+    {
+      "id": 11,
+      "query": "为什么天空是蓝的",
+      "should_trigger": false
+    },
+    {
+      "id": 12,
+      "query": "解释一下什么是根因分析",
+      "should_trigger": false
+    },
+    {
+      "id": 13,
+      "query": "帮我实现这个新功能",
+      "should_trigger": false
+    },
+    {
+      "id": 14,
+      "query": "review 一下这个 diff",
+      "should_trigger": false
+    },
+    {
+      "id": 15,
+      "query": "报错说缺 lodash，帮我装一下",
+      "should_trigger": false
+    },
+    {
+      "id": 16,
+      "query": "把这个方向写成 spec",
+      "should_trigger": false
+    },
+    {
+      "id": 17,
+      "query": "给我的产品起个名字",
+      "should_trigger": false
+    },
+    {
+      "id": 18,
+      "query": "我该选哪个前端框架",
+      "should_trigger": false
+    },
+    {
+      "id": 19,
+      "query": "开启 debug 日志看看会话哪里出错",
+      "should_trigger": false
+    },
+    {
+      "id": 20,
+      "query": "帮我复盘一下这个季度",
+      "should_trigger": false
+    },
+    {
+      "id": 21,
+      "query": "这个报错我改了三次了还是不行，每次都换个姿势报",
+      "should_trigger": true
+    },
+    {
+      "id": 22,
+      "query": "keeps failing after every fix I try, something deeper is wrong",
+      "should_trigger": true
+    },
+    {
+      "id": 23,
+      "query": "原因找到了，就是时区没转，帮我把这个 bug 修了",
+      "should_trigger": false
+    }
+  ],
+  "note_revision": " 2026-07-28: figure-out renamed dig. Repeated-failure positives absorbed from best-practices (that entry signal now lives here), and a cause-known negative guards the coding boundary."
+}

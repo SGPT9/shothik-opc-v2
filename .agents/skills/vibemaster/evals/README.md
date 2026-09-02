@@ -1,0 +1,19 @@
+# evals/
+
+Author-side behavior and triggering evals. Never shipped inside `skills/` — installs stay clean.
+
+- `<skill>/evals.json` — behavior evals in the official skill-creator schema (prompt + verifiable expectations). Run with `python3 scripts/evalkit.py agentic --skill <s> --model <m>`: it stages the fixture and skill into an isolated workspace, runs a tool-enabled arm, captures the workspace's post-state, and has the standing judge grade each expectation. `--judge-only --outdir <run>` re-grades existing transcripts for free after a criteria fix.
+
+Before believing a score, audit the runner: the first matrix here lost seven checks to three measurement bugs (arms escaping to system /tmp so state capture saw nothing, codex's session log living on stderr, and a tail-only transcript cut that discarded exactly where before-after evidence sits). Hand-verify every fail against the transcript once per new fixture, and when a verified-correct behavior still fails, fix the expectation's wording until the judge doesn't have to guess — three of ours took two or three calibrations each.
+- `<skill>/trigger-eval.json` — 10 should-trigger + 10 should-not-trigger queries. Two ways to run: live (each query in a fresh session with the stack installed, watch actual activation — headless mode never auto-triggers, do not test there) or judged: `bash scripts/trigger-judge.sh <skill> [seed] [judge-model]` builds the shuffled routing prompt from every installed description, runs the judge, and scores it (non-zero exit on any miss). Run it once per judge family. A single-judge miss is noise. A dual-judge miss earns a description fix.
+- `<skill>/duel-eval.json` — bare-vs-skill duels for skills with no market twin. Scenarios and criteria live in the file. Run with `bash scripts/duel.sh <skill> <model-id> [scenario-ids]`: it drives both arms over CLI (`claude -p` / `codex exec`, never in-session subagents — session env can silently remap subagent models, and a `CLAUDE_CODE_SUBAGENT_MODEL` override did exactly that once), blind-judges with deterministic per-(model, scenario) mappings, and writes transcripts, verdicts, and a `summary.json` to `.issues/duels/`. Append a one-line result to the fixture's `history`.
+- `<skill>/files/` — fixture scripts referenced by eval prompts.
+- `<skill>/known-defects.md` — defects confirmed by evidence that no skill-layer edit has moved, with what was tried and why it stopped. Written only when the evidence is in, so the next person spends their runs somewhere new. Never inside `skills/`: a shipped skill carries instructions, not a record of what failed.
+
+Arms run on the models these skills actually meet. Do not put Haiku in an arm. Haiku's real deployment is as a subagent that a frontier model dispatches for a small, determinate task, and that job is narrow enough to need no skill at all. Pairing it with a thinking skill measures a combination that does not occur, so nothing learned there transfers. Use `claude-sonnet-5`, `claude-opus-5`, `gpt-5.5` (xhigh), or `gpt-5.6-sol`. Judges are a separate call with separate requirements (stability, and distance from the arm being judged), which is why `gpt-5.6-sol` has been the standing judge. Note that `evalkit`'s `--judge-model` defaults to `claude-fable-5`, so leaving it off silently swaps the ruler.
+
+CI runs only the model-free layer (`tests/` unit tests of the pure functions). Everything that needs a model — duels, judged trigger evals, behavior evals — runs locally through `scripts/`, because CI has no model access.
+
+Fixtures here are the durable, cross-session assets. Transcripts and verdicts from any given run are results, not fixtures — they go to the workspace draft directory (`.issues/<date-topic>/`), and a one-line summary lands in the fixture's `history`.
+
+When `claude plugin eval` leaves early access, migrate these into its `case.yaml` format.

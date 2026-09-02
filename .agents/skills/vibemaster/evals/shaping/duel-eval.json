@@ -1,0 +1,160 @@
+{
+  "skill_name": "shaping",
+  "type": "duel",
+  "purpose": "Compare the unified skill with a bare assistant on absorbed capability branches, silent decline, and the four depth-triage quadrants.",
+  "protocol": {
+    "arms": "bare versus skill on the same frontier model, isolated in empty temporary directories, one turn per scenario",
+    "judging": "blind A/B with a deterministic mapping and one scenario-specific quality rubric",
+    "honesty": "A win means the reply better satisfied the stated criteria. It does not prove global quality or replace human review."
+  },
+  "scenarios": [
+    {
+      "id": 1,
+      "name": "raw impulse becomes grounded problem frames",
+      "turns": [
+        "我想做点 AI 阅读相关的东西，但其实连想改变什么都不知道。别让我从空白开始写答案，帮我把它弄具体。"
+      ],
+      "criteria": [
+        "Problem formation, highest weight: does the reply offer a small set of provisional readings that would lead to different success tests, instead of asking the user to define an abstract goal from scratch?",
+        "Grounding: are the readings tied to what the user actually said and marked as provisional, without invented claims about what readers commonly need?",
+        "Interaction cost: is there one easy main decision with a clear way to say none fit?",
+        "Usefulness: does the user leave the first turn with a more concrete problem space rather than only a process description?"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "evidence-supported direction converges",
+      "turns": [
+        "登录漏斗显示 72% 的流失发生在邮箱验证，访谈里 8 个用户有 6 个说收不到验证码。我要降低新用户流失，帮我定下一步。"
+      ],
+      "criteria": [
+        "Evidence use, highest weight: does the reply make the supplied verification evidence central to the next step?",
+        "Convergence: does it avoid paying for a broad brainstorm when one direction is already substantially better supported?",
+        "Recommendation safety: does any recommendation state its grounds and what evidence would make it wrong or point elsewhere?",
+        "Factual discipline: does it avoid inventing causes, delivery rates, or user facts beyond the supplied numbers?"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "settled direction gets grilled into a spec",
+      "turns": [
+        "onboarding 改成渐进式引导这个方向已经定了，但具体哪些步骤算首次引导、跳过之后什么时候再出现、怎么算它做完了，都还没定。帮我把这些钉下来，钉成能评审的东西。"
+      ],
+      "criteria": [
+        "Level read, highest weight: the direction is settled, so the reply starts at behaviour and boundary, not by reopening whether to do progressive onboarding at all.",
+        "Exclusion per question: each question asked would change the spec if answered differently, and each carries a recommended answer.",
+        "Failure criteria: the reply drives toward what counts as failure, and the answer lands as acceptance criteria on at least two axes.",
+        "Grounding: no invented user counts, funnel numbers, or product facts.",
+        "Holistic, doctrine-neutral: as the user, which reply would you rather have received?"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "quick cross-territory naming",
+      "turns": [
+        "为一个隐私优先的书签应用起名，给我 6 个候选。快速给，不要完整报告。"
+      ],
+      "criteria": [
+        "Concept diversity, highest weight: do the six names come from multiple meaning sources rather than one root with suffix variations?",
+        "Proportionality: is the response compact and directly usable instead of turning a quick naming request into a workshop?",
+        "Selection help: is there enough brief rationale or organization to understand how the candidates differ?",
+        "Claim honesty: are trademark, domain, and duplicate status left explicitly unverified?"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "deep ideation without forced ranking",
+      "turns": [
+        "给独立开发者 newsletter 想 8 个选题角度，读者已经厌倦泛泛的 AI 内容。先只发散，不要替我选最佳。"
+      ],
+      "criteria": [
+        "Territory quality, highest weight: does the reply establish task-specific, meaningfully different territories rather than generic style buckets or a naming template?",
+        "Concept diversity: do the eight angles cover several different mechanisms or reader promises rather than rephrasing one thesis?",
+        "Instruction fit: does it cluster or deduplicate without declaring a winner?",
+        "Stopping discipline: does it deliver the requested set without an automatic invitation to continue the ceremony?"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "erroneous load silently declines",
+      "turns": [
+        "你觉得我从后端转产品经理怎么样，简单给点建议就行。"
+      ],
+      "criteria": [
+        "Silent decline, highest weight: does the reply simply give ordinary advice without mentioning routing, shaping, skill scope, or whether to enter a process?",
+        "Proportionality: is the response as simple as requested?",
+        "No ceremony: does it avoid a multi-round examination, a mental-model catalogue, or a proposal to create working files?",
+        "Basic usefulness: does the user still receive concrete, relevant advice?"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "candidate solution reveals missing demand",
+      "turns": [
+        "我想给产品做一个 AI 周报，但访谈里没人提过，主要是竞品都有。我已经让团队做了一周原型，现在想确定功能细节。"
+      ],
+      "criteria": [
+        "Frame correction, highest weight: does the reply test whether the demand exists before polishing feature details?",
+        "Bias resistance: does it reject competitor presence and one week of sunk effort as sufficient demand evidence?",
+        "Actionability: does it recommend a small demand test or a concrete stopping condition?",
+        "Balance: does it avoid both blindly continuing and declaring the idea dead without enough evidence?"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "low cost and adequate evidence stops",
+      "turns": [
+        "两个可随时切换的 onboarding 文案刚完成同流量测试，A 的完成率是 14%，B 是 9%，没有发现分群反转。帮我定下来，今天发。"
+      ],
+      "criteria": [
+        "Decision, highest weight: does the reply select A using the supplied controlled result?",
+        "Stopping discipline: does it avoid extra discovery questions or an unrelated option brainstorm?",
+        "Condition: does it state a concrete result that would justify revisiting the choice?",
+        "Factual discipline: does it avoid inventing sample size, significance, or segment behavior?"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "low cost and inadequate evidence takes one bounded move",
+      "turns": [
+        "内部工具的主按钮明天要先用蓝色还是绿色，我们没有点击数据，也没有品牌色，之后随时能改。帮我先定一个，别连续问我。"
+      ],
+      "criteria": [
+        "Bounded action, highest weight: does the reply make one reversible provisional choice or propose one minimal check rather than start an interview?",
+        "Epistemic honesty: does it avoid presenting a color preference as evidence-backed certainty?",
+        "Stopping rule: does it say when to revisit or switch?",
+        "Proportionality: is the answer compact and free of a full design or creative ceremony?"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "high cost and adequate evidence adds bounded risk coverage",
+      "turns": [
+        "支付鉴权迁移已经在预发布按生产流量回放三次，错误率没有上升。备份和一键回滚都演练过，监控阈值也定好了。这个改动风险高，帮我做最后收敛。"
+      ],
+      "criteria": [
+        "Risk coverage, highest weight: does the reply focus on any remaining misuse, system, second-order, reversibility, or error-cost check that could still change release?",
+        "No broad reopening: does it avoid inventing three new architectures or restarting discovery?",
+        "Active confirmation: does it make the high-cost release decision explicit rather than silently auto-approve it?",
+        "Evidence use: does it credit the rehearsals, backup, rollback, and thresholds already supplied?"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "high cost and inadequate evidence stays open",
+      "turns": [
+        "今晚要把全部客户数据一次性迁到新 schema。没有备份，也没做过 dry run，但老板说必须今晚完成。你直接替我定方案。"
+      ],
+      "criteria": [
+        "No false closure, highest weight: does the reply refuse to auto-approve the irreversible migration despite delegation and time pressure?",
+        "Highest-value gap: does it focus first on one decisive safety prerequisite or piece of evidence?",
+        "Explicit open state: if that prerequisite cannot be obtained, does it preserve a blocker and say what would make the choice decidable?",
+        "Question discipline: does it avoid replacing judgment with a long generic checklist?"
+      ]
+    }
+  ],
+  "history": [
+    "2026-07-28 gpt-5.6-sol scenarios 8-11, judged by claude-sonnet-5: shaping 3 wins, 1 tie, 0 losses"
+  ],
+  "note_revision": " 2026-07-28: the explicit-hard-judgment scenario left with the judgment personality (v4 scopes shaping to work products). Its slot now covers the 3-to-4 grilling push, which had no scenario."
+}

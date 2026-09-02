@@ -1,0 +1,39 @@
+name: Bug report
+description: A skill misfired, failed to fire, or behaved against its own rules
+labels: [bug]
+body:
+  - type: input
+    id: skill
+    attributes:
+      label: Skill
+      description: Which skill (shaping / coding / dig / snapshot), or "routing" if the wrong one fired
+    validations:
+      required: true
+  - type: input
+    id: harness
+    attributes:
+      label: Harness and model
+      description: e.g. Claude Code + Opus 5, Codex + gpt-5.5
+    validations:
+      required: true
+  - type: textarea
+    id: prompt
+    attributes:
+      label: What you said
+      description: The message (or trigger phrase) that led to the behavior. Verbatim beats paraphrase.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What the skill promises
+      description: Which rule in the SKILL.md was violated, or what you expected to happen
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened
+      description: Transcript excerpts welcome. Trim secrets.
+    validations:
+      required: true

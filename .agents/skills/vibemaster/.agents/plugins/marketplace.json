@@ -1,0 +1,60 @@
+{
+  "name": "vibemaster",
+  "owner": {
+    "name": "liustack",
+    "email": "leonstdio@gmail.com"
+  },
+  "metadata": {
+    "description": "Thinking and dev-workflow skill stack for indie hackers.",
+    "version": "0.3.0"
+  },
+  "plugins": [
+    {
+      "name": "vibemaster",
+      "description": "The full stack in one install: shaping, coding, dig and snapshot, a four-skill working loop",
+      "source": "./",
+      "strict": false,
+      "version": "0.3.0"
+    },
+    {
+      "name": "shaping",
+      "description": "Shape unformed intent into something actionable: a grounded call, genuinely different creative directions, or a reviewable spec",
+      "source": "./",
+      "strict": false,
+      "version": "0.3.0",
+      "skills": [
+        "./skills/shaping"
+      ]
+    },
+    {
+      "name": "coding",
+      "description": "Development discipline from plan to green: red-green-refactor for new behaviour, green-to-green for pure refactors, verify before answering how-to-write-it questions, adversarial review before done",
+      "source": "./",
+      "strict": false,
+      "version": "0.3.0",
+      "skills": [
+        "./skills/coding"
+      ]
+    },
+    {
+      "name": "dig",
+      "description": "Root-cause digging across any domain: reproduce, falsifiable hypotheses, single-variable evidence, fix only after the cause accounts for the symptom, delivered as issue.md",
+      "source": "./",
+      "strict": false,
+      "version": "0.3.0",
+      "skills": [
+        "./skills/dig"
+      ]
+    },
+    {
+      "name": "snapshot",
+      "description": "Task-state snapshot: a document a fresh session can resume from, where decisions are trusted and facts re-verified on restore",
+      "source": "./",
+      "strict": false,
+      "version": "0.3.0",
+      "skills": [
+        "./skills/snapshot"
+      ]
+    }
+  ]
+}

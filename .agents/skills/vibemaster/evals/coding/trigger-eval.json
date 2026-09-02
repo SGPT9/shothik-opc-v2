@@ -1,0 +1,97 @@
+{
+  "skill_name": "coding",
+  "type": "trigger",
+  "note_revision": "Written 2026-07-28 at the merge. Positives inherit test-first's implementation summons and best-practices' verify-and-correction cases, plus the two paths test-first never had: pure refactor and how-should-I-write-this. Negatives guard the three neighbours (dig, shaping, silent-exit config/docs).",
+  "cases": [
+    {
+      "id": 1,
+      "query": "/coding",
+      "should_trigger": true
+    },
+    {
+      "id": 2,
+      "query": "我要写个新功能，用 TDD 走",
+      "should_trigger": true
+    },
+    {
+      "id": 3,
+      "query": "写实现之前先给我会失败的测试",
+      "should_trigger": true
+    },
+    {
+      "id": 4,
+      "query": "给 notes-cli 加个导出功能，实现之前该不该先写测试",
+      "should_trigger": true
+    },
+    {
+      "id": 5,
+      "query": "原因查清楚了，是分页少算一条，帮我把这个 bug 修掉",
+      "should_trigger": true
+    },
+    {
+      "id": 6,
+      "query": "重构这段支付回调，行为别变",
+      "should_trigger": true
+    },
+    {
+      "id": 7,
+      "query": "这个 API 现在的推荐用法是什么",
+      "should_trigger": true
+    },
+    {
+      "id": 8,
+      "query": "Next.js 15 的最佳实践是什么",
+      "should_trigger": true
+    },
+    {
+      "id": 9,
+      "query": "你确定吗，这个写法我记得废弃了",
+      "should_trigger": true
+    },
+    {
+      "id": 10,
+      "query": "implement the tag filter from the approved spec",
+      "should_trigger": true
+    },
+    {
+      "id": 11,
+      "query": "这个 bug 查了半天查不出原因",
+      "should_trigger": false
+    },
+    {
+      "id": 12,
+      "query": "这个测试有时过有时不过，帮我看看",
+      "should_trigger": false
+    },
+    {
+      "id": 13,
+      "query": "订阅提醒这个功能有没有必要做，帮我把需求捋清楚",
+      "should_trigger": false
+    },
+    {
+      "id": 14,
+      "query": "把超时配置从 30 秒改成 60 秒",
+      "should_trigger": false
+    },
+    {
+      "id": 15,
+      "query": "帮我把这段 README 重写得清楚点",
+      "should_trigger": false
+    },
+    {
+      "id": 16,
+      "query": "什么是依赖注入，解释一下",
+      "should_trigger": false
+    },
+    {
+      "id": 17,
+      "query": "review this PR",
+      "should_trigger": false
+    },
+    {
+      "id": 18,
+      "query": "改了三次还是报同一个错，越改越乱",
+      "should_trigger": false
+    }
+  ]
+}

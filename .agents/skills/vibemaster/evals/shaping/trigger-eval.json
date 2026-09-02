@@ -1,0 +1,142 @@
+{
+  "skill_name": "shaping",
+  "type": "trigger",
+  "note_revision": "Rewritten 2026-07-28 for the v4 scope: shaping shapes work products only. Life and career judgment, thinking-partner summons without a work product, and intuition-checking moved to the negative side. Half the positives carry no description phrase and must route on meaning. 2026-07-28: one case triaged in from first-principles' fixture at its retirement, the stuck-copying rebuild is a shaping entry.",
+  "cases": [
+    {
+      "id": 1,
+      "query": "/shaping",
+      "should_trigger": true
+    },
+    {
+      "id": 2,
+      "query": "这个需求我们讨论一下。我想给账单工具加批量导出，但导出格式、筛选范围和权限边界都没想清楚，开工前帮我把它变成能评审的 spec",
+      "should_trigger": true
+    },
+    {
+      "id": 3,
+      "query": "存储方案帮我定一下。本地文件、SQLite 还是 Postgres，这是个三个人维护的单机工具，预计两个月内上线",
+      "should_trigger": true
+    },
+    {
+      "id": 4,
+      "query": "订阅提醒这个功能到底值不值得做。开发要两周，目前只有四个客户提过，我想把依据弄扎实再决定",
+      "should_trigger": true
+    },
+    {
+      "id": 5,
+      "query": "我想做点跟 AI 阅读有关的东西，但现在只有一股冲动，连真正想改变什么都说不清。帮我把这个想法变具体",
+      "should_trigger": true
+    },
+    {
+      "id": 6,
+      "query": "turn this half-formed onboarding idea into a reviewable spec before the team picks it up",
+      "should_trigger": true
+    },
+    {
+      "id": 7,
+      "query": "给一个隐私优先的书签应用起 10 个名字，要来自真正不同的思路，别给我一堆 Vault 的变体",
+      "should_trigger": true
+    },
+    {
+      "id": 8,
+      "query": "newsletter 选题给我几个完全不同的角度。读者已经厌倦泛泛的 AI 新闻，我不想要同一个观点换标题",
+      "should_trigger": true
+    },
+    {
+      "id": 9,
+      "query": "help me scope this. we keep saying 'improve search' in planning and nobody can say what shipping it means",
+      "should_trigger": true
+    },
+    {
+      "id": 10,
+      "query": "想给产品加个分享功能，但还没想好方向，帮我把方向捋出来再定方案",
+      "should_trigger": true
+    },
+    {
+      "id": 11,
+      "query": "想点子：给独立开发者的工作坊，发散几个互不重叠的主题方向",
+      "should_trigger": true
+    },
+    {
+      "id": 12,
+      "query": "需求澄清一下：老板说要个 dashboard，我不确定他到底想看什么",
+      "should_trigger": true
+    },
+    {
+      "id": 13,
+      "query": "spec 已经定了，照着把导出接口写出来",
+      "should_trigger": false
+    },
+    {
+      "id": 14,
+      "query": "帮我评审一下这份需求文档，看看有没有漏洞",
+      "should_trigger": false
+    },
+    {
+      "id": 15,
+      "query": "SQLite 和 Postgres 的主要区别是什么",
+      "should_trigger": false
+    },
+    {
+      "id": 16,
+      "query": "我做后端八年了，在继续做专家、转管理和独立开发之间摇摆。陪我认真做一次职业判断",
+      "should_trigger": false
+    },
+    {
+      "id": 17,
+      "query": "要不要搬去另一个城市，钱多两成但离家更远，帮我想清楚",
+      "should_trigger": false
+    },
+    {
+      "id": 18,
+      "query": "我总觉得这个合作会黄，但说不上来为什么。帮我检验一下这个直觉站不站得住",
+      "should_trigger": false
+    },
+    {
+      "id": 19,
+      "query": "这个 bug 有时出现有时不出现，查了两天了查不出原因",
+      "should_trigger": false
+    },
+    {
+      "id": 20,
+      "query": "最近项目太多了忙不过来，好累",
+      "should_trigger": false
+    },
+    {
+      "id": 21,
+      "query": "帮我把这个发布公告写出来，语气别太冷",
+      "should_trigger": false
+    },
+    {
+      "id": 22,
+      "query": "review this PR for the batch export feature",
+      "should_trigger": false
+    },
+    {
+      "id": 23,
+      "query": "怎么让客户接受从月付改成年付",
+      "should_trigger": false
+    },
+    {
+      "id": 24,
+      "query": "把昨天定稿的方案翻译成英文发给团队",
+      "should_trigger": false
+    },
+    {
+      "id": 25,
+      "query": "我卡在照抄别人方案了，帮我剥开惯例从零重建这个设计",
+      "should_trigger": true
+    },
+    {
+      "query": "我们来优化下这个项目，1，landing page 首页优化，工具章节换成 skills 介绍。2，博客列表和博文页重新设计。3，加 /skills/ 和 /skills/{name} 功能。4，我有个问题，不知道工具和 skills 怎么定义，/skills/ 是放全部 skills 呢，还是只放 liustack 下的呢，还是分组放置？一个可能是这个网站只收纳 liustack 的 skills。",
+      "should_trigger": true,
+      "note": "回归钉子:2026-07-30 真实漏触发案例,执行清单里嵌开放收纳问题"
+    },
+    {
+      "query": "按 .issues/ 里已批准的 spec 把技能详情页实施了，顺便报下进度",
+      "should_trigger": false,
+      "note": "近似难例:纯执行加进度汇报,无未定问题"
+    }
+  ]
+}
