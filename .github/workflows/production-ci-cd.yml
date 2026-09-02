@@ -1,0 +1,37 @@
+name: ShothikGPT Production CI/CD & Security Audit Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Vitest Integration Test Suite
+        run: npx vitest run --reporter=verbose
+
+      - name: Supply-Chain Dependency Vulnerability Audit
+        run: npm audit --audit-level=high
+
+      - name: Trigger Dokploy Production Auto-Deploy Webhook
+        if: github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{"event": "push", "branch": "main", "sender": "github-actions"}'
