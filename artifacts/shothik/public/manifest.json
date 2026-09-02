@@ -1,19 +1,17 @@
 {
-  "name": "ShothikGPT — Frontier AI & Multi-Agent Co-Founder",
   "short_name": "ShothikGPT",
-  "description": "The All-in-One Autonomous AI Operating System for South Asian Merchants, Creators & Enterprise by shothikgpt.com.",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#10b981",
-  "orientation": "portrait-primary",
+  "name": "ShothikGPT — Frontier AI & Multi-Agent Co-Founder",
+  "description": "The All-in-One Autonomous AI Operating System for South Asian Merchants, Creators & Enterprise",
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "192x192 512x512",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
     }
   ],
-  "categories": ["business", "productivity", "utilities"]
+  "start_url": "/",
+  "background_color": "#09090b",
+  "theme_color": "#7c3aed",
+  "display": "standalone",
+  "orientation": "portrait"
 }

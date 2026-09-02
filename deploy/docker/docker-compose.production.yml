@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # ── Caddy Reverse Proxy & Automated Let's Encrypt SSL ─────────────────────
+  caddy:
+    image: caddy:2.7-alpine
+    container_name: shothik-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+      - api-gateway
+
+  # ── Frontend Next.js / Vite Web App ───────────────────────────────────────
+  frontend:
+    build:
+      context: ../../
+      dockerfile: deploy/docker/Dockerfile.api
+    container_name: shothik-frontend
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+    expose:
+      - "5000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ── API Gateway & Express Server ──────────────────────────────────────────
+  api-gateway:
+    build:
+      context: ../../artifacts/api-server
+    container_name: shothik-api-gateway
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - REDIS_URL=redis://redis:6379
+    expose:
+      - "3000"
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ── Tonight Worker Daemon (24/7 Overnight Processing Queue) ───────────────
+  tonight-daemon:
+    build:
+      context: ../../artifacts/api-server
+    container_name: shothik-tonight-daemon
+    restart: always
+    command: ["node", "dist/tonight-worker-daemon.js"]
+    environment:
+      - NODE_ENV=production
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  # ── Redis Queue & State Cache ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: shothik-redis
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  caddy_data:
+  caddy_config:
+  redis_data:
