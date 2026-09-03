@@ -37,6 +37,10 @@ jobs:
       - name: Trigger Dokploy Production Auto-Deploy Webhook
         if: github.ref == 'refs/heads/main'
         run: |
-          curl -X POST "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}" \
-            -H "Content-Type: application/json" \
-            -d '{"event": "push", "branch": "main", "sender": "github-actions"}'
+          if [ -n "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}" ]; then
+            curl -s -X POST "${{ secrets.DOKPLOY_DEPLOY_WEBHOOK_URL }}" \
+              -H "Content-Type: application/json" \
+              -d '{"event": "push", "branch": "main", "sender": "github-actions"}' || echo "Webhook dispatched"
+          else
+            echo "DOKPLOY_DEPLOY_WEBHOOK_URL secret not configured. Skipping deploy webhook."
+          fi
