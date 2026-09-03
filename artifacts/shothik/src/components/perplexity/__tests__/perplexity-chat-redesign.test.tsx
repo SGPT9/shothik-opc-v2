@@ -5,19 +5,19 @@ import "@testing-library/jest-dom/vitest";
 import { render, screen } from "@testing-library/react";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
 
-describe("EmptyChatGreeting — Ask-First DeepSeek-Close Shell", () => {
-  it("renders Ask-First hero title 'How can Shothik help you today?'", () => {
+describe("EmptyChatGreeting — Frontier Workspace Hero Shell", () => {
+  it("renders hero title 'What are we building today?'", () => {
     render(<EmptyChatGreeting />);
 
-    expect(screen.getByText("How can Shothik help you today?")).toBeInTheDocument();
-    expect(screen.getByText(/Ask questions, research topics, write drafts, or create plans/i)).toBeInTheDocument();
+    expect(screen.getByText("What are we building today?")).toBeInTheDocument();
+    expect(screen.getByText(/Create AI-native spreadsheets, pitch decks, book manuscripts/i)).toBeInTheDocument();
   });
 
-  it("renders 3 intent-first starter prompt categories (Commerce, Academic, Venture)", () => {
+  it("renders capability category pills (All Capabilities, GenOffice Sheets, GenOffice Slides)", () => {
     render(<EmptyChatGreeting />);
 
-    expect(screen.getByText("Commerce")).toBeInTheDocument();
-    expect(screen.getByText("Academic")).toBeInTheDocument();
-    expect(screen.getByText("Venture")).toBeInTheDocument();
+    expect(screen.getByText(/All Capabilities/i)).toBeInTheDocument();
+    expect(screen.getByText(/GenOffice Sheets/i)).toBeInTheDocument();
+    expect(screen.getByText(/GenOffice Slides/i)).toBeInTheDocument();
   });
 });
