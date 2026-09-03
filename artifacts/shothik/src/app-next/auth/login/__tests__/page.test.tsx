@@ -18,7 +18,7 @@ let searchParamsState: Record<string, string | null> = {
   redirect: null,
 };
 
-vi.mock("next/navigation", () => ({
+vi.mock("@/lib/navigation", () => ({
   useRouter: () => ({
     replace,
   }),
@@ -27,13 +27,58 @@ vi.mock("next/navigation", () => ({
   }),
 }));
 
-vi.mock("next/link", () => ({
-  default: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
+vi.mock("wouter", () => ({
+  Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
     <a href={href} {...props}>
       {children}
     </a>
   ),
 }));
+
+vi.mock("@/i18n", () => {
+  const enTranslations: Record<string, string> = {
+    "auth.workspaceBadge": "Workspace",
+    "auth.loginHeadline": "Welcome back",
+    "auth.loginSubheadline": "Sign in to your account",
+    "auth.selectedFirstStep": "Selected Step",
+    "auth.recommendedDestination": "Destination:",
+    "auth.loginFlowVariant": "Flow Variant",
+    "auth.loginVariantContextual": "Contextual",
+    "auth.loginVariantStreamlined": "Streamlined",
+    "auth.welcomeBack": "Welcome back",
+    "auth.signInToContinue": "Sign in to continue",
+    "auth.signInDescription": "Enter your email and password to access your workspace",
+    "auth.email": "Email",
+    "auth.password": "Password",
+    "auth.rememberMe": "Remember me",
+    "auth.forgotPassword": "Forgot password?",
+    "auth.signInAndContinue": "Sign in and continue",
+    "auth.signingIn": "Signing in...",
+    "auth.messages.emailVerified": "Email verified. You can sign in now.",
+    "auth.intent.continueLabel": "Continue",
+    "auth.intent.continueTitle": "Continue",
+    "auth.intent.continueDescription": "Resume your last workflow",
+    "auth.intent.writingStudioLabel": "Writing Studio",
+    "auth.intent.writingStudioTitle": "Writing Studio",
+    "auth.intent.writingStudioDescription": "Compose and refine documents",
+    "auth.intent.researchLabel": "Research",
+    "auth.intent.researchTitle": "Research",
+    "auth.intent.researchDescription": "Explore and analyze topics",
+    "auth.intent.assignmentLabel": "Assignment",
+    "auth.intent.assignmentTitle": "Assignment",
+    "auth.intent.assignmentDescription": "Draft and review assignments",
+    "auth.intent.twinLabel": "Digital Twin",
+    "auth.intent.twinTitle": "Digital Twin",
+    "auth.intent.twinDescription": "Interact with your AI persona",
+  };
+  return {
+    useTranslation: () => ({
+      t: (key: string) => enTranslations[key] || key,
+      locale: "en",
+      setLocale: vi.fn(),
+    }),
+  };
+});
 
 vi.mock("@/providers/AuthProvider", () => ({
   useAuth: () => ({
