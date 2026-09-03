@@ -422,7 +422,7 @@ router.post("/v1/papermark/record-view", async (req: Request, res: Response): Pr
  */
 router.get("/v1/papermark/links/:id/analytics", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const link = memoryLinks.get(id);
 
     if (!link) {
@@ -502,7 +502,7 @@ router.get("/v1/papermark/links/:id/analytics", async (req: Request, res: Respon
  */
 router.delete("/v1/papermark/links/:id", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { id } = req.params;
+    const id = String(req.params.id);
     const exists = memoryLinks.has(id);
 
     if (!exists) {

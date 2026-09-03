@@ -22,6 +22,27 @@ import {
   type OfflinePapermarkView,
 } from "./schema/sqlite-schema";
 
+export {
+  localCacheTable,
+  agentTracesTable,
+  offlineProjectsTable,
+  offlineAutosaveTable,
+  offlineParcelsTable,
+  offlineNilkhetOrdersTable,
+  offlinePapermarkLinksTable,
+  offlinePapermarkViewsTable,
+  type LocalCache,
+  type AgentTrace,
+  type OfflineProject,
+  type OfflineAutosave,
+  type OfflineParcel,
+  type OfflineNilkhetOrder,
+  type OfflinePapermarkLink,
+  type OfflinePapermarkView,
+};
+
+
+
 // Ensure local data directory exists
 const dataDir = path.resolve(process.cwd(), "data");
 if (!fs.existsSync(dataDir)) {

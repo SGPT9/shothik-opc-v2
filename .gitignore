@@ -114,6 +114,7 @@ worker-startup.cpuprofile
 data/
 artifacts/api-server/.data/
 artifacts/api-server/data/
+logs/
 
 
 
