@@ -48,7 +48,7 @@ export function DeerFlowVisualizer({
         <div>
           <div className="flex items-center gap-3">
             <span className="text-2xl">🦌</span>
-            <h2 className="text-lg font-bold tracking-wide text-white">DeerFlow DAG & Speculative Tree</h2>
+            <h2 className="text-lg font-bold tracking-wide text-white">DeerFlow DAG Workflow</h2>
             <span className="rounded-full bg-cyan-500/10 px-2.5 py-0.5 text-xs font-semibold text-cyan-400 border border-cyan-500/30">
               DeepSeek R1 + DSpark
             </span>
