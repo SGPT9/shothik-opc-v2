@@ -14,8 +14,29 @@ export interface PerplexitySourcesGridProps {
 }
 
 
+export const DEFAULT_PERPLEXITY_SOURCES: PerplexitySource[] = [
+  {
+    id: 1,
+    title: "Chaldal Grocery Delivery Network & Logistics Hubs",
+    domain: "chaldal.com",
+    url: "https://chaldal.com",
+  },
+  {
+    id: 2,
+    title: "ShopUp B2B Commerce & Merchant Financing in Bangladesh",
+    domain: "shopup.com.bd",
+    url: "https://shopup.com.bd",
+  },
+  {
+    id: 3,
+    title: "Steadfast Courier COD & Coverage Across 64 Districts",
+    domain: "steadfast.com.bd",
+    url: "https://steadfast.com.bd",
+  },
+];
+
 export const PerplexitySourcesGrid: React.FC<PerplexitySourcesGridProps> = ({
-  sources,
+  sources = DEFAULT_PERPLEXITY_SOURCES,
 }) => {
   if (!sources || sources.length === 0) return null;
 
