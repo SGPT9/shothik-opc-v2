@@ -87,6 +87,15 @@ temp-open-design/
 inkos-clone/
 inkos-repo/
 ponytail/
+Retrieval-based-Voice-Conversion-WebUI/
+Vane/
+deer-flow-backend/
+open-webui/
+openworker/
+shothik-opc-v2/
+shothik-soup/
+github_spec_kit/
+system_prompts_leaks/
 *.tar.gz
 .temp/
 scratch/
@@ -105,5 +114,6 @@ worker-startup.cpuprofile
 data/
 artifacts/api-server/.data/
 artifacts/api-server/data/
+
 
 

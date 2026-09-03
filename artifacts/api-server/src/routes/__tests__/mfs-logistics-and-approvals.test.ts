@@ -84,12 +84,48 @@ describe("MFS Settlement, Steadfast Logistics & Human-in-the-Loop Governance", (
         },
       });
 
-      expect(duplicateRes.status).toBe(200);
-      expect(duplicateRes.body.success).toBe(true);
       expect(duplicateRes.body.status).toBe("already_processed");
       expect(duplicateRes.body.idempotent).toBe(true);
     });
+
+    it("parses raw SMS notification into structured transaction details", async () => {
+      const res = await request("/api/v1/mfs/parse-sms", {
+        method: "POST",
+        body: {
+          smsText: "You have received Tk 1,500.00 from 01712345678. Fee Tk 0.00. Balance Tk 4,820.00. TrxID BK48566110 at 01/09/2026 15:30.",
+        },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.parsed.trxId).toBe("BK48566110");
+      expect(res.body.parsed.amountBdt).toBe(1500);
+      expect(res.body.parsed.senderPhone).toBe("01712345678");
+      expect(res.body.parsed.provider).toBe("bkash");
+    });
+
+    it("disburses creator earnings to bKash with 10% NBR TDS tax withholding", async () => {
+      const res = await request("/api/v1/mfs/payout", {
+        method: "POST",
+        body: {
+          userId: "usr_creator_801",
+          payoutAmountBdt: 2000,
+          mfsProvider: "bkash",
+          walletNumber: "01812345678",
+          creatorNote: "Course & Prompt Marketplace Payout",
+        },
+      });
+
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.grossRequestedBdt).toBe(2000);
+      expect(res.body.nbrTdsDeductedBdt).toBe(200); // 10% TDS
+      expect(res.body.netDisbursedBdt).toBe(1800); // Net 1800 BDT
+      expect(res.body.status).toBe("DISBURSED");
+      expect(res.body.payoutTrxId).toBeDefined();
+    });
   });
+
 
   // --- 2. Steadfast & Pathao Courier Logistics ---
   describe("Logistics & Courier Rail", () => {

@@ -61,7 +61,32 @@ describe("Platform Enhancements Suite (Files, Connectors, Task Credits)", () => 
       expect(json.count).toBe(2);
       expect(json.documents.length).toBe(2);
     });
+
+
+
+    it("POST /api/v1/files/ocr normalizes Bangla Academy spelling and extracts legal deed metadata", async () => {
+
+      const res = await fetch(`${baseUrl}/api/v1/files/ocr`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          filename: "dhanmondi_land_deed.pdf",
+          rawContent: "সাফ-কোবালা দলিল। ধানমন্ডি সাব-রেজিস্ট্রি অফিস, ঢাকা। আরএস খতিয়ান নং ৪৫০, দাগ নং ৯৮২। জমির পরিমাণ ৫.৫০ শতাংশ। দলিলের মূল্য ৳৪৫,০০,০০০ টাকা। সরকারী নিয়ম অনুযায়ী ও দাবী ত্যাগ পূর্বক সম্পাদিত।",
+          userId: "usr_lawyer_1",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const json = (await res.json()) as any;
+      expect(json.success).toBe(true);
+      expect(json.ocrResult.deedMetadata).toBeDefined();
+      expect(json.ocrResult.deedMetadata.deedType).toBe("সাফ-কোবালা দলিল");
+      expect(json.ocrResult.deedMetadata.subRegistryOffice).toContain("ধানমন্ডি সাব-রেজিস্ট্রি অফিস");
+      expect(json.ocrResult.markdown).toContain("সরকারি"); // Normalized from সরকারী
+      expect(json.ocrResult.markdown).toContain("দাবি"); // Normalized from দাবী
+    });
   });
+
 
   // --- 2. Connectors & Model Verification ---
   describe("Connectors & Verification", () => {

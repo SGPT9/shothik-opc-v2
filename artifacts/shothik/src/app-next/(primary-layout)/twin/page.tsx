@@ -188,18 +188,6 @@ Next up:
 /* ------------------------------------------------------------------ */
 
 export default function TwinPage() {
-  // If user is new (no active company and no setup completed), start from /twin/new
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const sp = new URLSearchParams(window.location.search);
-      const compParam = sp.get("company");
-      const hasSetup = localStorage.getItem("shothik_twin_has_setup") || localStorage.getItem("shothik_active_company");
-      if (!compParam && !hasSetup) {
-        window.location.replace("/twin/new");
-      }
-    }
-  }, []);
-
   const [companyList, setCompanyList] = useState<CompanyProfile[]>(() => {
     return getCompaniesList();
   });
@@ -293,14 +281,11 @@ export default function TwinPage() {
   const [videoStudioOpen, setVideoStudioOpen] = useState(false);
   const [memoryCount, setMemoryCount] = useState(4);
 
-  // Onboarding guard: New users with no active company setup are redirected to /twin/new
+  // Load active company profile and list
   useEffect(() => {
     if (typeof window !== "undefined") {
       const sp = new URLSearchParams(window.location.search);
-      const isDemo = sp.get("demo") === "true";
       const companyParam = sp.get("company");
-      const activeCompany = localStorage.getItem("shothik_active_company");
-      const hasSetup = localStorage.getItem("shothik_twin_has_setup");
 
       if (companyParam) {
         const loaded = getActiveCompanyProfile(companyParam);
@@ -312,15 +297,7 @@ export default function TwinPage() {
         setFeed(loaded.feed);
         setRevenueBdt(loaded.revenueBdt || 0);
         setVisitorCount(loaded.visitorCount || 1);
-        setCompanyList(getCompaniesList());
-        return;
       }
-
-      if (!activeCompany && !hasSetup && !isDemo) {
-        window.location.replace("/twin/new");
-        return;
-      }
-
       setCompanyList(getCompaniesList());
     }
   }, []);

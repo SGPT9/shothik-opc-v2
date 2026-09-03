@@ -92,7 +92,47 @@ export const offlineNilkhetOrdersTable = sqliteTable("offline_nilkhet_orders", {
   updatedAt: integer("updated_at").notNull().$defaultFn(() => Date.now()),
 });
 
+/**
+ * Local SQLite table for Papermark trackable investor and document share links
+ */
+export const offlinePapermarkLinksTable = sqliteTable("offline_papermark_links", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  documentId: text("document_id").notNull(),
+  title: text("title").notNull(),
+  documentType: text("document_type").notNull().default("pitch_deck"), // pitch_deck, financial_model, research_brief, book
+  customSlug: text("custom_slug").notNull().unique(),
+  passcode: text("passcode"),
+  expiresAt: integer("expires_at"),
+  allowDownload: integer("allow_download", { mode: "boolean" }).notNull().default(true),
+  totalViews: integer("total_views").notNull().default(0),
+  uniqueVisitors: integer("unique_visitors").notNull().default(0),
+  avgDurationSec: integer("avg_duration_sec").notNull().default(0),
+  completionRate: integer("completion_rate").notNull().default(0), // percentage 0-100
+  createdAt: integer("created_at").notNull().$defaultFn(() => Date.now()),
+  updatedAt: integer("updated_at").notNull().$defaultFn(() => Date.now()),
+});
+
+/**
+ * Local SQLite table for Papermark page-by-page view telemetry and visitor heatmaps
+ */
+export const offlinePapermarkViewsTable = sqliteTable("offline_papermark_views", {
+  id: text("id").primaryKey(),
+  linkId: text("link_id").notNull(),
+  visitorId: text("visitor_id").notNull(),
+  ipHash: text("ip_hash").notNull().default(""),
+  country: text("country").notNull().default("Bangladesh"),
+  city: text("city").notNull().default("Dhaka"),
+  device: text("device").notNull().default("desktop"),
+  durationSeconds: integer("duration_seconds").notNull().default(0),
+  pagesViewedJson: text("pages_viewed_json").notNull().default("[]"), // array of { page: number, durationSec: number }
+  completed: integer("completed", { mode: "boolean" }).notNull().default(false),
+  createdAt: integer("created_at").notNull().$defaultFn(() => Date.now()),
+});
+
 export type OfflineProject = typeof offlineProjectsTable.$inferSelect;
 export type OfflineAutosave = typeof offlineAutosaveTable.$inferSelect;
 export type OfflineParcel = typeof offlineParcelsTable.$inferSelect;
 export type OfflineNilkhetOrder = typeof offlineNilkhetOrdersTable.$inferSelect;
+export type OfflinePapermarkLink = typeof offlinePapermarkLinksTable.$inferSelect;
+export type OfflinePapermarkView = typeof offlinePapermarkViewsTable.$inferSelect;

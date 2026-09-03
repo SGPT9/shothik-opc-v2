@@ -311,35 +311,69 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
               </Card>
             </div>
 
-            {/* ARPU, CAC, Churn */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Currency & South Asian Risk Parameters */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
                 <label className="text-xs font-semibold text-slate-300 block mb-2">
-                  ARPU (Avg Revenue Per User)
+                  Operating Currency
                 </label>
                 <div className="flex items-center gap-2">
-                  <input
-                    type="number"
-                    value={params.arpuDollars}
-                    onChange={(e) => updateParam("arpuDollars", parseFloat(e.target.value) || 0)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                  />
-                  <span className="text-xs text-slate-400 font-semibold">$/mo</span>
+                  <button
+                    type="button"
+                    onClick={() => updateParam("currency", "USD")}
+                    className={cn(
+                      "flex-1 py-1.5 rounded-lg text-xs font-bold transition",
+                      params.currency !== "BDT"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white"
+                    )}
+                  >
+                    USD ($)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updateParam("currency", "BDT")}
+                    className={cn(
+                      "flex-1 py-1.5 rounded-lg text-xs font-bold transition",
+                      params.currency === "BDT"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-slate-950 text-slate-400 border border-slate-800 hover:text-white"
+                    )}
+                  >
+                    BDT (৳)
+                  </button>
                 </div>
               </Card>
 
               <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
-                <label className="text-xs font-semibold text-slate-300 block mb-2">
-                  CAC (Customer Acquisition Cost)
+                <label className="text-xs font-semibold text-amber-300 block mb-2">
+                  Cash-on-Delivery (COD) Return
                 </label>
                 <div className="flex items-center gap-2">
                   <input
                     type="number"
-                    value={params.cacDollars}
-                    onChange={(e) => updateParam("cacDollars", parseFloat(e.target.value) || 0)}
+                    step="0.5"
+                    value={params.codReturnRatePercent || 18.5}
+                    onChange={(e) => updateParam("codReturnRatePercent", parseFloat(e.target.value) || 0)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
                   />
-                  <span className="text-xs text-slate-400 font-semibold">$</span>
+                  <span className="text-xs text-amber-400 font-semibold">%</span>
+                </div>
+              </Card>
+
+              <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
+                <label className="text-xs font-semibold text-emerald-300 block mb-2">
+                  bKash/Nagad MFS Cash-Out Fee
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={params.mfsCashoutFeePercent || 1.5}
+                    onChange={(e) => updateParam("mfsCashoutFeePercent", parseFloat(e.target.value) || 0)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  />
+                  <span className="text-xs text-emerald-400 font-semibold">%</span>
                 </div>
               </Card>
 
@@ -360,6 +394,39 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
               </Card>
             </div>
 
+            {/* ARPU & CAC */}
+            <div className="grid grid-cols-2 gap-4">
+              <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
+                <label className="text-xs font-semibold text-slate-300 block mb-2">
+                  ARPU (Avg Revenue Per User)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={params.arpuDollars}
+                    onChange={(e) => updateParam("arpuDollars", parseFloat(e.target.value) || 0)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  />
+                  <span className="text-xs text-slate-400 font-semibold">{simulationSummary.currencySymbol}/mo</span>
+                </div>
+              </Card>
+
+              <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
+                <label className="text-xs font-semibold text-slate-300 block mb-2">
+                  CAC (Customer Acquisition Cost)
+                </label>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={params.cacDollars}
+                    onChange={(e) => updateParam("cacDollars", parseFloat(e.target.value) || 0)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
+                  />
+                  <span className="text-xs text-slate-400 font-semibold">{simulationSummary.currencySymbol}</span>
+                </div>
+              </Card>
+            </div>
+
             {/* Financial ARR Percentile Projections */}
             <div className="grid grid-cols-3 gap-4">
               <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 rounded-xl p-5">
@@ -367,7 +434,7 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
                   P10 Pessimistic ARR (Yr 1)
                 </span>
                 <p className="text-3xl font-black text-white mt-2">
-                  ${(simulationSummary.p10PessimisticARR / 1_000_000).toFixed(2)}M
+                  {simulationSummary.currencySymbol}{(simulationSummary.p10PessimisticARR / 1_000_000).toFixed(2)}M
                 </p>
                 <p className="text-xs text-slate-500 mt-1">10th percentile adoption rate</p>
               </Card>
@@ -377,7 +444,7 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
                   P50 Median ARR (Yr 1)
                 </span>
                 <p className="text-3xl font-black text-white mt-2">
-                  ${(simulationSummary.p50MedianARR / 1_000_000).toFixed(2)}M
+                  {simulationSummary.currencySymbol}{(simulationSummary.p50MedianARR / 1_000_000).toFixed(2)}M
                 </p>
                 <p className="text-xs text-slate-400 mt-1">
                   Payback: <strong className="text-indigo-300">{simulationSummary.averagePaybackMonths} months</strong>
@@ -389,7 +456,7 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
                   P90 Optimistic ARR (Yr 1)
                 </span>
                 <p className="text-3xl font-black text-white mt-2">
-                  ${(simulationSummary.p90OptimisticARR / 1_000_000).toFixed(2)}M
+                  {simulationSummary.currencySymbol}{(simulationSummary.p90OptimisticARR / 1_000_000).toFixed(2)}M
                 </p>
                 <p className="text-xs text-slate-400 mt-1">90th percentile adoption rate</p>
               </Card>

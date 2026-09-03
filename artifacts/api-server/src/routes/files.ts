@@ -200,4 +200,44 @@ router.delete("/v1/files/:docId", async (req: Request, res: Response): Promise<v
   }
 });
 
+/**
+
+ * POST /api/v1/files/ocr
+ * High-precision Bangla OCR route for legal deeds ("দলিল"), land khatians, and university handouts.
+ * Automatically normalizes Bangla Academy short-i orthography and extracts structured deed metadata.
+ */
+router.post("/v1/files/ocr", idempotencyMiddleware, async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { filename = "dalil_scan.pdf", fileBase64, rawContent, userId = "usr_default" } = req.body;
+
+    if (!fileBase64 && !rawContent) {
+      res.status(400).json({
+        success: false,
+        error: "Missing OCR document payload: fileBase64 or rawContent is required",
+      });
+      return;
+    }
+
+    const inputData = fileBase64 ? Buffer.from(fileBase64, "base64") : rawContent;
+    const ocrResult = openDataLoader.parseBanglaOcr(inputData, filename);
+
+    res.status(200).json({
+      success: true,
+      filename,
+      ocrResult: {
+        title: ocrResult.title,
+        pageCount: ocrResult.pageCount,
+        totalLength: ocrResult.totalLength,
+        markdown: ocrResult.markdown,
+        deedMetadata: ocrResult.deedMetadata,
+      },
+      message: "Bangla OCR processing and orthography normalization completed successfully.",
+    });
+  } catch (error: any) {
+    logger.error({ error: error.message }, "[files/ocr] OCR processing failure");
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 export default router;
+
