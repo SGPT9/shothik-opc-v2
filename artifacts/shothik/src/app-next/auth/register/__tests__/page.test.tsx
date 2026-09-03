@@ -31,6 +31,66 @@ vi.mock("@/providers/AuthProvider", () => ({
   }),
 }));
 
+vi.mock("@/lib/navigation", () => ({
+  useRouter: () => ({
+    push,
+  }),
+  useSearchParams: () => ({
+    get: (key: string) => (key === "intent" ? currentIntent : null),
+  }),
+}));
+
+vi.mock("wouter", () => ({
+  Link: ({ children, href, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}));
+
+vi.mock("@/i18n", () => {
+  const enTranslations: Record<string, string> = {
+    "auth.createWorkspaceBadge": "Get Started",
+    "auth.registerHeadline": "Create your account",
+    "auth.registerSubheadline": "Start your journey with Shothik",
+    "auth.firstRunRecommendation": "First Step",
+    "auth.createYourAccount": "Create your account",
+    "auth.setUpYourWorkspace": "Set up your workspace",
+    "auth.registerDescription": "Enter your details to create an account",
+    "auth.name": "Name",
+    "auth.email": "Email",
+    "auth.password": "Password",
+    "auth.confirmPassword": "Confirm Password",
+    "auth.country": "Country",
+    "auth.whatDoYouWantFirst": "What do you want to do first?",
+    "auth.termsAgreement": "I agree to the terms and conditions",
+    "auth.createAccount": "Create account",
+    "auth.creatingAccount": "Creating account...",
+    "auth.alreadyHaveAccount": "Already have an account? Login",
+    "auth.enterVerificationCode": "Enter verification code",
+    "auth.messages.nameRequired": "Name is required.",
+    "auth.messages.invalidEmail": "Invalid email address.",
+    "auth.messages.passwordTooShort": "Password must be at least 6 characters long.",
+    "auth.messages.passwordsDoNotMatch": "Passwords do not match yet.",
+    "auth.messages.mustAgreeTerms": "You must agree to the terms and conditions before creating an account.",
+    "auth.messages.fixHighlighted": "Please fix the highlighted fields before continuing.",
+    "auth.messages.accountCreatedVerify": "Account created. Please verify your email before signing in.",
+    "auth.messages.registrationSuccessRedirect": "Registration successful!",
+    "auth.intent.continueTitle": "Continue",
+    "auth.intent.writingStudioTitle": "Writing Studio",
+    "auth.intent.researchTitle": "Research",
+    "auth.intent.assignmentTitle": "Assignment",
+    "auth.intent.twinTitle": "Digital Twin",
+  };
+  return {
+    useTranslation: () => ({
+      t: (key: string) => enTranslations[key] || key,
+      locale: "en",
+      setLocale: vi.fn(),
+    }),
+  };
+});
+
 describe("RegisterPage", () => {
   beforeEach(() => {
     push.mockReset();
