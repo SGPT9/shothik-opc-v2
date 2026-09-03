@@ -159,6 +159,9 @@ export function VoiceCommanderModal({
                 <Badge variant="outline" className="border-purple-500/40 bg-purple-500/10 text-purple-300 font-mono text-[10px] flex items-center gap-1">
                   <Brain className="size-2.5" /> SecondMe Brain
                 </Badge>
+                <Badge variant="outline" className="border-cyan-500/40 bg-cyan-500/10 text-cyan-300 font-mono text-[10px]">
+                  Web Speech V2
+                </Badge>
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-400">
                 Hands-free voice operator for {companyName} with native Bangla & Banglish cognitive tone.
