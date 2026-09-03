@@ -28,69 +28,78 @@ export class DiffEngine {
   }
 
   /**
-   * Compute Myers LCS diff between original and proposed text
+   * Compute token/word diff between original and proposed text
    */
   static computeDiff(original: string, proposed: string): DiffChunk[] {
     if (original === proposed) {
       return [{ id: "chunk_0", type: "unchanged", value: original, status: "accepted" }];
     }
 
-    const tokensA = this.tokenize(original);
-    const tokensB = this.tokenize(proposed);
-
-    const m = tokensA.length;
-    const n = tokensB.length;
-
-    // LCS DP Table
-    const dp: number[][] = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
-
-    for (let i = 1; i <= m; i++) {
-      for (let j = 1; j <= n; j++) {
-        if (tokensA[i - 1] === tokensB[j - 1]) {
-          dp[i][j] = dp[i - 1][j - 1] + 1;
-        } else {
-          dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-        }
+    // Find common prefix
+    let prefixLen = 0;
+    while (prefixLen < original.length && prefixLen < proposed.length && original[prefixLen] === proposed[prefixLen]) {
+      prefixLen++;
+    }
+    if (prefixLen > 0 && prefixLen < original.length && prefixLen < proposed.length) {
+      const lastSpace = original.lastIndexOf(" ", prefixLen);
+      if (lastSpace !== -1 && lastSpace >= 0) {
+        prefixLen = lastSpace + 1;
       }
     }
 
-    // Backtrack to extract diff chunks
-    let i = m;
-    let j = n;
-    const rawChunks: { type: DiffType; value: string }[] = [];
-
-    while (i > 0 || j > 0) {
-      if (i > 0 && j > 0 && tokensA[i - 1] === tokensB[j - 1]) {
-        rawChunks.unshift({ type: "unchanged", value: tokensA[i - 1] });
-        i--;
-        j--;
-      } else if (j > 0 && (i === 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-        rawChunks.unshift({ type: "added", value: tokensB[j - 1] });
-        j--;
-      } else if (i > 0 && (j === 0 || dp[i][j - 1] < dp[i - 1][j])) {
-        rawChunks.unshift({ type: "removed", value: tokensA[i - 1] });
-        i--;
-      }
+    // Find common suffix
+    let suffixLen = 0;
+    while (
+      suffixLen < original.length - prefixLen &&
+      suffixLen < proposed.length - prefixLen &&
+      original[original.length - 1 - suffixLen] === proposed[proposed.length - 1 - suffixLen]
+    ) {
+      suffixLen++;
     }
 
-    // Merge consecutive chunks of same type
-    const mergedChunks: DiffChunk[] = [];
+    const chunks: DiffChunk[] = [];
     let chunkCounter = 0;
 
-    for (const chunk of rawChunks) {
-      if (mergedChunks.length > 0 && mergedChunks[mergedChunks.length - 1].type === chunk.type) {
-        mergedChunks[mergedChunks.length - 1].value += chunk.value;
-      } else {
-        mergedChunks.push({
-          id: `diff_${chunkCounter++}_${Math.random().toString(36).slice(2, 6)}`,
-          type: chunk.type,
-          value: chunk.value,
-          status: chunk.type === "unchanged" ? "accepted" : "pending",
-        });
-      }
+    if (prefixLen > 0) {
+      chunks.push({
+        id: `diff_${chunkCounter++}_${Math.random().toString(36).slice(2, 6)}`,
+        type: "unchanged",
+        value: original.slice(0, prefixLen),
+        status: "accepted",
+      });
     }
 
-    return mergedChunks;
+    const removedPart = original.slice(prefixLen, original.length - suffixLen);
+    const addedPart = proposed.slice(prefixLen, proposed.length - suffixLen);
+
+    if (removedPart.length > 0) {
+      chunks.push({
+        id: `diff_${chunkCounter++}_${Math.random().toString(36).slice(2, 6)}`,
+        type: "removed",
+        value: removedPart,
+        status: "pending",
+      });
+    }
+
+    if (addedPart.length > 0) {
+      chunks.push({
+        id: `diff_${chunkCounter++}_${Math.random().toString(36).slice(2, 6)}`,
+        type: "added",
+        value: addedPart,
+        status: "pending",
+      });
+    }
+
+    if (suffixLen > 0) {
+      chunks.push({
+        id: `diff_${chunkCounter++}_${Math.random().toString(36).slice(2, 6)}`,
+        type: "unchanged",
+        value: original.slice(original.length - suffixLen),
+        status: "accepted",
+      });
+    }
+
+    return chunks;
   }
 
   /**

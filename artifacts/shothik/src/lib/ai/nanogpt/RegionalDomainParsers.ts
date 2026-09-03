@@ -106,6 +106,7 @@ export class RegionalDomainParsers {
       'pathan': 'পাঠান',
       'pathao': 'পাঠাও',
       'koren': 'করেন',
+      'kivabe': 'কীভাবে',
     };
 
     const words = result.split(/\s+/);
@@ -134,11 +135,29 @@ export class RegionalDomainParsers {
     // 3. District detection
     let detectedDistrict = 'Dhaka';
     let districtFound = false;
-    for (const dist of BD_DISTRICTS) {
-      if (new RegExp(`\\b${dist}\\b`, 'i').test(text)) {
-        detectedDistrict = dist;
+    const districtAliases: Record<string, string> = {
+      'chittagong': 'Chattogram',
+      'comilla': 'Cumilla',
+      'jessore': 'Jashore',
+      'bogra': 'Bogura',
+      'barisal': 'Barishal',
+    };
+
+    for (const [alias, canonical] of Object.entries(districtAliases)) {
+      if (new RegExp(`\\b${alias}\\b`, 'i').test(text)) {
+        detectedDistrict = canonical;
         districtFound = true;
         break;
+      }
+    }
+
+    if (!districtFound) {
+      for (const dist of BD_DISTRICTS) {
+        if (new RegExp(`\\b${dist}\\b`, 'i').test(text)) {
+          detectedDistrict = dist;
+          districtFound = true;
+          break;
+        }
       }
     }
 
