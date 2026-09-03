@@ -18,9 +18,9 @@ describe("Files & Storage Page (FilesPage.tsx)", () => {
 
     render(<FilesPage />);
 
-    expect(screen.getByText("Files & Storage")).toBeInTheDocument();
+    expect(screen.getByText(/Files & Knowledge Vault/i)).toBeInTheDocument();
     expect(screen.getByText("My_Pitch_Deck_Notes.md")).toBeInTheDocument();
-    expect(screen.getByText("Upload File")).toBeInTheDocument();
+    expect(screen.getByTestId("button-upload-file")).toBeInTheDocument();
   });
 
   it("filters file rows when user types in search box", () => {

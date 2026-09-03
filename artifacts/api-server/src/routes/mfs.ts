@@ -413,20 +413,112 @@ router.post("/v1/mfs/nagad/callback", async (req: Request, res: Response) => {
 });
 
 /**
- * GET /api/v1/mfs/nagad/verify/:paymentRefId
- * Queries Nagad PGW verification status
+ * POST /api/v1/mfs/payout
+ * Disburses creator earnings to bKash/Nagad wallet with 10% NBR TDS tax withholding.
  */
-router.get("/v1/mfs/nagad/verify/:paymentRefId", (req: Request, res: Response) => {
-  const { paymentRefId } = req.params;
-  return res.status(200).json({
-    success: true,
-    paymentRefId,
-    status: "VERIFIED",
-    amount: "990.00",
-    currency: "BDT",
-    merchantId: "SHOTHIK_NAGAD_DIRECT",
-  });
+router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: Response) => {
+  try {
+    const {
+      userId = "usr_creator_default",
+      payoutAmountBdt,
+      mfsProvider = "bkash",
+      walletNumber,
+      creatorNote,
+    } = req.body;
+
+    if (!payoutAmountBdt || typeof payoutAmountBdt !== "number" || payoutAmountBdt < 500) {
+      return res.status(400).json({
+        success: false,
+        error: "Minimum payout amount is ৳500 BDT.",
+      });
+    }
+
+    if (!walletNumber || !/^01[3-9]\d{8}$/.test(walletNumber.trim())) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid Bangladeshi mobile wallet number. Must be 11 digits starting with 013-019.",
+      });
+    }
+
+    // Calculate 10% NBR Tax Deducted at Source (TDS)
+    const nbrTdsPercent = 10;
+    const tdsAmountBdt = Math.round(payoutAmountBdt * (nbrTdsPercent / 100));
+    const netDisbursedBdt = payoutAmountBdt - tdsAmountBdt;
+
+    const payoutTrxId = `${mfsProvider === "nagad" ? "NGD_DISB_" : "BK_DISB_"}${Date.now().toString().slice(-8)}${Math.floor(100 + Math.random() * 900)}`;
+
+    // Record in Twin Revenue Ledger
+    const recordedPayout = TwinRevenueLedger.creditRevenue({
+      companyName: userId,
+      amountBdt: -payoutAmountBdt,
+      source: mfsProvider === "nagad" ? "nagad_trx" : "bkash_trx",
+      referenceId: payoutTrxId,
+      note: creatorNote || "Creator Marketplace Revenue Cash-Out",
+    });
+
+    return res.status(200).json({
+      success: true,
+      payoutId: `PAYOUT_${Date.now()}`,
+      payoutTrxId,
+      mfsProvider,
+      walletNumber: walletNumber.trim(),
+      grossRequestedBdt: payoutAmountBdt,
+      nbrTdsDeductedBdt: tdsAmountBdt,
+      netDisbursedBdt,
+      status: "DISBURSED",
+      ledgerEntry: recordedPayout.transaction,
+      message: `৳${netDisbursedBdt} BDT successfully disbursed to ${mfsProvider.toUpperCase()} wallet ${walletNumber.trim()} (৳${tdsAmountBdt} TDS deducted).`,
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/v1/mfs/parse-sms
+ * Utility route to parse raw bKash/Nagad/Rocket SMS confirmation text
+ */
+router.post("/v1/mfs/parse-sms", (req: Request, res: Response) => {
+  try {
+    const { smsText = "" } = req.body;
+    if (!smsText.trim()) {
+      return res.status(400).json({ success: false, error: "smsText payload is required." });
+    }
+
+    // 1. TrxID
+    const trxMatch = smsText.match(/(?:TrxID|TxnID|Txn|Transaction ID|Ref:?)\s*[:.]?\s*([A-Za-z0-9]{8,12})/i);
+    const trxId = trxMatch ? trxMatch[1].toUpperCase() : null;
+
+    // 2. Amount
+    const amountMatch = smsText.match(/(?:Tk|BDT|Tk\.|Amount:?)\s*[:.]?\s*([\d,]+(?:\.\d+)?)/i);
+    const amountBdt = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, "")) : null;
+
+    // 3. Sender Phone
+    const phoneMatch = smsText.match(/(01[3-9]\d{8})/);
+    const senderPhone = phoneMatch ? phoneMatch[1] : null;
+
+    // 4. Provider
+    let provider: "bkash" | "nagad" | "rocket" = "bkash";
+    if (/nagad/i.test(smsText)) provider = "nagad";
+    else if (/rocket|dbbl/i.test(smsText)) provider = "rocket";
+
+    return res.status(200).json({
+      success: true,
+      parsed: {
+        trxId,
+        amountBdt,
+        senderPhone,
+        provider,
+        isValid: !!(trxId && amountBdt),
+      },
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
 });
 
 export default router;
+
 

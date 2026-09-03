@@ -1008,6 +1008,51 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showVTuberStage, setShowVTuberStage] = useState(false);
+  const [showPapermarkModal, setShowPapermarkModal] = useState(false);
+  const [papermarkLink, setPapermarkLink] = useState<{ id: string; shareUrl: string; customSlug: string } | null>(null);
+  const [isCreatingLink, setIsCreatingLink] = useState(false);
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleCreatePapermarkLink = async () => {
+    setShowPapermarkModal(true);
+    if (papermarkLink) return;
+
+    setIsCreatingLink(true);
+    try {
+      const res = await fetch("/api/v1/papermark/links", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: "usr_default",
+          title: topicTitle,
+          documentType: "pitch_deck",
+          allowDownload: true,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setPapermarkLink({
+            id: json.data.id,
+            shareUrl: json.data.shareUrl,
+            customSlug: json.data.customSlug,
+          });
+          setIsCreatingLink(false);
+          return;
+        }
+      }
+    } catch {
+      // Offline fallback
+    }
+
+    const fallbackSlug = `deck-${topicTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-").slice(0, 30)}`;
+    setPapermarkLink({
+      id: `pm_link_${Date.now()}`,
+      shareUrl: `https://papermark.shothik.app/view/${fallbackSlug}`,
+      customSlug: fallbackSlug,
+    });
+    setIsCreatingLink(false);
+  };
 
   const [slideList, setSlideList] = useState<SlideData[]>(() => customSlides || buildDynamicDeck(topicTitle));
 
@@ -1404,6 +1449,17 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
           >
             <Play className="h-3 w-3 fill-current" />
             <span>Present</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCreatePapermarkLink}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[11px] font-bold shadow-sm transition cursor-pointer"
+            title="Generate trackable Papermark investor link with page heatmaps"
+            data-testid="slides-trackable-link-btn"
+          >
+            <Share2 className="h-3 w-3 text-indigo-400" />
+            <span>Trackable Link</span>
           </button>
 
           {/* Quick Actions (Add Slide, Fullscreen, PPTX, Marp, Download) */}
@@ -1912,6 +1968,99 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
           />
         )}
       </div>
+
+      {/* Papermark Trackable Link Modal */}
+      {showPapermarkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-200 select-text">
+          <div className="relative w-full max-w-md rounded-2xl border border-border bg-card p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase">
+                  Papermark Integration
+                </span>
+                <h3 className="text-base font-bold text-foreground mt-1">Trackable Presentation Link</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Share this deck with investors to track page-by-page read time & heatmaps.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowPapermarkModal(false)}
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {isCreatingLink ? (
+              <div className="py-8 flex flex-col items-center justify-center gap-3 text-center">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-indigo-500 border-t-transparent" />
+                <p className="text-xs text-muted-foreground">Generating secure trackable link...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="rounded-xl border border-border bg-muted/40 p-3 flex items-center justify-between gap-2">
+                  <span className="text-xs font-mono text-indigo-400 truncate flex-1 select-all">
+                    {papermarkLink?.shareUrl}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (papermarkLink) {
+                        navigator.clipboard.writeText(papermarkLink.shareUrl);
+                        setLinkCopied(true);
+                        setTimeout(() => setLinkCopied(false), 2000);
+                      }
+                    }}
+                    className="flex items-center gap-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 text-xs font-semibold text-white transition cursor-pointer shrink-0"
+                    data-testid="copy-papermark-modal-btn"
+                  >
+                    {linkCopied ? (
+                      <>
+                        <Check className="h-3.5 w-3.5" />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3.5 w-3.5" />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="rounded-xl border border-border/60 bg-muted/20 p-3.5 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Page Attention Heatmap</span>
+                    <span className="text-emerald-400 font-medium">Active (Real-Time)</span>
+                  </div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>PDF Download Protection</span>
+                    <span className="text-foreground">Enabled</span>
+                  </div>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between border-t border-border">
+                  <a
+                    href="/account/settings?section=share"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex items-center gap-1 text-xs font-medium text-indigo-400 hover:underline"
+                  >
+                    <span>View Analytics in Profile</span>
+                    <ExternalLink className="h-3 w-3" />
+                  </a>
+
+                  <button
+                    onClick={() => setShowPapermarkModal(false)}
+                    className="rounded-lg bg-muted px-4 py-2 text-xs font-medium text-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

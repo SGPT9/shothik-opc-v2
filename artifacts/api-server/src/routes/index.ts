@@ -35,6 +35,7 @@ import aiToolsExtendedRouter from "./ai-tools-extended";
 import { crdtRouter } from "./crdt";
 import companiesRouter from "./companies";
 import twinTasksRouter from "./twin-tasks";
+import papermarkRouter from "./papermark";
 
 const router: IRouter = Router();
 
@@ -44,6 +45,7 @@ router.use(authRouter);
 router.use(nightshiftRouter);
 router.use(companiesRouter);
 router.use(twinTasksRouter);
+router.use(papermarkRouter);
 
 router.use(healthRouter);
 router.use(ollamaRouter);

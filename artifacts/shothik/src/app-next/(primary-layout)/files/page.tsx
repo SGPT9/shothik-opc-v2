@@ -44,8 +44,35 @@ export interface FileItem {
   extractedResult?: ParsedDocumentResult;
 }
 
+const DEFAULT_FILES: FileItem[] = [
+  {
+    id: "f-1",
+    name: "Q3_Financials_v2.pdf",
+    type: "pdf",
+    size: "2.4 MB",
+    date: "Sep 01, 2026",
+    source: "Uploaded",
+  },
+  {
+    id: "f-2",
+    name: "Investor_Deck_Final.pptx",
+    type: "slides",
+    size: "14.8 MB",
+    date: "Aug 28, 2026",
+    source: "Twin",
+  },
+  {
+    id: "f-3",
+    name: "Dhaka_Express_Courier_Ledger.xlsx",
+    type: "sheet",
+    size: "820 KB",
+    date: "Aug 24, 2026",
+    source: "Studio",
+  },
+];
+
 export default function FilesPage() {
-  const [files, setFiles] = useState<FileItem[]>([]);
+  const [files, setFiles] = useState<FileItem[]>(DEFAULT_FILES);
   const [search, setSearch] = useState("");
   const [isParsing, setIsParsing] = useState(false);
   const [parsingFileName, setParsingFileName] = useState("");
@@ -65,7 +92,7 @@ export default function FilesPage() {
         source: "Studio",
         content: d.content,
       }));
-      setFiles(docFiles);
+      setFiles([...docFiles, ...DEFAULT_FILES]);
     }
   }, []);
 
@@ -243,6 +270,15 @@ export default function FilesPage() {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={isParsing}
+            className="flex items-center gap-1.5 bg-purple-700 hover:bg-purple-600 text-white px-3.5 py-2 rounded-xl text-xs font-semibold shadow-md shadow-purple-900/20 transition-all cursor-pointer"
+            data-testid="button-deed-ocr"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>🏛️ Legal Deed OCR (দলিল)</span>
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isParsing}
             className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-semibold shadow-md shadow-indigo-600/20 transition-all cursor-pointer"
             data-testid="button-upload-file"
           >
@@ -251,6 +287,7 @@ export default function FilesPage() {
           </button>
         </div>
       </div>
+
 
       {/* Parsing Active Banner */}
       {isParsing && (

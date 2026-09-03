@@ -10,12 +10,16 @@ import {
   offlineAutosaveTable,
   offlineParcelsTable,
   offlineNilkhetOrdersTable,
+  offlinePapermarkLinksTable,
+  offlinePapermarkViewsTable,
   type LocalCache,
   type AgentTrace,
   type OfflineProject,
   type OfflineAutosave,
   type OfflineParcel,
   type OfflineNilkhetOrder,
+  type OfflinePapermarkLink,
+  type OfflinePapermarkView,
 } from "./schema/sqlite-schema";
 
 // Ensure local data directory exists
@@ -42,6 +46,8 @@ export const sqliteDb = drizzle(sqliteClient, {
     offlineAutosaveTable,
     offlineParcelsTable,
     offlineNilkhetOrdersTable,
+    offlinePapermarkLinksTable,
+    offlinePapermarkViewsTable,
   },
 });
 
@@ -140,6 +146,42 @@ export async function initSqliteTables(client: Client = sqliteClient): Promise<v
       status TEXT NOT NULL DEFAULT 'PENDING_PRINT',
       created_at INTEGER NOT NULL,
       updated_at INTEGER NOT NULL
+    );
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS offline_papermark_links (
+      id TEXT PRIMARY KEY,
+      user_id TEXT NOT NULL,
+      document_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      document_type TEXT NOT NULL DEFAULT 'pitch_deck',
+      custom_slug TEXT NOT NULL UNIQUE,
+      passcode TEXT,
+      expires_at INTEGER,
+      allow_download INTEGER NOT NULL DEFAULT 1,
+      total_views INTEGER NOT NULL DEFAULT 0,
+      unique_visitors INTEGER NOT NULL DEFAULT 0,
+      avg_duration_sec INTEGER NOT NULL DEFAULT 0,
+      completion_rate INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    );
+  `);
+
+  await client.execute(`
+    CREATE TABLE IF NOT EXISTS offline_papermark_views (
+      id TEXT PRIMARY KEY,
+      link_id TEXT NOT NULL,
+      visitor_id TEXT NOT NULL,
+      ip_hash TEXT NOT NULL DEFAULT '',
+      country TEXT NOT NULL DEFAULT 'Bangladesh',
+      city TEXT NOT NULL DEFAULT 'Dhaka',
+      device TEXT NOT NULL DEFAULT 'desktop',
+      duration_seconds INTEGER NOT NULL DEFAULT 0,
+      pages_viewed_json TEXT NOT NULL DEFAULT '[]',
+      completed INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL
     );
   `);
 }

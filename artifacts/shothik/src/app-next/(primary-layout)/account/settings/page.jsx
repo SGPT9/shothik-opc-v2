@@ -6,6 +6,7 @@ import MasterDashboard from "@/components/(primary-layout)/(account-page)/Master
 import BillingPage from "@/components/subscription/BillingPage";
 import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
 import MyLibrarySection from "@/components/credits/MyLibrarySection";
+import ShareAnalyticsSection from "@/components/(primary-layout)/(account-page)/ShareAnalyticsSection";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,7 +20,7 @@ import { PATH_ACCOUNT } from "@/config/route";
 import { trackCreditPurchaseCompleted } from "@/lib/posthog";
 import { useTranslation, SUPPORTED_LOCALES } from "@/i18n";
 import { useSyncLocaleToConvex } from "@/i18n/useSyncLocaleToConvex";
-import { User, Wallet, Bot, BookOpen, Brain, CheckCircle2, XCircle, Globe, ArrowRight, CreditCard, Sun, Moon, Monitor } from "lucide-react";
+import { User, Wallet, Bot, BookOpen, Brain, CheckCircle2, XCircle, Globe, ArrowRight, CreditCard, Sun, Moon, Monitor, Share2 } from "lucide-react";
 import { Link } from "wouter";
 import { useRouter } from "@/lib/navigation";
 import { useEffect, useState } from "react";
@@ -42,6 +43,7 @@ export default function AccountSettings() {
   const theme = useSelector((state) => state.settings?.theme);
 
   const [currentTab, setCurrentTab] = useState("general");
+  const [shareAnalyticsCount, setShareAnalyticsCount] = useState(70);
   const [purchaseBanner, setPurchaseBanner] = useState(null);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const { t, locale, setLocale } = useTranslation();
@@ -67,6 +69,7 @@ export default function AccountSettings() {
       wallet: `${PATH_ACCOUNT.settings.root}?section=wallet`,
       library: `${PATH_ACCOUNT.settings.root}?section=library`,
       agents: `${PATH_ACCOUNT.settings.root}?section=agents`,
+      share: `${PATH_ACCOUNT.settings.root}?section=share`,
     };
     globalThis.window.history.pushState(
       {},
@@ -82,7 +85,7 @@ export default function AccountSettings() {
       const creditPurchase = params.get("credit_purchase");
       const credits = params.get("credits");
 
-      if (section && ["general", "billing", "wallet", "agents", "library"].includes(section)) {
+      if (section && ["general", "billing", "wallet", "agents", "library", "share"].includes(section)) {
         setCurrentTab(section);
       }
 
@@ -135,7 +138,7 @@ export default function AccountSettings() {
 
       <Tabs value={currentTab} onValueChange={handleTab} className="w-full">
         <div className="-mx-3 px-3 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none">
-          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0 sm:grid sm:w-fit sm:grid-cols-5">
+          <TabsList className="inline-flex w-auto min-w-full sm:min-w-0 sm:grid sm:w-fit sm:grid-cols-6">
             <TabsTrigger
               value="general"
               className="flex cursor-pointer items-center gap-2 min-h-[44px] whitespace-nowrap px-3 sm:px-4"
@@ -173,6 +176,20 @@ export default function AccountSettings() {
               <Bot className="text-muted-foreground h-4 w-4" />
               <span className="hidden sm:inline">{t('account.myAgents')}</span>
               <span className="sm:hidden">{t('account.myAgents')}</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="share"
+              className="flex cursor-pointer items-center gap-2 min-h-[44px] whitespace-nowrap px-3 sm:px-4"
+              data-testid="tab-share-analytics"
+            >
+              <Share2 className="text-muted-foreground h-4 w-4" />
+              <span className="hidden sm:inline">Share</span>
+              <span className="sm:hidden">Share</span>
+              {shareAnalyticsCount > 0 && (
+                <span className="ml-0.5 rounded-full bg-indigo-500/20 text-indigo-400 px-1.5 py-0.2 text-[10px] font-bold border border-indigo-500/30" data-testid="share-tab-badge">
+                  {shareAnalyticsCount}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
         </div>
@@ -304,6 +321,13 @@ export default function AccountSettings() {
           ) : (
             <p className="text-sm text-muted-foreground">{t('account.loadingAgents')}</p>
           )}
+        </TabsContent>
+
+        <TabsContent value="share" className="my-6 sm:my-8">
+          <ShareAnalyticsSection
+            userId={user?._id || user?.email || "usr_default"}
+            onAnalyticsCountChange={(count) => setShareAnalyticsCount(count)}
+          />
         </TabsContent>
       </Tabs>
 

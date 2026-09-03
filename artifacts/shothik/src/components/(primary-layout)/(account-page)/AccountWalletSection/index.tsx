@@ -31,12 +31,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import TransactionDetailModal from "./TransactionDetailModal";
+import OfflineBkashTrxModal from "@/components/credits/OfflineBkashTrxModal";
+import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 
 // Using native Date methods for consistency with project
 
 export default function AccountWalletSection() {
   const dispatch = useDispatch();
-  const { accessToken } = useSelector((state: RootState) => state.auth || {});
+  const { accessToken, user } = useSelector((state: RootState) => state.auth || {});
+
+  const [isOfflineTrxOpen, setIsOfflineTrxOpen] = useState(false);
+  const [isCashoutOpen, setIsCashoutOpen] = useState(false);
+
 
   // Get wallet from Redux state
   const { wallet, isLoading: walletLoading } = useSelector(
@@ -229,12 +235,37 @@ export default function AccountWalletSection() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
                 {/* Tokens Card */}
-                <div className="bg-muted rounded-lg p-4">
-                  <div className="text-muted-foreground mb-1 text-sm">
-                    Credits
+                <div className="bg-muted rounded-lg p-4 flex flex-col justify-between">
+                  <div>
+                    <div className="text-muted-foreground mb-1 text-sm flex items-center justify-between">
+                      <span>Credits</span>
+                      <span className="text-[11px] font-semibold text-pink-500 bg-pink-500/10 px-2 py-0.5 rounded-full">
+                        bKash / Nagad Verified
+                      </span>
+                    </div>
+                    <div className="text-2xl font-bold">{activeWallet.token || 0}</div>
                   </div>
-                  <div className="text-2xl font-bold">{activeWallet.token || 0}</div>
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsOfflineTrxOpen(true)}
+                      className="text-xs h-7 px-2.5 border-pink-500/30 text-pink-500 hover:bg-pink-500/10"
+                    >
+                      📱 Verify Offline SMS
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsCashoutOpen(true)}
+                      className="text-xs h-7 px-2.5 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/10"
+                    >
+                      💰 Creator Cash-Out (TDS)
+                    </Button>
+                  </div>
                 </div>
+
 
                 {/* Package Card */}
                 <div className="bg-muted rounded-lg p-4">
@@ -634,6 +665,29 @@ export default function AccountWalletSection() {
         transaction={selectedTokenTransaction}
         type="token"
       />
+
+      {/* Offline bKash SMS TrxID Verification Modal */}
+      <OfflineBkashTrxModal
+        open={isOfflineTrxOpen}
+        onOpenChange={setIsOfflineTrxOpen}
+        userId={user?.id || user?._id || "usr_default"}
+        onSuccess={() => {
+          // Trigger wallet refresh
+          dispatch(fetchSelfWallet() as any);
+        }}
+      />
+
+      {/* Creator Marketplace Cash-Out Modal */}
+      <CreatorCashoutModal
+        open={isCashoutOpen}
+        onOpenChange={setIsCashoutOpen}
+        userId={user?.id || user?._id || "usr_creator_default"}
+        availableEarningsBdt={activeWallet.token ? Math.round(activeWallet.token * 0.5) : 3500}
+        onSuccess={() => {
+          dispatch(fetchSelfWallet() as any);
+        }}
+      />
     </div>
   );
 }
+
