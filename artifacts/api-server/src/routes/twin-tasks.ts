@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { logger } from "../lib/logger";
 import { executeWayfinderTask, type TaskExecutionRequest } from "../lib/twin/task-runner";
+import { TwinOrchestrator } from "../lib/twin/twin-orchestrator.js";
 
 const router = Router();
 
@@ -82,6 +83,36 @@ router.post("/v1/twin/tasks/batch-run", async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     logger.error({ err }, "Failed to batch execute Wayfinder tasks");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/twin/cycle/ingest
+ * Ingest inbound webhook signal (WhatsApp, bKash, Courier, CRM) and run 5-stage Twin cycle
+ */
+router.post("/v1/twin/cycle/ingest", async (req: Request, res: Response) => {
+  try {
+    const { source, payload, userId, companySlug } = req.body;
+
+    if (!source || !payload) {
+      res.status(400).json({ success: false, error: "source and payload are required" });
+      return;
+    }
+
+    const result = await TwinOrchestrator.getInstance().processCycle({
+      source,
+      payload,
+      userId: userId || (req as any).user?.id || "usr_anonymous",
+      companySlug: companySlug || "venture",
+    });
+
+    res.json({
+      success: true,
+      data: result,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to process Twin operational cycle");
     res.status(500).json({ success: false, error: err.message });
   }
 });
