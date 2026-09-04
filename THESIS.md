@@ -63,6 +63,8 @@ graph TD
 
 The underlying orchestration engine is identical. **Only the user's mental model adapts.**
 
+> 🏛️ **Master Operational Execution Architecture:** See [`TWIN_DOCTRINE.md`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/TWIN_DOCTRINE.md) for the foundational One Person Company (OPC) 5-stage operating cycle (*Observe $\rightarrow$ Understand $\rightarrow$ Decide $\rightarrow$ Execute $\rightarrow$ Learn*) and specialized business agent orchestration.
+
 ---
 
 ## 3. The Ultimate Economic Flywheel
