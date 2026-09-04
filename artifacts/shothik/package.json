@@ -156,7 +156,7 @@
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
     "remove-markdown-and-html": "^0.1.0",
-    "shiki": "^4.4.1",
+    "shiki": "^4.4.3",
     "socket.io-client": "^4.8.3",
     "swagger-ui-react": "^5.32.12",
     "uuid": "^14.0.1",
