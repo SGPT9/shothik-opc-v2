@@ -46,6 +46,9 @@ export class RAGKnowledgeEngine {
   private static instance: RAGKnowledgeEngine;
   private documents = new Map<string, IngestedDocument>();
   private chunks = new Map<string, DocumentChunk>();
+  private embeddingCache = new Map<string, number[]>();
+  private cacheHits = 0;
+  private cacheMisses = 0;
   private storagePath = path.resolve(process.cwd(), "data", "rag-store.json");
 
   private constructor() {
@@ -62,10 +65,41 @@ export class RAGKnowledgeEngine {
   }
 
   /**
-   * Generates a dense vector for semantic similarity.
+   * Returns in-memory vector and document store performance statistics.
+   */
+  getCacheStats(): {
+    documentsCount: number;
+    chunksCount: number;
+    cachedEmbeddingsCount: number;
+    cacheHits: number;
+    cacheMisses: number;
+    hitRatePercent: number;
+  } {
+    const total = this.cacheHits + this.cacheMisses;
+    return {
+      documentsCount: this.documents.size,
+      chunksCount: this.chunks.size,
+      cachedEmbeddingsCount: this.embeddingCache.size,
+      cacheHits: this.cacheHits,
+      cacheMisses: this.cacheMisses,
+      hitRatePercent: total > 0 ? Number(((this.cacheHits / total) * 100).toFixed(1)) : 0,
+    };
+  }
+
+  /**
+   * Generates a dense vector for semantic similarity with in-memory hot cache.
    * If NVIDIA NIM is available, requests a 1024-dim neural embedding; otherwise uses a 128-dim subword feature hashing vectorizer.
    */
   async generateVector(text: string): Promise<number[]> {
+    const cacheKey = text.trim().toLowerCase();
+    if (this.embeddingCache.has(cacheKey)) {
+      this.cacheHits++;
+      return this.embeddingCache.get(cacheKey)!;
+    }
+    this.cacheMisses++;
+
+    let vector: number[] | null = null;
+
     if (NVIDIA_API_KEY) {
       try {
         const res = await fetch(`${NVIDIA_NIM_BASE_URL}/embeddings`, {
@@ -85,7 +119,7 @@ export class RAGKnowledgeEngine {
         if (res.ok) {
           const json = await res.json();
           if (json.data?.[0]?.embedding) {
-            return json.data[0].embedding;
+            vector = json.data[0].embedding;
           }
         }
       } catch (err: any) {
@@ -93,7 +127,18 @@ export class RAGKnowledgeEngine {
       }
     }
 
-    return this.generateHashedVector(text);
+    if (!vector) {
+      vector = this.generateHashedVector(text);
+    }
+
+    // Retain up to 10,000 vectors in memory for instant retrieval
+    if (this.embeddingCache.size > 10000) {
+      const firstKey = this.embeddingCache.keys().next().value;
+      if (firstKey) this.embeddingCache.delete(firstKey);
+    }
+    this.embeddingCache.set(cacheKey, vector);
+
+    return vector;
   }
 
   /**
