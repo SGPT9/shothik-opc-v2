@@ -1,45 +1,42 @@
 # System Checkpoint & Resume Reference
 **Created:** 2026-09-04 (Overnight Engineering Session)
 **Repository:** `shothik-web-mirror-v2` (`https://github.com/SGPT9/shothik-opc-v2.git`)
-**Branch:** `main` | **Latest Commit:** `c1c02070` (`feat(ui): add Intel Arc B580 WebGPU hardware status badge to Tonight Engine dashboard`)
+**Branch:** `main` | **Latest Commit:** `2c1cf162` (`feat(onnx): add ONNX WebGPU runtime model loader, extend speculative engine tests, and integrate 16-test E2E suite`)
 
 ---
 
 ## 1. System State & Hardware Configuration
 - **Host CPU:** AMD Ryzen 5 5600G (6 cores / 12 threads)
 - **Host GPU:** Intel Arc B580 (Battlemage Xe2 architecture, 12GB VRAM)
-- **Host RAM:** 32GB DDR4 (~11.8–12.2 GB free headroom during full load)
-- **OS:** Windows 11 (PowerShell environment)
+- **Host RAM:** 32GB DDR4 (~12.3 GB free headroom during full load)
+- **OS:** Windows 11 (PowerShell & Git Bash environments)
 
 ---
 
-## 2. Active Services & Background Daemons
+## 2. Active Services & Routes
 
-| Task ID | Component | Command | Port / URL | Status |
-|---|---|---|---|---|
-| `task-44` | API Server | `pnpm --filter @workspace/api-server run dev` | `http://localhost:3000` | Healthy |
-| `task-48` / `task-60` | Web Frontend | `npx vite --config vite.config.ts --host 127.0.0.1 --port 5000` | `http://localhost:5000` | Running |
-| `task-2601` | Overnight Cron Loop | `*/30 * * * *` executing `npx tsx scripts/overnight-loop.ts` | CLI / Background | Active |
+| Component | Route / URL | Status | Details |
+|---|---|---|---|
+| **API Server** | `http://localhost:8080` | Healthy | Fastify/Express backend with SQLite fallback |
+| **Vite Frontend** | `http://localhost:5000` | Running | React + Vite UI |
+| **Swarm Monitor** | `http://localhost:5000/tonight` | Active | Intel Arc B580 Xe2 WebGPU status & Open-SWE graph |
+| **Overnight Loop** | `task-2601` (Cron `*/30 * * * *`) | Active | 16 automated tests + hardware headroom tracking |
 
 ---
 
 ## 3. Key Implementations Completed
 
-### A. SQLite Schema & Typecheck Fix
-- **File:** `lib/db/src/sqlite.ts`
-- **Details:** Exported all offline & cache table definitions and type interfaces (`localCacheTable`, `agentTracesTable`, `offlineProjectsTable`, `offlineAutosaveTable`, `offlineParcelsTable`, `offlineNilkhetOrdersTable`, `offlinePapermarkLinksTable`, `offlinePapermarkViewsTable`).
-- Recompiled composite declaration maps in `lib/db/dist/`.
-- Verified `pnpm --filter @workspace/api-server run typecheck` (`tsc -p tsconfig.json --noEmit`) passes with **0 errors**.
+### A. Full-Spectrum Test Suite (16 / 16 Passing in 3s)
+1. `SpeculativeEngine.test.ts` (5 tests): Speculative rewrite, Bangla translation, text condenser, ONNX WebGPU model loader, and local streaming inference.
+2. `monetization-paywall-service.test.ts` (3 tests): Tier gating and paywall checks.
+3. `god-mode-runtime.test.ts` (1 test): 7-Day Autonomous God Mode lifecycle.
+4. `trigger-gateway.test.ts` (3 tests): Ingress webhooks (GitHub, InsForge) and cron triggers.
+5. `TonightEngineDashboard.test.tsx` (2 tests): React UI component rendering & WebGPU detection.
+6. `e2e-swarm-monitor.test.ts` (2 tests): Full E2E flow across hardware and speculative inference.
 
-### B. Intel Arc B580 WebGPU Speculative Acceleration
+### B. ONNX WebGPU Inference Pipeline (Intel Arc B580)
 - **File:** `artifacts/shothik/src/lib/inference/SpeculativeEngine.ts`
 - **Details:** 
-  - Integrated high-performance WebGPU adapter configuration (`powerPreference: "high-performance"`).
-  - Detected and bound Intel Arc B580 GPU vendor info (`vendor: "intel"`, `architecture: "xe2"`).
-  - Implemented `runWgslKernel` WGSL compute shader for GPU-accelerated local token ranking & speculative text rewriting.
-
-### C. Clean Workspace & Git Hygiene
-- Removed untracked ephemeral proxy scripts (`universal-gateway.js`, `local-proxy.js`, `t`).
 - Updated `.gitignore` to ignore runtime `logs/` artifacts.
 - Synced and pushed clean tree to `origin/main`.
 
