@@ -58,8 +58,8 @@ All 9 GitHub repositories are synchronized with local HEAD on branch `main`:
 ---
 
 ## 5. 🧪 Complete Verification & Test Matrix
-- **TypeScript Typecheck:** `0` errors across all projects (`node artifacts/shothik/run_typecheck.cjs`).
-- **Backend Test Matrix:** **36 test files (185 tests)** passing 100%.
+- **TypeScript Typecheck:** `0` errors across all projects (`node artifacts/shothik/run_typecheck.cjs` and `pnpm --filter @workspace/api-server run typecheck`).
+- **Backend Test Matrix:** **39 test files (194 tests passed, 8 skipped)** passing 100%.
 - **Frontend Test Matrix:** **338+ test files (1,740+ tests)** passing cleanly.
 - **Overnight Benchmark Loop:** 26 infrastructure, speculative WebGPU, Multi-Tier Router, Vernacular Dialects, Chaos Fuzzing & Memory Profiling evals passing in 3s.
 
@@ -121,7 +121,16 @@ curl.exe http://localhost:8080/health
 5. ✅ **Phase 5: Twin 5-Stage Operational Orchestrator (OPC Doctrine)**
    - **Orchestrator Core:** [`twin-orchestrator.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/twin/twin-orchestrator.ts) implements the continuous 5-stage loop (*Observe $\rightarrow$ Understand $\rightarrow$ Decide $\rightarrow$ Execute $\rightarrow$ Learn*) across the 9 Specialized Twins with Supervised Autonomy checks (>৳10,000 disbursement boundary).
    - **Inbound Webhook Route:** `POST /api/v1/twin/cycle/ingest` in [`twin-tasks.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/twin-tasks.ts) supporting WhatsApp, bKash, Courier, and CRM webhook ingestion.
-   - **Test Matrix:** 5/5 unit tests passing in [`twin-orchestrator.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/twin/__tests__/twin-orchestrator.test.ts). Total backend suite: **36 test files (185 tests)** passing 100%.
+   - **Test Matrix:** 5/5 unit tests passing in [`twin-orchestrator.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/twin/__tests__/twin-orchestrator.test.ts).
+6. ✅ **Phase 6: Company Settings, Collaborator Team Roster & Autonomous Task Credit Ledger**
+   - **Backend CRUD & Validation:** Added `GET/PATCH /api/v1/twin/companies/:slug`, `GET/POST/DELETE /api/v1/twin/companies/:slug/collaborators`, and credit debit/topup endpoints in [`companies.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/companies.ts) and [`subscription.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/subscription.ts).
+   - **UI Modals & Visual Parity:** Built [`CompanySettingsModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/CompanySettingsModal.tsx) and [`AddCreditsModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/AddCreditsModal.tsx) with live collaborator invite cards, role toggles (`admin`/`editor`/`viewer`), and 1-tap bKash/Nagad credit packages.
+   - **Unit Tests:** [`twin-collaborators-and-settings.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/twin-collaborators-and-settings.test.ts) passing cleanly.
+7. ✅ **Phase 7: The 9 Specialized Twins Swarm Roster & Targeted Dispatching**
+   - **Canonical Swarm Roster:** Full implementation of Marketing, Sales, Customer Support, CRM, Finance, Operations, Content, Analytics, and Administration Twins in [`twin-tasks.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/twin-tasks.ts).
+   - **API Endpoints:** `GET /api/v1/twin/specialized-twins` and `POST /api/v1/twin/specialized-twins/dispatch` delivering targeted mission directives, dynamic telemetry statuses (`idle`, `observing`, `executing`, `learning`), and audit trail generation.
+   - **UI Swarm Command Center:** Built [`SpecializedTwinsModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/SpecializedTwinsModal.tsx), wired with Quick Dispatch buttons, directive drawers, and live capability tags.
+   - **Test Suite:** [`twin-specialized-swarm.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/twin-specialized-swarm.test.ts) (100% pass).
 
 ---
 
