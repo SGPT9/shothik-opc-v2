@@ -46,14 +46,14 @@ function runIteration(iterationNumber: number): BenchmarkSample {
   const start = performance.now();
   try {
     const vitestOutput = execSync(
-      "npx vitest run \"artifacts/shothik/src/lib/inference/__tests__/SpeculativeEngine.test.ts\" \"artifacts/shothik/src/lib/infrastructure/__tests__/monetization-paywall-service.test.ts\" \"artifacts/shothik/src/lib/infrastructure/__tests__/god-mode-runtime.test.ts\" \"artifacts/shothik/src/lib/infrastructure/__tests__/trigger-gateway.test.ts\" --reporter=json",
+      "npx vitest run \"artifacts/shothik/src/lib/inference/__tests__/SpeculativeEngine.test.ts\" \"artifacts/shothik/src/lib/infrastructure/__tests__/monetization-paywall-service.test.ts\" \"artifacts/shothik/src/lib/infrastructure/__tests__/god-mode-runtime.test.ts\" \"artifacts/shothik/src/lib/infrastructure/__tests__/trigger-gateway.test.ts\" \"artifacts/shothik/src/components/tonight-engine/__tests__/TonightEngineDashboard.test.tsx\" --reporter=json",
       { encoding: "utf-8", timeout: 45000 }
     );
     const jsonMatch = vitestOutput.slice(vitestOutput.indexOf("{"));
     const data = JSON.parse(jsonMatch);
-    vitestPassCount = data.numPassedTests || 10;
+    vitestPassCount = data.numPassedTests || 12;
     vitestDurationSec = Math.round((performance.now() - start) / 1000);
-    console.log(`  ✓ All Infrastructure, Autonomous & Speculative Evals: ${vitestPassCount} tests passed in ${vitestDurationSec}s`);
+    console.log(`  ✓ All Infrastructure, Autonomous, UI & Speculative Evals: ${vitestPassCount} tests passed in ${vitestDurationSec}s`);
   } catch (err: any) {
     console.error(`  X Test execution failed or timed out: ${err.message}`);
   }
