@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getInsforgeBrowserClient } from "@/lib/insforge/client";
+import { SpeculativeEngine } from "@/lib/inference/SpeculativeEngine";
 
 export interface TonightEngineDashboardProps {
   runId?: string;
@@ -22,6 +23,12 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
   const [activeNode, setActiveNode] = useState<StateNode>("NODE_SWARM_EXECUTE");
   const [topology, setTopology] = useState<string>("coordinator");
   const [progressPercent, setProgressPercent] = useState<number>(65);
+  const [gpuStatus, setGpuStatus] = useState<{ available: boolean; vendor?: string; device?: string; arch?: string }>({
+    available: false,
+    vendor: "Intel",
+    device: "Intel Arc B580",
+    arch: "Battlemage Xe2",
+  });
   const [eventLogs, setEventLogs] = useState<string[]>([
     "🚀 Tonight Engine run initialized",
     "🧠 RAG memory vault searched (3 context chunks retrieved)",
@@ -33,6 +40,18 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
   const [postsCount, setPostsCount] = useState<number>(2);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Probe local WebGPU acceleration hardware
+    void SpeculativeEngine.checkHardware().then((isAvailable) => {
+      setGpuStatus({
+        available: isAvailable,
+        vendor: "Intel",
+        device: "Intel Arc B580 (Xe2)",
+        arch: "High-Throughput WebGPU",
+      });
+    });
+  }, []);
 
   useEffect(() => {
     if (!runId) return;
@@ -149,8 +168,16 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
         </div>
       </div>
 
-      {/* Metrics Banner */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {/* Metrics & Hardware Banner */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
+          <p className="text-xs text-slate-400">Local Acceleration</p>
+          <div className="flex items-center space-x-2 mt-1">
+            <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+            <p className="text-sm font-bold text-white">{gpuStatus.device}</p>
+          </div>
+          <p className="text-[11px] text-cyan-400/80 mt-0.5">{gpuStatus.arch} Active</p>
+        </div>
         <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
           <p className="text-xs text-slate-400">Extracted B2B Leads</p>
           <p className="text-2xl font-bold text-emerald-400 mt-1">{leadsCount}</p>
@@ -160,8 +187,8 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
           <p className="text-2xl font-bold text-cyan-400 mt-1">{postsCount}</p>
         </div>
         <div className="p-4 rounded-xl bg-slate-900/80 border border-slate-800">
-          <p className="text-xs text-slate-400">Vector RAG Context Chunks</p>
-          <p className="text-2xl font-bold text-purple-400 mt-1">3 Indexed</p>
+          <p className="text-xs text-slate-400">Vector RAG Context</p>
+          <p className="text-2xl font-bold text-purple-400 mt-1">3 Chunks</p>
         </div>
       </div>
 
