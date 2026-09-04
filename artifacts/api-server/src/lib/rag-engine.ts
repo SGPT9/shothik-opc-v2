@@ -18,6 +18,8 @@ export interface DocumentChunk {
 
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY || "";
 const NVIDIA_NIM_BASE_URL = process.env.NVIDIA_NIM_BASE_URL || process.env.NIM_HOST || "https://integrate.api.nvidia.com/v1";
+const VESPA_ENDPOINT = process.env.VESPA_ENDPOINT || "";
+const VESPA_SCHEMA = process.env.VESPA_SCHEMA || "doc_chunk";
 
 export interface IngestedDocument {
   id: string;
@@ -265,6 +267,45 @@ export class RAGKnowledgeEngine {
    * Queries the knowledge base using hybrid vector + keyword matching and NeMo cross-encoder reranking.
    */
   async queryKnowledge(userId: string, query: string, topK = 3): Promise<RAGSearchResult[]> {
+    // 1. Try Enterprise Vespa Hybrid Engine if configured
+    if (VESPA_ENDPOINT) {
+      try {
+        const queryVector = await this.generateVector(query);
+        const yql = `select * from sources ${VESPA_SCHEMA} where (userId contains "${userId}" or userId contains "global") and (userQuery() or ({targetHits: ${topK * 2}}nearestNeighbor(embedding, query_embedding)))`;
+        const res = await fetch(`${VESPA_ENDPOINT}/search/`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            yql,
+            query,
+            "ranking.features.query(query_embedding)": queryVector,
+            hits: topK * 2,
+            timeout: "1500ms",
+          }),
+          signal: AbortSignal.timeout(2000),
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          const rootChildren = json.root?.children || [];
+          if (rootChildren.length > 0) {
+            const vespaResults: RAGSearchResult[] = rootChildren.map((hit: any) => ({
+              chunkId: hit.fields?.id || hit.id,
+              docId: hit.fields?.docId || "doc_vespa",
+              title: hit.fields?.title || "Vespa Knowledge Result",
+              content: hit.fields?.content || "",
+              score: Number((hit.relevance || 0).toFixed(4)),
+              metadata: hit.fields?.metadata,
+            }));
+            const reranked = await this.rerankResults(query, vespaResults);
+            return reranked.slice(0, topK);
+          }
+        }
+      } catch (err: any) {
+        logger.warn(`[rag-engine] Vespa search failed, falling back to local hybrid vector engine: ${err.message}`);
+      }
+    }
+
     const queryVector = await this.generateVector(query);
     const queryWords = query.toLowerCase().match(/[\p{L}\p{N}_]{2,}/gu) || [];
 
