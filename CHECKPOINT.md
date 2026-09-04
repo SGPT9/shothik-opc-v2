@@ -1,7 +1,7 @@
 # System Checkpoint & Resume Reference
 **Created:** 2026-09-04 (Overnight Engineering Session)
 **Repository:** `shothik-web-mirror-v2` (`https://github.com/SGPT9/shothik-opc-v2.git`)
-**Branch:** `main` | **Latest Commit:** `b5f3ccef` (`feat: resolve DB typecheck, clean scratch files, add overnight loop, and enable WebGPU Intel Arc acceleration`)
+**Branch:** `main` | **Latest Commit:** `c1c02070` (`feat(ui): add Intel Arc B580 WebGPU hardware status badge to Tonight Engine dashboard`)
 
 ---
 
