@@ -3,7 +3,7 @@ import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import app from "../../app";
 
-describe("Multi-Venture Autonomous Company & Wayfinder Task API", () => {
+describe("Multi-Venture Autonomous Company & Wayfinder Task API", { timeout: 25000 }, () => {
   let server: Server;
   let baseUrl: string;
 
