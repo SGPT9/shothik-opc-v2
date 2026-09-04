@@ -204,6 +204,35 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
           ))}
         </div>
       </div>
+
+      {/* Intel Arc B580 WebGPU Interactive Live Lab */}
+      <div className="space-y-4 pt-4 border-t border-slate-800">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-bold text-white flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse" />
+              Intel Arc B580 WebGPU & WGSL Speculative Execution Lab
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Zero-latency client-side compute shaders & on-device token speculation
+            </p>
+          </div>
+          <button
+            onClick={async () => {
+              const testInput = "The merchant made very good profit from cash on delivery and fast courier logistics.";
+              const res = await SpeculativeEngine.translateBangla(testInput);
+              setEventLogs((prev) => [
+                ...prev,
+                `⚡ [WebGPU Speculative Lab] Bangla translation rendered in ${res.latencyMs}ms (${res.engine.toUpperCase()})`,
+                `📝 Result: ${res.output}`,
+              ]);
+            }}
+            className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold rounded-xl shadow-lg transition-all"
+          >
+            ▶ Run Live WebGPU Kernel
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
