@@ -29,9 +29,10 @@ describe("TonightEngineDashboard: Swarm & WebGPU Monitor Component", () => {
   });
 
   it("renders the hardware acceleration card for Intel Arc WebGPU", async () => {
-    const { findByText } = render(<TonightEngineDashboard />);
+    const { findByText, findAllByText } = render(<TonightEngineDashboard />);
 
     expect(await findByText(/Local Acceleration/i)).toBeDefined();
-    expect(await findByText(/Intel Arc B580/i)).toBeDefined();
+    const arcElements = await findAllByText(/Intel Arc B580/i);
+    expect(arcElements.length).toBeGreaterThanOrEqual(1);
   });
 });
