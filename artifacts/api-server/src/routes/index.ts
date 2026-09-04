@@ -36,6 +36,7 @@ import { crdtRouter } from "./crdt";
 import companiesRouter from "./companies";
 import twinTasksRouter from "./twin-tasks";
 import papermarkRouter from "./papermark";
+import demographyDialectsRouter from "./demography-dialects";
 
 const router: IRouter = Router();
 
@@ -46,6 +47,7 @@ router.use(nightshiftRouter);
 router.use(companiesRouter);
 router.use(twinTasksRouter);
 router.use(papermarkRouter);
+router.use(demographyDialectsRouter);
 
 router.use(healthRouter);
 router.use(ollamaRouter);
