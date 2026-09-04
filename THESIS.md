@@ -117,7 +117,22 @@ Then you have solved the fundamental UX, infrastructure, and economic adoption p
 
 ---
 
-## 6. The Core Invariant
+## 6. The Investor Story Transformation
+
+You don't want an investor to leave thinking:
+> *"Interesting Bangladeshi AI writing tool."*
+
+You want them thinking:
+> **"They are using Bangladesh as the laboratory to solve the infrastructure, UX, and economic-adoption problem for the next billion AI users."**
+
+That is a dramatically larger, defensible, and globally scalable thesis.
+
+This is where the entire ShothikGPT doctrine—from **Writing Studio, Deep Research, Twin, Community, Emporium, Connectors, Voice, MFS Payments, and the broader AgenticOS**—converges into a single, unified economic reality.
+
+---
+
+## 7. The Core Invariant
 
 > **The goal isn't to make people adapt themselves to AI.**  
 > **The goal is to make AI adapt itself to people.**
+
