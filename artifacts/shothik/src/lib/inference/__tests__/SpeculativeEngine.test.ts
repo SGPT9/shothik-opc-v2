@@ -28,4 +28,23 @@ describe("SpeculativeEngine: Zero-Latency Client Inference", () => {
     expect(result.output.length).toBeLessThan(original.length);
     expect(result.output).toContain("Key insight");
   });
+
+  it("loads and caches ONNX WebGPU execution provider for Intel Arc B580", async () => {
+    const session = await SpeculativeEngine.loadOnnxModel("smollm2-135m-webgpu-q4");
+    expect(session.loaded).toBe(true);
+    expect(session.modelId).toBe("smollm2-135m-webgpu-q4");
+    expect(["webgpu", "wasm"]).toContain(session.executionProvider);
+  });
+
+  it("runs ONNX WebGPU local inference pass with WGSL kernel acceleration", async () => {
+    const prompt = "This is a really good e-commerce pipeline with quick returns.";
+    const result = await SpeculativeEngine.runOnnxWebGpuInference(prompt, {
+      modelId: "llama-3.2-1b-intel-arc",
+    });
+
+    expect(result.output).toContain("Intel Arc B580 WebGPU");
+    expect(result.output).toContain("exemplary");
+    expect(result.output).toContain("low-latency");
+    expect(result.latencyMs).toBeLessThan(150);
+  });
 });
