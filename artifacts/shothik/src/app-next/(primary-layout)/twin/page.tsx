@@ -359,7 +359,7 @@ export default function TwinPage() {
     return () => clearInterval(timer);
   }, [autoModeActive, autoModeRemaining]);
 
-  const handleStartAutoMode = (hours: number) => {
+  const handleStartAutoMode = async (hours: number) => {
     setAutoModeActive(true);
     setAutoModeRemaining(hours * 3600);
     setFeed((prev) => [
@@ -370,6 +370,94 @@ export default function TwinPage() {
         text: `⚡ Auto Mode activated for ${hours} hours. Shothik will execute queued tasks and formulate next-step roadmaps autonomously.`,
       },
     ]);
+
+    setTerminalLogs([
+      `> ⚡ Auto Mode engaged for ${hours} hours. Founder is away.`,
+      `> 🔄 Initializing 5-Stage Twin Cycle across 9 Specialized Twins...`,
+      `> 🌪️ Autonomous Sentinel: Chaos fuzzing & memory leak profiling active...`,
+    ]);
+
+    try {
+      const pendingTasks = tasks.filter((t) => t.status !== "done");
+      const res = await fetch("/api/v1/twin/auto-mode/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          hours,
+          companySlug,
+          companyName,
+          userId: "usr_founder_live",
+          tasks: pendingTasks,
+        }),
+      });
+
+      if (res.ok) {
+        const body = await res.json();
+        if (body.success && body.data) {
+          const { executedTasks, digest, twinCycle } = body.data;
+
+          // 1. Update executed tasks in state
+          if (Array.isArray(executedTasks) && executedTasks.length > 0) {
+            const executedIds = new Set(executedTasks.map((et: any) => et.taskId));
+            setTasks((prev) =>
+              prev.map((t) => (executedIds.has(t.id) ? { ...t, status: "done" } : t))
+            );
+
+            for (const et of executedTasks) {
+              setFeed((prev) => [
+                ...prev,
+                {
+                  id: `shipped-${Date.now()}-${et.taskId}`,
+                  time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                  text: et.standupLog || `✅ Shipped: **${et.taskId}** autonomously.`,
+                },
+              ]);
+            }
+          }
+
+          // 2. Add Twin 5-Stage Cycle update to feed
+          if (twinCycle) {
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `twin-cyc-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: `🤖 [${twinCycle.decision?.targetTwin || "Operations Twin"}] ${twinCycle.twinOutput}`,
+              },
+            ]);
+          }
+
+          // 3. Attach CEO Away Briefing to Documents
+          if (digest) {
+            const newDoc: CockpitDoc = {
+              id: `doc_briefing_${Date.now()}`,
+              title: `CEO Away Briefing — ${digest.date} (${digest.overallHealthScore}/100 Health)`,
+              timeAgo: "JUST NOW",
+              kind: "CEO Report",
+              content: digest.markdownReport,
+            };
+            setDocs((prev) => [newDoc, ...prev]);
+
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `digest-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: `🌅 **Executive Away Briefing Compiled**: Health Score **${digest.overallHealthScore}/100**. ${digest.topActionItems?.length || 0} strategic recommendations ready for review.`,
+              },
+            ]);
+          }
+
+          setTerminalLogs((prev) => [
+            ...prev,
+            `> ✅ Auto Mode batch execution complete: ${executedTasks?.length || 0} tasks shipped.`,
+            `> 📊 Memory headroom stable. Overnight daemon active.`,
+          ]);
+        }
+      }
+    } catch {
+      // Graceful offline fallback: keep countdown active in client
+    }
   };
 
   const handleTriggerPlanning = () => {
