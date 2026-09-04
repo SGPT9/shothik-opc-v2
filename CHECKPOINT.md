@@ -47,10 +47,10 @@
 
 ## 4. How to Pause the Workflow
 
-To pause execution, terminate the background daemons or run:
+To stop/pause all running processes:
 
 ```powershell
-# Stop all node/tsx/vite dev processes (if shutting down session)
+# Stop all node/tsx/vite dev processes (frees ports 8080, 5000)
 Get-Process node, tsx -ErrorAction SilentlyContinue | Stop-Process -Force
 ```
 
@@ -60,19 +60,22 @@ Get-Process node, tsx -ErrorAction SilentlyContinue | Stop-Process -Force
 
 When returning to the project, execute the following steps in order:
 
-### Step 1: Verify Repo & Typecheck
+### Step 1: Free Ports & Pull Latest Changes
 ```powershell
 cd "c:\Users\USER\hermes\shothik-web-mirror-v2"
+# Ensure ports are free if any orphan process is lingering:
+Get-Process node, tsx -ErrorAction SilentlyContinue | Stop-Process -Force
+
 git pull origin main
 pnpm --filter @workspace/api-server run typecheck
 ```
 
-### Step 2: Start API Server & Frontend
+### Step 2: Start API Server & Frontend (in separate terminals)
 ```powershell
-# In terminal 1 (API Server on port 3000):
+# In Terminal 1 (API Server on port 8080):
 pnpm --filter @workspace/api-server run dev
 
-# In terminal 2 (Vite Frontend on port 5000):
+# In Terminal 2 (Vite Frontend on port 5000):
 pnpm --filter @workspace/shothik run dev
 ```
 
