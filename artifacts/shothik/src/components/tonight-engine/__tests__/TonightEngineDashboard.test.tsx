@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import { TonightEngineDashboard } from "../TonightEngineDashboard";
 
 // Mock insforge client to isolate component testing
@@ -35,4 +35,27 @@ describe("TonightEngineDashboard: Swarm & WebGPU Monitor Component", () => {
     const arcElements = await findAllByText(/Intel Arc B580/i);
     expect(arcElements.length).toBeGreaterThanOrEqual(1);
   });
+
+  it("renders DeepSeek Harness (DSH) interactive trace replay and allows session forking", async () => {
+    const { findByText, getByTestId } = render(<TonightEngineDashboard />);
+
+    // Check DSH header
+    expect(await findByText(/DeepSeek Harness \(DSH\) Interactive Trace Replay & Forking/i)).toBeDefined();
+
+    // Check step scrubber
+    const nextBtn = getByTestId("dsh-next-step");
+    const prevBtn = getByTestId("dsh-prev-step");
+    const forkBtn = getByTestId("dsh-fork-button");
+
+    expect(nextBtn).toBeDefined();
+    expect(prevBtn).toBeDefined();
+    expect(forkBtn).toBeDefined();
+
+    // Trigger session fork at current step
+    fireEvent.click(forkBtn);
+
+    // Check that forked branch badge appeared
+    expect(await findByText(/Forked: dsh_fork_/i)).toBeDefined();
+  });
 });
+

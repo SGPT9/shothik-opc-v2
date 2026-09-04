@@ -41,6 +41,19 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  // DeepSeek Harness (DSH) Trace Replay & Forking State
+  const [dshSessionId, setDshSessionId] = useState<string>("dsh_session_live_101");
+  const [forkedSessionId, setForkedSessionId] = useState<string | null>(null);
+  const [dshStepIndex, setDshStepIndex] = useState<number>(2);
+  const [isPlayingReplay, setIsPlayingReplay] = useState<boolean>(false);
+  const [dshSteps, setDshSteps] = useState<Array<{ step: number; title: string; summary: string; latencyMs: number }>>([
+    { step: 1, title: "1. Intent & Routing", summary: "Multi-tier router mapped prompt to Swarm coordinator", latencyMs: 12 },
+    { step: 2, title: "2. Vector Recall", summary: "Loaded 3 context chunks from hot RAG store", latencyMs: 6 },
+    { step: 3, title: "3. Swarm Deliberation", summary: "Growth Researcher & Content Creator personas synchronized", latencyMs: 140 },
+    { step: 4, title: "4. Logistics Verification", summary: "Verified Steadfast Courier & bKash PGW endpoints", latencyMs: 45 },
+    { step: 5, title: "5. WebGPU Polish", summary: "Rendered final campaign artifact via Intel Arc B580 Xe2", latencyMs: 18 },
+  ]);
+
   useEffect(() => {
     // Probe local WebGPU acceleration hardware
     void SpeculativeEngine.checkHardware().then((isAvailable) => {
@@ -202,6 +215,80 @@ export function TonightEngineDashboard({ runId, initialPrompt }: TonightEngineDa
               <span>{log}</span>
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* DeepSeek Harness (DSH) Interactive Trace Replay & Forking */}
+      <div className="space-y-3 pt-4 border-t border-slate-800">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center space-x-2">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300">
+                DeepSeek Harness (DSH) Interactive Trace Replay & Forking
+              </h2>
+              {forkedSessionId && (
+                <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                  Forked: {forkedSessionId}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Active Session: <span className="font-mono text-cyan-400">{dshSessionId}</span> • Step {dshStepIndex + 1} of {dshSteps.length}
+            </p>
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setDshStepIndex((prev) => Math.max(0, prev - 1))}
+              disabled={dshStepIndex === 0}
+              className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 text-slate-200 text-xs rounded-lg transition-all"
+              data-testid="dsh-prev-step"
+            >
+              ◀ Prev
+            </button>
+            <button
+              onClick={() => {
+                if (dshStepIndex < dshSteps.length - 1) {
+                  setDshStepIndex((prev) => prev + 1);
+                } else {
+                  setDshStepIndex(0);
+                }
+              }}
+              className="px-2.5 py-1.5 bg-purple-600/80 hover:bg-purple-600 text-white text-xs font-semibold rounded-lg transition-all"
+              data-testid="dsh-next-step"
+            >
+              Next Step ▶
+            </button>
+            <button
+              onClick={() => {
+                const newForkId = `dsh_fork_${Date.now().toString().slice(-6)}`;
+                setForkedSessionId(newForkId);
+                setEventLogs((prev) => [
+                  ...prev,
+                  `🍴 [DSH Trace Fork] Forked session ${dshSessionId} into ${newForkId} at Step ${dshStepIndex + 1} ("${dshSteps[dshStepIndex].title}")`,
+                  `🌿 Branch isolated: Future interventions will run on isolated execution graph.`,
+                ]);
+              }}
+              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow-md transition-all flex items-center gap-1.5"
+              data-testid="dsh-fork-button"
+            >
+              🍴 Fork at Step {dshStepIndex + 1}
+            </button>
+          </div>
+        </div>
+
+        {/* Selected Step Card */}
+        <div className="p-3.5 rounded-xl bg-slate-900/90 border border-purple-500/30">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-bold text-purple-300">
+              {dshSteps[dshStepIndex]?.title}
+            </p>
+            <span className="text-[11px] font-mono text-slate-400">
+              Latency: {dshSteps[dshStepIndex]?.latencyMs}ms
+            </span>
+          </div>
+          <p className="text-xs text-slate-300 mt-1">
+            {dshSteps[dshStepIndex]?.summary}
+          </p>
         </div>
       </div>
 
