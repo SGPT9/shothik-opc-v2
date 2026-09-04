@@ -140,7 +140,7 @@
     "marked-react": "^4.0.0",
     "p-retry": "^8.0.0",
     "pdfmake": "^0.3.11",
-    "posthog-js": "^1.410.6",
+    "posthog-js": "^1.422.5",
     "pptxgenjs": "^4.0.1",
     "prosemirror-model": "^1.25.11",
     "prosemirror-state": "^1.4.4",
