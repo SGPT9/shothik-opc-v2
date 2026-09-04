@@ -177,6 +177,7 @@ const TwinPageWithLayout = withPrimaryLayout(TwinPage);
 const TwinNewPageWithLayout = withPrimaryLayout(TwinNewPage);
 const WritingStudioChatPageWithLayout = withPrimaryLayout(WritingStudioChatPage);
 const WritingStudioPageWithLayout = withPrimaryLayout(WritingStudioPage);
+const TonightEnginePageWithLayout = withPrimaryLayout(TonightEnginePage);
 
 const FilesPageWithLayout = withPrimaryLayout(FilesPage);
 const ConnectorsPageWithLayout = withPrimaryLayout(ConnectorsPage);
@@ -366,6 +367,9 @@ function AppRoutes() {
         </Route>
         <Route path="/settings" component={SettingsWorkspacePageWithLayout} />
         <Route path="/admin" component={AdminControlCenterWithLayout} />
+        <Route path="/tonight" component={TonightEnginePageWithLayout} />
+        <Route path="/swarm-monitor" component={TonightEnginePageWithLayout} />
+        <Route path="/tonight-engine" component={TonightEnginePageWithLayout} />
 
         <Route component={NotFound} />
       </Switch>
