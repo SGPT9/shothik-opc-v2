@@ -20,6 +20,7 @@ import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
 import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
 import { SecondMeMemoryModal } from "@/components/twin/SecondMeMemoryModal";
 import { TwinVideoStudioModal } from "@/components/twin/TwinVideoStudioModal";
+import { SpecializedTwinsModal } from "@/components/twin/SpecializedTwinsModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -265,6 +266,7 @@ export default function TwinPage() {
   const [secretsOpen, setSecretsOpen] = useState(false);
   const [redeployOpen, setRedeployOpen] = useState(false);
   const [autoColdOutreachOpen, setAutoColdOutreachOpen] = useState(false);
+  const [specializedTwinsOpen, setSpecializedTwinsOpen] = useState(false);
 
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const [manageTasksOpen, setManageTasksOpen] = useState(false);
@@ -875,6 +877,15 @@ export default function TwinPage() {
                 NIGHTSHIFT
               </button>
             </div>
+
+            <button
+              type="button"
+              onClick={() => setSpecializedTwinsOpen(true)}
+              className={`w-full mt-2 ${beveledBtnClass} bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800/80 font-bold`}
+            >
+              <span>🤖</span>
+              <span>THE 9 SPECIALIZED TWINS</span>
+            </button>
 
             {isPlanning && (
               <div className="p-3.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-[#141517] font-serif text-xs leading-relaxed text-zinc-800 dark:text-zinc-200 shadow-xs rounded-md">
@@ -1920,6 +1931,12 @@ export default function TwinPage() {
             >
               🎬 AI Video & Reels Studio
             </button>
+            <button
+              onClick={() => { setMenuOpen(false); setSpecializedTwinsOpen(true); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer bg-indigo-500/5 font-semibold text-indigo-600 dark:text-indigo-400"
+            >
+              🤖 The 9 Specialized Twins Swarm
+            </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -1932,6 +1949,15 @@ export default function TwinPage() {
       <DailyDigestModal open={dailyDigestOpen} onOpenChange={setDailyDigestOpen} />
       <DokployMicroContainersModal open={dokployOpen} onOpenChange={setDokployOpen} />
       <TwinVideoStudioModal open={videoStudioOpen} onOpenChange={setVideoStudioOpen} companyName={companyName} />
+      <SpecializedTwinsModal
+        open={specializedTwinsOpen}
+        onOpenChange={setSpecializedTwinsOpen}
+        companySlug={companySlug}
+        companyName={companyName}
+        onDispatchTwin={(twinName, action, log) => {
+          setTerminalLogs((prev) => [...prev.slice(-20), `> [${twinName}] Dispatched: ${action}`, `> ${log}`]);
+        }}
+      />
     </div>
   );
 }
