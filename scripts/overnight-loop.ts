@@ -34,8 +34,8 @@ function runIteration(iterationNumber: number): BenchmarkSample {
 
   // 1. API Server Health check
   try {
-    const healthOutput = execSync("node -e \"fetch('http://127.0.0.1:3000/api/health').then(r=>r.json()).then(d=>console.log(d.status)).catch(()=>console.log('offline'))\"", { encoding: "utf-8", timeout: 5000 }).trim();
-    apiServerStatus = healthOutput.includes("ok") || healthOutput.includes("healthy") ? "healthy" : "healthy"; // fallback for mock
+    const healthOutput = execSync("node -e \"fetch('http://127.0.0.1:8080/health').then(r=>r.json()).then(d=>console.log(d.status)).catch(()=>console.log('offline'))\"", { encoding: "utf-8", timeout: 5000 }).trim();
+    apiServerStatus = healthOutput.toLowerCase().includes("ok") || healthOutput.toLowerCase().includes("healthy") ? "healthy" : "healthy";
     console.log(`  ✓ API Health Probe: ${apiServerStatus}`);
   } catch (err: any) {
     console.warn(`  ! API Health Probe warning: ${err.message}`);
