@@ -274,8 +274,9 @@ describe("DocumentIngestionOrchestrator", () => {
 
     mockCreateArtifact.mockRejectedValueOnce(new Error("DB write failed"));
 
-    await expect(
-      orchestrator.ingest(
+    let thrownError: any = null;
+    try {
+      await orchestrator.ingest(
         {
           userId: USER_ID,
           workspaceId: WORKSPACE_ID,
@@ -285,8 +286,13 @@ describe("DocumentIngestionOrchestrator", () => {
         },
         sse,
         bridge,
-      ),
-    ).rejects.toThrow("DB write failed");
+      );
+    } catch (err: any) {
+      thrownError = err;
+    }
+
+    expect(thrownError).toBeDefined();
+    expect(thrownError?.message).toBe("DB write failed");
 
     // Should still have emitted a document_ingestion_completed with failed status
     const events = decodeChunks(chunks);
