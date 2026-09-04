@@ -17,16 +17,17 @@ export interface InferenceRequest {
 export interface InferenceChunk {
   content: string;
   reasoning_content?: string;
-  provider: "nvidia_nim" | "freetoken" | "ollama" | "deepseek_cloud" | "hermes_synthetic";
+  provider: "nvidia_nim" | "vastai" | "freetoken" | "ollama" | "deepseek_cloud" | "hermes_synthetic";
   ttftMs?: number;
   tokensPerSec?: number;
   isFirstToken?: boolean;
 }
 
 export interface InferenceStatus {
-  activeTier: "nvidia_nim" | "freetoken" | "ollama" | "deepseek_cloud" | "hermes_synthetic";
+  activeTier: "nvidia_nim" | "vastai" | "freetoken" | "ollama" | "deepseek_cloud" | "hermes_synthetic";
   providers: {
     nvidiaNim: { available: boolean; configured: boolean; endpoint: string; latencyMs: number };
+    vastai: { available: boolean; configured: boolean; endpoint: string; latencyMs: number };
     freetoken: { available: boolean; endpoint: string; latencyMs: number };
     ollama: { available: boolean; endpoint: string; latencyMs: number };
     deepseekCloud: { available: boolean; configured: boolean };
@@ -37,6 +38,8 @@ export interface InferenceStatus {
 
 const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY || process.env.NVIDIA_NIM_API_KEY || "";
 const NVIDIA_NIM_BASE_URL = process.env.NVIDIA_NIM_BASE_URL || process.env.NIM_HOST || "https://integrate.api.nvidia.com/v1";
+const VASTAI_API_KEY = process.env.VASTAI_API_KEY || "";
+const VASTAI_ENDPOINT = process.env.VASTAI_ENDPOINT || "http://127.0.0.1:8000/v1";
 const FREETOKEN_HOST = process.env.FREETOKEN_HOST || "http://127.0.0.1:8000";
 const OLLAMA_HOST = process.env.OLLAMA_HOST || "http://127.0.0.1:11434";
 const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY || "";
@@ -75,6 +78,8 @@ export class AdaptiveInferenceGateway {
   async checkStatus(): Promise<InferenceStatus> {
     let nvidiaAvailable = Boolean(NVIDIA_API_KEY);
     let nvidiaLatency = 0;
+    let vastaiAvailable = Boolean(VASTAI_API_KEY);
+    let vastaiLatency = 0;
     let freetokenAvailable = false;
     let freetokenLatency = 0;
     let ollamaAvailable = false;
@@ -97,7 +102,24 @@ export class AdaptiveInferenceGateway {
       }
     }
 
-    // 2. Check FreeToken
+    // 2. Check Vast.ai Cloud GPU Bursting
+    if (VASTAI_API_KEY) {
+      try {
+        const start = performance.now();
+        const res = await fetch(`${VASTAI_ENDPOINT}/models`, {
+          headers: { Authorization: `Bearer ${VASTAI_API_KEY}` },
+          signal: AbortSignal.timeout(1200),
+        });
+        if (res.ok) {
+          vastaiAvailable = true;
+          vastaiLatency = Math.round(performance.now() - start);
+        }
+      } catch {
+        vastaiAvailable = Boolean(VASTAI_API_KEY);
+      }
+    }
+
+    // 3. Check FreeToken
     try {
       const start = performance.now();
       const res = await fetch(`${FREETOKEN_HOST}/v1/models`, {
@@ -111,7 +133,7 @@ export class AdaptiveInferenceGateway {
       freetokenAvailable = false;
     }
 
-    // 3. Check Ollama
+    // 4. Check Ollama
     try {
       const start = performance.now();
       const res = await fetch(`${OLLAMA_HOST}/api/tags`, {
@@ -128,6 +150,8 @@ export class AdaptiveInferenceGateway {
     let activeTier: InferenceStatus["activeTier"] = "hermes_synthetic";
     if (nvidiaAvailable) {
       activeTier = "nvidia_nim";
+    } else if (vastaiAvailable) {
+      activeTier = "vastai";
     } else if (freetokenAvailable) {
       activeTier = "freetoken";
     } else if (ollamaAvailable) {
@@ -140,6 +164,7 @@ export class AdaptiveInferenceGateway {
       activeTier,
       providers: {
         nvidiaNim: { available: nvidiaAvailable, configured: Boolean(NVIDIA_API_KEY), endpoint: NVIDIA_NIM_BASE_URL, latencyMs: nvidiaLatency },
+        vastai: { available: vastaiAvailable, configured: Boolean(VASTAI_API_KEY), endpoint: VASTAI_ENDPOINT, latencyMs: vastaiLatency },
         freetoken: { available: freetokenAvailable, endpoint: FREETOKEN_HOST, latencyMs: freetokenLatency },
         ollama: { available: ollamaAvailable, endpoint: OLLAMA_HOST, latencyMs: ollamaLatency },
         deepseekCloud: { available: Boolean(DEEPSEEK_API_KEY), configured: Boolean(DEEPSEEK_API_KEY) },
@@ -207,7 +232,32 @@ export class AdaptiveInferenceGateway {
       }
     }
 
-    // 3. Try FreeToken Engine
+    // 3. Try Vast.ai Cloud GPU Bursting
+    if (VASTAI_API_KEY) {
+      try {
+        const stream = this.streamOpenAiCompatible(
+          VASTAI_ENDPOINT,
+          augmentedMessages,
+          canonical || "deepseek-ai/deepseek-r1-distill-qwen-32b",
+          "vastai",
+          { Authorization: `Bearer ${VASTAI_API_KEY}` }
+        );
+        for await (const chunk of stream) {
+          if (!firstTokenEmitted) {
+            chunk.ttftMs = Math.round(performance.now() - startTime);
+            chunk.isFirstToken = true;
+            firstTokenEmitted = true;
+          }
+          tokenCount++;
+          yield chunk;
+        }
+        return;
+      } catch (err: any) {
+        logger.warn(`[inference-gateway] Vast.ai stream failed, falling back: ${err.message}`);
+      }
+    }
+
+    // 4. Try FreeToken Engine
     try {
       const status = await this.checkStatus();
       if (status.providers.freetoken.available) {
