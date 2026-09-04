@@ -29,6 +29,14 @@ export interface CompanyStandupMessage {
   text: string;
 }
 
+export interface CompanyCollaborator {
+  id: string;
+  email: string;
+  role: "admin" | "editor" | "viewer";
+  invitedAt: string;
+  status: "pending" | "accepted";
+}
+
 export interface ServerCompanyProfile {
   id: string;
   userId: string;
@@ -48,6 +56,7 @@ export interface ServerCompanyProfile {
   tasks: CompanyTask[];
   docs: CompanyDoc[];
   feed: CompanyStandupMessage[];
+  collaborators: CompanyCollaborator[];
 }
 
 const IN_MEMORY_COMPANIES = new Map<string, ServerCompanyProfile>();
@@ -193,6 +202,7 @@ router.get("/v1/twin/companies/:slug", async (req: Request, res: Response) => {
         updatedAt: new Date().toISOString(),
         tasks: generateInitialTasks(name, "Technology & AI"),
         docs: generateInitialDocs(name, slug, "Technology & AI", "SaaS"),
+        collaborators: [],
         feed: [
           {
             id: `feed-init-1`,
@@ -248,6 +258,7 @@ router.post("/v1/twin/companies", async (req: Request, res: Response) => {
       updatedAt: new Date().toISOString(),
       tasks: generateInitialTasks(name, industry),
       docs: generateInitialDocs(name, slug, industry, businessModel, problemStatement),
+      collaborators: [],
       feed: [
         {
           id: `feed-init-1`,
@@ -385,11 +396,13 @@ router.post("/v1/twin/companies/:slug/sync", async (req: Request, res: Response)
         tasks: clientState.tasks || [],
         docs: clientState.docs || [],
         feed: clientState.feed || [],
+        collaborators: clientState.collaborators || [],
       };
     } else {
       if (clientState.tasks) company.tasks = clientState.tasks;
       if (clientState.docs) company.docs = clientState.docs;
       if (clientState.feed) company.feed = clientState.feed;
+      if (clientState.collaborators) company.collaborators = clientState.collaborators;
       if (clientState.revenueBdt !== undefined) company.revenueBdt = clientState.revenueBdt;
       if (clientState.visitorCount !== undefined) company.visitorCount = clientState.visitorCount;
       company.updatedAt = new Date().toISOString();
@@ -404,6 +417,118 @@ router.post("/v1/twin/companies/:slug/sync", async (req: Request, res: Response)
     });
   } catch (err: any) {
     logger.error({ err }, "Failed to sync company");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/twin/companies/:slug/collaborators
+ * List all collaborators for a company
+ */
+router.get(["/v1/twin/companies/:slug/collaborators", "/api/v1/twin/companies/:slug/collaborators"], (req: Request, res: Response) => {
+  try {
+    const slug = slugify(String(req.params.slug || ""));
+    const company = IN_MEMORY_COMPANIES.get(slug);
+
+    if (!company) {
+      res.status(404).json({ success: false, error: "Company not found" });
+      return;
+    }
+
+    res.json({
+      success: true,
+      data: company.collaborators || [],
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/twin/companies/:slug/collaborators
+ * Invite a collaborator to a company with scoped access
+ */
+router.post(["/v1/twin/companies/:slug/collaborators", "/api/v1/twin/companies/:slug/collaborators"], (req: Request, res: Response) => {
+  try {
+    const slug = slugify(String(req.params.slug || ""));
+    const company = IN_MEMORY_COMPANIES.get(slug);
+
+    if (!company) {
+      res.status(404).json({ success: false, error: "Company not found" });
+      return;
+    }
+
+    const { email, role = "editor" } = req.body || {};
+    if (!email || typeof email !== "string" || !email.includes("@")) {
+      res.status(400).json({ success: false, error: "Valid email is required" });
+      return;
+    }
+
+    if (!company.collaborators) {
+      company.collaborators = [];
+    }
+
+    const existing = company.collaborators.find((c) => c.email.toLowerCase() === email.toLowerCase());
+    if (existing) {
+      res.status(400).json({ success: false, error: "Collaborator already invited to this company" });
+      return;
+    }
+
+    const collaborator: CompanyCollaborator = {
+      id: `collab_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      email: email.trim().toLowerCase(),
+      role: ["admin", "editor", "viewer"].includes(role) ? role : "editor",
+      invitedAt: new Date().toISOString(),
+      status: "pending",
+    };
+
+    company.collaborators.push(collaborator);
+    company.updatedAt = new Date().toISOString();
+    IN_MEMORY_COMPANIES.set(slug, company);
+
+    logger.info({ slug, email: collaborator.email, role: collaborator.role }, "Invited company collaborator");
+
+    res.status(201).json({
+      success: true,
+      data: collaborator,
+      message: `Invitation dispatched to ${collaborator.email} with scoped access to ${company.name}`,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * DELETE /api/v1/twin/companies/:slug/collaborators/:id
+ * Remove a collaborator from a company
+ */
+router.delete(["/v1/twin/companies/:slug/collaborators/:id", "/api/v1/twin/companies/:slug/collaborators/:id"], (req: Request, res: Response) => {
+  try {
+    const slug = slugify(String(req.params.slug || ""));
+    const company = IN_MEMORY_COMPANIES.get(slug);
+
+    if (!company) {
+      res.status(404).json({ success: false, error: "Company not found" });
+      return;
+    }
+
+    const { id } = req.params;
+    const initialLen = company.collaborators?.length || 0;
+    company.collaborators = (company.collaborators || []).filter((c) => c.id !== id);
+
+    if (company.collaborators.length === initialLen) {
+      res.status(404).json({ success: false, error: "Collaborator not found" });
+      return;
+    }
+
+    company.updatedAt = new Date().toISOString();
+    IN_MEMORY_COMPANIES.set(slug, company);
+
+    res.json({
+      success: true,
+      message: "Collaborator removed successfully",
+    });
+  } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
   }
 });

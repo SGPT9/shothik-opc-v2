@@ -5,7 +5,7 @@ import { X, Check } from "lucide-react";
 interface AddCreditsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSuccess?: (plan: string, amount: number) => void;
+  onSuccess?: (plan: string, amount: number, credits?: number) => void;
 }
 
 const MONTHLY_TIERS = [
@@ -35,7 +35,7 @@ export function AddCreditsModal({ open, onOpenChange, onSuccess }: AddCreditsMod
     setTimeout(() => {
       setIsProcessing(false);
       const chosen = mode === "monthly" ? selectedMonthly : selectedTopup;
-      onSuccess?.(chosen.label, chosen.price);
+      onSuccess?.(chosen.label, chosen.price, chosen.credits);
       onOpenChange(false);
     }, 600);
   };

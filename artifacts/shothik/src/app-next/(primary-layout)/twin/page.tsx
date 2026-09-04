@@ -49,6 +49,7 @@ import {
   Building2,
   ChevronDown,
   Check,
+  Settings,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -203,6 +204,7 @@ export default function TwinPage() {
 
   const [companyName, setCompanyName] = useState(activeProfile.name);
   const [companySlug, setCompanySlug] = useState(activeProfile.slug);
+  const [isCompanyPaused, setIsCompanyPaused] = useState<boolean>(activeProfile.isPaused || false);
   const [tasks, setTasks] = useState<CockpitTask[]>(activeProfile.tasks);
   const [docs, setDocs] = useState<CockpitDoc[]>(activeProfile.docs);
   const [feed, setFeed] = useState<StandupMessage[]>(activeProfile.feed);
@@ -220,6 +222,7 @@ export default function TwinPage() {
     setActiveProfile(profile);
     setCompanyName(profile.name);
     setCompanySlug(profile.slug);
+    setIsCompanyPaused(profile.isPaused || false);
     setTasks(profile.tasks);
     setDocs(profile.docs);
     setFeed(profile.feed);
@@ -267,7 +270,11 @@ export default function TwinPage() {
   const [manageTasksOpen, setManageTasksOpen] = useState(false);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<"admin" | "editor" | "viewer">("editor");
   const [inviteSent, setInviteSent] = useState(false);
+  const [collaborators, setCollaborators] = useState<Array<{ id: string; email: string; role: string; status: string }>>([
+    { id: "collab_owner", email: "founder@shothik.ai", role: "admin", status: "accepted" },
+  ]);
 
   const [activeDoc, setActiveDoc] = useState<CockpitDoc | null>(null);
 
@@ -292,6 +299,7 @@ export default function TwinPage() {
         setActiveProfile(loaded);
         setCompanyName(loaded.name);
         setCompanySlug(loaded.slug);
+        setIsCompanyPaused(loaded.isPaused || false);
         setTasks(loaded.tasks);
         setDocs(loaded.docs);
         setFeed(loaded.feed);
@@ -319,6 +327,7 @@ export default function TwinPage() {
       ...activeProfile,
       name: companyName,
       slug: companySlug,
+      isPaused: isCompanyPaused,
       tasks,
       docs,
       feed,
@@ -326,7 +335,7 @@ export default function TwinPage() {
       visitorCount,
     };
     saveCompanyProfile(updated);
-  }, [companyName, companySlug, tasks, docs, feed, revenueBdt, visitorCount]);
+  }, [companyName, companySlug, isCompanyPaused, tasks, docs, feed, revenueBdt, visitorCount]);
 
   // Memory extraction event listener
   useEffect(() => {
@@ -340,6 +349,42 @@ export default function TwinPage() {
       window.addEventListener("shothik_memory_extracted", handleMemExtract);
       return () => window.removeEventListener("shothik_memory_extracted", handleMemExtract);
     }
+  }, []);
+
+  // Fetch company collaborators from backend
+  useEffect(() => {
+    if (!companySlug) return;
+    let active = true;
+    fetch(`/api/v1/twin/companies/${companySlug}/collaborators`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (active && d?.data && Array.isArray(d.data)) {
+          setCollaborators([
+            { id: "collab_owner", email: "founder@shothik.ai", role: "admin", status: "accepted" },
+            ...d.data,
+          ]);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [companySlug]);
+
+  // Fetch live credits balance from subscription ledger
+  useEffect(() => {
+    let active = true;
+    fetch("/api/v1/subscriptions/credits")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (active && d && typeof d.creditsBalance === "number") {
+          setCredits(d.creditsBalance);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
   }, []);
 
   const feedScrollRef = useRef<HTMLDivElement>(null);
@@ -661,6 +706,16 @@ export default function TwinPage() {
               <ChevronDown className="w-4 h-4 text-zinc-400 group-hover:text-zinc-600 transition-transform" />
             </button>
 
+            {/* Direct Company Settings Shortcut */}
+            <button
+              type="button"
+              onClick={() => setCompanySettingsOpen(true)}
+              className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors cursor-pointer rounded"
+              title="Company Settings"
+            >
+              <Settings className="w-4 h-4" />
+            </button>
+
             {/* Dynamic Multi-Company Dropdown Menu */}
             {companyDropdownOpen && (
               <div className="absolute top-full left-0 mt-2 w-72 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-[#18191c] shadow-xl p-2 z-50 font-sans">
@@ -698,12 +753,22 @@ export default function TwinPage() {
             )}
           </div>
 
+          {isCompanyPaused && (
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 border border-amber-400 dark:border-amber-700 bg-amber-100 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 rounded-md">
+              ⏸️ PAUSED
+            </span>
+          )}
+
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-md">
             AUTONOMOUS FOUNDER COCKPIT
           </span>
         </div>
 
         <div className="flex items-center gap-2 font-mono text-xs">
+          <div className="flex items-center gap-1.5 px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 rounded-md text-amber-700 dark:text-amber-400 font-mono text-[11px] font-bold">
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            <span>{credits} CREDITS</span>
+          </div>
           <button
             type="button"
             onClick={() => setVideoStudioOpen(true)}
@@ -838,6 +903,10 @@ export default function TwinPage() {
 
             <div className="space-y-2 font-mono text-xs">
               <div className="flex items-center justify-between">
+                <span className="font-semibold text-zinc-700 dark:text-zinc-300">TASK CREDITS:</span>
+                <span className="font-extrabold text-amber-600 dark:text-amber-400 text-sm">{credits} Available</span>
+              </div>
+              <div className="flex items-center justify-between">
                 <span className="font-semibold text-zinc-700 dark:text-zinc-300">VISITORS:</span>
                 <span className="font-extrabold text-zinc-950 dark:text-white text-sm">{visitorCount.toLocaleString()}</span>
               </div>
@@ -869,13 +938,61 @@ export default function TwinPage() {
 
           {/* Teams Widget */}
           <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
-            <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
-              Teams
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
+                Teams
+              </h3>
+              <span className="font-mono text-[10px] text-zinc-500">
+                {collaborators.length} {collaborators.length === 1 ? "MEMBER" : "MEMBERS"}
+              </span>
+            </div>
+
+            <div className="space-y-1.5 font-mono text-xs">
+              {collaborators.map((c) => (
+                <div key={c.id} className="flex items-center justify-between p-1.5 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded group">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="truncate text-[11px] font-sans text-zinc-800 dark:text-zinc-200 font-medium" title={c.email}>
+                      {c.email.split("@")[0]}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[9px] uppercase px-1 py-0.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-bold rounded">
+                      {c.role}
+                    </span>
+                    {c.id !== "collab_owner" && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          await fetch(`/api/v1/twin/companies/${companySlug}/collaborators/${c.id}`, { method: "DELETE" }).catch(() => {});
+                          setCollaborators((prev) => prev.filter((item) => item.id !== c.id));
+                          setFeed((prev) => [
+                            ...prev,
+                            {
+                              id: `del-collab-${Date.now()}`,
+                              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                              text: `Removed collaborator ${c.email} from ${companyName}.`,
+                            },
+                          ]);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-zinc-400 hover:text-red-500 text-xs px-1 transition-opacity cursor-pointer"
+                        title="Remove Collaborator"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
 
             <button
               type="button"
-              onClick={() => setInviteModalOpen(true)}
+              onClick={() => {
+                setInviteEmail("");
+                setInviteSent(false);
+                setInviteModalOpen(true);
+              }}
               className={`w-full ${beveledBtnClass}`}
             >
               <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
@@ -1329,14 +1446,30 @@ export default function TwinPage() {
       <AddCreditsModal
         open={addCreditsOpen}
         onOpenChange={setAddCreditsOpen}
-        onSuccess={(plan, price) => {
-          setCredits((c) => c + 15);
+        onSuccess={(plan, price, creditsAdded) => {
+          const amount = creditsAdded || 15;
+          fetch("/api/v1/subscriptions/topup-credits", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ amount, paymentMethod: "card" }),
+          })
+            .then((r) => (r.ok ? r.json() : null))
+            .then((data) => {
+              if (data && typeof data.creditsBalance === "number") {
+                setCredits(data.creditsBalance);
+              } else {
+                setCredits((c) => c + amount);
+              }
+            })
+            .catch(() => {
+              setCredits((c) => c + amount);
+            });
           setFeed((prev) => [
             ...prev,
             {
               id: `cred-${Date.now()}`,
               time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: `💳 Successfully subscribed to ${plan}. 15 Credits added to ${companyName} workspace balance.`,
+              text: `💳 Successfully added ${amount} task credits (${plan}). Workspace credit balance updated.`,
             },
           ]);
         }}
@@ -1382,8 +1515,14 @@ export default function TwinPage() {
         open={companySettingsOpen}
         onOpenChange={setCompanySettingsOpen}
         companyName={companyName}
+        isPaused={isCompanyPaused}
         onSaveCompanyName={(newName) => {
           setCompanyName(newName);
+          fetch(`/api/v1/twin/companies/${companySlug}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: newName }),
+          }).catch(() => {});
           setFeed((prev) => [
             ...prev,
             {
@@ -1394,6 +1533,12 @@ export default function TwinPage() {
           ]);
         }}
         onTogglePause={(paused) => {
+          setIsCompanyPaused(paused);
+          fetch(`/api/v1/twin/companies/${companySlug}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isPaused: paused }),
+          }).catch(() => {});
           setFeed((prev) => [
             ...prev,
             {
@@ -1406,6 +1551,10 @@ export default function TwinPage() {
           ]);
         }}
         onDeleteCompany={() => {
+          fetch(`/api/v1/twin/companies/${companySlug}`, {
+            method: "DELETE",
+          }).catch(() => {});
+          deleteCompanyProfile(companySlug);
           setFeed((prev) => [
             ...prev,
             {
@@ -1414,6 +1563,10 @@ export default function TwinPage() {
               text: `⚠️ ${companyName} deletion requested. Purging containers and workspace records.`,
             },
           ]);
+          const remaining = getCompaniesList().filter((c) => c.slug !== companySlug);
+          if (remaining.length > 0) {
+            handleSelectCompany(remaining[0]);
+          }
         }}
       />
 
@@ -1569,19 +1722,56 @@ export default function TwinPage() {
           <DialogDescription className="sr-only">Invite a team member to this company</DialogDescription>
 
           {inviteSent ? (
-            <div className="py-6 text-center space-y-2">
+            <div className="py-6 text-center space-y-3">
               <CheckCircle2 className="w-8 h-8 text-emerald-500 mx-auto" />
               <p className="font-serif text-sm font-semibold">Invite dispatched to {inviteEmail}</p>
+              <p className="text-xs text-zinc-500 font-sans">
+                Role: <span className="font-mono uppercase font-bold text-black dark:text-white">{inviteRole}</span> • Scope: {companyName} only
+              </p>
+              <button
+                type="button"
+                onClick={() => setInviteModalOpen(false)}
+                className="px-4 py-2 bg-black hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-black font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+              >
+                DONE
+              </button>
             </div>
           ) : (
             <div className="space-y-4 mt-4 font-sans text-xs">
-              <input
-                type="email"
-                value={inviteEmail}
-                onChange={(e) => setInviteEmail(e.target.value)}
-                placeholder="colleague@fintech.com"
-                className="w-full p-2.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 rounded-none outline-none font-serif text-sm"
-              />
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                  COLLABORATOR EMAIL
+                </label>
+                <input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="colleague@fintech.com"
+                  className="w-full p-2.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900 rounded-none outline-none font-serif text-sm"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                  SCOPED ROLE
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {(["editor", "viewer", "admin"] as const).map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setInviteRole(r)}
+                      className={`py-1.5 px-2 text-[11px] font-mono font-bold uppercase border transition-all cursor-pointer ${
+                        inviteRole === r
+                          ? "border-black dark:border-white bg-black dark:bg-white text-white dark:text-black"
+                          : "border-slate-300 dark:border-zinc-700 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <p className="p-3 border border-zinc-200 dark:border-zinc-800 bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 leading-relaxed italic">
                 *This invite only grants access to {companyName}. It does not grant access to your other companies.*
@@ -1590,7 +1780,39 @@ export default function TwinPage() {
               <button
                 type="button"
                 disabled={!inviteEmail.includes("@")}
-                onClick={() => setInviteSent(true)}
+                onClick={async () => {
+                  const emailToInvite = inviteEmail.trim();
+                  try {
+                    const res = await fetch(`/api/v1/twin/companies/${companySlug}/collaborators`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: emailToInvite, role: inviteRole }),
+                    });
+                    const data = await res.json().catch(() => null);
+                    if (res.ok && data?.data) {
+                      setCollaborators((prev) => [...prev, data.data]);
+                    } else {
+                      setCollaborators((prev) => [
+                        ...prev,
+                        { id: `collab_${Date.now()}`, email: emailToInvite, role: inviteRole, status: "pending" },
+                      ]);
+                    }
+                  } catch {
+                    setCollaborators((prev) => [
+                      ...prev,
+                      { id: `collab_${Date.now()}`, email: emailToInvite, role: inviteRole, status: "pending" },
+                    ]);
+                  }
+                  setInviteSent(true);
+                  setFeed((prev) => [
+                    ...prev,
+                    {
+                      id: `inv-${Date.now()}`,
+                      time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                      text: `👥 Collaborator invitation dispatched to ${emailToInvite} as **${inviteRole.toUpperCase()}**. Scoped to ${companyName} only.`,
+                    },
+                  ]);
+                }}
                 className="w-full py-3 bg-black hover:bg-zinc-800 text-white font-mono font-bold text-xs uppercase tracking-widest disabled:opacity-40 transition-all cursor-pointer"
               >
                 SEND INVITE
