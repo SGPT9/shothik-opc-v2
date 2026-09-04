@@ -15,6 +15,8 @@
     "typecheck": "pnpm --filter @workspace/shothik run typecheck",
     "typecheck:api": "pnpm --filter @workspace/api-server run typecheck",
     "typecheck:all": "pnpm -r --if-present run typecheck",
+    "test": "pnpm --filter @workspace/api-server test",
+    "test:run": "pnpm --filter @workspace/api-server test",
     "test:api": "pnpm --filter @workspace/api-server run test",
     "test:ecc": "pnpm --filter @workspace/api-server test",
     "pre-commit": "node scripts/ci/pre-commit-check.mjs",
@@ -81,21 +83,19 @@
     "prettier": "^3.9.6",
     "typescript": "^5.9.3"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@prisma/engines",
-      "@scarf/scarf",
-      "@tree-sitter-grammars/tree-sitter-yaml",
-      "better-sqlite3",
-      "core-js-pure",
-      "core-js",
-      "esbuild",
-      "prisma",
-      "sharp",
-      "tree-sitter-json",
-      "tree-sitter",
-      "unrs-resolver",
-      "workerd"
-    ]
-  }
+  "onlyBuiltDependencies": [
+    "@prisma/engines",
+    "@scarf/scarf",
+    "@tree-sitter-grammars/tree-sitter-yaml",
+    "better-sqlite3",
+    "core-js-pure",
+    "core-js",
+    "esbuild",
+    "prisma",
+    "sharp",
+    "tree-sitter-json",
+    "tree-sitter",
+    "unrs-resolver",
+    "workerd"
+  ]
 }
