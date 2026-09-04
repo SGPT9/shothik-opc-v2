@@ -59,7 +59,7 @@ All 9 GitHub repositories are synchronized with local HEAD on branch `main`:
 
 ## 5. 🧪 Complete Verification & Test Matrix
 - **TypeScript Typecheck:** `0` errors across all projects (`node artifacts/shothik/run_typecheck.cjs`).
-- **Backend Test Matrix:** **35 test files (180 tests)** passing 100%.
+- **Backend Test Matrix:** **36 test files (185 tests)** passing 100%.
 - **Frontend Test Matrix:** **338+ test files (1,740+ tests)** passing cleanly.
 - **Overnight Benchmark Loop:** 26 infrastructure, speculative WebGPU, Multi-Tier Router, Vernacular Dialects, Chaos Fuzzing & Memory Profiling evals passing in 3s.
 
@@ -118,6 +118,10 @@ curl.exe http://localhost:8080/health
 4. ✅ **Phase 4: Autonomous Chaos Fuzzing & Memory Profiling**
    - **Overnight Daemon:** [`overnight-loop.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/scripts/overnight-loop.ts) executes automated chaos probes (malformed JSON, combining Bengali diacritics, SQLi vectors, buffer extremes) with zero crashes.
    - **Memory Profile:** Continuous sampling of RSS, heapUsed, external memory deltas, leak risk detection (>50MB), and persistent logging to `logs/overnight-loop/memory-profile-*.jsonl`.
+5. ✅ **Phase 5: Twin 5-Stage Operational Orchestrator (OPC Doctrine)**
+   - **Orchestrator Core:** [`twin-orchestrator.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/twin/twin-orchestrator.ts) implements the continuous 5-stage loop (*Observe $\rightarrow$ Understand $\rightarrow$ Decide $\rightarrow$ Execute $\rightarrow$ Learn*) across the 9 Specialized Twins with Supervised Autonomy checks (>৳10,000 disbursement boundary).
+   - **Inbound Webhook Route:** `POST /api/v1/twin/cycle/ingest` in [`twin-tasks.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/twin-tasks.ts) supporting WhatsApp, bKash, Courier, and CRM webhook ingestion.
+   - **Test Matrix:** 5/5 unit tests passing in [`twin-orchestrator.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/twin/__tests__/twin-orchestrator.test.ts). Total backend suite: **36 test files (185 tests)** passing 100%.
 
 ---
 
