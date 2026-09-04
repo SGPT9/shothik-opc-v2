@@ -6,6 +6,7 @@ interface CompanySettingsModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   companyName: string;
+  isPaused?: boolean;
   onSaveCompanyName?: (newName: string) => void;
   onTogglePause?: (isPaused: boolean) => void;
   onDeleteCompany?: () => void;
@@ -15,18 +16,23 @@ export function CompanySettingsModal({
   open,
   onOpenChange,
   companyName,
+  isPaused: initialPaused = false,
   onSaveCompanyName,
   onTogglePause,
   onDeleteCompany,
 }: CompanySettingsModalProps) {
   const [name, setName] = useState(companyName);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useState(initialPaused);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     setName(companyName);
   }, [companyName]);
+
+  useEffect(() => {
+    setIsPaused(initialPaused);
+  }, [initialPaused]);
 
   const handleSave = () => {
     setIsSaving(true);
