@@ -1,6 +1,6 @@
 {
   "name": "workspace",
-  "version": "0.0.0",
+  "version": "2.1.0-enterprise",
   "license": "MIT",
   "scripts": {
     "dev": "pnpm --filter @workspace/shothik run dev",
