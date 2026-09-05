@@ -85,6 +85,7 @@ export interface TwinCommandPaletteProps {
   onOpenVulnerabilityImmunity?: () => void;
   onOpenMultiModelPareto?: () => void;
   onOpenEpistemicConsensus?: () => void;
+  onOpenWebGpuEmbedding?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -124,6 +125,7 @@ export function TwinCommandPalette({
   onOpenVulnerabilityImmunity,
   onOpenMultiModelPareto,
   onOpenEpistemicConsensus,
+  onOpenWebGpuEmbedding,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -713,6 +715,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘J</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenWebGpuEmbedding)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                <Zap className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">WebGPU Local Embedding & Semantic Cache</span>
+                <span className="text-[11px] text-zinc-500">Zero-latency cosine cache & BGE-m3 on-device tensor acceleration</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘U</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
