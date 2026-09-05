@@ -42,6 +42,7 @@ import { MultiModelParetoModal } from "@/components/twin/MultiModelParetoModal";
 import { EpistemicConsensusModal } from "@/components/twin/EpistemicConsensusModal";
 import { WebGpuEmbeddingModal } from "@/components/twin/WebGpuEmbeddingModal";
 import { ZkSnarkProverModal } from "@/components/twin/ZkSnarkProverModal";
+import { WasmVectorIndexModal } from "@/components/twin/WasmVectorIndexModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -336,6 +337,7 @@ export default function TwinPage() {
   const [epistemicConsensusOpen, setEpistemicConsensusOpen] = useState(false);
   const [webGpuEmbeddingOpen, setWebGpuEmbeddingOpen] = useState(false);
   const [zkSnarkProverOpen, setZkSnarkProverOpen] = useState(false);
+  const [wasmVectorIndexOpen, setWasmVectorIndexOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -373,6 +375,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         setZkSnarkProverOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        setWasmVectorIndexOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2106,6 +2111,7 @@ export default function TwinPage() {
         onOpenEpistemicConsensus={() => setEpistemicConsensusOpen(true)}
         onOpenWebGpuEmbedding={() => setWebGpuEmbeddingOpen(true)}
         onOpenZkSnarkProver={() => setZkSnarkProverOpen(true)}
+        onOpenWasmVectorIndex={() => setWasmVectorIndexOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2128,6 +2134,7 @@ export default function TwinPage() {
       <EpistemicConsensusModal open={epistemicConsensusOpen} onOpenChange={setEpistemicConsensusOpen} />
       <WebGpuEmbeddingModal open={webGpuEmbeddingOpen} onOpenChange={setWebGpuEmbeddingOpen} />
       <ZkSnarkProverModal open={zkSnarkProverOpen} onOpenChange={setZkSnarkProverOpen} />
+      <WasmVectorIndexModal open={wasmVectorIndexOpen} onOpenChange={setWasmVectorIndexOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
