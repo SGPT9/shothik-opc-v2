@@ -207,9 +207,22 @@ curl.exe http://localhost:8080/health
     - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘G` / `Ctrl+G` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`swarm-dag-scheduler.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/swarm-dag-scheduler.test.ts) (6/6 tests passed; 45/45 suites passed with 236 tests across api-server) and [`SwarmGraphStudioModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/SwarmGraphStudioModal.test.tsx) (4/4 tests passed; 21/21 twin test suites passed with 42/42 tests).
     - **Synchronization:** Deployed and certified across all 9 remotes under commit `bea7d9f5`.
+16. ✅ **Phase 16: Vast.ai Dynamic Spot GPU Orchestration & WebGPU Hybrid Fallback Layer**
+    - **Dynamic Spot Market Bidding & Allocation:** Built [`vast-spot-orchestrator.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/vast-spot-orchestrator.ts) with real-time offer filtering (RTX 4090, RTX 3090, A100 SXM4, H100 PCIe), dynamic spot bidding at 5-10% margins above market floor, instant container allocation, and dual-currency cost tracking (USD & BDT @ 121.5 BDT/USD).
+    - **WebGPU Hybrid Fallback Evaluator:** Threshold evaluation assessing batch sequence length (>2048 tokens), model parameter size (>7B), WebGPU VRAM headroom, and network latency to calculate cost-performance tradeoffs and automate client-side to cloud spot failover.
+    - **REST API Rail:** Mounted in [`routes/index.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/index.ts) under [`vast-spot.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/vast-spot.ts):
+      - `GET /api/v1/compute/vast/offers` (lists available spot GPU offers with filters)
+      - `POST /api/v1/compute/vast/bid-and-launch` (bids on spot instance and deploys container)
+      - `GET /api/v1/compute/vast/instances` (tracks active spot instances and running cost)
+      - `POST /api/v1/compute/vast/instances/:instanceId/destroy` (terminates spot container)
+      - `POST /api/v1/compute/vast/evaluate-fallback` (decision engine for WebGPU vs Vast.ai spot)
+    - **Interactive Studio UI:** Built [`VastSpotGpuModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/VastSpotGpuModal.tsx) with Market Offers tab, Active Workers tab, and Hybrid Fallback Sandbox tab.
+    - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘B` / `Ctrl+B` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
+    - **Test Suites:** [`vast-spot-orchestrator.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/vast-spot-orchestrator.test.ts) (5/5 tests passed; 46/46 suites passed with 241 tests across api-server) and [`VastSpotGpuModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/VastSpotGpuModal.test.tsx) (3/3 tests passed; 22/22 twin test suites passed with 45/45 tests).
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `2d4f9418`.
 
 ---
 
 ## 9. 🗺️ Future Horizon Targets
-1. **Vast.ai Spot GPU Orchestration Layer:** Automatic fallback to dynamic Vast.ai container spot instances when local WebGPU compute thresholds are exceeded.
-2. **Autonomous Multi-Region Edge Replication:** Multi-region SQLite / libSQL replication mesh for sub-10ms localized latency across Dhaka, Singapore, and Frankfurt.
+1. **Autonomous Multi-Region Edge Replication:** Multi-region SQLite / libSQL replication mesh for sub-10ms localized latency across Dhaka, Singapore, and Frankfurt.
+2. **Autonomous Self-Healing Canary & Zero-Downtime Traffic Director:** Automated blue-green canary routing with automatic anomaly rollback across polyrepo deployments.
