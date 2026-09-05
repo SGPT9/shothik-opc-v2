@@ -178,9 +178,22 @@ curl.exe http://localhost:8080/health
     - **Cockpit & Command Center Integration:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) and [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suite:** [`NilkhetPodModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/NilkhetPodModal.test.tsx) passing 3/3 tests (all 19 twin test suites passing with 35/35 tests).
     - **Synchronization:** Committed under `dfcf7695` and synchronized to all 9 remotes.
+14. ✅ **Phase 14: Autonomous Multi-Dialect Voice Twin Pipeline (Kokoro & Bangla VITS)**
+    - **Multi-Dialect Conversational Audio Engine:** Built [`multi-dialect-voice-engine.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/multi-dialect-voice-engine.ts) providing real-time bi-directional streaming between Web Audio API and Kokoro-82M / Bangla-VITS speech models with demographic dialect adaptation across Dhakaiya (Old Dhaka street cadence, 1.15x tempo), Chatgaya (coastal maritime tone, 0.95x tempo), Sylheti (London diaspora melodic cadence, 1.05x tempo), and Standard Bangla.
+    - **Real-Time VAD & Zero-Lag Barge-In:** RMS frame thresholding with speech onset/completion boundary detection and instant barge-in interrupt handling to abort in-flight synthesized audio streams.
+    - **REST API Rail:** Added in [`voice.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/voice.ts):
+      - `GET /api/v1/voice/twin/profiles` (lists 4 canonical dialect voice profiles with sample audio and linguistic metadata)
+      - `POST /api/v1/voice/twin/synthesize-dialect` (prosody and dialect-adapted TTS audio generation)
+      - `POST /api/v1/voice/twin/stream-bidirectional` (conversational turn-taking with intent classification)
+      - `POST /api/v1/voice/twin/vad-frame` (real-time RMS energy evaluation)
+      - `POST /api/v1/voice/twin/barge-in` (immediate interruption signal)
+    - **Interactive Web Audio Studio UI:** Built [`MultiDialectVoiceTwinModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/MultiDialectVoiceTwinModal.tsx) featuring a 60 FPS HTML5 Canvas audio waveform visualizer, dialect selector cards, conversational message thread, and quick prompt pills.
+    - **Command Center & Keyboard Navigation:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with persistent global `⌘V` / `Ctrl+V` keybinding and updated [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
+    - **Test Suites:** [`multi-dialect-voice-pipeline.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/multi-dialect-voice-pipeline.test.ts) (7/7 tests passed in 122ms; 44/44 suites passed across api-server) and [`MultiDialectVoiceTwinModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/MultiDialectVoiceTwinModal.test.tsx) (3/3 tests passed; 20/20 twin test suites passed with 38/38 tests).
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `3dc5c346`.
 
 ---
 
 ## 9. 🗺️ Future Horizon Targets
-1. **Autonomous Multi-Dialect Voice Twin Pipeline:** Real-time bi-directional streaming between Web Audio API and Kokoro / Bangla VITS models for conversational voice twins with regional dialect adaptation (Dhakaiya, Chittagonian, Sylheti).
-2. **Autonomous Multi-Agent Task Swarm Graph Execution:** Dynamic runtime DAG scheduler for parallelized twin tasks with dependency resolution and visual task state propagation.
+1. **Autonomous Multi-Agent Task Swarm Graph Execution:** Dynamic runtime DAG scheduler for parallelized twin tasks with dependency resolution, visual task state propagation, and cross-twin feedback loops.
+2. **Vast.ai Spot GPU Orchestration Layer:** Automatic fallback to dynamic Vast.ai container spot instances when local WebGPU compute thresholds are exceeded.
