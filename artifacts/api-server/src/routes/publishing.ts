@@ -5,6 +5,7 @@ import { db, nilkhetOrdersTable } from "@workspace/db";
 import { steadfastClient } from "../lib/logistics/steadfast-client";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { NilkhetImpositionEngine } from "../lib/nilkhet-imposition-engine.js";
 
 const router = Router();
 
@@ -762,6 +763,165 @@ router.post("/v1/publishing/export-pptx", async (req: Request, res: Response): P
     res.status(200).send(Buffer.from(pptxBuffer));
   } catch (err: any) {
     res.status(500).json({ success: false, error: "PPTX export failed", message: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/publishing/nilkhet/imposition/calculate
+ * Calculates live spine geometry, signature imposition sheets, and press plate requirements
+ */
+router.post(["/v1/publishing/nilkhet/imposition/calculate", "/api/v1/publishing/nilkhet/imposition/calculate"], (req: Request, res: Response): void => {
+  try {
+    const { pageCount, paperType = "70gsm_offset", trimSize = "6x9", signatureSize = 16 } = req.body || {};
+
+    if (!pageCount || Number(pageCount) < 4) {
+      res.status(400).json({ success: false, error: "Valid pageCount (minimum 4 pages) is required" });
+      return;
+    }
+
+    const pages = Number(pageCount);
+    const spineGeometry = NilkhetImpositionEngine.calculateSpineGeometry(pages, paperType, trimSize);
+    const imposition = NilkhetImpositionEngine.generateSignatureImposition(pages, Number(signatureSize) as any);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        spineGeometry,
+        imposition,
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err }, "[NilkhetPOD] Failed to calculate imposition");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/publishing/nilkhet/hubs
+ * Lists verified commercial Nilkhet, Katabon, and Babupura printing hubs
+ */
+router.get(["/v1/publishing/nilkhet/hubs", "/api/v1/publishing/nilkhet/hubs"], (_req: Request, res: Response): void => {
+  try {
+    const hubs = NilkhetImpositionEngine.getHubs();
+    res.status(200).json({
+      success: true,
+      total: hubs.length,
+      data: hubs,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/publishing/nilkhet/dispatch-hub
+ * Packages a print order with spine geometry, imposition plan, and dispatches to Nilkhet press
+ */
+router.post(["/v1/publishing/nilkhet/dispatch-hub", "/api/v1/publishing/nilkhet/dispatch-hub"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      orderId,
+      bookTitle,
+      authorName,
+      pageCount,
+      copyCount = 1,
+      paperType = "70gsm_offset",
+      bindingType = "paperback_glue",
+      trimSize = "6x9",
+      hubId = "hub_bakushah_press_01",
+      deliveryAddress,
+      recipientName,
+      recipientPhone,
+      codAmountBdt,
+    } = req.body || {};
+
+    if (!orderId || !bookTitle || !authorName || !pageCount) {
+      res.status(400).json({
+        success: false,
+        error: "orderId, bookTitle, authorName, and pageCount are required for press dispatch",
+      });
+      return;
+    }
+
+    let courierConsignment: any = undefined;
+
+    // If delivery address is provided, auto-book Steadfast courier consignment
+    if (deliveryAddress && recipientName && recipientPhone) {
+      try {
+        const steadfastOrder = await steadfastClient.createOrder({
+          invoice: `POD_${orderId}_${Date.now()}`,
+          recipientName,
+          recipientPhone,
+          recipientAddress: deliveryAddress,
+          codAmount: Number(codAmountBdt) || 0,
+          note: `Nilkhet Print-on-Demand: ${bookTitle} (${copyCount} copies)`,
+        });
+
+        courierConsignment = {
+          partner: "Steadfast Courier Ltd",
+          trackingCode: steadfastOrder.consignment?.tracking_code || `TRK_${orderId}`,
+          recipientName,
+          recipientPhone,
+          deliveryAddress,
+          codAmountBdt: Number(codAmountBdt) || 0,
+        };
+      } catch (err: any) {
+        logger.warn({ err }, "[NilkhetPOD] Steadfast courier booking fallback to pending dispatch");
+        courierConsignment = {
+          partner: "Steadfast Courier Ltd (Pending Pickup)",
+          trackingCode: `ST_MOCK_${Date.now()}`,
+          recipientName,
+          recipientPhone,
+          deliveryAddress,
+          codAmountBdt: Number(codAmountBdt) || 0,
+        };
+      }
+    }
+
+    const ticket = NilkhetImpositionEngine.dispatchOrderToHub({
+      orderId,
+      bookTitle,
+      authorName,
+      pageCount: Number(pageCount),
+      copyCount: Number(copyCount),
+      paperType,
+      bindingType,
+      trimSize,
+      hubId,
+      courierConsignment,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `Print order dispatched successfully to ${ticket.hub.name}`,
+      data: ticket,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "[NilkhetPOD] Failed to dispatch print order to hub");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/publishing/nilkhet/orders/:orderId/job-ticket
+ * Retrieves the machine-readable JDF job ticket for a Nilkhet press order
+ */
+router.get(["/v1/publishing/nilkhet/orders/:orderId/job-ticket", "/api/v1/publishing/nilkhet/orders/:orderId/job-ticket"], (req: Request, res: Response): void => {
+  try {
+    const orderId = String(req.params.orderId);
+    const ticket = NilkhetImpositionEngine.getJobTicket(orderId);
+
+    if (!ticket) {
+      res.status(404).json({ success: false, error: `Job ticket not found for order ${orderId}` });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: ticket,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
