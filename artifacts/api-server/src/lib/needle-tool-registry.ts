@@ -425,6 +425,34 @@ export class NeedleToolRegistry {
       };
     }
 
+    // 2.55 Tool: get_assistant_identity (Platform Capabilities & 12-Pillar Service List)
+    if (/(what (services|features|capabilities) do you (provide|offer|have)|service list|platform services|what can (you|shothik|shothikgpt) do|who are you|what is shothikgpt)/i.test(query)) {
+      return {
+        toolName: 'get_assistant_identity',
+        arguments: { query: raw },
+        reasoning: 'Executing Needle tool get_assistant_identity: Retrieving canonical 12-Pillar Service List & Core Principle...',
+        output: `### 🏛️ ShothikGPT — Service List & Capabilities\n\n` +
+          `> **Core Principle:** ShothikGPT combines these services into a single **AI execution platform** where users describe what they want, and AI agents help execute the outcome.\n\n` +
+          `1. **AI Execution**: Turn user intent into completed work with AI agents, workflows, tool use, multimodal input (text, voice, PDF, URL), and human approvals.\n` +
+          `2. **Academic & Research**: Research assistance, thesis & dissertation creation, research paper creation, literature synthesis, citations & reference formatting.\n` +
+          `3. **Writing & Content Creation**: Paraphrasing, grammar correction, summarization, translation, AI humanization, plagiarism checking, citation generation.\n` +
+          `4. **Creative & Professional Creation**: Books and manuscripts, pitch decks, business documents, PRDs, financial models, structured artifacts.\n` +
+          `5. **Twin — Business Automation**: AI-powered business operations, customer support automation, 10 specialized agent workers, Protected Actions, persistent workflows.\n` +
+          `6. **Commerce & F-Commerce Automation**: Facebook/Page integration, WhatsApp commerce, WooCommerce integration, Daraz integration, order management.\n` +
+          `7. **Logistics & Courier Automation**: Steadfast, Pathao, and RedX integration, 1-click parcel booking, parcel tracking, COD reconciliation.\n` +
+          `8. **Venture Creation**: Idea validation, market research, market-gap analysis, startup planning, PRDs, financial modeling, pitch-deck creation, launch planning.\n` +
+          `9. **Conversational AI**: Fluid AI chat, voice interaction, low-latency Bengali/Banglish speech-to-text, contextual conversations, conversational-to-workflow handoff.\n` +
+          `10. **Publishing & Print-on-Demand**: Manuscript-to-book production, book formatting, 3D book preview, print-ready PDF generation, Nilkhet POD hub dispatch.\n` +
+          `11. **AI Agent Services**: 10 specialized AI agents, multi-agent orchestration, agent/tool execution, long-running background tasks, human-in-the-loop approvals.\n` +
+          `12. **Payments & Monetization Infrastructure**: Outcome-based payments, credit/usage management, subscriptions, native bKash/Nagad MFS, transaction verification.`,
+        artifact: {
+          type: 'doc',
+          title: 'ShothikGPT: 12 Core Services',
+          subtitle: 'Single AI Execution Platform',
+        },
+      };
+    }
+
     // 2.6 Tool: lookup_website (URL & Domain Explorer)
     if (/(can you (find|check|open|lookup)|look up|find website|explore website|search for)\s*([a-zA-Z0-9-]+\.(?:com|org|net|gov|edu|io|ai|bd|co))/i.test(query) ||
         /([a-zA-Z0-9-]+\.(?:com|org|net|gov|edu|io|ai|bd|co))/i.test(query)) {

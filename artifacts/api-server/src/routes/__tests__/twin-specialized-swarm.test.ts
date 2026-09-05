@@ -26,14 +26,14 @@ describe("Twin Specialized Swarm & OPC Workers Test Suite", () => {
     await new Promise<void>((resolve) => server.close(() => resolve()));
   });
 
-  it("GET /api/v1/twin/specialized-twins returns the complete 9 Specialized Twins roster", async () => {
+  it("GET /api/v1/twin/specialized-twins returns the complete 10 Specialized Twins roster", async () => {
     const res = await fetch(`${baseUrl}/api/v1/twin/specialized-twins?companySlug=fintech-dhaka`);
     expect(res.status).toBe(200);
 
     const body = await res.json();
     expect(body.success).toBe(true);
     expect(Array.isArray(body.data)).toBe(true);
-    expect(body.data.length).toBe(9);
+    expect(body.data.length).toBe(10);
 
     const ids = body.data.map((t: any) => t.id);
     expect(ids).toContain("marketing_twin");
@@ -45,6 +45,7 @@ describe("Twin Specialized Swarm & OPC Workers Test Suite", () => {
     expect(ids).toContain("content_twin");
     expect(ids).toContain("analytics_twin");
     expect(ids).toContain("administration_twin");
+    expect(ids).toContain("developer_twin");
 
     for (const twin of body.data) {
       expect(twin.companySlug).toBe("fintech-dhaka");

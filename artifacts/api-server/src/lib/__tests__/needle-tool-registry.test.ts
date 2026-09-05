@@ -51,4 +51,15 @@ describe("NeedleToolRegistry Suite", () => {
     const resolved = LiveWebKnowledgeEngine.resolveMultiTurnQuery("How old is he?", history);
     expect(resolved).toContain("Elon Musk");
   });
+
+  it("resolves get_assistant_identity with canonical 12-Pillar Service List & Core Principle", () => {
+    const res = NeedleToolRegistry.matchAndExecute("what services do you provide?");
+    expect(res).not.toBeNull();
+    expect(res?.toolName).toBe("get_assistant_identity");
+    expect(res?.output).toContain("AI execution platform");
+    expect(res?.output).toContain("1. **AI Execution**");
+    expect(res?.output).toContain("5. **Twin — Business Automation**");
+    expect(res?.output).toContain("12. **Payments & Monetization Infrastructure**");
+    expect(res?.artifact?.title).toBe("ShothikGPT: 12 Core Services");
+  });
 });

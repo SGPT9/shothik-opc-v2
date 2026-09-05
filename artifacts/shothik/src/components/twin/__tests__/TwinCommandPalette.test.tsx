@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom/vitest";
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { TwinCommandPalette } from "../TwinCommandPalette";
@@ -14,7 +15,8 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
 
     // Check specific tools in categories
     expect(screen.getByText("SecondMe Memory Vault")).toBeInTheDocument();
-    expect(screen.getByText("The 9 Specialized Twins Swarm")).toBeInTheDocument();
+    expect(screen.getByText("The 10 Specialized Twins Swarm")).toBeInTheDocument();
+    expect(screen.getByText("Platform Services Directory (12 Pillars)")).toBeInTheDocument();
     expect(screen.getByText("Auto Cold Outreach Autopilot")).toBeInTheDocument();
     expect(screen.getByText("bKash & Nagad MFS Hub")).toBeInTheDocument();
     expect(screen.getByText("Steadfast Courier Logistics")).toBeInTheDocument();
@@ -27,6 +29,7 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
   it("fires callback and closes palette when a command item is selected", () => {
     const onOpenChange = vi.fn();
     const onOpenSecondMeMemory = vi.fn();
+    const onOpenPlatformServices = vi.fn();
     const onOpenAutoColdOutreach = vi.fn();
     const onOpenMfsGateway = vi.fn();
     const onOpenStartupBuilds = vi.fn();
@@ -37,6 +40,7 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
         open={true}
         onOpenChange={onOpenChange}
         onOpenSecondMeMemory={onOpenSecondMeMemory}
+        onOpenPlatformServices={onOpenPlatformServices}
         onOpenAutoColdOutreach={onOpenAutoColdOutreach}
         onOpenMfsGateway={onOpenMfsGateway}
         onOpenStartupBuilds={onOpenStartupBuilds}
@@ -50,6 +54,11 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(onOpenSecondMeMemory).toHaveBeenCalledTimes(1);
+
+    // Select Platform Services Directory
+    const servicesItem = screen.getByText("Platform Services Directory (12 Pillars)");
+    fireEvent.click(servicesItem);
+    expect(onOpenPlatformServices).toHaveBeenCalledTimes(1);
 
     // Select Auto Cold Outreach
     const outreachItem = screen.getByText("Auto Cold Outreach Autopilot");
