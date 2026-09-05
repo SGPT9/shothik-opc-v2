@@ -21,6 +21,7 @@ import { DokployMicroContainersModal } from "@/components/twin/DokployMicroConta
 import { SecondMeMemoryModal } from "@/components/twin/SecondMeMemoryModal";
 import { TwinVideoStudioModal } from "@/components/twin/TwinVideoStudioModal";
 import { SpecializedTwinsModal } from "@/components/twin/SpecializedTwinsModal";
+import { TwinFloatingCapsuleOverlay } from "@/components/twin/TwinFloatingCapsuleOverlay";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -267,6 +268,9 @@ export default function TwinPage() {
   const [redeployOpen, setRedeployOpen] = useState(false);
   const [autoColdOutreachOpen, setAutoColdOutreachOpen] = useState(false);
   const [specializedTwinsOpen, setSpecializedTwinsOpen] = useState(false);
+  const [capsuleActive, setCapsuleActive] = useState(false);
+  const [capsuleStatus, setCapsuleStatus] = useState("Autonomous Twin executing in background...");
+  const [capsuleTwin, setCapsuleTwin] = useState("Swarm Orchestrator");
 
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const [manageTasksOpen, setManageTasksOpen] = useState(false);
@@ -1937,6 +1941,12 @@ export default function TwinPage() {
             >
               🤖 The 9 Specialized Twins Swarm
             </button>
+            <button
+              onClick={() => { setMenuOpen(false); setCapsuleActive(!capsuleActive); }}
+              className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer bg-amber-500/5 font-semibold text-amber-600 dark:text-amber-400"
+            >
+              💊 Floating Agent Capsule ({capsuleActive ? "Active" : "Hidden"})
+            </button>
           </div>
         </DialogContent>
       </Dialog>
@@ -1956,7 +1966,33 @@ export default function TwinPage() {
         companyName={companyName}
         onDispatchTwin={(twinName, action, log) => {
           setTerminalLogs((prev) => [...prev.slice(-20), `> [${twinName}] Dispatched: ${action}`, `> ${log}`]);
+          setCapsuleTwin(twinName);
+          setCapsuleStatus(`Dispatched: ${action}`);
+          setCapsuleActive(true);
         }}
+      />
+
+      {/* Apple-Inspired Floating Agent Capsule Overlay */}
+      <TwinFloatingCapsuleOverlay
+        active={capsuleActive || autoModeActive || isPlanning}
+        twinName={capsuleTwin}
+        statusText={
+          isPlanning
+            ? "Planning next 3 highest-impact actions..."
+            : autoModeActive
+            ? `Autonomous Auto-Mode: ${autoModeRemaining ?? 4}h remaining`
+            : capsuleStatus
+        }
+        step={autoModeActive ? 2 : 1}
+        totalSteps={5}
+        onStop={() => {
+          if (autoModeActive) {
+            setAutoModeActive(false);
+          }
+          setIsPlanning(false);
+          setCapsuleActive(false);
+        }}
+        onDismiss={() => setCapsuleActive(false)}
       />
     </div>
   );
