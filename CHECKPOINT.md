@@ -324,7 +324,7 @@ curl.exe http://localhost:8080/health
     - **Interactive Studio UI:** Built [`ZkSnarkProverModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/ZkSnarkProverModal.tsx) featuring 3 operational chambers: ZK Proof Generator & Witness Builder (with 4 circuit presets, JSON public/private inputs, and G1/G2 curve point inspector), Zero-Knowledge Verifier Chamber (with bilinear pairing check and cryptographic attestation certificate), and Cross-Twin ZK Ledger (with block heights and nullifier hashes).
     - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘Z` / `Ctrl+Z` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`zk-snarks.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/zk-snarks.test.ts) (8/8 tests passed in 108ms; 53/53 suites passed with 292 tests across api-server) and [`ZkSnarkProverModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/ZkSnarkProverModal.test.tsx) (5/5 tests passed; 29/29 twin test suites passed with 79/79 tests).
-    - **Synchronization:** Deployed and certified across all 9 remotes under commit `[PENDING]`.
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `c54e96e6`.
 
 ---
 
