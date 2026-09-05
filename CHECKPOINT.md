@@ -59,7 +59,7 @@ All 9 GitHub repositories are synchronized with local HEAD on branch `main`:
 
 ## 5. 🧪 Complete Verification & Test Matrix
 - **TypeScript Typecheck:** `0` errors across all projects (`node artifacts/shothik/run_typecheck.cjs` and `pnpm --filter @workspace/api-server run typecheck`).
-- **Backend Test Matrix:** **40 test files (199 tests passed, 8 skipped)** passing 100%.
+- **Backend Test Matrix:** **41 test files (206 tests passed, 8 skipped)** passing 100%.
 - **Frontend Test Matrix:** **338+ test files (1,740+ tests)** passing cleanly.
 - **Overnight Benchmark Loop:** 26 infrastructure, speculative WebGPU, Multi-Tier Router, Vernacular Dialects, Chaos Fuzzing & Memory Profiling evals passing in 3s.
 
@@ -135,10 +135,14 @@ curl.exe http://localhost:8080/health
    - **Real-Time Token & Cost Engine:** Built [`token-cost-tracker.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/token-cost-tracker.ts) tracking inference costs across all 4 tiers of the Multi-Tier Router with exact money saved (in BDT / USD) via on-device WebGPU execution.
    - **Telemetry Endpoints:** `GET /api/v1/twin/telemetry/cost`, `POST /api/v1/twin/telemetry/cost/record`, and `POST /api/v1/twin/telemetry/cost/reset` in [`twin-tasks.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/twin-tasks.ts).
    - **Test Suite:** [`twin-token-cost-telemetry.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/twin-token-cost-telemetry.test.ts) (5/5 tests passing in 85ms).
+9. ✅ **Phase 9: Edge CRDT Mesh Multi-Master Sync Engine (Cloudflare Durable Objects & Local Nodes)**
+   - **Mesh Engine Core:** Built [`crdt-mesh-engine.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/crdt-mesh-engine.ts) featuring strict vector clock causality tracking, monotonic increments, peer cluster registry (`edge_durable_object`, `local_client`, `cloud_relay`), delta revision logs, and concurrent conflict resolution via deterministic LWW tie-breaking.
+   - **Mesh REST Endpoints:** Integrated into [`crdt.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/crdt.ts) exposing `POST /v1/crdt/mesh/handshake`, `GET /v1/crdt/mesh/peers`, `POST /v1/crdt/mesh/peers/heartbeat`, and `GET /v1/crdt/mesh/clocks/:docId`.
+   - **Test Suite:** [`crdt-edge-mesh-sync.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/crdt-edge-mesh-sync.test.ts) (7/7 tests passing in 110ms).
 
 ---
 
 ## 9. 🗺️ Future Horizon Targets
-1. **Edge CRDT Mesh Sync:** Multi-master p2p sync across Cloudflare Durable Objects and local clients.
-2. **Nilkhet POD Direct API:** Automated book spine calculation and CMYK PDF imposition streaming to local print hubs.
+1. **Nilkhet POD Direct API:** Automated book spine calculation and CMYK PDF imposition streaming to local print hubs.
+2. **WebAssembly Edge CRDT Bindings:** Direct WASM compiled Y-CRDT bindings for micro-latency offline synchronization.
 
