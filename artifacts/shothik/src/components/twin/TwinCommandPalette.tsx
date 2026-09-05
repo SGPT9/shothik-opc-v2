@@ -240,10 +240,11 @@ export function TwinCommandPalette({
                 <Mic className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Voice Commander & Speech Studio</span>
-                <span className="text-[11px] text-zinc-500">Vernacular speech directives & audio briefs</span>
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Multi-Dialect Voice Studio (Kokoro & VITS)</span>
+                <span className="text-[11px] text-zinc-500">Dhakaiya, Chatgaya, Sylheti conversational audio with VAD & barge-in</span>
               </div>
             </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘V</CommandShortcut>
           </CommandItem>
 
           <CommandItem
