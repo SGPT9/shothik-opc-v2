@@ -738,6 +738,7 @@ export function TwinCommandPalette({
           </CommandItem>
 
           <CommandItem
+            value="zk snark prover zero knowledge groth16 alt-bn128 solvency merkle"
             onSelect={() => handleSelect(onOpenZkSnarkProver)}
             className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
           >
@@ -754,6 +755,7 @@ export function TwinCommandPalette({
           </CommandItem>
 
           <CommandItem
+            value="wasm linear crdt vector indices nearest neighbor zero copy 384d embedding benchmark"
             onSelect={() => handleSelect(onOpenWasmVectorIndex)}
             className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
           >
