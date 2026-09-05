@@ -26,6 +26,7 @@ import {
   RefreshCw,
   Server,
   Sparkles,
+  Cpu,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -63,6 +64,7 @@ export interface TwinCommandPaletteProps {
   onOpenSteadfastCourier?: () => void;
   onOpenVisualStorefront?: () => void;
   onOpenBookReader?: () => void;
+  onOpenNilkhetPod?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -71,6 +73,7 @@ export interface TwinCommandPaletteProps {
   onOpenSecrets?: () => void;
   onOpenRedeploy?: () => void;
   onOpenDokploy?: () => void;
+  onOpenWasmCrdtSync?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -94,6 +97,7 @@ export function TwinCommandPalette({
   onOpenSteadfastCourier,
   onOpenVisualStorefront,
   onOpenBookReader,
+  onOpenNilkhetPod,
   onOpenStartupBuilds,
   onOpenWebsiteHub,
   onOpenManageDomains,
@@ -101,6 +105,7 @@ export function TwinCommandPalette({
   onOpenSecrets,
   onOpenRedeploy,
   onOpenDokploy,
+  onOpenWasmCrdtSync,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -429,6 +434,21 @@ export function TwinCommandPalette({
               </div>
             </div>
           </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenNilkhetPod)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Nilkhet POD Direct Press Hub</span>
+                <span className="text-[11px] text-zinc-500">CMYK imposition, spine calculation & commercial press dispatch</span>
+              </div>
+            </div>
+          </CommandItem>
         </CommandGroup>
 
         <CommandSeparator className="my-1 border-zinc-200 dark:border-zinc-800" />
@@ -546,6 +566,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘D</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenWasmCrdtSync)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Cpu className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">WebAssembly Edge CRDT Sync</span>
+                <span className="text-[11px] text-zinc-500">Zero-copy binary state vector & multi-master delta mesh</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘W</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { logger } from "../lib/logger";
 import { crdtMeshEngine } from "../lib/crdt-mesh-engine.js";
+import { wasmCrdtEngine } from "../lib/wasm-crdt-bindings.js";
 
 export interface CRDTOperationPayload {
   id: string;
@@ -231,4 +232,130 @@ crdtRouter.get(["/v1/crdt/mesh/clocks/:docId", "/api/v1/crdt/mesh/clocks/:docId"
     docId,
     vectorClock: crdtMeshEngine.getDocumentClock(docId),
   });
+});
+
+/**
+ * GET /api/v1/crdt/wasm/benchmark
+ * Evaluates throughput and compression delta between JSON and Wasm binary format
+ */
+crdtRouter.get(["/v1/crdt/wasm/benchmark", "/api/v1/crdt/wasm/benchmark"], (req: Request, res: Response): void => {
+  try {
+    const sampleSize = Math.min(1000, Math.max(10, Number(req.query.samples) || 200));
+    const result = wasmCrdtEngine.benchmarkThroughput(sampleSize);
+    res.json({
+      success: true,
+      engine: "WebAssembly Edge CRDT Binary Codec (v1)",
+      data: result,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/crdt/wasm/state-vector/:docId
+ * Returns compact binary State Vector (Base64) for ultra-low latency differential synchronization
+ */
+crdtRouter.get(["/v1/crdt/wasm/state-vector/:docId", "/api/v1/crdt/wasm/state-vector/:docId"], (req: Request, res: Response): void => {
+  try {
+    const docId = String(req.params.docId || "");
+    const clock = crdtMeshEngine.getDocumentClock(docId);
+    const binaryVector = wasmCrdtEngine.encodeStateVector(clock);
+    const base64Vector = Buffer.from(binaryVector).toString("base64");
+
+    res.json({
+      success: true,
+      docId,
+      base64Vector,
+      byteLength: binaryVector.length,
+      clock,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/crdt/wasm/sync-binary
+ * High-throughput binary delta replication endpoint
+ */
+crdtRouter.post(["/v1/crdt/wasm/sync-binary", "/api/v1/crdt/wasm/sync-binary"], (req: Request, res: Response): void => {
+  try {
+    const { base64Delta } = req.body || {};
+
+    if (!base64Delta || typeof base64Delta !== "string") {
+      res.status(400).json({ success: false, error: "base64Delta binary string is required" });
+      return;
+    }
+
+    const binaryBuffer = new Uint8Array(Buffer.from(base64Delta, "base64"));
+    const decoded = wasmCrdtEngine.decodeBinaryDelta(binaryBuffer);
+
+    let targetSnapshot = documentSnapshots.get(decoded.docId);
+    if (!targetSnapshot) {
+      targetSnapshot = {};
+      documentSnapshots.set(decoded.docId, targetSnapshot);
+    }
+
+    // Apply all operations to the mesh engine
+    const appliedOps: any[] = [];
+    for (const op of decoded.operations) {
+      crdtMeshEngine.recordHeartbeat(decoded.peerId, "edge_durable_object", "edge_wasm_mesh", { [op.nodeId]: op.clock });
+      // update state snapshot
+      safeSetNestedPath(
+        targetSnapshot,
+        op.path,
+        op.value,
+        op.type === "delete"
+      );
+      appliedOps.push(op);
+    }
+
+    const updatedClock = crdtMeshEngine.getDocumentClock(decoded.docId);
+    const updatedStateVector = wasmCrdtEngine.encodeStateVector(updatedClock);
+
+    res.json({
+      success: true,
+      docId: decoded.docId,
+      peerId: decoded.peerId,
+      operationsApplied: appliedOps.length,
+      checksumVerified: true,
+      checksum: decoded.checksum,
+      updatedClock,
+      base64UpdatedStateVector: Buffer.from(updatedStateVector).toString("base64"),
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to process Wasm binary CRDT sync");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/crdt/wasm/encode-delta
+ * Utility to encode an array of operations into a binary delta frame
+ */
+crdtRouter.post(["/v1/crdt/wasm/encode-delta", "/api/v1/crdt/wasm/encode-delta"], (req: Request, res: Response): void => {
+  try {
+    const { docId, peerId = "edge_peer_01", operations = [] } = req.body || {};
+
+    if (!docId || !Array.isArray(operations)) {
+      res.status(400).json({ success: false, error: "docId and operations array are required" });
+      return;
+    }
+
+    const binaryBytes = wasmCrdtEngine.encodeBinaryDelta(docId, peerId, operations);
+    const base64 = Buffer.from(binaryBytes).toString("base64");
+    const checksum = wasmCrdtEngine.calculateChecksum(binaryBytes.subarray(0, binaryBytes.length - 4));
+
+    res.json({
+      success: true,
+      docId,
+      peerId,
+      byteLength: binaryBytes.length,
+      checksum,
+      base64,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
