@@ -28,6 +28,7 @@ import {
   Sparkles,
   Cpu,
   GitFork,
+  GitBranch,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -78,6 +79,7 @@ export interface TwinCommandPaletteProps {
   onOpenWasmCrdtSync?: () => void;
   onOpenVastSpotGpu?: () => void;
   onOpenEdgeMesh?: () => void;
+  onOpenCanaryDirector?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -113,6 +115,7 @@ export function TwinCommandPalette({
   onOpenWasmCrdtSync,
   onOpenVastSpotGpu,
   onOpenEdgeMesh,
+  onOpenCanaryDirector,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -638,6 +641,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘E</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenCanaryDirector)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                <GitBranch className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Canary Traffic Director</span>
+                <span className="text-[11px] text-zinc-500">Autonomous blue/green splitting & zero-downtime rollback</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘T</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
