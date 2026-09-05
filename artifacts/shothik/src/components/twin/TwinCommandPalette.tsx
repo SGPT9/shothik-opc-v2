@@ -76,6 +76,7 @@ export interface TwinCommandPaletteProps {
   onOpenRedeploy?: () => void;
   onOpenDokploy?: () => void;
   onOpenWasmCrdtSync?: () => void;
+  onOpenVastSpotGpu?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -109,6 +110,7 @@ export function TwinCommandPalette({
   onOpenRedeploy,
   onOpenDokploy,
   onOpenWasmCrdtSync,
+  onOpenVastSpotGpu,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -602,6 +604,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘W</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenVastSpotGpu)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Server className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Vast.ai Spot GPU Bursting</span>
+                <span className="text-[11px] text-zinc-500">Dynamic cloud GPU containers with WebGPU hybrid fallback</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘B</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>

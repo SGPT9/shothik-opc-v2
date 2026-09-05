@@ -34,6 +34,7 @@ import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
 import { NilkhetPodModal } from "@/components/twin/NilkhetPodModal";
 import { MultiDialectVoiceTwinModal } from "@/components/twin/MultiDialectVoiceTwinModal";
 import { SwarmGraphStudioModal } from "@/components/twin/SwarmGraphStudioModal";
+import { VastSpotGpuModal } from "@/components/twin/VastSpotGpuModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -320,6 +321,7 @@ export default function TwinPage() {
   const [nilkhetPodOpen, setNilkhetPodOpen] = useState(false);
   const [multiDialectVoiceOpen, setMultiDialectVoiceOpen] = useState(false);
   const [swarmGraphOpen, setSwarmGraphOpen] = useState(false);
+  const [vastSpotGpuOpen, setVastSpotGpuOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -333,6 +335,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "g") {
         e.preventDefault();
         setSwarmGraphOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setVastSpotGpuOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2058,6 +2063,7 @@ export default function TwinPage() {
         onOpenSecrets={() => setSecretsOpen(true)}
         onOpenRedeploy={() => setRedeployOpen(true)}
         onOpenDokploy={() => setDokployOpen(true)}
+        onOpenVastSpotGpu={() => setVastSpotGpuOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2072,6 +2078,7 @@ export default function TwinPage() {
       <NilkhetPodModal open={nilkhetPodOpen} onOpenChange={setNilkhetPodOpen} defaultBookTitle={companyName ? `${companyName} Blueprint` : undefined} />
       <MultiDialectVoiceTwinModal open={multiDialectVoiceOpen} onOpenChange={setMultiDialectVoiceOpen} companyName={companyName} />
       <SwarmGraphStudioModal isOpen={swarmGraphOpen} onClose={() => setSwarmGraphOpen(false)} />
+      <VastSpotGpuModal open={vastSpotGpuOpen} onOpenChange={setVastSpotGpuOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
