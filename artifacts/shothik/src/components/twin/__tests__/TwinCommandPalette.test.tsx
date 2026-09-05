@@ -18,8 +18,10 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
     expect(screen.getByText("Auto Cold Outreach Autopilot")).toBeInTheDocument();
     expect(screen.getByText("bKash & Nagad MFS Hub")).toBeInTheDocument();
     expect(screen.getByText("Steadfast Courier Logistics")).toBeInTheDocument();
+    expect(screen.getByText("Nilkhet POD Direct Press Hub")).toBeInTheDocument();
     expect(screen.getByText("Sandboxed Live Preview (Builds)")).toBeInTheDocument();
     expect(screen.getByText("Dokploy Micro-Containers")).toBeInTheDocument();
+    expect(screen.getByText("WebAssembly Edge CRDT Sync")).toBeInTheDocument();
   });
 
   it("fires callback and closes palette when a command item is selected", () => {
@@ -28,6 +30,7 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
     const onOpenAutoColdOutreach = vi.fn();
     const onOpenMfsGateway = vi.fn();
     const onOpenStartupBuilds = vi.fn();
+    const onOpenWasmCrdtSync = vi.fn();
 
     render(
       <TwinCommandPalette
@@ -37,6 +40,7 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
         onOpenAutoColdOutreach={onOpenAutoColdOutreach}
         onOpenMfsGateway={onOpenMfsGateway}
         onOpenStartupBuilds={onOpenStartupBuilds}
+        onOpenWasmCrdtSync={onOpenWasmCrdtSync}
       />
     );
 
@@ -61,5 +65,10 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
     const previewItem = screen.getByText("Sandboxed Live Preview (Builds)");
     fireEvent.click(previewItem);
     expect(onOpenStartupBuilds).toHaveBeenCalledTimes(1);
+
+    // Select WebAssembly Edge CRDT Sync
+    const wasmItem = screen.getByText("WebAssembly Edge CRDT Sync");
+    fireEvent.click(wasmItem);
+    expect(onOpenWasmCrdtSync).toHaveBeenCalledTimes(1);
   });
 });
