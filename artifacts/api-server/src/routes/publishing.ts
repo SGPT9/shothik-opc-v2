@@ -539,15 +539,43 @@ router.get("/v1/publishing/books/:bookId", (req: Request, res: Response): void =
   const found = BOI_MELA_CATALOG.find((b) => b.id === bookId || b._id === bookId);
 
   if (!found) {
+    const demoMap: Record<string, { title: string; subtitle: string; category: string; author: string }> = {
+      book_demo_1: {
+        title: "The Silent Witness: A Detective's Reckoning",
+        subtitle: "A gripping quantum noir thriller through Old Dhaka",
+        category: "Fiction",
+        author: "Shothik Community Author",
+      },
+      book_demo_2: {
+        title: "Deep Tech in Dhaka: Scaling South Asian Startups",
+        subtitle: "From Zero to Series A with F-Commerce and Logistics",
+        category: "Business",
+        author: "Tanvir Ahmed",
+      },
+      book_demo_3: {
+        title: "Quantum Neural Architectures & Bengali NLP",
+        subtitle: "Transformers, Tokenization & Morphological Analysis",
+        category: "Technology",
+        author: "Shothik Research Lab",
+      },
+      book_demo_4: {
+        title: "The Nilkhet Chronicles: History of Print & Ideas",
+        subtitle: "How Dhaka's publishing hub shaped a nation's intellect",
+        category: "History",
+        author: "Dr. Rafiqul Islam",
+      },
+    };
+    const mapped = demoMap[bookId];
+
     // Generate dynamic fallback for any bookId requested
     const dynamicBook = {
       id: bookId,
       _id: bookId,
-      title: bookId.split("-").map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
-      subtitle: "Published via Shothik AI Boi Mela Publishing Suite",
-      authorName: "Shothik Community Author",
+      title: mapped?.title || bookId.replace(/[_-]+/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+      subtitle: mapped?.subtitle || "Published via Shothik AI Boi Mela Publishing Suite",
+      authorName: mapped?.author || "Shothik Community Author",
       userId: "usr_author_gen",
-      category: "General",
+      category: mapped?.category || "General",
       pageCount: 120,
       listPrice: "350",
       creditPrice: 0,
