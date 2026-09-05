@@ -148,10 +148,20 @@ curl.exe http://localhost:8080/health
      - 🛠️ **DevOps, Domains & Cloud** (Sandboxed Live Preview, Custom Domains & SSL, Commit Rollbacks, App Secrets, Rolling Redeploy, Dokploy Micro-Containers)
    - **Twin Cockpit Header:** Mounted persistent `⌘K COMMAND CENTER` trigger button and global `keydown` listener in [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx).
    - **Test Suite:** [`TwinCommandPalette.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/TwinCommandPalette.test.tsx) (2/2 tests passing; 18/18 twin suites passing).
+11. ✅ **Phase 11: Nilkhet POD Direct API (Automated CMYK Imposition & Press Hub Dispatch)**
+   - **Press Imposition Engine:** Built [`nilkhet-imposition-engine.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/nilkhet-imposition-engine.ts) with sub-millimeter spine calculation across standard paper stocks (`70gsm_offset`, `80gsm_cream` Munken, `100gsm_art`, `120gsm_matte`), adhesive board creeping allowance (1.2mm), 300 DPI full cover pixel geometry (3mm bleed), and nested 4/8/16-up signature sheet layouts.
+   - **Commercial Press Hub Directory:** Integrated verified physical print complexes across Nilkhet Main, Katabon Market, and Babupura (`VERIFIED_NILKHET_HUBS`).
+   - **REST API Endpoints:** Added in [`publishing.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/publishing.ts):
+     - `POST /api/v1/publishing/nilkhet/imposition/calculate` (live spine width, plate count, reams required)
+     - `GET /api/v1/publishing/nilkhet/hubs` (verified press hubs, machines, supported bindings)
+     - `POST /api/v1/publishing/nilkhet/dispatch-hub` (packages order, links automated Steadfast courier consignment, generates JDF job ticket)
+     - `GET /api/v1/publishing/nilkhet/orders/:orderId/job-ticket` (JDF job ticket retrieval by order ID)
+   - **Test Suite:** [`nilkhet-pod-direct-api.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/nilkhet-pod-direct-api.test.ts) (8/8 tests passing in 123ms; 42/42 suites passing across api-server).
+   - **Synchronization:** Deployed and certified across all 9 remotes under commit `1f2bf8cf`.
 
 ---
 
 ## 9. 🗺️ Future Horizon Targets
-1. **Nilkhet POD Direct API:** Automated book spine calculation and CMYK PDF imposition streaming to local print hubs.
-2. **WebAssembly Edge CRDT Bindings:** Direct WASM compiled Y-CRDT bindings for micro-latency offline synchronization.
+1. **WebAssembly Edge CRDT Bindings:** Direct WASM compiled Y-CRDT bindings for micro-latency offline synchronization.
+2. **Autonomous Multi-Dialect Voice Twin Pipeline:** Real-time bi-directional streaming between Web Audio API and Kokoro / Bangla VITS models.
 
