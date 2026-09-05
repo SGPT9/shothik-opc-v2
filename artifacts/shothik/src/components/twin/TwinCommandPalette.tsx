@@ -86,6 +86,7 @@ export interface TwinCommandPaletteProps {
   onOpenMultiModelPareto?: () => void;
   onOpenEpistemicConsensus?: () => void;
   onOpenWebGpuEmbedding?: () => void;
+  onOpenZkSnarkProver?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -126,6 +127,7 @@ export function TwinCommandPalette({
   onOpenMultiModelPareto,
   onOpenEpistemicConsensus,
   onOpenWebGpuEmbedding,
+  onOpenZkSnarkProver,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -731,6 +733,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘U</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenZkSnarkProver)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Epistemic Zero-Knowledge SNARK Prover</span>
+                <span className="text-[11px] text-zinc-500">BN254 curve Groth16 zero-leakage solvency & Merkle proofs</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘Z</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
