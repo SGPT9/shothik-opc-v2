@@ -550,6 +550,9 @@ export function BookAgentStart({
                 {/* Unified Input Card */}
                 <div className="w-full rounded-2xl border border-border/80 bg-card/80 dark:bg-zinc-900/80 shadow-md backdrop-blur-xl transition-all focus-within:border-emerald-500/50 focus-within:ring-2 focus-within:ring-emerald-500/15 mb-4">
                   <textarea
+                    id="book-planner-description"
+                    name="book-planner-description"
+                    aria-label="Describe your book, research paper, or assignment"
                     ref={textareaRef}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
