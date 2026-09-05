@@ -31,6 +31,7 @@ import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefront
 import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefrontModal";
 import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
 import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
+import { NilkhetPodModal } from "@/components/twin/NilkhetPodModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -314,6 +315,7 @@ export default function TwinPage() {
   const [bookReaderOpen, setBookReaderOpen] = useState(false);
   const [steadfastCourierOpen, setSteadfastCourierOpen] = useState(false);
   const [startupBuildsOpen, setStartupBuildsOpen] = useState(false);
+  const [nilkhetPodOpen, setNilkhetPodOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K keyboard shortcut listener
   useEffect(() => {
@@ -2037,6 +2039,7 @@ export default function TwinPage() {
         onOpenSteadfastCourier={() => setSteadfastCourierOpen(true)}
         onOpenVisualStorefront={() => setVisualStorefrontOpen(true)}
         onOpenBookReader={() => setBookReaderOpen(true)}
+        onOpenNilkhetPod={() => setNilkhetPodOpen(true)}
         onOpenStartupBuilds={() => setStartupBuildsOpen(true)}
         onOpenWebsiteHub={() => setWebsiteHubOpen(true)}
         onOpenManageDomains={() => setManageDomainsOpen(true)}
@@ -2055,6 +2058,7 @@ export default function TwinPage() {
       <BookReaderStorefrontModal open={bookReaderOpen} onOpenChange={setBookReaderOpen} />
       <SteadfastCourierModal open={steadfastCourierOpen} onOpenChange={setSteadfastCourierOpen} companyName={companyName} />
       <StartupBuildsModal open={startupBuildsOpen} onOpenChange={setStartupBuildsOpen} subdomain={companySlug} companyName={companyName} />
+      <NilkhetPodModal open={nilkhetPodOpen} onOpenChange={setNilkhetPodOpen} defaultBookTitle={companyName ? `${companyName} Blueprint` : undefined} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
