@@ -267,7 +267,7 @@ curl.exe http://localhost:8080/health
     - **Interactive Studio UI:** Built [`VulnerabilityImmunityModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/VulnerabilityImmunityModal.tsx) with radial immunity score badge, Threat Defense Matrix cards, Virtual Patch Ledger, Live Penetration Sandbox with instant verdict and sanitized egress display, and Red-Team Audit Trail.
     - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘P` / `Ctrl+P` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`vulnerability-immunity.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/vulnerability-immunity.test.ts) (7/7 tests passed in 143ms; 49/49 suites passed with 261 tests across api-server) and [`VulnerabilityImmunityModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/VulnerabilityImmunityModal.test.tsx) (5/5 tests passed; 25/25 twin test suites passed with 59/59 tests).
-    - **Synchronization:** Deployed and certified across all 9 remotes under commit `[pending commit]`.
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `12491524`.
 
 ---
 
