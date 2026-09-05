@@ -59,7 +59,7 @@ All 9 GitHub repositories are synchronized with local HEAD on branch `main`:
 
 ## 5. 🧪 Complete Verification & Test Matrix
 - **TypeScript Typecheck:** `0` errors across all projects (`node artifacts/shothik/run_typecheck.cjs` and `pnpm --filter @workspace/api-server run typecheck`).
-- **Backend Test Matrix:** **39 test files (194 tests passed, 8 skipped)** passing 100%.
+- **Backend Test Matrix:** **40 test files (199 tests passed, 8 skipped)** passing 100%.
 - **Frontend Test Matrix:** **338+ test files (1,740+ tests)** passing cleanly.
 - **Overnight Benchmark Loop:** 26 infrastructure, speculative WebGPU, Multi-Tier Router, Vernacular Dialects, Chaos Fuzzing & Memory Profiling evals passing in 3s.
 
@@ -130,7 +130,11 @@ curl.exe http://localhost:8080/health
    - **Canonical Swarm Roster:** Full implementation of Marketing, Sales, Customer Support, CRM, Finance, Operations, Content, Analytics, and Administration Twins in [`twin-tasks.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/twin-tasks.ts).
    - **API Endpoints:** `GET /api/v1/twin/specialized-twins` and `POST /api/v1/twin/specialized-twins/dispatch` delivering targeted mission directives, dynamic telemetry statuses (`idle`, `observing`, `executing`, `learning`), and audit trail generation.
    - **UI Swarm Command Center:** Built [`SpecializedTwinsModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/SpecializedTwinsModal.tsx), wired with Quick Dispatch buttons, directive drawers, and live capability tags.
-   - **Test Suite:** [`twin-specialized-swarm.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/twin-specialized-swarm.test.ts) (100% pass).
+8. ✅ **Phase 8: OpenComet Floating Capsule Overlay & Real-Time Token Cost Telemetry**
+   - **Apple-Inspired Floating Capsule:** Built [`TwinFloatingCapsuleOverlay.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinFloatingCapsuleOverlay.tsx) featuring dark glassmorphism, animated spinning brand ring, live step tracker, compute savings badge, and emergency stop button. Mounted in [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx).
+   - **Real-Time Token & Cost Engine:** Built [`token-cost-tracker.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/token-cost-tracker.ts) tracking inference costs across all 4 tiers of the Multi-Tier Router with exact money saved (in BDT / USD) via on-device WebGPU execution.
+   - **Telemetry Endpoints:** `GET /api/v1/twin/telemetry/cost`, `POST /api/v1/twin/telemetry/cost/record`, and `POST /api/v1/twin/telemetry/cost/reset` in [`twin-tasks.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/twin-tasks.ts).
+   - **Test Suite:** [`twin-token-cost-telemetry.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/twin-token-cost-telemetry.test.ts) (5/5 tests passing in 85ms).
 
 ---
 
