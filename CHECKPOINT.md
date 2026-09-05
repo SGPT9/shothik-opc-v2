@@ -311,7 +311,7 @@ curl.exe http://localhost:8080/health
     - **Interactive Studio UI:** Built [`WebGpuEmbeddingModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/WebGpuEmbeddingModal.tsx) featuring Semantic Cache Explorer with live lookup tester, similarity threshold slider, and hit indicators; WebGPU Compute Benchmark with workload scale selector and real-time TOPS gauge; Multilingual BGE-m3 Reranking sandbox with query presets and ranked relevance score bars; and hardware device profile summary card.
     - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘U` / `Ctrl+U` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`webgpu-embeddings.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/webgpu-embeddings.test.ts) (8/8 tests passed in 141ms; 52/52 suites passed with 284 tests across api-server) and [`WebGpuEmbeddingModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/WebGpuEmbeddingModal.test.tsx) (5/5 tests passed; 28/28 twin test suites passed with 74/74 tests).
-    - **Synchronization:** Deployed and certified across all 9 remotes.
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `0a44c134`.
 
 ---
 
