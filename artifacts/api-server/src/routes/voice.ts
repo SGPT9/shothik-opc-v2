@@ -1,4 +1,5 @@
 import { Router, type Request, type Response } from "express";
+import { multiDialectVoiceEngine } from "../lib/multi-dialect-voice-engine.js";
 
 const router = Router();
 
@@ -124,4 +125,139 @@ router.post("/v1/voice/synthesize", async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/v1/voice/twin/profiles
+ * Lists canonical demographic dialect voice profiles (Dhakaiya, Chatgaya, Sylheti, Standard Bangla)
+ */
+router.get("/v1/voice/twin/profiles", (_req: Request, res: Response) => {
+  try {
+    const profiles = multiDialectVoiceEngine.getProfiles();
+    return res.status(200).json({
+      success: true,
+      count: profiles.length,
+      profiles,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: "Failed to retrieve voice profiles",
+      message: error?.message || String(error),
+    });
+  }
+});
+
+/**
+ * POST /api/v1/voice/twin/synthesize-dialect
+ * Synthesizes text with regional dialect adaptation and prosody modulation
+ */
+router.post("/v1/voice/twin/synthesize-dialect", (req: Request, res: Response) => {
+  try {
+    const { text, profileId = "dhakaiya_panna", targetDialectOverride, tempoOverride } = req.body;
+
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ success: false, error: "Missing required 'text' string" });
+    }
+
+    const synthesis = multiDialectVoiceEngine.synthesizeDialectSpeech(text, profileId, {
+      targetDialectOverride,
+      tempoOverride: typeof tempoOverride === "number" ? tempoOverride : undefined,
+    });
+
+    return res.status(200).json({
+      success: true,
+      ...synthesis,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: "Dialect voice synthesis error",
+      message: error?.message || String(error),
+    });
+  }
+});
+
+/**
+ * POST /api/v1/voice/twin/stream-bidirectional
+ * Real-time conversational turn-taking: ingests user input and streams back dialect twin response
+ */
+router.post("/v1/voice/twin/stream-bidirectional", async (req: Request, res: Response) => {
+  try {
+    const { sessionId = `voice_sess_${Date.now()}`, text, profileId } = req.body;
+
+    if (!text || typeof text !== "string") {
+      return res.status(400).json({ success: false, error: "Missing required 'text' parameter" });
+    }
+
+    const result = await multiDialectVoiceEngine.streamTurn(sessionId, text, profileId);
+
+    return res.status(200).json({
+      success: true,
+      sessionId,
+      userTurn: result.userTurn,
+      twinTurn: result.twinTurn,
+      synthesis: result.synthesis,
+      sessionStatus: result.session.status,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: "Bi-directional voice stream error",
+      message: error?.message || String(error),
+    });
+  }
+});
+
+/**
+ * POST /api/v1/voice/twin/vad-frame
+ * Evaluates real-time Voice Activity Detection (VAD) RMS frame and handles barge-in interrupts
+ */
+router.post("/v1/voice/twin/vad-frame", (req: Request, res: Response) => {
+  try {
+    const { sessionId = "default_session", amplitude } = req.body;
+
+    if (amplitude === undefined || typeof amplitude !== "number") {
+      return res.status(400).json({ success: false, error: "Missing required numerical 'amplitude' (0.0 - 1.0)" });
+    }
+
+    const vad = multiDialectVoiceEngine.processVadFrame(sessionId, { amplitude });
+
+    return res.status(200).json({
+      success: true,
+      sessionId,
+      vad,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: "VAD frame processing error",
+      message: error?.message || String(error),
+    });
+  }
+});
+
+/**
+ * POST /api/v1/voice/twin/barge-in
+ * Signals immediate user barge-in interrupt to abort active twin speech streaming
+ */
+router.post("/v1/voice/twin/barge-in", (req: Request, res: Response) => {
+  try {
+    const { sessionId = "default_session" } = req.body;
+    const result = multiDialectVoiceEngine.triggerBargeIn(sessionId);
+
+    return res.status(200).json({
+      success: true,
+      sessionId,
+      status: result.session.status,
+      bargeInCount: result.session.bargeInCount,
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: "Barge-in handling error",
+      message: error?.message || String(error),
+    });
+  }
+});
+
 export default router;
+

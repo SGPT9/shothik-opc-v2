@@ -32,6 +32,7 @@ import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefron
 import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
 import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
 import { NilkhetPodModal } from "@/components/twin/NilkhetPodModal";
+import { MultiDialectVoiceTwinModal } from "@/components/twin/MultiDialectVoiceTwinModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -316,13 +317,17 @@ export default function TwinPage() {
   const [steadfastCourierOpen, setSteadfastCourierOpen] = useState(false);
   const [startupBuildsOpen, setStartupBuildsOpen] = useState(false);
   const [nilkhetPodOpen, setNilkhetPodOpen] = useState(false);
+  const [multiDialectVoiceOpen, setMultiDialectVoiceOpen] = useState(false);
 
-  // Global ⌘K / Ctrl+K keyboard shortcut listener
+  // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCommandPaletteOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
+        e.preventDefault();
+        setMultiDialectVoiceOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2027,7 +2032,7 @@ export default function TwinPage() {
         onOpenNightshift={() => setNightshiftOpen(true)}
         onOpenDailyDigest={() => setDailyDigestOpen(true)}
         onOpenCompanySettings={() => setCompanySettingsOpen(true)}
-        onOpenVoiceCommander={() => setVoiceCommanderOpen(true)}
+        onOpenVoiceCommander={() => setMultiDialectVoiceOpen(true)}
         onOpenAddCredits={() => setAddCreditsOpen(true)}
         onOpenAutoColdOutreach={() => setAutoColdOutreachOpen(true)}
         onOpenEmailOutreach={() => setEmailOutreachOpen(true)}
@@ -2059,6 +2064,7 @@ export default function TwinPage() {
       <SteadfastCourierModal open={steadfastCourierOpen} onOpenChange={setSteadfastCourierOpen} companyName={companyName} />
       <StartupBuildsModal open={startupBuildsOpen} onOpenChange={setStartupBuildsOpen} subdomain={companySlug} companyName={companyName} />
       <NilkhetPodModal open={nilkhetPodOpen} onOpenChange={setNilkhetPodOpen} defaultBookTitle={companyName ? `${companyName} Blueprint` : undefined} />
+      <MultiDialectVoiceTwinModal open={multiDialectVoiceOpen} onOpenChange={setMultiDialectVoiceOpen} companyName={companyName} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
