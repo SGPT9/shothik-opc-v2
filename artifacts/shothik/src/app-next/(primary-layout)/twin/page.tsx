@@ -38,6 +38,7 @@ import { VastSpotGpuModal } from "@/components/twin/VastSpotGpuModal";
 import { EdgeMeshStudioModal } from "@/components/twin/EdgeMeshStudioModal";
 import { CanaryTrafficDirectorModal } from "@/components/twin/CanaryTrafficDirectorModal";
 import { VulnerabilityImmunityModal } from "@/components/twin/VulnerabilityImmunityModal";
+import { MultiModelParetoModal } from "@/components/twin/MultiModelParetoModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -328,6 +329,7 @@ export default function TwinPage() {
   const [edgeMeshOpen, setEdgeMeshOpen] = useState(false);
   const [canaryDirectorOpen, setCanaryDirectorOpen] = useState(false);
   const [vulnerabilityImmunityOpen, setVulnerabilityImmunityOpen] = useState(false);
+  const [multiModelParetoOpen, setMultiModelParetoOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -353,6 +355,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
         e.preventDefault();
         setVulnerabilityImmunityOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        setMultiModelParetoOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2082,6 +2087,7 @@ export default function TwinPage() {
         onOpenEdgeMesh={() => setEdgeMeshOpen(true)}
         onOpenCanaryDirector={() => setCanaryDirectorOpen(true)}
         onOpenVulnerabilityImmunity={() => setVulnerabilityImmunityOpen(true)}
+        onOpenMultiModelPareto={() => setMultiModelParetoOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2100,6 +2106,7 @@ export default function TwinPage() {
       <EdgeMeshStudioModal open={edgeMeshOpen} onOpenChange={setEdgeMeshOpen} />
       <CanaryTrafficDirectorModal open={canaryDirectorOpen} onOpenChange={setCanaryDirectorOpen} />
       <VulnerabilityImmunityModal open={vulnerabilityImmunityOpen} onOpenChange={setVulnerabilityImmunityOpen} />
+      <MultiModelParetoModal open={multiModelParetoOpen} onOpenChange={setMultiModelParetoOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

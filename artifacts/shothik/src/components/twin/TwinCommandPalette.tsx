@@ -30,6 +30,7 @@ import {
   GitFork,
   GitBranch,
   ShieldCheck,
+  Sliders,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -82,6 +83,7 @@ export interface TwinCommandPaletteProps {
   onOpenEdgeMesh?: () => void;
   onOpenCanaryDirector?: () => void;
   onOpenVulnerabilityImmunity?: () => void;
+  onOpenMultiModelPareto?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -119,6 +121,7 @@ export function TwinCommandPalette({
   onOpenEdgeMesh,
   onOpenCanaryDirector,
   onOpenVulnerabilityImmunity,
+  onOpenMultiModelPareto,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -676,6 +679,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘P</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenMultiModelPareto)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                <Sliders className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Multi-Model Pareto Optimizer</span>
+                <span className="text-[11px] text-zinc-500">Dynamic routing across Gemini, Claude, DeepSeek & Ollama</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘O</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
