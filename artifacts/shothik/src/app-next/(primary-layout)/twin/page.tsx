@@ -40,6 +40,7 @@ import { CanaryTrafficDirectorModal } from "@/components/twin/CanaryTrafficDirec
 import { VulnerabilityImmunityModal } from "@/components/twin/VulnerabilityImmunityModal";
 import { MultiModelParetoModal } from "@/components/twin/MultiModelParetoModal";
 import { EpistemicConsensusModal } from "@/components/twin/EpistemicConsensusModal";
+import { WebGpuEmbeddingModal } from "@/components/twin/WebGpuEmbeddingModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -332,6 +333,7 @@ export default function TwinPage() {
   const [vulnerabilityImmunityOpen, setVulnerabilityImmunityOpen] = useState(false);
   const [multiModelParetoOpen, setMultiModelParetoOpen] = useState(false);
   const [epistemicConsensusOpen, setEpistemicConsensusOpen] = useState(false);
+  const [webGpuEmbeddingOpen, setWebGpuEmbeddingOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -363,6 +365,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setEpistemicConsensusOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "u") {
+        e.preventDefault();
+        setWebGpuEmbeddingOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2094,6 +2099,7 @@ export default function TwinPage() {
         onOpenVulnerabilityImmunity={() => setVulnerabilityImmunityOpen(true)}
         onOpenMultiModelPareto={() => setMultiModelParetoOpen(true)}
         onOpenEpistemicConsensus={() => setEpistemicConsensusOpen(true)}
+        onOpenWebGpuEmbedding={() => setWebGpuEmbeddingOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2114,6 +2120,7 @@ export default function TwinPage() {
       <VulnerabilityImmunityModal open={vulnerabilityImmunityOpen} onOpenChange={setVulnerabilityImmunityOpen} />
       <MultiModelParetoModal open={multiModelParetoOpen} onOpenChange={setMultiModelParetoOpen} />
       <EpistemicConsensusModal open={epistemicConsensusOpen} onOpenChange={setEpistemicConsensusOpen} />
+      <WebGpuEmbeddingModal open={webGpuEmbeddingOpen} onOpenChange={setWebGpuEmbeddingOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
