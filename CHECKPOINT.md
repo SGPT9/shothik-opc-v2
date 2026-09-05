@@ -191,9 +191,25 @@ curl.exe http://localhost:8080/health
     - **Command Center & Keyboard Navigation:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with persistent global `⌘V` / `Ctrl+V` keybinding and updated [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`multi-dialect-voice-pipeline.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/multi-dialect-voice-pipeline.test.ts) (7/7 tests passed in 122ms; 44/44 suites passed across api-server) and [`MultiDialectVoiceTwinModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/MultiDialectVoiceTwinModal.test.tsx) (3/3 tests passed; 20/20 twin test suites passed with 38/38 tests).
     - **Synchronization:** Deployed and certified across all 9 remotes under commit `3dc5c346`.
+15. ✅ **Phase 15: Autonomous Multi-Agent Task Swarm DAG Graph Execution**
+    - **Topological DAG Scheduler & Cycle Detection:** Built [`swarm-dag-scheduler.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/swarm-dag-scheduler.ts) featuring Kahn's in-degree topological wave computation, circular dependency detection, serial latency calculation, parallel speedup metrics, and automated cross-twin output chaining.
+    - **Pre-Packaged Enterprise Workflows:**
+      - 🛍️ **Eid-ul-Fitr Mega Sales Campaign & Fulfillment DAG:** Marketing copy & visuals -> Storefront Dokploy deployment -> bKash MFS checkout gateway -> Steadfast courier dispatch -> NBR Mushak-6.3 reconciliation.
+      - 📚 **Nilkhet POD Direct Publishing & Imposition DAG:** Docling AST extraction -> 3D spine geometry calculation -> Steadfast courier consignment -> Papermark analytics link.
+      - 💼 **B2B Vernacular Enterprise Lead-to-Cash DAG:** CRM firmographic enrichment -> Dhakaiya vernacular sales pitch -> Automated Mushak-6.3 VAT invoice dispatch.
+    - **REST API Rail:** Mounted in [`routes/index.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/index.ts) under [`swarm-graph.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/swarm-graph.ts):
+      - `GET /api/v1/swarm/graph/templates` (lists canonical enterprise templates with dependency maps)
+      - `POST /api/v1/swarm/graph/create` (instantiates DAG from template or custom nodes, computes topological waves, rejects cycles with 400)
+      - `POST /api/v1/swarm/graph/:graphId/execute` (runs DAG wave-by-wave in parallel, passes upstream outputs, records duration & speedup ratio)
+      - `GET /api/v1/swarm/graph/:graphId` (retrieves real-time execution status, wave progression, and node outputs)
+      - `POST /api/v1/swarm/graph/:graphId/cancel` (aborts in-flight execution)
+    - **Interactive Studio UI:** Built [`SwarmGraphStudioModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/SwarmGraphStudioModal.tsx) with template selector, topological wave visualizer, glowing node status indicators, real-time telemetry metrics bar, node inspector drawer, and execution controls.
+    - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘G` / `Ctrl+G` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
+    - **Test Suites:** [`swarm-dag-scheduler.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/swarm-dag-scheduler.test.ts) (6/6 tests passed; 45/45 suites passed with 236 tests across api-server) and [`SwarmGraphStudioModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/SwarmGraphStudioModal.test.tsx) (4/4 tests passed; 21/21 twin test suites passed with 42/42 tests).
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `bea7d9f5`.
 
 ---
 
 ## 9. 🗺️ Future Horizon Targets
-1. **Autonomous Multi-Agent Task Swarm Graph Execution:** Dynamic runtime DAG scheduler for parallelized twin tasks with dependency resolution, visual task state propagation, and cross-twin feedback loops.
-2. **Vast.ai Spot GPU Orchestration Layer:** Automatic fallback to dynamic Vast.ai container spot instances when local WebGPU compute thresholds are exceeded.
+1. **Vast.ai Spot GPU Orchestration Layer:** Automatic fallback to dynamic Vast.ai container spot instances when local WebGPU compute thresholds are exceeded.
+2. **Autonomous Multi-Region Edge Replication:** Multi-region SQLite / libSQL replication mesh for sub-10ms localized latency across Dhaka, Singapore, and Frankfurt.
