@@ -84,6 +84,7 @@ export interface TwinCommandPaletteProps {
   onOpenCanaryDirector?: () => void;
   onOpenVulnerabilityImmunity?: () => void;
   onOpenMultiModelPareto?: () => void;
+  onOpenEpistemicConsensus?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -122,6 +123,7 @@ export function TwinCommandPalette({
   onOpenCanaryDirector,
   onOpenVulnerabilityImmunity,
   onOpenMultiModelPareto,
+  onOpenEpistemicConsensus,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -695,6 +697,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘O</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenEpistemicConsensus)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Epistemic Consensus & Knowledge Vault</span>
+                <span className="text-[11px] text-zinc-500">BFT peer verification & Merkle inclusion proofs for twin outputs</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘J</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
