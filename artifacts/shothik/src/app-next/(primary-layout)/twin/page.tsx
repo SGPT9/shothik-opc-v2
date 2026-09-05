@@ -43,6 +43,8 @@ import { EpistemicConsensusModal } from "@/components/twin/EpistemicConsensusMod
 import { WebGpuEmbeddingModal } from "@/components/twin/WebGpuEmbeddingModal";
 import { ZkSnarkProverModal } from "@/components/twin/ZkSnarkProverModal";
 import { WasmVectorIndexModal } from "@/components/twin/WasmVectorIndexModal";
+import { DeveloperTwinModal } from "@/components/twin/DeveloperTwinModal";
+import { PlatformServicesModal } from "@/components/twin/PlatformServicesModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -338,6 +340,8 @@ export default function TwinPage() {
   const [webGpuEmbeddingOpen, setWebGpuEmbeddingOpen] = useState(false);
   const [zkSnarkProverOpen, setZkSnarkProverOpen] = useState(false);
   const [wasmVectorIndexOpen, setWasmVectorIndexOpen] = useState(false);
+  const [developerTwinOpen, setDeveloperTwinOpen] = useState(false);
+  const [platformServicesOpen, setPlatformServicesOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -2115,6 +2119,8 @@ export default function TwinPage() {
         onOpenWebGpuEmbedding={() => setWebGpuEmbeddingOpen(true)}
         onOpenZkSnarkProver={() => setZkSnarkProverOpen(true)}
         onOpenWasmVectorIndex={() => setWasmVectorIndexOpen(true)}
+        onOpenDeveloperTwin={() => setDeveloperTwinOpen(true)}
+        onOpenPlatformServices={() => setPlatformServicesOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2138,6 +2144,8 @@ export default function TwinPage() {
       <WebGpuEmbeddingModal open={webGpuEmbeddingOpen} onOpenChange={setWebGpuEmbeddingOpen} />
       <ZkSnarkProverModal open={zkSnarkProverOpen} onOpenChange={setZkSnarkProverOpen} />
       <WasmVectorIndexModal open={wasmVectorIndexOpen} onOpenChange={setWasmVectorIndexOpen} />
+      <DeveloperTwinModal open={developerTwinOpen} onOpenChange={setDeveloperTwinOpen} companyName={companyName} />
+      <PlatformServicesModal open={platformServicesOpen} onOpenChange={setPlatformServicesOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

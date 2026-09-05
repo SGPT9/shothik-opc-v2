@@ -4,6 +4,7 @@ import { executeWayfinderTask, type TaskExecutionRequest } from "../lib/twin/tas
 import { TwinOrchestrator } from "../lib/twin/twin-orchestrator.js";
 import { nightshiftEngine } from "../lib/nightshift-engine.js";
 import { tokenCostTracker } from "../lib/token-cost-tracker.js";
+import { developerTwinEngine } from "../lib/twin/developer-twin-engine.js";
 
 const router = Router();
 
@@ -421,6 +422,18 @@ export const CANONICAL_SPECIALIZED_TWINS: SpecializedTwinCard[] = [
     lastAction: "Verified Cloudflare SSL cert renewal for custom domains",
     capabilities: ["Dokploy VPS", "DNS Records", "Audit Export", "Security Scanning"],
   },
+  {
+    id: "developer_twin",
+    name: "Developer Twin",
+    category: "Engineering & DevOps",
+    role: "Autonomous Code Generation, CI/CD Pipelines & Repository Management",
+    avatar: "💻",
+    status: "executing",
+    currentTask: "Scaffolding new microservice and auditing dependency vulnerabilities",
+    tasksCompleted: 53,
+    lastAction: "Generated patch for bKash webhook race condition and triggered CI build",
+    capabilities: ["Code Gen", "Git Ops", "CI/CD", "Dep Audit", "PR Review", "Scaffold"],
+  },
 ];
 
 /**
@@ -546,6 +559,259 @@ router.post(
       data: tokenCostTracker.getSummary(),
     });
   }
+);
+
+/* ------------------------------------------------------------------ */
+/* Developer Twin Routes                                               */
+/* ------------------------------------------------------------------ */
+
+/**
+ * GET /api/v1/twin/developer/repos
+ * List managed OPC venture repositories with health scores
+ */
+router.get(
+  ["/v1/twin/developer/repos", "/api/v1/twin/developer/repos"],
+  (req: Request, res: Response) => {
+    try {
+      const companySlug = (req.query.companySlug as string) || undefined;
+      const repos = developerTwinEngine.listRepos(companySlug);
+      res.json({ success: true, data: repos });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to list developer twin repos");
+      res.status(500).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * POST /api/v1/twin/developer/scaffold
+ * Scaffold a new project from a template
+ */
+router.post(
+  ["/v1/twin/developer/scaffold", "/api/v1/twin/developer/scaffold"],
+  (req: Request, res: Response) => {
+    try {
+      const { template, projectName, techStack } = req.body;
+      if (!template || !projectName) {
+        res.status(400).json({ success: false, error: "template and projectName are required" });
+        return;
+      }
+      const result = developerTwinEngine.scaffoldProject({ template, projectName, techStack });
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to scaffold project");
+      res.status(400).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * POST /api/v1/twin/developer/patch
+ * Generate a code patch for a described issue
+ */
+router.post(
+  ["/v1/twin/developer/patch", "/api/v1/twin/developer/patch"],
+  (req: Request, res: Response) => {
+    try {
+      const { repoSlug, issueDescription, context } = req.body;
+      if (!repoSlug || !issueDescription) {
+        res.status(400).json({ success: false, error: "repoSlug and issueDescription are required" });
+        return;
+      }
+      const result = developerTwinEngine.generatePatch({ repoSlug, issueDescription, context });
+
+      // Track developer twin code synthesis token telemetry
+      tokenCostTracker.recordUsage({
+        modelOrTier: "tier1_webgpu",
+        promptTokens: 520,
+        completionTokens: 240,
+        twinId: "developer_twin",
+        taskId: `patch_${repoSlug}`,
+      });
+
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to generate patch");
+      res.status(400).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * POST /api/v1/twin/developer/build
+ * Trigger a build/test pipeline for a repo
+ */
+router.post(
+  ["/v1/twin/developer/build", "/api/v1/twin/developer/build"],
+  (req: Request, res: Response) => {
+    try {
+      const { repoSlug } = req.body;
+      if (!repoSlug) {
+        res.status(400).json({ success: false, error: "repoSlug is required" });
+        return;
+      }
+      const result = developerTwinEngine.runBuild(repoSlug);
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to run build");
+      res.status(400).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * POST /api/v1/twin/developer/deploy
+ * Request a deploy (Protected Action — requires human approval)
+ */
+router.post(
+  ["/v1/twin/developer/deploy", "/api/v1/twin/developer/deploy"],
+  (req: Request, res: Response) => {
+    try {
+      const { repoSlug, environment, changelog } = req.body;
+      if (!repoSlug || !environment) {
+        res.status(400).json({ success: false, error: "repoSlug and environment are required" });
+        return;
+      }
+      if (environment !== "staging" && environment !== "production") {
+        res.status(400).json({ success: false, error: 'environment must be "staging" or "production"' });
+        return;
+      }
+      const result = developerTwinEngine.requestDeploy({ repoSlug, environment, changelog });
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to create deploy request");
+      res.status(400).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * POST /api/v1/twin/developer/self-heal
+ * Deeptech Autonomous Self-Healing Loop (Red-Green-Refactor) in isolated sandbox
+ */
+router.post(
+  ["/v1/twin/developer/self-heal", "/api/v1/twin/developer/self-heal"],
+  (req: Request, res: Response) => {
+    try {
+      const { repoSlug, failingTestOrError, maxIterations, sandboxType } = req.body;
+      if (!repoSlug || !failingTestOrError) {
+        res.status(400).json({ success: false, error: "repoSlug and failingTestOrError are required" });
+        return;
+      }
+      const result = developerTwinEngine.runSelfHealingLoop({
+        repoSlug,
+        failingTestOrError,
+        maxIterations,
+        sandboxType,
+      });
+
+      // Track self-healing compute token telemetry
+      tokenCostTracker.recordUsage({
+        modelOrTier: sandboxType === "vast_spot_gpu" ? "tier2_cloud_fallback" : "tier1_webgpu",
+        promptTokens: 850,
+        completionTokens: 420,
+        twinId: "developer_twin",
+        taskId: `self_heal_${repoSlug}`,
+      });
+
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to execute self-healing loop");
+      res.status(400).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * POST /api/v1/twin/developer/blast-radius
+ * Deeptech AST Blast Radius & Semantic Impact Analyzer
+ */
+router.post(
+  ["/v1/twin/developer/blast-radius", "/api/v1/twin/developer/blast-radius"],
+  (req: Request, res: Response) => {
+    try {
+      const { repoSlug, targetFiles, changeType } = req.body;
+      if (!repoSlug) {
+        res.status(400).json({ success: false, error: "repoSlug is required" });
+        return;
+      }
+      const result = developerTwinEngine.analyzeBlastRadius({
+        repoSlug,
+        targetFiles,
+        changeType,
+      });
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to analyze blast radius");
+      res.status(400).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * GET /api/v1/twin/developer/deeptech-metrics
+ * Deeptech Autonomous Engine Performance & Telemetry
+ */
+router.get(
+  ["/v1/twin/developer/deeptech-metrics", "/api/v1/twin/developer/deeptech-metrics"],
+  (_req: Request, res: Response) => {
+    try {
+      const metrics = developerTwinEngine.getDeeptechMetrics();
+      res.json({ success: true, data: metrics });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to get deeptech metrics");
+      res.status(500).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * GET /api/v1/twin/developer/deploys
+ * List pending and historical deploy requests
+ */
+router.get(
+  ["/v1/twin/developer/deploys", "/api/v1/twin/developer/deploys"],
+  (req: Request, res: Response) => {
+    try {
+      const repoSlug = (req.query.repoSlug as string) || undefined;
+      const deploys = developerTwinEngine.listDeployRequests(repoSlug);
+      res.json({ success: true, data: deploys });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to list deploy requests");
+      res.status(500).json({ success: false, error: err.message });
+    }
+  },
+);
+
+/**
+ * POST /api/v1/twin/developer/deploys/:approvalId/review
+ * Submit human review (approval or rejection) for a protected deploy request
+ */
+router.post(
+  ["/v1/twin/developer/deploys/:approvalId/review", "/api/v1/twin/developer/deploys/:approvalId/review"],
+  (req: Request, res: Response) => {
+    try {
+      const approvalId = String(req.params.approvalId || "");
+      const { action, reviewerComment } = req.body;
+      if (!approvalId || !action) {
+        res.status(400).json({ success: false, error: "approvalId and action are required" });
+        return;
+      }
+      if (action !== "approve" && action !== "reject") {
+        res.status(400).json({ success: false, error: 'action must be "approve" or "reject"' });
+        return;
+      }
+      const result = developerTwinEngine.reviewDeploy({
+        approvalId,
+        action,
+        reviewerComment,
+      });
+      res.json({ success: true, data: result });
+    } catch (err: any) {
+      logger.error({ err }, "Failed to process deploy review");
+      res.status(400).json({ success: false, error: err.message });
+    }
+  },
 );
 
 export default router;

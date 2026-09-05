@@ -111,6 +111,7 @@ Twin is composed of role-specific operational agents, including but not limited 
 * 📈 **Analytics Twin:** Unit economics, CAC/LTV tracking, cohort retention, and margin dashboards.
 * 🎧 **Customer Support Twin:** Multilingual 1-tap resolution, regional dialect handling, and ticket triaging.
 * 📦 **Operations Twin:** Logistics booking (Steadfast/Pathao), bKash reconciliation, and Nilkhet POD dispatch.
+* 💻 **Developer Twin:** Autonomous code generation, AST blast-radius analysis, self-healing CI/CD loops (Red-Green-Refactor), sandboxed execution, and deployment orchestration.
 
 Each Twin owns a defined responsibility, while collaborating through a shared orchestration layer.
 

@@ -48,6 +48,7 @@ export interface TwinCommandPaletteProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   // Category 1: Founder Cockpit
+  onOpenPlatformServices?: () => void;
   onOpenSecondMeMemory?: () => void;
   onOpenSpecializedTwins?: () => void;
   onOpenAutoMode?: () => void;
@@ -88,6 +89,7 @@ export interface TwinCommandPaletteProps {
   onOpenWebGpuEmbedding?: () => void;
   onOpenZkSnarkProver?: () => void;
   onOpenWasmVectorIndex?: () => void;
+  onOpenDeveloperTwin?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -130,6 +132,8 @@ export function TwinCommandPalette({
   onOpenWebGpuEmbedding,
   onOpenZkSnarkProver,
   onOpenWasmVectorIndex,
+  onOpenDeveloperTwin,
+  onOpenPlatformServices,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -186,11 +190,27 @@ export function TwinCommandPalette({
                 <Users className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">The 9 Specialized Twins Swarm</span>
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">The 10 Specialized Twins Swarm</span>
                 <span className="text-[11px] text-zinc-500">Marketing, Sales, Finance, Support & Ops 1-tap dispatch</span>
               </div>
             </div>
-            <Badge variant="outline" className="text-[10px] border-indigo-500/30 text-indigo-400 font-mono">9 Twins</Badge>
+            <Badge variant="outline" className="text-[10px] border-indigo-500/30 text-indigo-400 font-mono">10 Twins</Badge>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenPlatformServices)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Platform Services Directory (12 Pillars)</span>
+                <span className="text-[11px] text-zinc-500">Universal catalog across writing, creative & autonomous business ops</span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-indigo-500/30 text-indigo-400 font-mono">12 Services</Badge>
           </CommandItem>
 
           <CommandItem
@@ -607,6 +627,23 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘D</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="developer twin code generation git ci cd deploy scaffold patch autonomous"
+            onSelect={() => handleSelect(onOpenDeveloperTwin)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                <GitBranch className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Developer Twin</span>
+                <span className="text-[11px] text-zinc-500">Code Gen · Git Ops · CI/CD · Deploy · Dep Audit</span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-violet-500/30 text-violet-400 font-mono">10th</Badge>
           </CommandItem>
 
           <CommandItem

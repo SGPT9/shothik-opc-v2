@@ -109,7 +109,7 @@ export function SpecializedTwinsModal({
           <div>
             <DialogTitle className="text-2xl font-bold font-serif text-black dark:text-white flex items-center gap-2">
               <span>🤖</span>
-              <span>The 9 Specialized Twins</span>
+              <span>The 10 Specialized Twins</span>
             </DialogTitle>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 font-sans mt-0.5">
               Autonomous functional workers orchestrated for <strong className="font-semibold text-black dark:text-white">{companyName}</strong> under the OPC Philosophy.
@@ -208,7 +208,7 @@ export function SpecializedTwinsModal({
 
         <div className="mt-5 p-3.5 border border-zinc-300 dark:border-zinc-700 bg-zinc-100/70 dark:bg-zinc-900/60 font-mono text-xs text-zinc-600 dark:text-zinc-400 flex items-center justify-between">
           <span>OPC Continuous Cycle: <strong>Observe ➔ Understand ➔ Decide ➔ Execute ➔ Learn</strong></span>
-          <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400">9 Active Workers</span>
+          <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400">{twins.length || 10} Active Workers</span>
         </div>
       </DialogContent>
     </Dialog>

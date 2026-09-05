@@ -23,7 +23,8 @@ export type SpecializedTwinType =
   | "website_twin"
   | "analytics_twin"
   | "customer_support_twin"
-  | "operations_twin";
+  | "operations_twin"
+  | "developer_twin";
 
 export interface TwinSignal {
   source: "mfs_bkash" | "steadfast_courier" | "whatsapp" | "website" | "crm_inbound" | "manual_intent";
