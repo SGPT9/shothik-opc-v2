@@ -33,6 +33,7 @@ import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
 import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
 import { NilkhetPodModal } from "@/components/twin/NilkhetPodModal";
 import { MultiDialectVoiceTwinModal } from "@/components/twin/MultiDialectVoiceTwinModal";
+import { SwarmGraphStudioModal } from "@/components/twin/SwarmGraphStudioModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -318,6 +319,7 @@ export default function TwinPage() {
   const [startupBuildsOpen, setStartupBuildsOpen] = useState(false);
   const [nilkhetPodOpen, setNilkhetPodOpen] = useState(false);
   const [multiDialectVoiceOpen, setMultiDialectVoiceOpen] = useState(false);
+  const [swarmGraphOpen, setSwarmGraphOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -328,6 +330,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "g") {
+        e.preventDefault();
+        setSwarmGraphOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2033,6 +2038,7 @@ export default function TwinPage() {
         onOpenDailyDigest={() => setDailyDigestOpen(true)}
         onOpenCompanySettings={() => setCompanySettingsOpen(true)}
         onOpenVoiceCommander={() => setMultiDialectVoiceOpen(true)}
+        onOpenSwarmGraph={() => setSwarmGraphOpen(true)}
         onOpenAddCredits={() => setAddCreditsOpen(true)}
         onOpenAutoColdOutreach={() => setAutoColdOutreachOpen(true)}
         onOpenEmailOutreach={() => setEmailOutreachOpen(true)}
@@ -2065,6 +2071,7 @@ export default function TwinPage() {
       <StartupBuildsModal open={startupBuildsOpen} onOpenChange={setStartupBuildsOpen} subdomain={companySlug} companyName={companyName} />
       <NilkhetPodModal open={nilkhetPodOpen} onOpenChange={setNilkhetPodOpen} defaultBookTitle={companyName ? `${companyName} Blueprint` : undefined} />
       <MultiDialectVoiceTwinModal open={multiDialectVoiceOpen} onOpenChange={setMultiDialectVoiceOpen} companyName={companyName} />
+      <SwarmGraphStudioModal isOpen={swarmGraphOpen} onClose={() => setSwarmGraphOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

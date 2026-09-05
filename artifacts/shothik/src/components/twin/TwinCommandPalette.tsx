@@ -27,6 +27,7 @@ import {
   Server,
   Sparkles,
   Cpu,
+  GitFork,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -51,6 +52,7 @@ export interface TwinCommandPaletteProps {
   onOpenDailyDigest?: () => void;
   onOpenCompanySettings?: () => void;
   onOpenVoiceCommander?: () => void;
+  onOpenSwarmGraph?: () => void;
   onOpenAddCredits?: () => void;
   // Category 2: Growth & Revenue
   onOpenAutoColdOutreach?: () => void;
@@ -86,6 +88,7 @@ export function TwinCommandPalette({
   onOpenDailyDigest,
   onOpenCompanySettings,
   onOpenVoiceCommander,
+  onOpenSwarmGraph,
   onOpenAddCredits,
   onOpenAutoColdOutreach,
   onOpenEmailOutreach,
@@ -245,6 +248,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘V</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenSwarmGraph)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                <GitFork className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Swarm Task DAG Graph Studio</span>
+                <span className="text-[11px] text-zinc-500">Kahn's topological sort, cycle detection, & parallel wave scheduler</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘G</CommandShortcut>
           </CommandItem>
 
           <CommandItem
