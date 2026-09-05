@@ -77,6 +77,7 @@ export interface TwinCommandPaletteProps {
   onOpenDokploy?: () => void;
   onOpenWasmCrdtSync?: () => void;
   onOpenVastSpotGpu?: () => void;
+  onOpenEdgeMesh?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -111,6 +112,7 @@ export function TwinCommandPalette({
   onOpenDokploy,
   onOpenWasmCrdtSync,
   onOpenVastSpotGpu,
+  onOpenEdgeMesh,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -620,6 +622,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘B</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenEdgeMesh)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-blue-500/10 text-blue-500 border border-blue-500/20">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Multi-Region Edge Mesh</span>
+                <span className="text-[11px] text-zinc-500">Sub-10ms localized reads across Dhaka, Singapore & Frankfurt</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘E</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
