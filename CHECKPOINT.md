@@ -158,10 +158,21 @@ curl.exe http://localhost:8080/health
      - `GET /api/v1/publishing/nilkhet/orders/:orderId/job-ticket` (JDF job ticket retrieval by order ID)
    - **Test Suite:** [`nilkhet-pod-direct-api.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/nilkhet-pod-direct-api.test.ts) (8/8 tests passing in 123ms; 42/42 suites passing across api-server).
    - **Synchronization:** Deployed and certified across all 9 remotes under commit `1f2bf8cf`.
+12. ✅ **Phase 12: WebAssembly Edge CRDT Bindings & Zero-Copy Binary Codec**
+   - **Wasm Binary Codec Core:** Built [`wasm-crdt-bindings.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/lib/wasm-crdt-bindings.ts) featuring native 64KB linear memory page compilation, compact State Vector binary serialization (`0x53 0x47 0x50 0x54` magic), 32-bit CRC checksum integrity, and packed delta frames achieving >50% compression vs JSON with sub-1ms replication.
+   - **Client Sync Adapter:** Built [`wasm-crdt-adapter.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/sync/wasm-crdt-adapter.ts) for browser-side zero-copy delta compilation, state vector decoding, and automatic network error fallback.
+   - **Wasm Edge REST Rail:** Added in [`crdt.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/crdt.ts):
+     - `GET /api/v1/crdt/wasm/benchmark` (throughput comparison: latency, payload compression %, roundtrip fidelity)
+     - `GET /api/v1/crdt/wasm/state-vector/:docId` (compact base64 state vector bytes)
+     - `POST /api/v1/crdt/wasm/sync-binary` (high-throughput delta replication with snapshot mutations and clock updates)
+     - `POST /api/v1/crdt/wasm/encode-delta` (utility for converting ops into binary frames)
+   - **Command Center Integration:** Added direct ⌘K shortcuts in [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx) for both `Nilkhet POD Direct Press Hub` and `WebAssembly Edge CRDT Sync`.
+   - **Test Suites:** [`wasm-edge-crdt.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/wasm-edge-crdt.test.ts) (9/9 tests passing in 106ms; 43/43 suites passing across api-server) and [`wasm-crdt-adapter.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/sync/__tests__/wasm-crdt-adapter.test.ts) (4/4 tests passing).
+   - **Synchronization:** Deployed and certified across all 9 remotes under commit `34778c68`.
 
 ---
 
 ## 9. 🗺️ Future Horizon Targets
-1. **WebAssembly Edge CRDT Bindings:** Direct WASM compiled Y-CRDT bindings for micro-latency offline synchronization.
-2. **Autonomous Multi-Dialect Voice Twin Pipeline:** Real-time bi-directional streaming between Web Audio API and Kokoro / Bangla VITS models.
+1. **Autonomous Multi-Dialect Voice Twin Pipeline:** Real-time bi-directional streaming between Web Audio API and Kokoro / Bangla VITS models for conversational voice twins with regional dialect adaptation (Dhakaiya, Chittagonian, Sylheti).
+2. **Nilkhet Press Dispatch Interactive 3D Modal:** Visual 3D spine thickness viewer and 1-tap print order dispatch modal in the Twin Cockpit.
 
