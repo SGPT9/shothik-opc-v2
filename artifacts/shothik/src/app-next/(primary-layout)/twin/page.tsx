@@ -36,6 +36,7 @@ import { MultiDialectVoiceTwinModal } from "@/components/twin/MultiDialectVoiceT
 import { SwarmGraphStudioModal } from "@/components/twin/SwarmGraphStudioModal";
 import { VastSpotGpuModal } from "@/components/twin/VastSpotGpuModal";
 import { EdgeMeshStudioModal } from "@/components/twin/EdgeMeshStudioModal";
+import { CanaryTrafficDirectorModal } from "@/components/twin/CanaryTrafficDirectorModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -324,6 +325,7 @@ export default function TwinPage() {
   const [swarmGraphOpen, setSwarmGraphOpen] = useState(false);
   const [vastSpotGpuOpen, setVastSpotGpuOpen] = useState(false);
   const [edgeMeshOpen, setEdgeMeshOpen] = useState(false);
+  const [canaryDirectorOpen, setCanaryDirectorOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -343,6 +345,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "e") {
         e.preventDefault();
         setEdgeMeshOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "t") {
+        e.preventDefault();
+        setCanaryDirectorOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2070,6 +2075,7 @@ export default function TwinPage() {
         onOpenDokploy={() => setDokployOpen(true)}
         onOpenVastSpotGpu={() => setVastSpotGpuOpen(true)}
         onOpenEdgeMesh={() => setEdgeMeshOpen(true)}
+        onOpenCanaryDirector={() => setCanaryDirectorOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2086,6 +2092,7 @@ export default function TwinPage() {
       <SwarmGraphStudioModal isOpen={swarmGraphOpen} onClose={() => setSwarmGraphOpen(false)} />
       <VastSpotGpuModal open={vastSpotGpuOpen} onOpenChange={setVastSpotGpuOpen} />
       <EdgeMeshStudioModal open={edgeMeshOpen} onOpenChange={setEdgeMeshOpen} />
+      <CanaryTrafficDirectorModal open={canaryDirectorOpen} onOpenChange={setCanaryDirectorOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
