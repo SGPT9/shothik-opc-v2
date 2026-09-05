@@ -431,7 +431,7 @@ router.get(["/v1/twin/companies/:slug/collaborators", "/api/v1/twin/companies/:s
     const company = IN_MEMORY_COMPANIES.get(slug);
 
     if (!company) {
-      res.status(404).json({ success: false, error: "Company not found" });
+      res.json({ success: true, data: [] });
       return;
     }
 
