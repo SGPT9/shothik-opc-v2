@@ -169,10 +169,18 @@ curl.exe http://localhost:8080/health
    - **Command Center Integration:** Added direct ⌘K shortcuts in [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx) for both `Nilkhet POD Direct Press Hub` and `WebAssembly Edge CRDT Sync`.
    - **Test Suites:** [`wasm-edge-crdt.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/wasm-edge-crdt.test.ts) (9/9 tests passing in 106ms; 43/43 suites passing across api-server) and [`wasm-crdt-adapter.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/lib/sync/__tests__/wasm-crdt-adapter.test.ts) (4/4 tests passing).
    - **Synchronization:** Deployed and certified across all 9 remotes under commit `34778c68`.
+13. ✅ **Phase 13: Nilkhet POD Interactive 3D Spine & Cover Modal**
+    - **Visual 3D Spine & Cover Studio:** Built [`NilkhetPodModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/NilkhetPodModal.tsx) featuring real-time CSS 3D isometric spine thickness rendering, paper caliper selector (`70gsm_offset`, `80gsm_cream`, `100gsm_art`, `120gsm_matte`), page count slider, and calculated spine width with adhesive creep margin.
+    - **3-Tab Production Workflow:**
+      - 📖 **Spine & Cover Geometry:** Live 300 DPI bleed canvas dimensions, pixel wrap preview, and cover wrap specifications.
+      - 📄 **Signatures & Plates:** Imposition signature layout sheet (4-up, 8-up, 16-up), plate count calculator, and ream paper stock estimation.
+      - 🚀 **Press Dispatch:** Verified Nilkhet print complex selector (Bakushah Market, Katabon, Babupura), machine specification, Steadfast courier COD booking form, and 1-tap dispatch trigger.
+    - **Cockpit & Command Center Integration:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) and [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
+    - **Test Suite:** [`NilkhetPodModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/NilkhetPodModal.test.tsx) passing 3/3 tests (all 19 twin test suites passing with 35/35 tests).
+    - **Synchronization:** Committed under `dfcf7695` and synchronized to all 9 remotes.
 
 ---
 
 ## 9. 🗺️ Future Horizon Targets
 1. **Autonomous Multi-Dialect Voice Twin Pipeline:** Real-time bi-directional streaming between Web Audio API and Kokoro / Bangla VITS models for conversational voice twins with regional dialect adaptation (Dhakaiya, Chittagonian, Sylheti).
-2. **Nilkhet Press Dispatch Interactive 3D Modal:** Visual 3D spine thickness viewer and 1-tap print order dispatch modal in the Twin Cockpit.
-
+2. **Autonomous Multi-Agent Task Swarm Graph Execution:** Dynamic runtime DAG scheduler for parallelized twin tasks with dependency resolution and visual task state propagation.
