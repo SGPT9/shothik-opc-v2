@@ -503,6 +503,9 @@ export function ZkSnarkProverModal({ open, onOpenChange }: ZkSnarkProverModalPro
                     </Badge>
                   </div>
                   <textarea
+                    id="zk-public-inputs-json"
+                    name="zk-public-inputs-json"
+                    aria-label="Public inputs JSON for zero-knowledge circuit"
                     rows={7}
                     value={publicInputsJson}
                     onChange={(e) => setPublicInputsJson(e.target.value)}
@@ -523,6 +526,9 @@ export function ZkSnarkProverModal({ open, onOpenChange }: ZkSnarkProverModalPro
                     </Badge>
                   </div>
                   <textarea
+                    id="zk-private-witness-json"
+                    name="zk-private-witness-json"
+                    aria-label="Private witness JSON for zero-knowledge circuit"
                     rows={7}
                     value={privateWitnessJson}
                     onChange={(e) => setPrivateWitnessJson(e.target.value)}
@@ -677,6 +683,9 @@ export function ZkSnarkProverModal({ open, onOpenChange }: ZkSnarkProverModalPro
                   )}
                 </div>
                 <textarea
+                  id="zk-verifier-proof-json"
+                  name="zk-verifier-proof-json"
+                  aria-label="Paste ZK-SNARK proof JSON for bilinear pairing verification"
                   rows={8}
                   value={verifierProofJson}
                   onChange={(e) => setVerifierProofJson(e.target.value)}

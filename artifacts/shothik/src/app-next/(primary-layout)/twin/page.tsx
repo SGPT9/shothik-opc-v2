@@ -1506,6 +1506,9 @@ export default function TwinPage() {
                 </button>
 
                 <input
+                  id="twin-cockpit-chat-input"
+                  name="twin-cockpit-chat-input"
+                  aria-label="Ask Shothik anything..."
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}

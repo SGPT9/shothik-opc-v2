@@ -407,6 +407,9 @@ export function WasmVectorIndexModal({ open, onOpenChange }: WasmVectorIndexModa
 
                 <div className="space-y-2">
                   <textarea
+                    id="wasm-vector-text-input"
+                    name="wasm-vector-text-input"
+                    aria-label="Document text to index into WASM edge memory"
                     rows={2}
                     value={newText}
                     onChange={(e) => setNewText(e.target.value)}
@@ -415,6 +418,9 @@ export function WasmVectorIndexModal({ open, onOpenChange }: WasmVectorIndexModa
                   />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <input
+                      id="wasm-vector-doc-id-input"
+                      name="wasm-vector-doc-id-input"
+                      aria-label="Document ID"
                       type="text"
                       value={newDocId}
                       onChange={(e) => setNewDocId(e.target.value)}
@@ -422,6 +428,9 @@ export function WasmVectorIndexModal({ open, onOpenChange }: WasmVectorIndexModa
                       className="text-xs p-2 rounded-md bg-muted/40 border border-border/80 focus:outline-none focus:ring-1 focus:ring-cyan-500/50 text-foreground"
                     />
                     <input
+                      id="wasm-vector-tags-input"
+                      name="wasm-vector-tags-input"
+                      aria-label="Comma-separated tags"
                       type="text"
                       value={newTags}
                       onChange={(e) => setNewTags(e.target.value)}
@@ -545,6 +554,9 @@ export function WasmVectorIndexModal({ open, onOpenChange }: WasmVectorIndexModa
               <div className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/5 space-y-4">
                 <div className="flex gap-2">
                   <input
+                    id="wasm-vector-search-input"
+                    name="wasm-vector-search-input"
+                    aria-label="Search knowledge vectors in WASM edge memory"
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -734,6 +746,9 @@ export function WasmVectorIndexModal({ open, onOpenChange }: WasmVectorIndexModa
                 </div>
 
                 <textarea
+                  id="wasm-vector-delta-json"
+                  name="wasm-vector-delta-json"
+                  aria-label="CRDT vector state delta JSON frame"
                   rows={5}
                   value={deltaJson}
                   onChange={(e) => setDeltaJson(e.target.value)}
