@@ -29,6 +29,7 @@ import {
   Cpu,
   GitFork,
   GitBranch,
+  ShieldCheck,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -80,6 +81,7 @@ export interface TwinCommandPaletteProps {
   onOpenVastSpotGpu?: () => void;
   onOpenEdgeMesh?: () => void;
   onOpenCanaryDirector?: () => void;
+  onOpenVulnerabilityImmunity?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -116,6 +118,7 @@ export function TwinCommandPalette({
   onOpenVastSpotGpu,
   onOpenEdgeMesh,
   onOpenCanaryDirector,
+  onOpenVulnerabilityImmunity,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -657,6 +660,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘T</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenVulnerabilityImmunity)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Autonomous Penetration & Immunity Loop</span>
+                <span className="text-[11px] text-zinc-500">Red-team security probing, virtual patch synthesis & zero-day immunity</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘P</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>

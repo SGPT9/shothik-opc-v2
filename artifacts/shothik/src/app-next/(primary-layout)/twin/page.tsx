@@ -37,6 +37,7 @@ import { SwarmGraphStudioModal } from "@/components/twin/SwarmGraphStudioModal";
 import { VastSpotGpuModal } from "@/components/twin/VastSpotGpuModal";
 import { EdgeMeshStudioModal } from "@/components/twin/EdgeMeshStudioModal";
 import { CanaryTrafficDirectorModal } from "@/components/twin/CanaryTrafficDirectorModal";
+import { VulnerabilityImmunityModal } from "@/components/twin/VulnerabilityImmunityModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -326,6 +327,7 @@ export default function TwinPage() {
   const [vastSpotGpuOpen, setVastSpotGpuOpen] = useState(false);
   const [edgeMeshOpen, setEdgeMeshOpen] = useState(false);
   const [canaryDirectorOpen, setCanaryDirectorOpen] = useState(false);
+  const [vulnerabilityImmunityOpen, setVulnerabilityImmunityOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -348,6 +350,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "t") {
         e.preventDefault();
         setCanaryDirectorOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
+        e.preventDefault();
+        setVulnerabilityImmunityOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2076,6 +2081,7 @@ export default function TwinPage() {
         onOpenVastSpotGpu={() => setVastSpotGpuOpen(true)}
         onOpenEdgeMesh={() => setEdgeMeshOpen(true)}
         onOpenCanaryDirector={() => setCanaryDirectorOpen(true)}
+        onOpenVulnerabilityImmunity={() => setVulnerabilityImmunityOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2093,6 +2099,7 @@ export default function TwinPage() {
       <VastSpotGpuModal open={vastSpotGpuOpen} onOpenChange={setVastSpotGpuOpen} />
       <EdgeMeshStudioModal open={edgeMeshOpen} onOpenChange={setEdgeMeshOpen} />
       <CanaryTrafficDirectorModal open={canaryDirectorOpen} onOpenChange={setCanaryDirectorOpen} />
+      <VulnerabilityImmunityModal open={vulnerabilityImmunityOpen} onOpenChange={setVulnerabilityImmunityOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
