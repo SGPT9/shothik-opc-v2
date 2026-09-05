@@ -339,7 +339,7 @@ curl.exe http://localhost:8080/health
     - **Interactive Studio UI:** Built [`WasmVectorIndexModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/WasmVectorIndexModal.tsx) featuring Linear WASM Memory Explorer with live vector packing form and slot viewer, Nearest-Neighbor Search Chamber with query presets and latency indicators, and CRDT Vector Delta Sync & Benchmark Chamber.
     - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘Y` / `Ctrl+Y` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`wasm-vector-indices.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/wasm-vector-indices.test.ts) (9/9 tests passed in 134ms; 54/54 suites passed with 301 tests across api-server) and [`WasmVectorIndexModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/WasmVectorIndexModal.test.tsx) (5/5 tests passed; 30/30 twin test suites passed with 84/84 tests).
-    - **Synchronization:** Deployed and certified across all 9 remotes under commit `[PENDING]`.
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `a9698613`.
 
 ---
 
