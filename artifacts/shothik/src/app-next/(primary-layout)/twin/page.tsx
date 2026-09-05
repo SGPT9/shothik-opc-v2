@@ -22,6 +22,15 @@ import { SecondMeMemoryModal } from "@/components/twin/SecondMeMemoryModal";
 import { TwinVideoStudioModal } from "@/components/twin/TwinVideoStudioModal";
 import { SpecializedTwinsModal } from "@/components/twin/SpecializedTwinsModal";
 import { TwinFloatingCapsuleOverlay } from "@/components/twin/TwinFloatingCapsuleOverlay";
+import { TwinCommandPalette } from "@/components/twin/TwinCommandPalette";
+import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
+import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
+import { CompetitorAdSpyModal } from "@/components/twin/CompetitorAdSpyModal";
+import { CroTunerModal } from "@/components/twin/CroTunerModal";
+import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
+import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefrontModal";
+import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
+import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -52,6 +61,7 @@ import {
   ChevronDown,
   Check,
   Settings,
+  Search,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -293,6 +303,29 @@ export default function TwinPage() {
   const [secondMeMemoryOpen, setSecondMeMemoryOpen] = useState(false);
   const [videoStudioOpen, setVideoStudioOpen] = useState(false);
   const [memoryCount, setMemoryCount] = useState(4);
+
+  // Command Center & Operational Modals
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+  const [emailOutreachOpen, setEmailOutreachOpen] = useState(false);
+  const [leadCrmOpen, setLeadCrmOpen] = useState(false);
+  const [competitorAdSpyOpen, setCompetitorAdSpyOpen] = useState(false);
+  const [croTunerOpen, setCroTunerOpen] = useState(false);
+  const [visualStorefrontOpen, setVisualStorefrontOpen] = useState(false);
+  const [bookReaderOpen, setBookReaderOpen] = useState(false);
+  const [steadfastCourierOpen, setSteadfastCourierOpen] = useState(false);
+  const [startupBuildsOpen, setStartupBuildsOpen] = useState(false);
+
+  // Global ⌘K / Ctrl+K keyboard shortcut listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Load active company profile and list
   useEffect(() => {
@@ -775,6 +808,16 @@ export default function TwinPage() {
             <Zap className="w-3.5 h-3.5 text-amber-500" />
             <span>{credits} CREDITS</span>
           </div>
+          <button
+            type="button"
+            onClick={() => setCommandPaletteOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 font-mono font-semibold text-[11px] uppercase tracking-wider rounded-md shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer select-none"
+            title="Open Command Center (⌘K / Ctrl+K)"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>COMMAND CENTER</span>
+            <kbd className="hidden sm:inline-block text-[9px] bg-zinc-800 dark:bg-zinc-200 text-zinc-300 dark:text-zinc-700 px-1 py-0.5 rounded font-mono">⌘K</kbd>
+          </button>
           <button
             type="button"
             onClick={() => setVideoStudioOpen(true)}
@@ -1971,6 +2014,47 @@ export default function TwinPage() {
           setCapsuleActive(true);
         }}
       />
+
+      {/* Unified ⌘K Command Center & Operational Palette */}
+      <TwinCommandPalette
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+        onOpenSecondMeMemory={() => setSecondMeMemoryOpen(true)}
+        onOpenSpecializedTwins={() => setSpecializedTwinsOpen(true)}
+        onOpenAutoMode={() => setAutoModeOpen(true)}
+        onOpenNightshift={() => setNightshiftOpen(true)}
+        onOpenDailyDigest={() => setDailyDigestOpen(true)}
+        onOpenCompanySettings={() => setCompanySettingsOpen(true)}
+        onOpenVoiceCommander={() => setVoiceCommanderOpen(true)}
+        onOpenAddCredits={() => setAddCreditsOpen(true)}
+        onOpenAutoColdOutreach={() => setAutoColdOutreachOpen(true)}
+        onOpenEmailOutreach={() => setEmailOutreachOpen(true)}
+        onOpenLeadCrm={() => setLeadCrmOpen(true)}
+        onOpenCompetitorAdSpy={() => setCompetitorAdSpyOpen(true)}
+        onOpenCroTuner={() => setCroTunerOpen(true)}
+        onOpenVideoStudio={() => setVideoStudioOpen(true)}
+        onOpenMfsGateway={() => setMfsGatewayOpen(true)}
+        onOpenSteadfastCourier={() => setSteadfastCourierOpen(true)}
+        onOpenVisualStorefront={() => setVisualStorefrontOpen(true)}
+        onOpenBookReader={() => setBookReaderOpen(true)}
+        onOpenStartupBuilds={() => setStartupBuildsOpen(true)}
+        onOpenWebsiteHub={() => setWebsiteHubOpen(true)}
+        onOpenManageDomains={() => setManageDomainsOpen(true)}
+        onOpenVersions={() => setVersionsOpen(true)}
+        onOpenSecrets={() => setSecretsOpen(true)}
+        onOpenRedeploy={() => setRedeployOpen(true)}
+        onOpenDokploy={() => setDokployOpen(true)}
+      />
+
+      {/* Operational Modals Mounted via Command Center */}
+      <EmailOutreachModal open={emailOutreachOpen} onOpenChange={setEmailOutreachOpen} />
+      <LeadCrmDrawer open={leadCrmOpen} onOpenChange={setLeadCrmOpen} companyName={companyName} />
+      <CompetitorAdSpyModal open={competitorAdSpyOpen} onOpenChange={setCompetitorAdSpyOpen} companyName={companyName} />
+      <CroTunerModal open={croTunerOpen} onOpenChange={setCroTunerOpen} companyName={companyName} />
+      <VisualStorefrontBuilderModal open={visualStorefrontOpen} onOpenChange={setVisualStorefrontOpen} companyName={companyName} subdomain={companySlug} />
+      <BookReaderStorefrontModal open={bookReaderOpen} onOpenChange={setBookReaderOpen} />
+      <SteadfastCourierModal open={steadfastCourierOpen} onOpenChange={setSteadfastCourierOpen} companyName={companyName} />
+      <StartupBuildsModal open={startupBuildsOpen} onOpenChange={setStartupBuildsOpen} subdomain={companySlug} companyName={companyName} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
