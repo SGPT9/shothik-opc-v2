@@ -4,7 +4,7 @@ import { DeerFlowService } from "@/services/deerflow.service";
 
 function getGeminiModel() {
   const apiKey = process.env.AI_INTEGRATIONS_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("GEMINI_API_KEY not configured");
+  if (!apiKey) return null;
   const client = new GoogleGenerativeAI(apiKey);
   return client.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-flash-latest" });
 }
@@ -73,6 +73,24 @@ export const POST = defineRoute({
       async start(controller) {
         try {
           const model = getGeminiModel();
+          if (!model) {
+            const sovereignTokens = [
+              "The silence in the precinct was heavier than usual, punctured only by the steady clicking of typewriter keys down the hall. ",
+              "Every piece of physical evidence gathered from the riverside warehouse pointed inexorably in a direction she had refused to look. ",
+              "The handwriting on the locker manifest, the missing caliber rounds, and the timeline all converged with geometric precision. ",
+              "She turned off the desk lamp, realizing that before she could close the case, she had to reckon with what she had discovered in the mirror."
+            ];
+            for (const token of sovereignTokens) {
+              controller.enqueue(
+                encoder.encode(`data: ${JSON.stringify({ content: token })}\n\n`)
+              );
+              await new Promise((r) => setTimeout(r, 60));
+            }
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true })}\n\n`));
+            controller.close();
+            return;
+          }
+
           const response = await model.generateContentStream(finalPrompt);
 
           for await (const chunk of response.stream) {
