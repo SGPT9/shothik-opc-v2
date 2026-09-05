@@ -390,6 +390,9 @@ export default function ConnectorsPage() {
           <div className="relative w-full max-w-xs">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
             <input 
+              id="filter-connectors-input"
+              name="filter-connectors-input"
+              aria-label="Filter connectors"
               className="w-full bg-zinc-50 dark:bg-black/60 border border-zinc-200 dark:border-white/[0.12] rounded-lg pl-9 pr-4 py-2 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:outline-none focus:border-zinc-400 dark:focus:border-emerald-500/50 transition-colors backdrop-blur-xl"
               placeholder="Filter connectors..."
               value={search}
@@ -535,6 +538,9 @@ export default function ConnectorsPage() {
                   <span>API Key / Secret Token</span>
                 </label>
                 <input
+                  id="connector-api-key-input"
+                  name="connector-api-key-input"
+                  aria-label="API Key or Secret Token"
                   type="password"
                   value={apiKeyInput}
                   onChange={(e) => setApiKeyInput(e.target.value)}
@@ -549,6 +555,9 @@ export default function ConnectorsPage() {
                   <span>API / Webhook Endpoint</span>
                 </label>
                 <input
+                  id="connector-webhook-endpoint-input"
+                  name="connector-webhook-endpoint-input"
+                  aria-label="API or Webhook Endpoint"
                   type="text"
                   value={endpointInput}
                   onChange={(e) => setEndpointInput(e.target.value)}
