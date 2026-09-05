@@ -280,7 +280,7 @@ curl.exe http://localhost:8080/health
     - **Interactive Studio UI:** Built [`MultiModelParetoModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/MultiModelParetoModal.tsx) featuring Glassmorphic Pareto Frontier matrix, 5 strategy switcher cards with glowing badges, interactive query routing sandbox with prompt presets (formatting, standard, advanced algorithmic, high-security smart contract), real-time decision explanation, cost vs quality trade-off radar, and live telemetry log.
     - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘O` / `Ctrl+O` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`multi-model-pareto.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/multi-model-pareto.test.ts) (7/7 tests passed in 110ms; 50/50 suites passed with 268 tests across api-server) and [`MultiModelParetoModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/MultiModelParetoModal.test.tsx) (5/5 tests passed; 26/26 twin test suites passed with 64/64 tests).
-    - **Synchronization:** Deployed and certified across all 9 remotes under commit `TBD`.
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `682b132a`.
 
 ---
 
