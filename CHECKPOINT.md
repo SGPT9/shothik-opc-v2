@@ -295,7 +295,7 @@ curl.exe http://localhost:8080/health
     - **Interactive Studio UI:** Built [`EpistemicConsensusModal.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/EpistemicConsensusModal.tsx) featuring Knowledge Vault explorer with domain filtering, visual Merkle Proof verifier with audit path steps, interactive Consensus Chamber with proposal presets and peer validator network roster, and Cryptographic Block Ledger.
     - **Cockpit & Global Keybinding:** Wired into [`twin/page.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/app-next/(primary-layout)/twin/page.tsx) with global `⌘J` / `Ctrl+J` shortcut and integrated into [`TwinCommandPalette.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/TwinCommandPalette.tsx).
     - **Test Suites:** [`epistemic-consensus.test.ts`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/src/routes/__tests__/epistemic-consensus.test.ts) (8/8 tests passed in 123ms; 51/51 suites passed with 276 tests across api-server) and [`EpistemicConsensusModal.test.tsx`](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/src/components/twin/__tests__/EpistemicConsensusModal.test.tsx) (5/5 tests passed; 27/27 twin test suites passed with 69/69 tests).
-    - **Synchronization:** Deployed and certified across all 9 remotes under commit `TBD`.
+    - **Synchronization:** Deployed and certified across all 9 remotes under commit `9b24d313`.
 
 ---
 
