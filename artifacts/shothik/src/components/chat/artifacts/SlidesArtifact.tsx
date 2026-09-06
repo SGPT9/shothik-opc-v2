@@ -21,6 +21,7 @@ import {
   Printer,
   TrendingUp,
   ArrowRight,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { VTuberPresentationStage } from "./VTuberPresentationStage";
@@ -57,6 +58,8 @@ interface SlidesArtifactProps {
 const TEMPLATES = [
   { id: "business", label: "Demo Day Pitch", icon: "📊", themeClass: "from-slate-950 via-indigo-950/80 to-slate-950", accent: "text-indigo-400", border: "border-indigo-500/30" },
   { id: "vc_pitch", label: "VC Pitch Premium", icon: "🏆", themeClass: "from-slate-950 via-amber-950/40 to-slate-900", accent: "text-amber-400", border: "border-amber-500/40" },
+  { id: "seedstars_asia", label: "South Asia Pitch (Seedstars)", icon: "🚀", themeClass: "from-slate-950 via-sky-950/70 to-slate-900", accent: "text-sky-400", border: "border-sky-500/40" },
+  { id: "thesis_defense", label: "University Thesis Defense", icon: "🎓", themeClass: "from-slate-950 via-teal-950/60 to-slate-900", accent: "text-teal-300", border: "border-teal-500/40" },
   { id: "bangla_heritage", label: "Ekushey Heritage", icon: "🏛️", themeClass: "from-red-950/90 via-amber-950/40 to-slate-950", accent: "text-amber-300", border: "border-amber-500/40" },
   { id: "rmg_textile", label: "RMG & Textile ESG", icon: "🧵", themeClass: "from-teal-950 via-slate-900 to-emerald-950/80", accent: "text-emerald-400", border: "border-teal-500/40" },
   { id: "fintech_gold", label: "FinTech & MFS Gold", icon: "💳", themeClass: "from-slate-950 via-yellow-950/40 to-slate-900", accent: "text-yellow-400", border: "border-yellow-500/40" },
@@ -74,6 +77,168 @@ const PIPELINE_STEPS = ["Outline", "Design", "Content", "Formatting", "Review"];
 export function buildDynamicDeck(topicTitle: string): SlideData[] {
   const cleanTopic = topicTitle || "Next-Gen Autonomous Platform";
   const lower = cleanTopic.toLowerCase();
+
+  if (lower.includes("seedstars") || lower.includes("accelerator") || lower.includes("accelerating asia") || lower.includes("pitch deck")) {
+    return [
+      {
+        id: 1,
+        layout: "hero",
+        tag: "Opportunity & Mission",
+        title: cleanTopic,
+        subtitle: "Unlocking the $3.2B Next-Billion Consumer & Merchant Economy in South Asia",
+        bullets: [
+          "170M+ population transitioning rapidly from cash-in-hand to mobile financial rails (bKash/Nagad)",
+          "AI-first automated operating company model reducing merchant operating overhead by 70%",
+          "Proprietary low-resource NLP tailored for Banglish, Romanized Urdu, and regional commerce intent",
+        ],
+        metrics: [
+          { label: "Regional TAM", value: "$3.2B", trend: "+28% YoY" },
+          { label: "Software Margin", value: "81.4%", trend: "Capital Efficient" },
+          { label: "MoM Growth", value: "+24%", trend: "Organic Inflow" },
+        ],
+        speakerNotes: "Good afternoon investors and committee members. Today we are presenting how we tap the explosive South Asian digital consumer market using specialized vernacular AI workflows.",
+      },
+      {
+        id: 2,
+        layout: "split",
+        tag: "Problem vs Solution",
+        title: "The Massive Emerging Market Friction",
+        subtitle: "Why Legacy Global Software Tools Fail in South Asia",
+        bullets: [],
+        splitLeft: {
+          heading: "⚠️ High-Friction Realities",
+          points: [
+            "Credit Card Penetration: < 4% across urban and rural demographics",
+            "Complex Regulatory & Tax Hurdles: Manual NBR, TDS and VAT withholding",
+            "Delivery Failure: 20%+ COD parcel return rate on courier drops",
+          ],
+        },
+        splitRight: {
+          heading: "🚀 Our Regional Unfair Advantage",
+          points: [
+            "Native bKash & Nagad MFS gateway with instant SMS TrxID settlement",
+            "Built-in statutory tax, VAT rebate & NBR 2023 compliance engines",
+            "Automated Pathao/Steadfast courier booking with delivery predictive scoring",
+          ],
+        },
+        speakerNotes: "Global software lacks localization for local payment rails like bKash and local tax laws. Our architecture natively bridges these barriers.",
+      },
+      {
+        id: 3,
+        layout: "stats",
+        tag: "Unit Economics & Payback",
+        title: "Superior Capital Efficiency & Payback",
+        subtitle: "Disciplined Growth with Unmatched Operating Leverage",
+        bullets: [
+          "Blended customer acquisition cost (CAC) recovered within 2.3 months",
+          "High annual net revenue retention (NRR) driven by multi-agent autonomy",
+        ],
+        metrics: [
+          { label: "Annual GMV", value: "$4.8M", trend: "Run Rate" },
+          { label: "Blended CAC", value: "৳450", trend: "$3.75 USD" },
+          { label: "LTV / CAC", value: "5.8x", trend: "Top Quartile" },
+          { label: "Cash Payback", value: "2.3 Mo", trend: "Fast Re-investment" },
+        ],
+        speakerNotes: "Our unit economics prove exceptional capital efficiency: 5.8x LTV to CAC with payback in under 70 days.",
+      },
+      {
+        id: 4,
+        layout: "timeline",
+        tag: "18-Month Scaling Roadmap",
+        title: "Seed Capital Allocation & Regional Expansion",
+        subtitle: "Milestones Backed by Institutional Governance",
+        bullets: [],
+        timelineSteps: [
+          { step: "Phase 1", title: "Domestic Scale", desc: "Scale to 50,000 active SMEs across Dhaka & Chittagong", status: "active" },
+          { step: "Phase 2", title: "Regional Gateway", desc: "Expand remittance & cross-border trade corridors with Singapore & UAE", status: "upcoming" },
+          { step: "Phase 3", title: "Enterprise API", desc: "Power tier-1 banks and telecom micro-lending risk models", status: "upcoming" },
+          { step: "Phase 4", title: "Series-A Round", desc: "Target $5M ARR and regional institutional expansion", status: "upcoming" },
+        ],
+        speakerNotes: "With this seed raise, we will scale from domestic dominance to cross-border remittances and enterprise banking integrations.",
+      },
+    ];
+  }
+
+  if (lower.includes("thesis") || lower.includes("defense") || lower.includes("dissertation") || lower.includes("academic") || lower.includes("buet") || lower.includes("university")) {
+    return [
+      {
+        id: 1,
+        layout: "hero",
+        tag: "Academic Defense",
+        title: cleanTopic,
+        subtitle: "Dissertation Defense & Empirical Evaluation Protocol",
+        bullets: [
+          "Investigating novel algorithmic formulations and low-latency inference architectures",
+          "Comprehensive empirical benchmark against state-of-the-art baselines on real-world datasets",
+          "Rigorous ablation studies validating mathematical guarantees and computational bounds",
+        ],
+        metrics: [
+          { label: "Sample Size", value: "100K+", trend: "Benchmark Dataset" },
+          { label: "Accuracy Gain", value: "+14.6%", trend: "p < 0.001" },
+          { label: "Latency", value: "18ms", trend: "3.2x Speedup" },
+        ],
+        speakerNotes: "Honorable committee members and supervisor, welcome to the thesis defense. Today I present our findings on algorithmic optimization and empirical evaluation.",
+      },
+      {
+        id: 2,
+        layout: "split",
+        tag: "Literature Review & Gap",
+        title: "Theoretical Framework & Identified Research Gaps",
+        subtitle: "Overcoming Constraints in Existing Computational Literature",
+        bullets: [],
+        splitLeft: {
+          heading: "📚 Prior Art Limitations",
+          points: [
+            "High computational complexity O(n^2) preventing real-time edge deployment",
+            "Lack of robustness against non-stationary distributions and out-of-domain drift",
+            "Absence of verifiable provenance in multi-agent consensus protocols",
+          ],
+        },
+        splitRight: {
+          heading: "💡 Proposed Novel Contribution",
+          points: [
+            "Linear time O(n) approximation using quantized state embeddings",
+            "Formal ZK-proof verification guaranteeing state execution integrity",
+            "Empirical validation across 5 standard benchmark testbeds",
+          ],
+        },
+        speakerNotes: "Prior literature suffered from quadratic complexity and lack of verification. Our method introduces linear approximation with formal zero-knowledge guarantees.",
+      },
+      {
+        id: 3,
+        layout: "stats",
+        tag: "Experimental Results",
+        title: "Empirical Validation & Benchmark Comparison",
+        subtitle: "Quantitative Proof of Convergence and Efficiency",
+        bullets: [
+          "Statistically significant improvement demonstrated across all evaluation dimensions",
+          "Zero memory degradation or numerical drift over 10,000 continuous benchmark cycles",
+        ],
+        metrics: [
+          { label: "F1 Score", value: "96.2%", trend: "+8.4% vs Baseline" },
+          { label: "Memory Footprint", value: "142 MB", trend: "-45% Reduction" },
+          { label: "Throughput", value: "1,250 op/s", trend: "Real-Time Scale" },
+          { label: "Error Margin", value: "±0.04%", trend: "95% Confidence" },
+        ],
+        speakerNotes: "Our experimental results show a 96.2% F1 score, a 45% reduction in memory footprint, and 1,250 operations per second throughput with 95% statistical confidence.",
+      },
+      {
+        id: 4,
+        layout: "timeline",
+        tag: "Contributions & Future Work",
+        title: "Summary of Contributions & Academic Impact",
+        subtitle: "Publications, Reproducibility & Next Research Horizons",
+        bullets: [],
+        timelineSteps: [
+          { step: "Published", title: "Peer-Reviewed Paper", desc: "Accepted in IEEE/ACM conference proceedings with full open-source artifacts", status: "completed" },
+          { step: "Artifact", title: "Open Benchmark", desc: "Reproducible Docker container and raw test vectors deposited on Zenodo/GitHub", status: "completed" },
+          { step: "Next Step", title: "Distributed Scalability", desc: "Extending the mathematical formulation to multi-tenant Byzantine clusters", status: "active" },
+          { step: "Future", title: "Hardware Synthesis", desc: "FPGA & ASIC hardware acceleration for sub-millisecond edge execution", status: "upcoming" },
+        ],
+        speakerNotes: "To conclude, this thesis provides peer-reviewed contributions with open reproducible artifacts, paving the way for distributed multi-tenant scalability.",
+      },
+    ];
+  }
 
   if (lower.includes("health") || lower.includes("med") || lower.includes("clinic") || lower.includes("doctor")) {
     return [
@@ -1012,6 +1177,7 @@ export function SlidesArtifact({ initialTopic, slides: customSlides, isStreaming
   const [papermarkLink, setPapermarkLink] = useState<{ id: string; shareUrl: string; customSlug: string } | null>(null);
   const [isCreatingLink, setIsCreatingLink] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+  const [isExportingPPTX, setIsExportingPPTX] = useState(false);
 
   const handleCreatePapermarkLink = async () => {
     setShowPapermarkModal(true);
@@ -1210,6 +1376,7 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
   };
 
   const handleExportPPTX = async () => {
+    setIsExportingPPTX(true);
     try {
       const PptxGenJS = (await import("pptxgenjs")).default;
       const pptx = new PptxGenJS();
@@ -1319,9 +1486,38 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
       await pptx.writeFile({
         fileName: `${topicTitle.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pptx`,
       });
-    } catch (err) {
-      console.error("PPTX export fallback:", err);
+    } catch (clientErr) {
+      console.warn("Client PPTX export failed, trying serverless API export:", clientErr);
+      try {
+        const response = await fetch("/api/v1/publishing/export-pptx", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: topicTitle,
+            slides: slideList.map((s) => ({
+              title: s.title,
+              subtitle: s.subtitle,
+              bullets: s.bullets || [],
+              notes: s.speakerNotes,
+            })),
+          }),
+        });
+        if (response.ok) {
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `${topicTitle.toLowerCase().replace(/[^a-z0-9]/g, "-")}.pptx`;
+          a.click();
+          URL.revokeObjectURL(url);
+          return;
+        }
+      } catch (serverErr) {
+        console.error("Server PPTX export failed, falling back to HTML", serverErr);
+      }
       handleExportHTML();
+    } finally {
+      setIsExportingPPTX(false);
     }
   };
 
@@ -1474,12 +1670,18 @@ footer: 'CONFIDENTIAL & PROPRIETARY'
 
           <button
             type="button"
+            data-testid="btn-export-pptx"
+            disabled={isExportingPPTX}
             onClick={handleExportPPTX}
-            className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[11px] font-bold transition cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-indigo-500/30 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 text-[11px] font-bold transition cursor-pointer disabled:opacity-50"
             title="Export native 16:9 PowerPoint Presentation (.pptx)"
           >
-            <Download className="h-3 w-3" />
-            <span>PPTX</span>
+            {isExportingPPTX ? (
+              <RefreshCw className="h-3 w-3 animate-spin text-indigo-400" />
+            ) : (
+              <Download className="h-3 w-3" />
+            )}
+            <span>{isExportingPPTX ? "Exporting..." : "PPTX"}</span>
           </button>
 
           <button
