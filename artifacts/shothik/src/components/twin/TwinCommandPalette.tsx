@@ -31,6 +31,8 @@ import {
   GitBranch,
   ShieldCheck,
   Sliders,
+  Coins,
+  QrCode,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -67,6 +69,8 @@ export interface TwinCommandPaletteProps {
   onOpenVideoStudio?: () => void;
   // Category 3: Commerce & Logistics
   onOpenMfsGateway?: () => void;
+  onOpenCreatorCashout?: () => void;
+  onOpenManualTrxSettlement?: () => void;
   onOpenSteadfastCourier?: () => void;
   onOpenVisualStorefront?: () => void;
   onOpenBookReader?: () => void;
@@ -111,6 +115,8 @@ export function TwinCommandPalette({
   onOpenCroTuner,
   onOpenVideoStudio,
   onOpenMfsGateway,
+  onOpenCreatorCashout,
+  onOpenManualTrxSettlement,
   onOpenSteadfastCourier,
   onOpenVisualStorefront,
   onOpenBookReader,
@@ -449,6 +455,40 @@ export function TwinCommandPalette({
               </div>
             </div>
             <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400 font-mono">1-Tap MFS</Badge>
+          </CommandItem>
+
+          <CommandItem
+            value="creator cashout earnings withdraw bkash nagad tds mfs payout"
+            onSelect={() => handleSelect(onOpenCreatorCashout)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Coins className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Creator Earnings Cash-Out</span>
+                <span className="text-[11px] text-zinc-500">Withdraw marketplace & twin revenues to bKash/Nagad with 10% NBR TDS</span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400 font-mono">MFS Payout</Badge>
+          </CommandItem>
+
+          <CommandItem
+            value="manual trxid verify settlement offline sms agent shop bkash nagad"
+            onSelect={() => handleSelect(onOpenManualTrxSettlement)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <QrCode className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Manual TrxID Settlement</span>
+                <span className="text-[11px] text-zinc-500">Verify 10-char offline agent shop SMS TrxID & reconcile ledger</span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-emerald-500/30 text-emerald-400 font-mono">TrxID</Badge>
           </CommandItem>
 
           <CommandItem

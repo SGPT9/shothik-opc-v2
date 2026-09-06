@@ -10,11 +10,12 @@ import {
 import type { TPackage } from "@/types/package.type";
 import type { TPlan } from "@/types/plan.type";
 import { useQuery } from "@tanstack/react-query";
-import { AlertCircle, RefreshCw, Sparkles } from "lucide-react";
+import { AlertCircle, RefreshCw, Sparkles, QrCode } from "lucide-react";
 import { Link } from "wouter";
 import { useRouter, useSearchParams } from "@/lib/navigation";
 import { useTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
+import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
 
 const FALLBACK_PLANS: TPlan[] = [
   { _id: "monthly", name: "Monthly", duration: 30, is_active: true } as any,
@@ -116,6 +117,7 @@ const PricingPage = () => {
   const searchParams = useSearchParams();
   const { t } = useTranslation();
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>("all");
+  const [mfsModalOpen, setMfsModalOpen] = useState(false);
 
   const { isBangladesh } = useUserLocation();
 
@@ -246,11 +248,22 @@ const PricingPage = () => {
                 No monthly subscriptions or international credit card needed. Instant 1-tap checkout with <span className="text-pink-400 font-semibold">bKash</span> & <span className="text-orange-400 font-semibold">Nagad</span> for thesis checks, slide decks, and venture plans.
               </p>
             </div>
-            <Link href="/pricing/checkout?packageId=starter-pass">
-              <Button className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/40 transition cursor-pointer shrink-0">
-                ⚡ Get Micro-Pass (৳100)
+            <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+              <Link href="/pricing/checkout?packageId=starter-pass">
+                <Button className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/40 transition cursor-pointer shrink-0">
+                  ⚡ Get Micro-Pass (৳100)
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                onClick={() => setMfsModalOpen(true)}
+                className="border-emerald-500/40 hover:bg-emerald-500/10 text-emerald-300 font-medium text-xs rounded-xl gap-1.5"
+                data-testid="button-pricing-manual-trx"
+              >
+                <QrCode className="w-3.5 h-3.5 text-pink-400" />
+                <span>Verify SMS TrxID</span>
               </Button>
-            </Link>
+            </div>
           </div>
         </div>
 
@@ -273,6 +286,12 @@ const PricingPage = () => {
           </div>
         )}
       </div>
+
+      <MfsGatewayModal
+        open={mfsModalOpen}
+        onOpenChange={setMfsModalOpen}
+        initialTab="manual_trx"
+      />
     </div>
   );
 };

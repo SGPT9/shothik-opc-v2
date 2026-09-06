@@ -30,6 +30,10 @@ import {
   RefreshCw,
   Plus,
   Database,
+  GraduationCap,
+  PenTool,
+  ShoppingBag,
+  CreditCard,
 } from "lucide-react";
 import {
   forwardRef,
@@ -464,6 +468,21 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const isMentionMenuVisible = textValue.startsWith("@") && !textValue.includes(" ");
 
     const matchingSlashCommands = [
+      // 12 Canonical Platform Services
+      { cmd: "/ai", label: "Pillar 1 · AI Execution", desc: "Turn high-level intent into completed work across workflows & tools", Icon: Sparkles, action: () => { if (onSend) onSend("Execute autonomous workflow for this task with complete observation and tool steps."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Execute autonomous workflow for this task with complete observation and tool steps." } }); } },
+      { cmd: "/thesis", label: "Pillar 2 · Academic & Research", desc: "Literature synthesis, thesis workspaces, APA/IEEE reference citations", Icon: GraduationCap, tab: "research" as const },
+      { cmd: "/write", label: "Pillar 3 · Writing & Linguistics", desc: "Paraphrasing, grammar check, AI humanization, Banglish translation", Icon: PenTool, action: () => { if (onSend) onSend("Please enhance, paraphrase, and proofread my text with natural tone and proper citations."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Please enhance, paraphrase, and proofread my text with natural tone and proper citations." } }); } },
+      { cmd: "/deck", label: "Pillar 4 · Creative & Pitch Decks", desc: "10-slide seed deck, executive presentations & visual Marp slides", Icon: Presentation, tab: "slides" as const },
+      { cmd: "/twin", label: "Pillar 5 · Twin Business Automation", desc: "24/7 OPC business operations, memory vault & 10 specialized twins", Icon: Brain, action: () => { window.location.href = "/twin"; } },
+      { cmd: "/fcommerce", label: "Pillar 6 · Commerce & F-Commerce", desc: "Facebook Page, WhatsApp Business, Daraz & WooCommerce order ledger", Icon: ShoppingBag, tab: "sheet" as const },
+      { cmd: "/courier", label: "Pillar 7 · Courier & Logistics", desc: "Steadfast, Pathao & RedX automated parcel tracking and COD settlement", Icon: Truck, action: () => { setIsTrackingOpen(true); } },
+      { cmd: "/venture", label: "Pillar 8 · Venture Creation", desc: "Market TAM sizing, unit economics, startup validation & financial burn", Icon: Rocket, action: () => { if (onSend) onSend("Validate market opportunity, calculate TAM/SAM/SOM, and formulate an operating roadmap."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Validate market opportunity, calculate TAM/SAM/SOM, and formulate an operating roadmap." } }); } },
+      { cmd: "/voice", label: "Pillar 9 · Conversational Voice", desc: "Low-latency Bengali and English speech synthesis with multimodal canvas", Icon: Mic, action: () => { startListening(); } },
+      { cmd: "/nilkhet", label: "Pillar 10 · Nilkhet POD Studio", desc: "6×9 Royal Demy book typesetting, 3D preview & Dhaka offset press", Icon: BookOpen, action: () => { window.location.href = "/writing-studio"; } },
+      { cmd: "/dev", label: "Pillar 11 · Developer Twin", desc: "Self-healing Red-Green-Refactor loop, AST blast radius & sandboxed CI/CD", Icon: Code2, tab: "code" as const },
+      { cmd: "/mfs", label: "Pillar 12 · FinTech & MFS Rails", desc: "bKash & Nagad merchant settlement, transaction fee and payout ledger", Icon: CreditCard, action: () => { if (onSend) onSend("Reconcile bKash and Nagad payment settlements, calculate 1.5% merchant fees, and generate payout ledger."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Reconcile bKash and Nagad payment settlements, calculate 1.5% merchant fees, and generate payout ledger." } }); } },
+
+      // Core Workflow & Engineering Accelerators
       { cmd: "/doc", label: "Draft Document / Agreement", desc: "Multi-section legal agreement, PRD, or executive briefing", Icon: FileText, tab: "doc" as const },
       { cmd: "/research", label: "Deep Research", desc: "Comprehensive web & academic investigation", Icon: Search, tab: "research" as const },
       { cmd: "/slides", label: "Slide Studio", desc: "Investor pitch decks & Marp visual slides", Icon: Presentation, tab: "slides" as const },

@@ -90,4 +90,46 @@ describe("useTwinHandoffDetector — Multi-Signal Archetype Detection", () => {
     expect(result.current.eligible).toBe(true);
     expect(result.current.triggerType).toBe("SPRINT_EXECUTION");
   });
+
+  it("detects DEVELOPER_TWIN for self-healing bug and AST refactoring queries", () => {
+    const messages = [
+      { content: "Our production build failed with a syntax error." },
+      { content: "Can you run a self-heal Red-Green-Refactor loop and check AST blast radius?" },
+    ];
+    const { result } = renderHook(() =>
+      useTwinHandoffDetector(messages, "conv_dev_1")
+    );
+    expect(result.current.eligible).toBe(true);
+    expect(result.current.triggerType).toBe("DEVELOPER_TWIN");
+    expect(result.current.serviceId).toBe(11);
+    expect(result.current.targetUrl).toContain("tab=developer");
+  });
+
+  it("detects FINTECH_MFS for bKash and Nagad payment settlement queries", () => {
+    const messages = [
+      { content: "We received multiple customer orders today." },
+      { content: "Need to reconcile bKash and Nagad merchant settlements and cashout fees." },
+    ];
+    const { result } = renderHook(() =>
+      useTwinHandoffDetector(messages, "conv_mfs_1")
+    );
+    expect(result.current.eligible).toBe(true);
+    expect(result.current.triggerType).toBe("FINTECH_MFS");
+    expect(result.current.serviceId).toBe(12);
+    expect(result.current.targetUrl).toContain("tab=mfs");
+  });
+
+  it("detects WRITING_CONTENT for paraphrasing and grammar requests", () => {
+    const messages = [
+      { content: "Here is an executive proposal." },
+      { content: "Can you paraphrase and proofread this with proper grammar and tone?" },
+    ];
+    const { result } = renderHook(() =>
+      useTwinHandoffDetector(messages, "conv_write_1")
+    );
+    expect(result.current.eligible).toBe(true);
+    expect(result.current.triggerType).toBe("WRITING_CONTENT");
+    expect(result.current.serviceId).toBe(3);
+    expect(result.current.targetUrl).toContain("writing-studio");
+  });
 });

@@ -21,6 +21,7 @@ import { ApprovalCard } from "./ApprovalCard";
 import { SecretShareCard } from "./SecretShareCard";
 import { WayfinderBoard } from "./WayfinderBoard";
 import { TwinCtaCard } from "./TwinCtaCard";
+import { PlatformServiceTriggerCard } from "./PlatformServiceTriggerCard";
 import { useTwinHandoffDetector } from "../agents/hooks/useTwinHandoffDetector";
 import { EpistemicProvenanceBadge } from "./EpistemicProvenanceBadge";
 import { GitHubRepoCard } from "./GitHubRepoCard";
@@ -115,6 +116,7 @@ interface TranscriptProps {
   onDenyCheckpoint?: (checkpointId: string, message: ChatMessage) => void;
   onSubmitSecret?: (checkpointId: string, secretValue: string, message: ChatMessage) => void;
   onAnalyzeIssues?: (message: ChatMessage) => void;
+  onOpenPlatformServices?: () => void;
   className?: string;
   agentId?: string;
 }
@@ -137,6 +139,7 @@ export function Transcript({
   onDenyCheckpoint,
   onSubmitSecret,
   onAnalyzeIssues,
+  onOpenPlatformServices,
   className,
   agentId = "core",
 }: TranscriptProps) {
@@ -923,11 +926,12 @@ export function Transcript({
             );
           })}
 
-          {/* 🚀 Next-Step Bridge: Contextual Twin Trigger (Signal-driven) */}
+          {/* 🚀 Next-Step Bridge: Contextual Platform Service Execution Trigger (Signal-driven) */}
           {twinTrigger.eligible && !isStreaming && (
-            <TwinCtaCard
+            <PlatformServiceTriggerCard
               conversationId={messages[0]?._id || "conv_active"}
               triggerContext={twinTrigger}
+              onOpenPlatformServices={onOpenPlatformServices}
             />
           )}
 

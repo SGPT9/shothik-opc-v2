@@ -45,6 +45,7 @@ import { ZkSnarkProverModal } from "@/components/twin/ZkSnarkProverModal";
 import { WasmVectorIndexModal } from "@/components/twin/WasmVectorIndexModal";
 import { DeveloperTwinModal } from "@/components/twin/DeveloperTwinModal";
 import { PlatformServicesModal } from "@/components/twin/PlatformServicesModal";
+import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -76,6 +77,7 @@ import {
   Check,
   Settings,
   Search,
+  Coins,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -310,6 +312,8 @@ export default function TwinPage() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [mfsGatewayOpen, setMfsGatewayOpen] = useState(false);
+  const [mfsGatewayTab, setMfsGatewayTab] = useState<"credentials" | "simulator" | "manual_trx">("credentials");
+  const [creatorCashoutOpen, setCreatorCashoutOpen] = useState(false);
   const [connectCompanyOpen, setConnectCompanyOpen] = useState(false);
   const [voiceCommanderOpen, setVoiceCommanderOpen] = useState(false);
   const [dailyDigestOpen, setDailyDigestOpen] = useState(false);
@@ -1045,14 +1049,28 @@ export default function TwinPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              onClick={() => setMfsGatewayOpen(true)}
-              className={`w-full mt-2 ${beveledBtnClass}`}
-            >
-              <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>SETUP PAYMENTS</span>
-            </button>
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setMfsGatewayTab("credentials");
+                  setMfsGatewayOpen(true);
+                }}
+                className={beveledBtnClass}
+              >
+                <CreditCard className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <span>MFS GATEWAY</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreatorCashoutOpen(true)}
+                className={beveledBtnClass}
+                data-testid="button-creator-cashout"
+              >
+                <Coins className="w-4 h-4 text-amber-500" />
+                <span>CASHOUT (TDS)</span>
+              </button>
+            </div>
           </div>
 
           {/* Teams Widget */}
@@ -2060,7 +2078,13 @@ export default function TwinPage() {
 
       {/* Additional Supporting Modals */}
       <SecondMeMemoryModal isOpen={secondMeMemoryOpen} onClose={() => setSecondMeMemoryOpen(false)} twinName={companyName} />
-      <MfsGatewayModal open={mfsGatewayOpen} onOpenChange={setMfsGatewayOpen} />
+      <MfsGatewayModal open={mfsGatewayOpen} onOpenChange={setMfsGatewayOpen} initialTab={mfsGatewayTab} />
+      <CreatorCashoutModal
+        open={creatorCashoutOpen}
+        onOpenChange={setCreatorCashoutOpen}
+        availableEarningsBdt={revenueBdt}
+        onSuccess={(remaining) => setRevenueBdt(remaining)}
+      />
       <ConnectExistingCompanyModal open={connectCompanyOpen} onOpenChange={setConnectCompanyOpen} />
       <VoiceCommanderModal open={voiceCommanderOpen} onOpenChange={setVoiceCommanderOpen} />
       <DailyDigestModal open={dailyDigestOpen} onOpenChange={setDailyDigestOpen} />
@@ -2098,7 +2122,15 @@ export default function TwinPage() {
         onOpenCompetitorAdSpy={() => setCompetitorAdSpyOpen(true)}
         onOpenCroTuner={() => setCroTunerOpen(true)}
         onOpenVideoStudio={() => setVideoStudioOpen(true)}
-        onOpenMfsGateway={() => setMfsGatewayOpen(true)}
+        onOpenMfsGateway={() => {
+          setMfsGatewayTab("credentials");
+          setMfsGatewayOpen(true);
+        }}
+        onOpenCreatorCashout={() => setCreatorCashoutOpen(true)}
+        onOpenManualTrxSettlement={() => {
+          setMfsGatewayTab("manual_trx");
+          setMfsGatewayOpen(true);
+        }}
         onOpenSteadfastCourier={() => setSteadfastCourierOpen(true)}
         onOpenVisualStorefront={() => setVisualStorefrontOpen(true)}
         onOpenBookReader={() => setBookReaderOpen(true)}

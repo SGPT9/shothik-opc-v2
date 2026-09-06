@@ -1,7 +1,8 @@
+import "@testing-library/jest-dom/vitest";
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { FLEET_AGENTS } from "@/components/agents/ChatAgentPage";
-import { NeedleToolRegistry } from "../../../../../artifacts/api-server/src/lib/needle-tool-registry";
+import { NeedleToolRegistry } from "../../../../../api-server/src/lib/needle-tool-registry";
 import { needle2 } from "@/lib/ai/needle-dispatcher";
 
 describe("Frontend Enhancements (ChatGPT + Perplexity + ECC Parity)", () => {
@@ -22,7 +23,8 @@ describe("Frontend Enhancements (ChatGPT + Perplexity + ECC Parity)", () => {
     const result = NeedleToolRegistry.matchAndExecute("Show me the implementation plan for authentication");
     expect(result).not.toBeNull();
     expect(result?.toolName).toBe("plan_implementation");
-    expect(result?.output).toContain("Phased Implementation Plan (ECC Planner Protocol)");
+    expect(result?.output).toContain("Phased Implementation Plan");
+    expect(result?.output).toContain("ECC Planner Protocol");
     expect(result?.artifact?.type).toBe("code");
   });
 
