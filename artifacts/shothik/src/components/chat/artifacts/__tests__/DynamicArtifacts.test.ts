@@ -38,6 +38,25 @@ describe("Dynamic Artifacts Test Suite", () => {
       expect(deck[1].splitRight).toBeDefined();
     });
 
+    it("generates Seedstars / Accelerating Asia regional pitch deck for accelerator queries", () => {
+      const deck = buildDynamicDeck("Seedstars South Asia Accelerator Pitch Deck");
+      expect(deck.length).toBe(4);
+      expect(deck[0].title).toBe("Seedstars South Asia Accelerator Pitch Deck");
+      expect(deck[0].subtitle).toContain("Next-Billion Consumer");
+      expect(deck[0].metrics?.some(m => m.label === "Regional TAM")).toBe(true);
+      expect(deck[1].splitRight?.points.some(p => p.includes("bKash"))).toBe(true);
+      expect(deck[2].metrics?.some(m => m.label === "LTV / CAC")).toBe(true);
+    });
+
+    it("generates University Thesis Defense deck for academic dissertation queries", () => {
+      const deck = buildDynamicDeck("BUET Computer Science University Thesis Defense");
+      expect(deck.length).toBe(4);
+      expect(deck[0].tag).toBe("Academic Defense");
+      expect(deck[0].metrics?.some(m => m.label === "Accuracy Gain")).toBe(true);
+      expect(deck[1].splitLeft?.heading).toContain("Prior Art");
+      expect(deck[2].metrics?.some(m => m.label === "F1 Score")).toBe(true);
+    });
+
     it("generates general startup pitch deck for generic queries", () => {
       const deck = buildDynamicDeck("AI Logistics & Freight Optimization");
       expect(deck.length).toBeGreaterThanOrEqual(4);
