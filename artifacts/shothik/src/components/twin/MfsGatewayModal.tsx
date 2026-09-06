@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CreditCard,
   ShieldCheck,
@@ -15,6 +15,7 @@ import {
   ArrowRight,
   TrendingUp,
   Building2,
+  QrCode,
 } from "lucide-react";
 import {
   Dialog,
@@ -32,12 +33,16 @@ export interface MfsGatewayModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   companyName?: string;
+  initialTab?: "credentials" | "simulator" | "manual_trx";
+  onTrxVerified?: (result: any) => void;
 }
 
 export function MfsGatewayModal({
   open,
   onOpenChange,
   companyName = "VerifiQ AI",
+  initialTab = "credentials",
+  onTrxVerified,
 }: MfsGatewayModalProps) {
   const [isSandbox, setIsSandbox] = useState(true);
   const [provider, setProvider] = useState<"bkash" | "nagad">("bkash");
@@ -50,8 +55,8 @@ export function MfsGatewayModal({
     `https://${companyName.toLowerCase().replace(/[^a-z0-9]/g, "")}.shothikgpt.com/api/webhooks/mfs`
   );
 
-  // Simulator State
-  const [activeTab, setActiveTab] = useState<"credentials" | "simulator">("credentials");
+  // Tabs & Simulator State
+  const [activeTab, setActiveTab] = useState<"credentials" | "simulator" | "manual_trx">(initialTab);
   const [simStep, setSimStep] = useState<"phone" | "otp" | "pin" | "success">("phone");
   const [simPhone, setSimPhone] = useState("01812345678");
   const [simAmount, setSimAmount] = useState(1250);
@@ -59,6 +64,21 @@ export function MfsGatewayModal({
   const [simPin, setSimPin] = useState("12345");
   const [isProcessing, setIsProcessing] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  // Manual TrxID Settlement State
+  const [manualTrxId, setManualTrxId] = useState("");
+  const [manualProvider, setManualProvider] = useState<"bkash" | "nagad">("bkash");
+  const [manualPhone, setManualPhone] = useState("01712345678");
+  const [manualTier, setManualTier] = useState<string>("micro_100_bdt");
+  const [manualIsVerifying, setManualIsVerifying] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
+  const [manualResult, setManualResult] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [initialTab, open]);
 
   const handleSaveCredentials = () => {
     setSavedSuccess(true);
@@ -94,6 +114,68 @@ export function MfsGatewayModal({
 
   const handleResetSimulator = () => {
     setSimStep("phone");
+  };
+
+  const handleVerifyTrx = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualTrxId || manualTrxId.trim().length < 8) {
+      setManualError("TrxID must be at least 8 alphanumeric characters (e.g. BK88291029X).");
+      return;
+    }
+    if (!manualPhone || !/^(\+88)?01[3-9]\d{8}$/.test(manualPhone.trim())) {
+      setManualError("Enter a valid 11-digit Bangladeshi mobile number.");
+      return;
+    }
+
+    setManualIsVerifying(true);
+    setManualError(null);
+    setManualResult(null);
+
+    try {
+      const tierMap: Record<string, { credits: number; bdt: number; label: string }> = {
+        micro_100_bdt: { credits: 80, bdt: 100, label: "100 BDT Quick Micro-Pass" },
+        student_350_bdt: { credits: 300, bdt: 350, label: "350 BDT Student Semester Pack" },
+        pro_750_bdt: { credits: 750, bdt: 750, label: "750 BDT Pro Creator Pack" },
+        merchant_1500_bdt: { credits: 2000, bdt: 1500, label: "1,500 BDT F-Commerce Merchant Pack" },
+      };
+      const tierConfig = tierMap[manualTier] || tierMap["micro_100_bdt"];
+
+      const res = await fetch("/api/v1/mfs/verify-trx", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": `trx_${manualTrxId.trim()}`,
+        },
+        body: JSON.stringify({
+          trxId: manualTrxId.trim().toUpperCase(),
+          provider: manualProvider,
+          senderMobileNumber: manualPhone.trim(),
+          tier: manualTier,
+          amountBdt: tierConfig.bdt,
+          userId: "usr_founder_cockpit",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || data.error || "Failed to verify transaction ID.");
+      }
+
+      setManualResult(data);
+      onTrxVerified?.(data);
+      saveOfflineTask({
+        id: `trx-${manualTrxId.trim()}`,
+        title: `Verified ${manualProvider.toUpperCase()} TrxID #${manualTrxId.trim().toUpperCase()} (${tierConfig.credits} credits added)`,
+        category: "Finance",
+        status: "completed",
+        cost: `+${tierConfig.credits} Credits`,
+        updatedAt: Date.now(),
+      });
+    } catch (err: any) {
+      setManualError(err.message || "Failed to connect to MFS ledger.");
+    } finally {
+      setManualIsVerifying(false);
+    }
   };
 
   return (
@@ -136,6 +218,15 @@ export function MfsGatewayModal({
               }`}
             >
               Checkout Simulator
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab("manual_trx")}
+              className={`px-3 py-1 text-xs font-semibold rounded-md transition ${
+                activeTab === "manual_trx" ? "bg-pink-600 text-white" : "text-slate-400 hover:text-slate-200"
+              }`}
+            >
+              Manual TrxID
             </button>
           </div>
         </div>
@@ -395,6 +486,166 @@ export function MfsGatewayModal({
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Tab 3: Manual TrxID Verification & Settlement */}
+        {activeTab === "manual_trx" && (
+          <div className="p-6 space-y-5">
+            <div className="p-4 rounded-xl border border-slate-800 bg-slate-950 flex items-start gap-3">
+              <QrCode className="h-5 w-5 text-pink-400 shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <span className="text-xs font-bold text-slate-200">
+                  Offline MFS & Retail Agent Shop TrxID Verification
+                </span>
+                <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
+                  Users who send money directly via bKash / Nagad "Send Money" or cash-in at retail agent shops receive a 10-character alphanumeric SMS TrxID. Enter it here for instant automated cryptographic ledger matching and credit allocation.
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleVerifyTrx} className="space-y-4">
+              {/* Provider selection */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5 font-mono">
+                  MFS Provider
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setManualProvider("bkash")}
+                    className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition ${
+                      manualProvider === "bkash"
+                        ? "border-pink-500/80 bg-pink-500/10 text-pink-300"
+                        : "border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900"
+                    }`}
+                  >
+                    <span className="text-xs font-bold">bKash (013-019)</span>
+                    {manualProvider === "bkash" && <CheckCircle2 className="h-4 w-4 text-pink-400" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setManualProvider("nagad")}
+                    className={`p-2.5 rounded-xl border text-left flex items-center justify-between transition ${
+                      manualProvider === "nagad"
+                        ? "border-orange-500/80 bg-orange-500/10 text-orange-300"
+                        : "border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900"
+                    }`}
+                  >
+                    <span className="text-xs font-bold">Nagad (013-019)</span>
+                    {manualProvider === "nagad" && <CheckCircle2 className="h-4 w-4 text-orange-400" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Tier Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-300 mb-1.5 font-mono">
+                  Target Micro-Pass / Credit Package
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-xs font-mono">
+                  {[
+                    { id: "micro_100_bdt", label: "৳100 Quick Pass", credits: "80 Credits" },
+                    { id: "student_350_bdt", label: "৳350 Student Pack", credits: "300 Credits" },
+                    { id: "pro_750_bdt", label: "৳750 Pro Creator", credits: "750 Credits" },
+                    { id: "merchant_1500_bdt", label: "৳1,500 F-Commerce", credits: "2,000 Credits" },
+                  ].map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setManualTier(t.id)}
+                      className={`p-2.5 rounded-lg border text-left transition ${
+                        manualTier === t.id
+                          ? "border-pink-500 bg-pink-500/10 text-pink-300 font-bold"
+                          : "border-slate-800 bg-slate-950 text-slate-400 hover:bg-slate-900"
+                      }`}
+                    >
+                      <div>{t.label}</div>
+                      <div className="text-[10px] text-emerald-400">{t.credits}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* TrxID & Phone */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                <div>
+                  <label className="block text-slate-400 text-[10px] uppercase mb-1">
+                    10-Digit SMS Transaction ID (TrxID)
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. BK88291029X"
+                    value={manualTrxId}
+                    onChange={(e) => setManualTrxId(e.target.value.toUpperCase())}
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-100 uppercase tracking-widest focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-pink-500"
+                    data-testid="input-manual-trxid"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-slate-400 text-[10px] uppercase mb-1">
+                    Sender Mobile Number
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="017XXXXXXXX"
+                    value={manualPhone}
+                    onChange={(e) => setManualPhone(e.target.value)}
+                    className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-pink-500"
+                    data-testid="input-manual-phone"
+                  />
+                </div>
+              </div>
+
+              {manualError && (
+                <div className="p-3 rounded-lg border border-red-500/30 bg-red-500/10 text-xs text-red-400 flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{manualError}</span>
+                </div>
+              )}
+
+              {manualResult && (
+                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-300 space-y-2">
+                  <div className="flex items-center justify-between font-mono font-bold">
+                    <span className="flex items-center gap-1.5">
+                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      TrxID Verified & Reconciled!
+                    </span>
+                    <Badge className="bg-emerald-600 text-white text-[10px]">
+                      +{manualResult.creditsCredited || 80} CREDITS ALLOCATED
+                    </Badge>
+                  </div>
+                  <p className="text-[11px] text-emerald-200/80">
+                    {manualResult.message || `TrxID ${manualResult.trxId} verified successfully on the MFS ledger.`}
+                  </p>
+                  <div className="text-[10px] font-mono text-emerald-400/70">
+                    Ledger Ref: {manualResult.idempotentKey || `idemp_${manualTrxId}`}
+                  </div>
+                </div>
+              )}
+
+              <div className="pt-2 border-t border-slate-800 flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={manualIsVerifying}
+                  className="rounded-xl px-5 bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs gap-1.5 cursor-pointer"
+                  data-testid="button-verify-manual-trx"
+                >
+                  {manualIsVerifying ? (
+                    <>
+                      <RefreshCcw className="h-3.5 w-3.5 animate-spin" /> Verifying with MFS Gateway...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Verify & Settle TrxID
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
           </div>
         )}
       </DialogContent>

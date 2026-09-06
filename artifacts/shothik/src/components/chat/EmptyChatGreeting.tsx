@@ -14,6 +14,9 @@ import {
   Brain,
   Layers,
   FileSpreadsheet,
+  Code2,
+  CreditCard,
+  ShoppingBag,
 } from "lucide-react";
 import { type ChatPersona } from "@/lib/chat/types";
 
@@ -31,7 +34,7 @@ interface EmptyChatGreetingProps {
 
 interface SparkCardItem {
   id: string;
-  category: "ALL" | "SHEETS" | "SLIDES" | "DOCS" | "RESEARCH" | "TWIN";
+  category: "ALL" | "SHEETS" | "SLIDES" | "DOCS" | "RESEARCH" | "TWIN" | "DEV";
   icon: any;
   badge: string;
   badgeColor: string;
@@ -44,10 +47,34 @@ interface SparkCardItem {
 
 const GENSPARK_CARDS: SparkCardItem[] = [
   {
+    id: "developer-self-heal",
+    category: "DEV",
+    icon: Code2,
+    badge: "Pillar 11 · Dev Twin",
+    badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
+    title: "Self-Healing Bug & Test Fixer",
+    desc: "Run autonomous Red-Green-Refactor loop in isolated sandbox and inspect AST blast radius.",
+    prompt: "Analyze the failing error in our test suite, run the self-healing loop in sandbox, and generate verified AST patch with blast radius report.",
+    mode: "coworker",
+    tab: "code",
+  },
+  {
+    id: "mfs-reconciliation",
+    category: "TWIN",
+    icon: CreditCard,
+    badge: "Pillar 12 · MFS Rails",
+    badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
+    title: "bKash & Nagad MFS Settlement Ledger",
+    desc: "Calculate 1.5% MFS cashout fees, reconcile merchant payments, and generate daily disbursement sheet.",
+    prompt: "Generate a daily bKash and Nagad payment settlement ledger calculating 1.5% merchant transaction fees and net bank disbursements.",
+    mode: "coworker",
+    tab: "sheet",
+  },
+  {
     id: "fcommerce-sheet",
     category: "SHEETS",
     icon: FileSpreadsheet,
-    badge: "Sheets",
+    badge: "Pillar 6 · Commerce",
     badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
     title: "Dhaka F-Commerce Order Ledger",
     desc: "Reconcile Steadfast & Pathao COD parcels, bKash fees, and return ratios with live charts.",
@@ -59,7 +86,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     id: "pitch-deck-slides",
     category: "SLIDES",
     icon: Presentation,
-    badge: "Slides",
+    badge: "Pillar 4 · Slides",
     badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
     title: "10-Slide Investor Pitch Deck",
     desc: "Generate an executive seed-round pitch deck covering Problem, Solution, TAM, Traction, and Ask.",
@@ -71,7 +98,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     id: "thesis-manuscript",
     category: "DOCS",
     icon: BookOpen,
-    badge: "Docs",
+    badge: "Pillar 2 & 10 · BoiMela",
     badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
     title: "Academic Thesis & BoiMela Manuscript",
     desc: "Structure chapters with literature review, APA 7 citations, and Nilkhet 6×9 Royal Demy print format.",
@@ -82,7 +109,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     id: "deep-research-tam",
     category: "RESEARCH",
     icon: Search,
-    badge: "Research",
+    badge: "Pillar 8 · Research",
     badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
     title: "Market TAM & Competitor Intelligence",
     desc: "Synthesize addressable market sizing, regulatory NBR tax codes, and competitor benchmarks.",
@@ -94,7 +121,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     id: "financial-forecast",
     category: "SHEETS",
     icon: TrendingUp,
-    badge: "Model",
+    badge: "Pillar 4 · Model",
     badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
     title: "5-Year SaaS Financial & Burn Model",
     desc: "Forecast 3 scenarios for MRR expansion, CAC/LTV, headcount costs, and runway duration.",
@@ -106,7 +133,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     id: "merchant-twin",
     category: "TWIN",
     icon: Brain,
-    badge: "Twin",
+    badge: "Pillar 5 · Twin Ops",
     badgeColor: "text-muted-foreground bg-muted/60 border-border/60",
     title: "Automated Courier & WhatsApp Twin",
     desc: "Auto-dispatch delivery webhooks, verify 10-digit bKash TrxIDs, and draft customer replies.",
@@ -117,10 +144,12 @@ const GENSPARK_CARDS: SparkCardItem[] = [
 
 const CATEGORIES = [
   { id: "ALL", label: "✨ All Capabilities" },
-  { id: "SHEETS", label: "📊 GenOffice Sheets" },
-  { id: "SLIDES", label: "📽️ GenOffice Slides" },
-  { id: "DOCS", label: "📄 GenOffice Docs" },
-  { id: "RESEARCH", label: "🔍 Deep Research" },
+  { id: "DEV", label: "💻 Dev Twin (Pillar 11)" },
+  { id: "TWIN", label: "🏛️ Twin Ops (Pillar 5 & 12)" },
+  { id: "SHEETS", label: "📊 GenOffice Sheets (Pillar 6)" },
+  { id: "SLIDES", label: "📽️ GenOffice Slides (Pillar 4)" },
+  { id: "DOCS", label: "📄 GenOffice Docs (Pillar 2 & 10)" },
+  { id: "RESEARCH", label: "🔍 Deep Research (Pillar 8)" },
 ];
 
 export function EmptyChatGreeting({

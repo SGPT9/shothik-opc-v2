@@ -35,4 +35,24 @@ describe("bKash & Nagad MFS Payment Gateway Modal (MfsGatewayModal.tsx)", () => 
       expect(screen.getByText(/Verification Code \(OTP\)/i)).toBeInTheDocument();
     });
   });
+
+  it("switches to manual TrxID settlement tab and displays 4 canonical micro-pass tiers", async () => {
+    render(
+      <MfsGatewayModal
+        open={true}
+        onOpenChange={() => {}}
+        companyName="VerifiQ AI"
+        initialTab="manual_trx"
+      />
+    );
+
+    expect(screen.getByText(/Offline MFS & Retail Agent Shop TrxID Verification/i)).toBeInTheDocument();
+    expect(screen.getByText(/৳100 Quick Pass/i)).toBeInTheDocument();
+    expect(screen.getByText(/৳350 Student Pack/i)).toBeInTheDocument();
+    expect(screen.getByText(/৳750 Pro Creator/i)).toBeInTheDocument();
+    expect(screen.getByText(/৳1,500 F-Commerce/i)).toBeInTheDocument();
+
+    const trxInput = screen.getByTestId("input-manual-trxid");
+    expect(trxInput).toBeInTheDocument();
+  });
 });

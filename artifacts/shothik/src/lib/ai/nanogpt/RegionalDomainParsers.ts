@@ -107,6 +107,11 @@ export class RegionalDomainParsers {
       'pathao': 'পাঠাও',
       'koren': 'করেন',
       'kivabe': 'কীভাবে',
+      'amar': 'আমার',
+      'dekhe': 'দেখে',
+      'bolo': 'বলো',
+      'koto': 'কত',
+      'lagbe': 'লাগবে',
     };
 
     const words = result.split(/\s+/);
