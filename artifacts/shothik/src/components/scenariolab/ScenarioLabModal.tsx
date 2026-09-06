@@ -34,12 +34,15 @@ import {
   AlertCircle,
   Clock,
   DollarSign,
+  Download,
+  FileSpreadsheet,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 interface ScenarioLabModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialTab?: "reliability" | "financial";
 }
 
 const CATEGORY_CHIPS: { label: string; value: ScenarioCategoryFilter; icon: React.ElementType }[] = [
@@ -56,7 +59,7 @@ const CATEGORY_CHIPS: { label: string; value: ScenarioCategoryFilter; icon: Reac
   { label: "Community Swarm", value: "Community Swarm", icon: Users },
 ];
 
-export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
+export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }: ScenarioLabModalProps) {
   const {
     params,
     simulationSummary,
@@ -69,7 +72,37 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
     triggerSimulation,
   } = useScenarioLab();
 
-  const [activeTab, setActiveTab] = useState<"reliability" | "financial">("reliability");
+  const [activeTab, setActiveTab] = useState<"reliability" | "financial">(initialTab);
+
+  const handleDownloadCsv = () => {
+    const headers = "Scenario Metric,Value,Unit\n";
+    const rows = [
+      `Operating Currency,${params.currency || "USD"},-`,
+      `TAM Billions,${params.tamBillions},Billion`,
+      `SAM Billions,${params.samBillions},Billion`,
+      `SOM Millions,${params.somMillions},Million`,
+      `ARPU,${params.arpuDollars},${simulationSummary.currencySymbol}/mo`,
+      `CAC,${params.cacDollars},${simulationSummary.currencySymbol}`,
+      `Monthly Churn Rate,${params.monthlyChurnPercent},%`,
+      `COD Return Rate,${params.codReturnRatePercent || 18.5},%`,
+      `MFS Cashout Fee,${params.mfsCashoutFeePercent || 1.5},%`,
+      `P10 Pessimistic ARR,${simulationSummary.p10PessimisticARR},${simulationSummary.currencySymbol}`,
+      `P50 Median ARR,${simulationSummary.p50MedianARR},${simulationSummary.currencySymbol}`,
+      `P90 Optimistic ARR,${simulationSummary.p90OptimisticARR},${simulationSummary.currencySymbol}`,
+      `Average Payback Months,${simulationSummary.averagePaybackMonths},Months`,
+      `Effective COD Deduction,${simulationSummary.effectiveCodDeductionPercent},%`,
+      `Calculated LTV,${Math.round(params.arpuDollars / (Math.max(params.monthlyChurnPercent, 0.1) / 100))},${simulationSummary.currencySymbol}`,
+    ].join("\n");
+
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `scenario-lab-financial-model-${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -110,6 +143,7 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
           <TabsList className="grid grid-cols-2 bg-slate-900/80 border border-slate-800 rounded-xl p-1 mb-6">
             <TabsTrigger
               value="reliability"
+              onClick={() => setActiveTab("reliability")}
               className="rounded-lg text-xs font-semibold py-2.5 data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition"
             >
               <ShieldCheck className="h-4 w-4 mr-2" />
@@ -117,6 +151,7 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
             </TabsTrigger>
             <TabsTrigger
               value="financial"
+              onClick={() => setActiveTab("financial")}
               className="rounded-lg text-xs font-semibold py-2.5 data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition"
             >
               <TrendingUp className="h-4 w-4 mr-2" />
@@ -467,18 +502,30 @@ export function ScenarioLabModal({ isOpen, onClose }: ScenarioLabModalProps) {
               <span className="text-xs text-slate-400 font-mono">
                 Monte Carlo Simulation: 900 Runs Completed
               </span>
-              <Button
-                size="sm"
-                onClick={() => {
-                  if (typeof window !== "undefined") {
-                    window.location.href = "/agents/chat?tab=sheet&scenario=exported";
-                  }
-                }}
-                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl px-4 h-8 flex items-center gap-2 shadow-lg shadow-emerald-900/30"
-              >
-                <Sparkles className="h-3.5 w-3.5" />
-                Export Forecast to Sheet Canvas →
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleDownloadCsv}
+                  className="border-slate-700 bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium text-xs rounded-xl px-3 h-8 flex items-center gap-1.5"
+                  data-testid="button-download-scenariolab-csv"
+                >
+                  <Download className="h-3.5 w-3.5 text-indigo-400" />
+                  <span>Download Spreadsheet (.csv)</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.location.href = "/agents/chat?tab=sheet&scenario=exported";
+                    }
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl px-4 h-8 flex items-center gap-2 shadow-lg shadow-emerald-900/30"
+                >
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Export Forecast to Sheet Canvas →
+                </Button>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
