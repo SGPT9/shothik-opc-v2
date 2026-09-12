@@ -1,7 +1,1 @@
-```markdown
-# Documentation files - preserve as source
-!docs/
-
-# No build artifacts, dependencies, or temp files detected in changes
-# Only documentation markdown files were added
-```
+(docs/design/01_UI_UX_DESIGN_PHILOSOPHY.md, docs/personas/00_PERSONA_INDEX.md, docs/personas/01_FCOMMERCE_OPERATOR_RINA.md, docs/personas/02_ACADEMIC_RESEARCHER_RAHMAN.md, docs/personas/03_ZERO_CAPITAL_CREATOR_KARIM.md, docs/personas/04_SME_OPERATOR_AHMED.md)
