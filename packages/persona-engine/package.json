@@ -1,0 +1,57 @@
+{
+  "name": "@shothik/persona-engine",
+  "version": "2.7.0",
+  "description": "ShothikGPT Persona Engine - 50-Persona Demographic Library with HE-DE Behavioral Framework",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "shothik",
+    "persona",
+    "bangladesh",
+    "south-asia",
+    "f-commerce",
+    "he-de-collaboration",
+    "gtm",
+    "monetization"
+  ],
+  "author": "Shothik AI Team",
+  "license": "PROPRIETARY",
+  "private": true,
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0",
+    "eslint": "^9.0.0",
+    "@types/node": "^22.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shothik-ai/shothik-opc-v2.git",
+    "directory": "packages/persona-engine"
+  },
+  "bugs": {
+    "url": "https://github.com/shothik-ai/shothik-opc-v2/issues"
+  },
+  "homepage": "https://github.com/shothik-ai/shothik-opc-v2#readme"
+}

@@ -1,1 +1,69 @@
-(docs/design/01_UI_UX_DESIGN_PHILOSOPHY.md, docs/personas/00_PERSONA_INDEX.md, docs/personas/01_FCOMMERCE_OPERATOR_RINA.md, docs/personas/02_ACADEMIC_RESEARCHER_RAHMAN.md, docs/personas/03_ZERO_CAPITAL_CREATOR_KARIM.md, docs/personas/04_SME_OPERATOR_AHMED.md)
+```
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+target/
+
+# TypeScript
+*.tsbuildinfo
+*.js.map
+
+# Environment
+.env
+.env.local
+.env.*
+
+# Editors
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Python (if any Python files exist in the project)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Coverage reports
+coverage/
+htmlcov/
+.coverage
+
+# Testing
+.jest/
+.nyc_output/
+
+# Package manager caches
+.npm/
+.yarn/
+.pnpm-store/
+
+# Compiled binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Compressed archives
+*.zip
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.gz
+*.rar
+*.7z
+```
