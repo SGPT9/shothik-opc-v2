@@ -40,7 +40,9 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 27 | Mushak-9.1 Monthly VAT Return Aggregator | Tax & Legal | done |
 | 28 | WhatsApp Commerce & Automated Merchant Agent Hub | Slice 28 | done |
 | 29 | Autonomous AI Outbound Calling & COD Order Verification | Slice 29 | done |
-| 30 | Cross-Border Sourcing & Customs Declaration Engine | Slice 30 | active |
+| 30 | Cross-Border Sourcing & Customs Declaration Engine | Slice 30 | done |
+| 31 | Platform Elevators & Viral Growth Triggers | Slice 31 | done |
+| 32 | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Slice 32 | active |
 
 ---
 
@@ -111,7 +113,24 @@ AliExpress/Taobao/1688 import costing engine, Bangladesh Customs Harmonized Syst
 - [x] Test it: `/test cross border sourcing customs`
 spec 0030 · code in `artifacts/api-server/src/lib/customs/cross-border-engine.ts`, `artifacts/api-server/src/routes/customs.ts`, and `artifacts/shothik/src/components/twin/CrossBorderCustomsModal.tsx`
 
-### 31. Multi-Tenant Franchise & Multi-Branch Stock Allocation · active
+### 31. Platform Elevators & Viral Growth Triggers · done
+Product-Led Growth (PLG) mechanics for One-Person Companies: 4-tier operational elevator (Rookie Solopreneur -> Rising OPC -> Power Merchant -> Enterprise Franchise), composite Merchant Health Index (MHI), viral watermarked Mushak-6.3 digital receipts, bKash cashback referral ledger, verifiable COD trust badges, and 1688 group-sourcing cohorts.
+**Done when:** Engine computes MHI score and unlocks tier powers, generates referral ledger with cashback tracking, and facilitates group import cohorts.
+- [x] Design it (spec): `/architect platform elevators viral triggers` (Spec 0031)
+- [x] Build it: `/develop platform elevators viral triggers`
+   - [x] Deterministic MHI calculation & 4-tier elevator engine (AC-1, AC-2)
+   - [x] Referral cashback ledger & viral receipt watermark generator (AC-3)
+   - [x] 1688 group-sourcing cohort pool manager (AC-4)
+   - [x] Express API routes mounted under `/api/v1/growth/` (AC-1, AC-3, AC-4)
+   - [x] Frontend Twin Platform Elevators & Viral Growth Modal with shortcut ⌘G (AC-5)
+- [x] Verify it: `/check verify platform elevators viral triggers`
+- [x] Test it: `/test platform elevators viral triggers`
+spec 0031 · code in `artifacts/api-server/src/lib/growth/`, `artifacts/api-server/src/routes/growth.ts`, and `artifacts/shothik/src/components/twin/PlatformElevatorsViralModal.tsx`
+
+### 32. Multi-Tenant Franchise & Multi-Branch Stock Allocation · active
+Multi-branch stock allocation, franchise commission splitting, automated inter-branch transfers, and decentralized bKash sub-merchant settlement.
+**Done when:** Merchant creates franchise nodes, tracks inter-branch stock movements, and calculates net franchisee commissions.
+- [ ] Design it (spec): `/architect franchise multi branch stock`
 Multi-branch stock allocation, franchise commission splitting, automated inter-branch transfers, and decentralized bKash sub-merchant settlement.
 **Done when:** Merchant creates franchise nodes, tracks inter-branch stock movements, and calculates net franchisee commissions.
 - [ ] Design it (spec): `/architect franchise multi branch stock`

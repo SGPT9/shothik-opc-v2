@@ -81,6 +81,7 @@ export interface TwinCommandPaletteProps {
   onOpenMushakTaxStudio?: () => void;
   onOpenOutboundCalling?: () => void;
   onOpenCrossBorderCustoms?: () => void;
+  onOpenPlatformElevators?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -150,6 +151,7 @@ export function TwinCommandPalette({
   onOpenMushakTaxStudio,
   onOpenOutboundCalling,
   onOpenCrossBorderCustoms,
+  onOpenPlatformElevators,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -438,6 +440,23 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Automated 9:16 vertical reels & product promo generator</span>
               </div>
             </div>
+          </CommandItem>
+
+          <CommandItem
+            value="platform elevators viral growth merchant health index mhi referral bkash cashback 1688 group sourcing trust badge"
+            onSelect={() => handleSelect(onOpenPlatformElevators)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Platform Elevators & Viral Growth</span>
+                <span className="text-[11px] text-zinc-500">MHI tier progression, bKash referral cashback & 1688 group import cohorts</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘G</CommandShortcut>
           </CommandItem>
         </CommandGroup>
 
