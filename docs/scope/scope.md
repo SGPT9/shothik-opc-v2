@@ -38,9 +38,9 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 25 | Automated Daily Accounting & bKash Settlement Engine | Accounting | done |
 | 26 | NBR Mushak-6.3 VAT Invoice & TDS Statutory Studio | Tax & Legal | done |
 | 27 | Mushak-9.1 Monthly VAT Return Aggregator | Tax & Legal | done |
-| 28 | WhatsApp Commerce & Automated Merchant Agent Hub | Slice 28 | planned |
-| 29 | Autonomous AI Outbound Calling & COD Order Verification | Slice 29 | deferred |
-| 30 | Cross-Border Sourcing & Customs Declaration Engine | Slice 30 | deferred |
+| 28 | WhatsApp Commerce & Automated Merchant Agent Hub | Slice 28 | done |
+| 29 | Autonomous AI Outbound Calling & COD Order Verification | Slice 29 | active |
+| 30 | Cross-Border Sourcing & Customs Declaration Engine | Slice 30 | planned |
 
 ---
 
@@ -68,30 +68,34 @@ spec 0026 · code in `artifacts/api-server/src/lib/tax/` and `artifacts/shothik/
 
 ---
 
-## Active Slice (Slice 28)
+## Active Slices
 
-### 28. WhatsApp Commerce & Automated Merchant Agent Hub · in-progress
+### 28. WhatsApp Commerce & Automated Merchant Agent Hub · done
 Interactive conversational catalog, two-way WhatsApp message handler, automatic Banglish order extraction, cart checkout generation, and supervised notification queue.
 **Done when:** Incoming customer WhatsApp text/audio creates structured cart drafts, prompts merchant confirmation on high-value orders, and dispatches tracking updates.
 - [x] Design it (spec): `/architect whatsapp commerce merchant hub`
-- [ ] Build it: `/develop whatsapp commerce merchant hub`
-   - [ ] Webhook receiver & HMAC signature validation (AC-1, AC-6)
-   - [ ] Banglish conversational cart & Mushak tax/delivery engine (AC-2, AC-3)
-   - [ ] Supervised Autonomy review for high-value orders > ৳10,000 (AC-4)
-   - [ ] Frontend Twin WhatsApp Live Studio Modal with keyboard shortcut (AC-5)
-- [ ] Verify it: `/check verify whatsapp commerce merchant hub`
-- [ ] Test it: `/test whatsapp commerce merchant hub`
-spec 0028 · code in `artifacts/api-server/src/routes/whatsapp.ts`
+- [x] Build it: `/develop whatsapp commerce merchant hub`
+   - [x] Webhook receiver & HMAC signature validation (AC-1, AC-6)
+   - [x] Banglish conversational cart & Mushak tax/delivery engine (AC-2, AC-3)
+   - [x] Supervised Autonomy review for high-value orders >= ৳10,000 (AC-4)
+   - [x] Frontend Twin WhatsApp Live Studio Modal with keyboard shortcut (AC-5)
+- [x] Verify it: `/check verify whatsapp commerce merchant hub`
+- [x] Test it: `/test whatsapp commerce merchant hub`
+spec 0028 · code in `artifacts/api-server/src/routes/whatsapp.ts`, `artifacts/api-server/src/lib/commerce/whatsapp-cart-engine.ts`, and `artifacts/shothik/src/components/twin/WhatsAppCommerceModal.tsx`
 
+### 29. Autonomous AI Outbound Calling & COD Order Verification · active
+Autonomous voice agent that calls customer phone numbers in natural Bengali to verify high-risk COD orders, confirm exact delivery addresses, and filter bogus orders before dispatching to Pathao/Steadfast.
+**Done when:** Automated SIP/WebRTC audio bot dials recipient phone, transcribes customer confirmation, and updates order status to `verified_for_dispatch` or `cancelled_fraud`.
+- [ ] Design it (spec): `/architect ai outbound phone verification`
 
 ---
 
 ## Deferred Features
 
 Out of scope for the current build pass, tracked for future releases:
-- **Autonomous AI Outbound Calling (Slice 29)**: Phone call bot to confirm COD address before courier dispatch · needs a decision · GA
 - **Cross-Border Sourcing & Customs Declaration (Slice 30)**: AliExpress/Taobao direct import calculation with Bangladesh Customs HS codes · needs a decision · Beta
 - **Multi-Tenant Franchise Management**: Multi-branch stock allocation and franchise commission split · deferred
+
 
 ---
 

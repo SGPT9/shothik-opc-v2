@@ -22,11 +22,13 @@ Manually tracking these conversations causes high lead leakage, missed followups
 
 **Acceptance criteria**:
 - **AC-1**: Webhook endpoint verifies incoming WhatsApp payload signatures and ingests customer messages (text, image, audio) within 500ms.
-- **AC-2**: Banglish NLP parser extracts item quantities, size/color variations, and delivery districts (Inside Dhaka vs Outside Dhaka) into a validated cart object.
-- **AC-3**: Tax and delivery calculations apply statutory Mushak-6.3 VAT and standard Pathao/Steadfast logistics rates based on destination.
-- **AC-4**: Orders exceeding 10000 BDT or requesting discounts greater than 15 percent transition to `pending_merchant_approval` rather than auto confirming.
-- **AC-5**: Twin UI displays a real-time WhatsApp Conversation Studio with one-click approval, interactive catalog sharing, and bKash payment link generation.
-- **AC-6**: System handles duplicate webhook deliveries idempotently using WhatsApp message IDs.
+- **AC-2**: Banglish NLP parser extracts item quantities, size/color variations, and delivery districts (Inside Dhaka vs Outside Dhaka) using incremental session slot-filling.
+- **AC-3**: Confidence-Gated Resolution: High confidence (p >= 0.85) auto-binds cart; Medium confidence (0.40 <= p < 0.85) dispatches interactive WhatsApp MPM quick-selection buttons; Low confidence (p < 0.40) routes to Merchant Twin Copilot inbox.
+- **AC-4**: Tax and delivery calculations apply statutory Mushak-6.3 VAT and standard Pathao/Steadfast logistics rates based on destination.
+- **AC-5**: Orders exceeding 10000 BDT or requesting custom discounts greater than 15 percent transition to `pending_merchant_approval` rather than auto confirming.
+- **AC-6**: Twin UI displays a real-time WhatsApp Conversation Studio with 1-click approval, interactive catalog sharing, and bKash payment link generation.
+- **AC-7**: System handles duplicate webhook deliveries idempotently using WhatsApp message IDs.
+
 
 ## Options considered
 
