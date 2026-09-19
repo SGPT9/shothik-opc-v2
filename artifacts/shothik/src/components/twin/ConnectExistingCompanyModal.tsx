@@ -61,9 +61,10 @@ export function ConnectExistingCompanyModal({
     setIsScanning(true);
     setScanResult(null);
 
+    const stepDelay = typeof process !== "undefined" && process.env.NODE_ENV === "test" ? 10 : 350;
     for (let i = 0; i < SCAN_LOGS.length; i++) {
       setScanStep(i);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, stepDelay));
     }
 
     const domainClean = url.replace(/https?:\/\//i, "").replace(/\/.*$/, "");
