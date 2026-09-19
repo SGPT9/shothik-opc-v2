@@ -15,12 +15,18 @@ This document establishes the UI architecture, state management patterns, and te
 ---
 
 ## 2. Twin Architecture & Modals (`src/components/twin/`)
-The primary UI shell runs the **Twin Doctrine** (OPC merchant command center):
-- **Command Palette (`TwinCommandPalette.tsx`):** Triggered by `⌘K` or `Ctrl+K`. Global shortcut dispatcher for all merchant tools.
+The primary UI shell runs the **Twin Doctrine** (OPC merchant command center with 34 specialized modals):
+- **Command Palette (`TwinCommandPalette.tsx`):** Triggered by `⌘K` or `Ctrl+K`. Global shortcut dispatcher for all 34 tools.
 - **Mushak Tax Studio (`MushakTaxStudioModal.tsx`):** Triggered by `⌘X` or `Ctrl+X`. 4-tab studio (Invoice Generator, Statutory Printable Canvas, TDS Ledger, Mushak-9.1 Summary).
-- **bKash/Nagad Payment Hub (`PaymentModal.tsx`):** Triggered by `⌘B`. MFS merchant transfers and ledger.
-- **Courier Logistics Hub (`CourierModal.tsx`):** Triggered by `⌘C`. Pathao and Steadfast parcel booking.
-- **Supervised Gatekeeper Modal (`SupervisedApprovalModal.tsx`):** Required for any protected actions > ৳10,000 or irreversible broadcasts.
+- **AI Outbound Phone Verification (`OutboundCallVerificationModal.tsx`):** Triggered by `⌘O` or `Ctrl+O`. Voice IVR bot, Banglish intent parsing, BTRC compliance window (09:00-20:00 BST), Steadfast auto-dispatch.
+- **WhatsApp Commerce & bKash QR (`WhatsAppCommerceModal.tsx`):** Triggered by `⌘W` or `Ctrl+W`. Multi-dialect customer assistant, bKash dynamic QR, Steadfast parcel booking.
+- **Multi-Dialect Voice Commander (`MultiDialectVoiceTwinModal.tsx`):** Triggered by `⌘V` or `Ctrl+V`. Hands-free speech avatar.
+- **Swarm Graph Studio (`SwarmGraphStudioModal.tsx`):** Triggered by `⌘G` or `Ctrl+G`. Visual DAG execution graph of autonomous subagents.
+- **Vast.ai Spot GPU Orchestrator (`VastSpotGpuModal.tsx`):** Triggered by `⌘B` or `Ctrl+B`. Spot cluster allocation & fallback inference.
+- **CRDT Edge Mesh Studio (`EdgeMeshStudioModal.tsx`):** Triggered by `⌘E` or `Ctrl+E`. P2P offline state sync.
+- **Canary Traffic Director (`CanaryTrafficDirectorModal.tsx`):** Triggered by `⌘T` or `Ctrl+T`. Blue/green traffic splitting.
+- **Courier Logistics Hub (`SteadfastCourierModal.tsx`):** Live consignment booking & printable shipping labels.
+- **Supervised Gatekeeper Modal (`SupervisedApprovalModal.tsx`):** Mandatory founder approval for any protected actions >= ৳10,000 or irreversible public broadcasts.
 
 ---
 

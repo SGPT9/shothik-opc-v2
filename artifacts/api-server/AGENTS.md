@@ -39,10 +39,14 @@ Therefore, all route files under `src/routes/` MUST declare their paths starting
 ---
 
 ## 4. Domain Subsystems
-- **Tax & Compliance (`src/lib/tax/`):** NBR Mushak-6.3 VAT calculations (0%, 5%, 7.5%, 10%, 15%), TDS withholding, BIN 13-digit checksum, QR token verification.
-- **Payment Gateways (`src/routes/payment.ts`):** bKash PGW, Nagad direct checkout, COD fraud scoring.
-- **Logistics (`src/routes/courier.ts`):** Pathao Merchant API, Steadfast Courier webhook reconciliation.
-- **Model Router (`src/lib/router.ts`):** Speculative inference classifier, Bangla/Banglish token routing.
+- **Tax & Statutory Compliance (`src/lib/tax/`):** NBR Mushak-6.3 VAT calculations (0%, 5%, 7.5%, 10%, 15%), TDS withholding (2%-10%), 13-digit BIN Luhn check, Mushak-9.1 return aggregator, official printable HTML challan.
+- **BTRC Telephony & Voice IVR (`src/lib/telephony/`):** Autonomous outbound calling for COD order verification, BTRC compliance window (09:00-20:00 BST), Banglish speech intent parsing, Steadfast auto-booking.
+- **WhatsApp Commerce & MFS QR (`src/lib/commerce/`):** WhatsApp catalog cart session engine, multi-dialect customer assistant, instant bKash dynamic QR generation.
+- **Nilkhet Commercial POD Press (`src/lib/publishing/`):** CMYK imposition calculator, paper weight/spine thickness compiler, print job ticket dispatch.
+- **Second-Me Semantic Memory (`src/lib/memory/`):** Vector embeddings, episodic fact extraction, long-term memory retrieval.
+- **Payment Gateways (`src/routes/payment.ts`, `src/lib/mfs/`):** bKash PGW (1.85% fee), Nagad direct checkout (1.50% fee), COD fraud risk scoring.
+- **Courier Logistics (`src/routes/courier.ts`, `src/lib/courier/`):** Pathao Merchant API, Steadfast Courier live parcel consignment & tracking.
+- **Model Router (`src/lib/router.ts`):** Sub-50ms speculative inference mesh, Bangla & Banglish dialect token routing.
 
 ---
 
