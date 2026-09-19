@@ -111,7 +111,10 @@ Before making changes, confirm:
 - [artifacts/shothik/AGENTS.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/AGENTS.md) (React/Next.js frontend architecture, Twin modals, keyboard shortcuts, and UI test scripts)
 - [lib/db/AGENTS.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/db/AGENTS.md) (Drizzle ORM schemas, PostgreSQL connection, and migration patterns)
 - [lib/hermes/AGENTS.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/hermes/AGENTS.md) (Asynchronous message bus, Redis Streams, and idempotent task queues)
+- [lib/office-engine/AGENTS.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/lib/office-engine/AGENTS.md) (Office DOCX, PPTX slide deck, and spreadsheet generation engines)
+- [packages/taste-skill/AGENTS.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/packages/taste-skill/AGENTS.md) (AI design taste heuristics, UI scoring, and typography standards)
 - [docs/scope/scope.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/scope/scope.md) (Living feature scope and roadmap)
+
 
 
 ---
