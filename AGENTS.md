@@ -106,5 +106,13 @@ Before making changes, confirm:
 
 ---
 
+## Context Files
+- [artifacts/api-server/AGENTS.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/api-server/AGENTS.md) (Express API server architecture, route mounting rules, and test scripts)
+- [artifacts/shothik/AGENTS.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/artifacts/shothik/AGENTS.md) (React/Next.js frontend architecture, Twin modals, keyboard shortcuts, and UI test scripts)
+- [docs/scope/scope.md](file:///c:/Users/USER/hermes/shothik-web-mirror-v2/docs/scope/scope.md) (Living feature scope and roadmap)
+
+---
+
 *These rules take precedence over feature enthusiasm.*  
 **ShothikGPT • September 2026**
+
