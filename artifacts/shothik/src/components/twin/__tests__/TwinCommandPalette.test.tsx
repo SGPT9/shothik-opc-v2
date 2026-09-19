@@ -82,5 +82,9 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
     const wasmItem = screen.getByText("WebAssembly Edge CRDT Sync");
     fireEvent.click(wasmItem);
     expect(onOpenWasmCrdtSync).toHaveBeenCalledTimes(1);
+
+    // Select NBR Mushak-6.3 Tax Studio
+    const taxItem = screen.getByText("NBR Mushak-6.3 Statutory VAT & TDS Studio");
+    expect(taxItem).toBeInTheDocument();
   });
 });

@@ -48,8 +48,11 @@ import twinTasksRouter from "./twin-tasks";
 import papermarkRouter from "./papermark";
 import demographyDialectsRouter from "./demography-dialects";
 
+import taxRouter from "./tax.js";
+
 const router: IRouter = Router();
 
+router.use(taxRouter);
 router.use("/telemetry", telemetryRouter);
 router.use(agentTracesRouter);
 router.use(authRouter);
