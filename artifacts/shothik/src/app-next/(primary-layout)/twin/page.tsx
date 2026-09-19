@@ -50,6 +50,7 @@ import { MushakTaxStudioModal } from "@/components/twin/MushakTaxStudioModal";
 import { OutboundCallVerificationModal } from "@/components/twin/OutboundCallVerificationModal";
 import { CrossBorderCustomsModal } from "@/components/twin/CrossBorderCustomsModal";
 import { PlatformElevatorsViralModal } from "@/components/twin/PlatformElevatorsViralModal";
+import { FranchiseMultiBranchModal } from "@/components/twin/FranchiseMultiBranchModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -356,8 +357,9 @@ export default function TwinPage() {
   const [outboundCallingOpen, setOutboundCallingOpen] = useState(false);
   const [crossBorderCustomsOpen, setCrossBorderCustomsOpen] = useState(false);
   const [platformElevatorsOpen, setPlatformElevatorsOpen] = useState(false);
+  const [franchiseMultiBranchOpen, setFranchiseMultiBranchOpen] = useState(false);
 
-  // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U and multi-tool keyboard shortcut listeners
+  // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F and multi-tool keyboard shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -375,6 +377,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "u") {
         e.preventDefault();
         setCrossBorderCustomsOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
+        e.preventDefault();
+        setFranchiseMultiBranchOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
@@ -2174,6 +2179,7 @@ export default function TwinPage() {
         onOpenOutboundCalling={() => setOutboundCallingOpen(true)}
         onOpenCrossBorderCustoms={() => setCrossBorderCustomsOpen(true)}
         onOpenPlatformElevators={() => setPlatformElevatorsOpen(true)}
+        onOpenFranchiseMultiBranch={() => setFranchiseMultiBranchOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2204,6 +2210,7 @@ export default function TwinPage() {
       <OutboundCallVerificationModal open={outboundCallingOpen} onOpenChange={setOutboundCallingOpen} companyName={companyName} />
       <CrossBorderCustomsModal isOpen={crossBorderCustomsOpen} onClose={() => setCrossBorderCustomsOpen(false)} />
       <PlatformElevatorsViralModal isOpen={platformElevatorsOpen} onClose={() => setPlatformElevatorsOpen(false)} />
+      <FranchiseMultiBranchModal isOpen={franchiseMultiBranchOpen} onClose={() => setFranchiseMultiBranchOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
