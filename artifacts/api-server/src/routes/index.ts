@@ -51,12 +51,14 @@ import demographyDialectsRouter from "./demography-dialects";
 import taxRouter from "./tax.js";
 import telephonyRouter from "./telephony.js";
 import { customsRouter } from "./customs.js";
+import { growthRouter } from "./growth.js";
 
 const router: IRouter = Router();
 
 router.use(taxRouter);
 router.use(telephonyRouter);
 router.use(customsRouter);
+router.use(growthRouter);
 router.use("/telemetry", telemetryRouter);
 router.use(agentTracesRouter);
 router.use(authRouter);

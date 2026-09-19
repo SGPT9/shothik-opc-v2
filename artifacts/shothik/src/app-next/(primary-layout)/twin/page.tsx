@@ -49,6 +49,7 @@ import { WhatsAppCommerceModal } from "@/components/twin/WhatsAppCommerceModal";
 import { MushakTaxStudioModal } from "@/components/twin/MushakTaxStudioModal";
 import { OutboundCallVerificationModal } from "@/components/twin/OutboundCallVerificationModal";
 import { CrossBorderCustomsModal } from "@/components/twin/CrossBorderCustomsModal";
+import { PlatformElevatorsViralModal } from "@/components/twin/PlatformElevatorsViralModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -354,6 +355,7 @@ export default function TwinPage() {
   const [mushakTaxStudioOpen, setMushakTaxStudioOpen] = useState(false);
   const [outboundCallingOpen, setOutboundCallingOpen] = useState(false);
   const [crossBorderCustomsOpen, setCrossBorderCustomsOpen] = useState(false);
+  const [platformElevatorsOpen, setPlatformElevatorsOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -2171,6 +2173,7 @@ export default function TwinPage() {
         onOpenMushakTaxStudio={() => setMushakTaxStudioOpen(true)}
         onOpenOutboundCalling={() => setOutboundCallingOpen(true)}
         onOpenCrossBorderCustoms={() => setCrossBorderCustomsOpen(true)}
+        onOpenPlatformElevators={() => setPlatformElevatorsOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2200,6 +2203,7 @@ export default function TwinPage() {
       <MushakTaxStudioModal open={mushakTaxStudioOpen} onOpenChange={setMushakTaxStudioOpen} />
       <OutboundCallVerificationModal open={outboundCallingOpen} onOpenChange={setOutboundCallingOpen} companyName={companyName} />
       <CrossBorderCustomsModal isOpen={crossBorderCustomsOpen} onClose={() => setCrossBorderCustomsOpen(false)} />
+      <PlatformElevatorsViralModal isOpen={platformElevatorsOpen} onClose={() => setPlatformElevatorsOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
