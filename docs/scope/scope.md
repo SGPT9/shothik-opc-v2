@@ -42,7 +42,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 29 | Autonomous AI Outbound Calling & COD Order Verification | Slice 29 | done |
 | 30 | Cross-Border Sourcing & Customs Declaration Engine | Slice 30 | done |
 | 31 | Platform Elevators & Viral Growth Triggers | Slice 31 | done |
-| 32 | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Slice 32 | active |
+| 32 | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Slice 32 | done |
 
 ---
 
@@ -127,13 +127,10 @@ Product-Led Growth (PLG) mechanics for One-Person Companies: 4-tier operational 
 - [x] Test it: `/test platform elevators viral triggers`
 spec 0031 · code in `artifacts/api-server/src/lib/growth/`, `artifacts/api-server/src/routes/growth.ts`, and `artifacts/shothik/src/components/twin/PlatformElevatorsViralModal.tsx`
 
-### 32. Multi-Tenant Franchise & Multi-Branch Stock Allocation · active
-Multi-branch stock allocation, franchise commission splitting, automated inter-branch transfers, and decentralized bKash sub-merchant settlement.
-**Done when:** Merchant creates franchise nodes, tracks inter-branch stock movements, and calculates net franchisee commissions.
-- [ ] Design it (spec): `/architect franchise multi branch stock`
-Multi-branch stock allocation, franchise commission splitting, automated inter-branch transfers, and decentralized bKash sub-merchant settlement.
-**Done when:** Merchant creates franchise nodes, tracks inter-branch stock movements, and calculates net franchisee commissions.
-- [ ] Design it (spec): `/architect franchise multi branch stock`
+### 32. Multi-Tenant Franchise & Multi-Branch Stock Allocation · done
+Multi-branch stock allocation, 3-way commission waterfall splitting (COGS replenishment + master royalty + franchisee margin), atomic inter-branch stock transfers (IBST) with courier tracking and 6-digit OTP reception handshake, and decentralized bKash sub-merchant settlement.
+**Done when:** Merchant creates franchise nodes, tracks inter-branch stock movements with OTP verification, and automates bKash sub-merchant royalty disbursements.
+spec 0032 · code in `artifacts/api-server/src/lib/franchise/`, `artifacts/api-server/src/routes/franchise.ts`, and `artifacts/shothik/src/components/twin/FranchiseMultiBranchModal.tsx`
 
 ---
 

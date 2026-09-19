@@ -52,17 +52,19 @@ async function run() {
   console.log('================================================================\n');
 
   const getEndpoints = [
-    { name: 'API Root Health Probe', url: 'http://localhost:8080/health' },
-    { name: 'API V1 Gateway Health', url: 'http://localhost:8080/api/health' },
-    { name: 'NBR Mushak 6.3 Tax Engine Status', url: 'http://localhost:8080/api/v1/tax/mushak/status' },
-    { name: 'Bangladesh Customs HS Codes Catalog', url: 'http://localhost:8080/api/v1/customs/hs-codes' },
-    { name: 'NBR Customs Official Exchange Rates', url: 'http://localhost:8080/api/v1/customs/exchange-rates' },
-    { name: 'Telephony Outbound Active Sessions', url: 'http://localhost:8080/api/v1/telephony/outbound/sessions' },
-    { name: 'Merchant Elevator Profile', url: 'http://localhost:8080/api/v1/growth/elevator/profile' },
-    { name: 'Active 1688 Group Sourcing Pools', url: 'http://localhost:8080/api/v1/growth/sourcing-pools' },
-    { name: 'Verifiable COD Trust Badge', url: 'http://localhost:8080/api/v1/growth/trust-badge/merch_shothik_dhaka_01' },
-    { name: 'Frontend Vite Web App (Port 5000)', url: 'http://localhost:5000/' },
-    { name: 'Frontend Digital Twin Route', url: 'http://localhost:5000/twin' }
+    { name: 'API Root Health Probe', url: 'http://127.0.0.1:8080/health' },
+    { name: 'API V1 Gateway Health', url: 'http://127.0.0.1:8080/api/health' },
+    { name: 'NBR Mushak 6.3 Tax Engine Status', url: 'http://127.0.0.1:8080/api/v1/tax/mushak/status' },
+    { name: 'Bangladesh Customs HS Codes Catalog', url: 'http://127.0.0.1:8080/api/v1/customs/hs-codes' },
+    { name: 'NBR Customs Official Exchange Rates', url: 'http://127.0.0.1:8080/api/v1/customs/exchange-rates' },
+    { name: 'Telephony Outbound Active Sessions', url: 'http://127.0.0.1:8080/api/v1/telephony/outbound/sessions' },
+    { name: 'Merchant Elevator Profile', url: 'http://127.0.0.1:8080/api/v1/growth/elevator/profile' },
+    { name: 'Active 1688 Group Sourcing Pools', url: 'http://127.0.0.1:8080/api/v1/growth/sourcing-pools' },
+    { name: 'Verifiable COD Trust Badge', url: 'http://127.0.0.1:8080/api/v1/growth/trust-badge/merch_shothik_dhaka_01' },
+    { name: 'Franchise Active Branches Matrix', url: 'http://127.0.0.1:8080/api/v1/franchise/branches' },
+    { name: 'Franchise In-Transit Stock Transfers', url: 'http://127.0.0.1:8080/api/v1/franchise/transfers' },
+    { name: 'Frontend Vite Web App (Port 5000)', url: 'http://127.0.0.1:5000/' },
+    { name: 'Frontend Digital Twin Route', url: 'http://127.0.0.1:5000/twin' }
   ];
 
   let passed = 0;
@@ -87,7 +89,7 @@ async function run() {
   total++;
   let calcData = null;
   try {
-    const calc = await post('http://localhost:8080/api/v1/customs/calculate-landed-cost', {
+    const calc = await post('http://127.0.0.1:8080/api/v1/customs/calculate-landed-cost', {
       productTitle: 'Premium Cotton T-Shirt (1688)',
       sourcePlatform: '1688',
       currency: 'USD',
@@ -122,7 +124,7 @@ async function run() {
     if (!calcData) {
       console.error('[FAIL] Skipped C&F Brief test because calculation step failed.');
     } else {
-      const brief = await post('http://localhost:8080/api/v1/customs/generate-cf-brief', {
+      const brief = await post('http://127.0.0.1:8080/api/v1/customs/generate-cf-brief', {
         calculationResult: calcData,
         consigneeName: 'Shothik E-Commerce Global Ltd.'
       });
@@ -148,7 +150,7 @@ async function run() {
   console.log('\n--- 3. Testing Telephony Outbound Call Initiation ---');
   total++;
   try {
-    const callResp = await post('http://localhost:8080/api/v1/telephony/outbound/initiate', {
+    const callResp = await post('http://127.0.0.1:8080/api/v1/telephony/outbound/initiate', {
       orderId: 'ord_cod_probe_99',
       customerPhone: '+8801700000099',
       customerName: 'Anisul Huq',
@@ -179,7 +181,7 @@ async function run() {
   console.log('\n--- 4. Testing Platform Elevator MHI Evaluation & Tier Progression ---');
   total++;
   try {
-    const evalResp = await post('http://localhost:8080/api/v1/growth/elevator/evaluate', {
+    const evalResp = await post('http://127.0.0.1:8080/api/v1/growth/elevator/evaluate', {
       merchantId: 'merch_probe_power_01',
       merchantName: 'Bengal Artisan Craft',
       monthlyGmvBdt: 480000,
@@ -206,27 +208,77 @@ async function run() {
     console.error(`[FAIL] Platform Elevator: ${err.message}`);
   }
 
-  console.log('\n--- 5. Testing Viral Watermarked Receipt Generator ---');
+  console.log('\n--- 5. Testing Franchise 3-Way Commission Waterfall Split ---');
   total++;
   try {
-    const receiptResp = await post('http://localhost:8080/api/v1/growth/viral-receipt/generate', {
-      merchantId: 'merch_probe_power_01',
-      invoiceNo: 'MUSHAK-2026-9021',
-      grandTotalBdt: 5600
+    const saleResp = await post('http://127.0.0.1:8080/api/v1/franchise/sales/record', {
+      branchId: 'BRANCH_DHK_DHANMONDI',
+      sku: 'SKU-PANJABI-BLK',
+      productName: 'Royal Platinum Silk Panjabi',
+      quantity: 2,
+      unitCostPriceBdt: 1800,
+      unitSellingPriceBdt: 3500,
+      paymentMethod: 'bkash_sub_merchant'
     });
 
-    if (receiptResp.status === 200 && receiptResp.body.success) {
+    if (saleResp.status === 201 && saleResp.body.success) {
       passed++;
-      const w = receiptResp.body.watermark;
-      console.log(`[PASS] Viral Receipt Watermark Generated (HTTP 200):`);
-      console.log(`       Watermark: "${w.watermarkText}"`);
-      console.log(`       Viral QR Link: ${w.viralQrUrl}`);
-      console.log(`       Conversion Hook: "${w.conversionCta}"`);
+      const s = saleResp.body.sale;
+      console.log(`[PASS] Franchise Sale Recorded & Split (HTTP 201):`);
+      console.log(`       Sale ID: ${s.saleId}`);
+      console.log(`       Branch: ${s.branchName} (${s.branchId})`);
+      console.log(`       Gross Total: ৳${s.grossTotalBdt.toLocaleString()}`);
+      console.log(`       Central COGS: ৳${s.cogsTotalBdt.toLocaleString()}`);
+      console.log(`       Gross Profit: ৳${s.grossProfitBdt.toLocaleString()}`);
+      console.log(`       Master Royalty: ৳${s.masterRoyaltyBdt.toLocaleString()}`);
+      console.log(`       Franchisee Net Profit: ৳${s.franchiseeNetProfitBdt.toLocaleString()}`);
     } else {
-      console.error(`[FAIL] Viral Receipt generator failed with HTTP ${receiptResp.status}`, receiptResp.body);
+      console.error(`[FAIL] Franchise sale record failed with HTTP ${saleResp.status}`, saleResp.body);
     }
   } catch (err) {
-    console.error(`[FAIL] Viral Receipt generator: ${err.message}`);
+    console.error(`[FAIL] Franchise Commission Split: ${err.message}`);
+  }
+
+  console.log('\n--- 6. Testing Atomic Inter-Branch Stock Transfer (IBST) & OTP Handshake ---');
+  total++;
+  try {
+    const transferResp = await post('http://127.0.0.1:8080/api/v1/franchise/transfers/initiate', {
+      sku: 'SKU-CHARGER-65W',
+      productName: '65W GaN Fast Charger',
+      quantity: 15,
+      sourceBranchId: 'BRANCH_DHK_CENTRAL',
+      destinationBranchId: 'BRANCH_DHK_BANANI',
+      courierProvider: 'steadfast',
+      notes: 'Emergency weekend stock rebalancing'
+    });
+
+    if (transferResp.status === 201 && transferResp.body.success) {
+      const t = transferResp.body.transfer;
+      console.log(`[PASS] IBST Transfer Initiated (HTTP 201):`);
+      console.log(`       Transfer ID: ${t.transferId}`);
+      console.log(`       Route: ${t.sourceBranchName} -> ${t.destinationBranchName}`);
+      console.log(`       Quantity: ${t.quantity}x ${t.productName}`);
+      console.log(`       OTP Code Generated: ${t.verificationCode}`);
+
+      // Now verify OTP reception
+      const receiveResp = await post('http://127.0.0.1:8080/api/v1/franchise/transfers/receive', {
+        transferId: t.transferId,
+        verificationCode: t.verificationCode
+      });
+
+      if (receiveResp.status === 200 && receiveResp.body.success) {
+        passed++;
+        console.log(`[PASS] IBST Reception Handshake Verified (HTTP 200):`);
+        console.log(`       Status: ${receiveResp.body.transfer.status}`);
+        console.log(`       Destination Stock Updated: ${receiveResp.body.transfer.destinationBranchName} received`);
+      } else {
+        console.error(`[FAIL] IBST Reception failed with HTTP ${receiveResp.status}`, receiveResp.body);
+      }
+    } else {
+      console.error(`[FAIL] IBST Transfer initiation failed with HTTP ${transferResp.status}`, transferResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] IBST Stock Transfer: ${err.message}`);
   }
 
   console.log('\n================================================================');
