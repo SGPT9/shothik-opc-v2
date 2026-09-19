@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { logger } from "../lib/logger";
 import { analyzeCustomerMessage, type NlpAnalysisResult } from "../lib/whatsapp/banglish-nlp";
+import { whatsAppCommerceEngine, type DialectCode, type CartItem } from "../lib/whatsapp/whatsapp-commerce-engine";
 
 const router = Router();
 
@@ -128,6 +129,134 @@ router.post("/v1/whatsapp/send", async (req: Request, res: Response) => {
     messageId: `wamid_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
     recipientPhone,
     status: "delivered",
+  });
+});
+
+/**
+ * GET /v1/whatsapp/commerce/catalog
+ * Retrieve default merchant catalog items
+ */
+router.get("/v1/whatsapp/commerce/catalog", (_req: Request, res: Response) => {
+  const catalog = whatsAppCommerceEngine.getCatalog();
+  return res.status(200).json({
+    success: true,
+    count: catalog.length,
+    catalog,
+  });
+});
+
+/**
+ * POST /v1/whatsapp/commerce/chat
+ * Multi-Dialect WhatsApp Conversational Commerce Turn
+ */
+router.post("/v1/whatsapp/commerce/chat", (req: Request, res: Response) => {
+  try {
+    const {
+      sessionId = `sess_${Date.now()}`,
+      customerPhone = "01711000000",
+      message,
+      dialect = "standard",
+      cart = [],
+    } = req.body;
+
+    if (!message || typeof message !== "string") {
+      return res.status(400).json({ success: false, error: "Message string is required" });
+    }
+
+    const result = whatsAppCommerceEngine.processCommerceTurn(
+      sessionId,
+      customerPhone,
+      message,
+      dialect as DialectCode,
+      cart as CartItem[]
+    );
+
+    return res.status(200).json({
+      success: true,
+      ...result,
+    });
+  } catch (err: any) {
+    logger.error({ err: err.message }, "[whatsapp-commerce-chat] Error handling turn");
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /v1/whatsapp/commerce/generate-invoice
+ * Dynamic bKash QR Invoice Generator
+ */
+router.post("/v1/whatsapp/commerce/generate-invoice", (req: Request, res: Response) => {
+  try {
+    const { amountBdt, reference = "REF_ORDER", merchantNumber } = req.body;
+
+    if (!amountBdt || typeof amountBdt !== "number" || amountBdt <= 0) {
+      return res.status(400).json({ success: false, error: "Valid amountBdt is required" });
+    }
+
+    const invoice = whatsAppCommerceEngine.generateBkashInvoice(amountBdt, reference, merchantNumber);
+    return res.status(200).json({
+      success: true,
+      invoice,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /v1/whatsapp/commerce/confirm-order
+ * Confirm Order, Verify Payment/COD, and Auto-Book Steadfast Courier
+ */
+router.post("/v1/whatsapp/commerce/confirm-order", (req: Request, res: Response) => {
+  try {
+    const {
+      customerPhone,
+      customerName,
+      customerAddress,
+      items,
+      city,
+      paymentMethod = "BKASH_QR",
+      trxId,
+      dialect = "standard",
+    } = req.body;
+
+    if (!customerPhone || !customerAddress || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "customerPhone, customerAddress, and items array are required",
+      });
+    }
+
+    const order = whatsAppCommerceEngine.confirmOrder({
+      customerPhone,
+      customerName,
+      customerAddress,
+      items,
+      city,
+      paymentMethod,
+      trxId,
+      dialect: dialect as DialectCode,
+    });
+
+    return res.status(200).json({
+      success: true,
+      order,
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /v1/whatsapp/commerce/orders
+ * Retrieve WhatsApp commerce orders ledger
+ */
+router.get("/v1/whatsapp/commerce/orders", (_req: Request, res: Response) => {
+  const orders = whatsAppCommerceEngine.getOrders();
+  return res.status(200).json({
+    success: true,
+    count: orders.length,
+    orders,
   });
 });
 
