@@ -97,19 +97,32 @@ Autonomous voice IVR bot that calls customer phone numbers in natural regional B
 - [x] Test it: `/test ai outbound phone verification`
 spec 0029 · code in `artifacts/api-server/src/lib/telephony/outbound-calling-engine.ts`, `artifacts/api-server/src/routes/telephony.ts`, and `artifacts/shothik/src/components/twin/OutboundCallVerificationModal.tsx`
 
-### 30. Cross-Border Sourcing & Customs Declaration Engine · active
+### 30. Cross-Border Sourcing & Customs Declaration Engine · done
 AliExpress/Taobao/1688 import costing engine, Bangladesh Customs Harmonized System (HS) code classification, regulatory duty (RD), supplementary duty (SD), advance income tax (AIT), and Chittagong Port clearing workflow.
 **Done when:** Merchant inputs product link or HS code, receives landed cost calculation with NBR tariff breakdown, and generates C&F agent clearing brief.
-- [ ] Design it (spec): `/architect cross border sourcing customs`
+- [x] Design it (spec): `/architect cross border sourcing customs` (Spec 0030)
+- [x] Build it: `/develop cross border sourcing customs`
+   - [x] NBR Customs Act 2023 compound duty cascade calculator (CD, RD, SD, VAT, AIT, AT) (AC-1)
+   - [x] 8-digit HS Code search catalog & regulatory NOC warnings (BTRC, BSTI) (AC-2)
+   - [x] Multi-currency exchange rate conversion (USD, CNY, EUR -> BDT) (AC-3)
+   - [x] Certified C&F clearance brief generator (AC-4)
+   - [x] Frontend Twin Cross-Border Customs Studio with keyboard shortcut ⌘U (AC-5)
+- [x] Verify it: `/check verify cross border sourcing customs`
+- [x] Test it: `/test cross border sourcing customs`
+spec 0030 · code in `artifacts/api-server/src/lib/customs/cross-border-engine.ts`, `artifacts/api-server/src/routes/customs.ts`, and `artifacts/shothik/src/components/twin/CrossBorderCustomsModal.tsx`
 
+### 31. Multi-Tenant Franchise & Multi-Branch Stock Allocation · active
+Multi-branch stock allocation, franchise commission splitting, automated inter-branch transfers, and decentralized bKash sub-merchant settlement.
+**Done when:** Merchant creates franchise nodes, tracks inter-branch stock movements, and calculates net franchisee commissions.
+- [ ] Design it (spec): `/architect franchise multi branch stock`
 
 ---
 
 ## Deferred Features
 
 Out of scope for the current build pass, tracked for future releases:
-- **Cross-Border Sourcing & Customs Declaration (Slice 30)**: AliExpress/Taobao direct import calculation with Bangladesh Customs HS codes · needs a decision · Beta
-- **Multi-Tenant Franchise Management**: Multi-branch stock allocation and franchise commission split · deferred
+- **Autonomous Drone Fleet Dispatch**: Hyperlocal drone delivery coordination · deferred
+- **Decentralized Agro-Supply Chain**: Farm-to-table cold chain RFID tracking · deferred
 
 
 ---
