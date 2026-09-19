@@ -48,6 +48,7 @@ import { PlatformServicesModal } from "@/components/twin/PlatformServicesModal";
 import { WhatsAppCommerceModal } from "@/components/twin/WhatsAppCommerceModal";
 import { MushakTaxStudioModal } from "@/components/twin/MushakTaxStudioModal";
 import { OutboundCallVerificationModal } from "@/components/twin/OutboundCallVerificationModal";
+import { CrossBorderCustomsModal } from "@/components/twin/CrossBorderCustomsModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -352,8 +353,9 @@ export default function TwinPage() {
   const [whatsAppCommerceOpen, setWhatsAppCommerceOpen] = useState(false);
   const [mushakTaxStudioOpen, setMushakTaxStudioOpen] = useState(false);
   const [outboundCallingOpen, setOutboundCallingOpen] = useState(false);
+  const [crossBorderCustomsOpen, setCrossBorderCustomsOpen] = useState(false);
 
-  // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O and multi-tool keyboard shortcut listeners
+  // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U and multi-tool keyboard shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -368,6 +370,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") {
         e.preventDefault();
         setOutboundCallingOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "u") {
+        e.preventDefault();
+        setCrossBorderCustomsOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
@@ -386,15 +391,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
         e.preventDefault();
         setVulnerabilityImmunityOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") {
-        e.preventDefault();
-        setMultiModelParetoOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();
         setEpistemicConsensusOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "u") {
-        e.preventDefault();
-        setWebGpuEmbeddingOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         setZkSnarkProverOpen((prev) => !prev);
@@ -2171,6 +2170,7 @@ export default function TwinPage() {
         onOpenWhatsAppCommerce={() => setWhatsAppCommerceOpen(true)}
         onOpenMushakTaxStudio={() => setMushakTaxStudioOpen(true)}
         onOpenOutboundCalling={() => setOutboundCallingOpen(true)}
+        onOpenCrossBorderCustoms={() => setCrossBorderCustomsOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2199,6 +2199,7 @@ export default function TwinPage() {
       <WhatsAppCommerceModal open={whatsAppCommerceOpen} onOpenChange={setWhatsAppCommerceOpen} />
       <MushakTaxStudioModal open={mushakTaxStudioOpen} onOpenChange={setMushakTaxStudioOpen} />
       <OutboundCallVerificationModal open={outboundCallingOpen} onOpenChange={setOutboundCallingOpen} companyName={companyName} />
+      <CrossBorderCustomsModal isOpen={crossBorderCustomsOpen} onClose={() => setCrossBorderCustomsOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

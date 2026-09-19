@@ -80,6 +80,7 @@ export interface TwinCommandPaletteProps {
   onOpenWhatsAppCommerce?: () => void;
   onOpenMushakTaxStudio?: () => void;
   onOpenOutboundCalling?: () => void;
+  onOpenCrossBorderCustoms?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -148,6 +149,7 @@ export function TwinCommandPalette({
   onOpenWhatsAppCommerce,
   onOpenMushakTaxStudio,
   onOpenOutboundCalling,
+  onOpenCrossBorderCustoms,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -612,6 +614,25 @@ export function TwinCommandPalette({
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
               ⌘O
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="cross border sourcing customs declaration hs code 1688 taobao aliexpress nbr tariff cf clearing chittagong airport"
+            onSelect={() => handleSelect(onOpenCrossBorderCustoms)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Cross-Border Sourcing & Customs Declaration</span>
+                <span className="text-[11px] text-zinc-500">1688 landed cost calculator, NBR 8-digit HS code tariff & C&F clearance brief</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘U
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>

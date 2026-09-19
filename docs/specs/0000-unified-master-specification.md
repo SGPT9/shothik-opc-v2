@@ -106,13 +106,14 @@ Below is the verified record of all 29 engineering slices implemented, tested, a
 | **Phase 27** | Mushak-9.1 Monthly VAT Return Aggregator | Tax & Legal | `artifacts/shothik/src/components/twin/MushakTaxStudioModal.tsx` | **Certified (Done)** |
 | **Phase 28** | WhatsApp Commerce & Automated Merchant Agent Hub | Slice 28 | `artifacts/api-server/src/lib/commerce/whatsapp-cart-engine.ts` | **Certified (Done)** |
 | **Phase 29** | Autonomous AI Outbound Calling & COD Verification | Slice 29 | `artifacts/api-server/src/lib/telephony/outbound-calling-engine.ts` | **Certified (Done)** |
-| **Phase 30** | Cross-Border Sourcing & Customs Declaration | Slice 30 | `docs/specs/0030-cross-border-customs.md` | **Active** |
+| **Phase 30** | Cross-Border Sourcing & Customs Declaration | Slice 30 | `artifacts/api-server/src/lib/customs/cross-border-engine.ts` | **Certified (Done)** |
+| **Phase 31** | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Slice 31 | `docs/specs/0031-franchise-stock.md` | **Active** |
 
 ---
 
 ## 4. Frontend Twin Modals & Command Palette Registry
 
-The Shothik founder interface provides **34 specialized twin modals** organized across 4 primary categories, discoverable via the Command Palette (**`⌘K` / `Ctrl+K`**) or dedicated direct keyboard shortcuts:
+The Shothik founder interface provides **35 specialized twin modals** organized across 4 primary categories, discoverable via the Command Palette (**`⌘K` / `Ctrl+K`**) or dedicated direct keyboard shortcuts:
 
 ### Category 1: Founder Cockpit & Intelligence
 1. **Platform Services Studio** — 12-triad platform overview (`PlatformServicesModal.tsx`).
@@ -144,17 +145,18 @@ The Shothik founder interface provides **34 specialized twin modals** organized 
 23. **WhatsApp Multi-Dialect Bot & bKash QR** (**`⌘W`**) — Conversational sales, instant bKash QR & Steadfast booking (`WhatsAppCommerceModal.tsx`).
 24. **NBR Mushak-6.3 Statutory VAT & TDS Studio** (**`⌘X`**) — Bilingual tax invoicing, 13-digit BIN validation & Mushak-9.1 return aggregator (`MushakTaxStudioModal.tsx`).
 25. **AI Outbound Phone Verification & COD** (**`⌘O`**) — Voice IVR bot, Banglish intent parsing, BTRC compliance window (09:00–20:00 BST) & Steadfast auto-booking (`OutboundCallVerificationModal.tsx`).
+26. **Cross-Border Sourcing & Customs Studio** (**`⌘U`**) — 1688/Taobao landed costing, NBR compound duty cascade, 8-digit HS code lookup & C&F clearance brief (`CrossBorderCustomsModal.tsx`).
 
 ### Category 4: DevOps, Infrastructure & Advanced Compute
-26. **Startup Builds & Container Deployments** — Dokploy / Coolify container builds (`StartupBuildsModal.tsx`).
-27. **Website Hub** — Multi-tenant custom domain manager.
-28. **Manage Subdomains** — Wildcard SSL & CNAME routing.
-29. **Vast.ai Spot GPU Orchestrator** (**`⌘B`**) — WebGPU fallback & spot cluster allocation (`VastSpotGpuModal.tsx`).
-30. **CRDT Edge Mesh Studio** (**`⌘E`**) — P2P state synchronization (`EdgeMeshStudioModal.tsx`).
-31. **Canary Traffic Director** (**`⌘T`**) — Blue/green traffic splitting (`CanaryTrafficDirectorModal.tsx`).
-32. **Vulnerability Immunity Chamber** — Automated AST exploit auto-patching (`VulnerabilityImmunityModal.tsx`).
-33. **Multi-Model Pareto Optimizer** — Cost vs. latency dynamic router (`MultiModelParetoModal.tsx`).
-34. **Epistemic Consensus Engine** — Multi-LLM factual voting (`EpistemicConsensusModal.tsx`).
+27. **Startup Builds & Container Deployments** — Dokploy / Coolify container builds (`StartupBuildsModal.tsx`).
+28. **Website Hub** — Multi-tenant custom domain manager.
+29. **Manage Subdomains** — Wildcard SSL & CNAME routing.
+30. **Vast.ai Spot GPU Orchestrator** (**`⌘B`**) — WebGPU fallback & spot cluster allocation (`VastSpotGpuModal.tsx`).
+31. **CRDT Edge Mesh Studio** (**`⌘E`**) — P2P state synchronization (`EdgeMeshStudioModal.tsx`).
+32. **Canary Traffic Director** (**`⌘T`**) — Blue/green traffic splitting (`CanaryTrafficDirectorModal.tsx`).
+33. **Vulnerability Immunity Chamber** — Automated AST exploit auto-patching (`VulnerabilityImmunityModal.tsx`).
+34. **Multi-Model Pareto Optimizer** — Cost vs. latency dynamic router (`MultiModelParetoModal.tsx`).
+35. **Epistemic Consensus Engine** — Multi-LLM factual voting (`EpistemicConsensusModal.tsx`).
 
 ---
 
