@@ -63,6 +63,8 @@ async function run() {
     { name: 'Verifiable COD Trust Badge', url: 'http://127.0.0.1:8080/api/v1/growth/trust-badge/merch_shothik_dhaka_01' },
     { name: 'Franchise Active Branches Matrix', url: 'http://127.0.0.1:8080/api/v1/franchise/branches' },
     { name: 'Franchise In-Transit Stock Transfers', url: 'http://127.0.0.1:8080/api/v1/franchise/transfers' },
+    { name: 'Live-Selling Active Stream Session', url: 'http://127.0.0.1:8080/api/v1/live-selling/sessions/active' },
+    { name: 'Live-Selling Captured Orders Feed', url: 'http://127.0.0.1:8080/api/v1/live-selling/orders' },
     { name: 'Frontend Vite Web App (Port 5000)', url: 'http://127.0.0.1:5000/' },
     { name: 'Frontend Digital Twin Route', url: 'http://127.0.0.1:5000/twin' }
   ];
@@ -76,12 +78,12 @@ async function run() {
       const res = await get(ep.url);
       if (res.status === 200) {
         passed++;
-        console.log(`[PASS] ${ep.name.padEnd(40)} -> HTTP ${res.status}`);
+        console.log(`[PASS] ${ep.name.padEnd(42)} -> HTTP ${res.status}`);
       } else {
-        console.log(`[WARN] ${ep.name.padEnd(40)} -> HTTP ${res.status}`);
+        console.log(`[WARN] ${ep.name.padEnd(42)} -> HTTP ${res.status}`);
       }
     } catch (err) {
-      console.error(`[FAIL] ${ep.name.padEnd(40)} -> ERROR: ${err.message}`);
+      console.error(`[FAIL] ${ep.name.padEnd(42)} -> ERROR: ${err.message}`);
     }
   }
 
@@ -279,6 +281,40 @@ async function run() {
     }
   } catch (err) {
     console.error(`[FAIL] IBST Stock Transfer: ${err.message}`);
+  }
+
+  console.log('\n--- 7. Testing Autonomous Social Commerce Live Comment Parsing & Stock Lock ---');
+  total++;
+  try {
+    const commentResp = await post('http://127.0.0.1:8080/api/v1/live-selling/comments/parse', {
+      sessionId: 'SESSION_LIVE_8829',
+      authorName: 'Rashid Khan',
+      rawComment: 'Black Panjabi XL lagbe 2 ta 01711223344 Dhanmondi bKash korbo'
+    });
+
+    if (commentResp.status === 201 && commentResp.body.success) {
+      passed++;
+      const o = commentResp.body.order;
+      console.log(`[PASS] Live Comment Ingested & Parsed (HTTP 201):`);
+      console.log(`       Order ID: ${o.orderId}`);
+      console.log(`       Customer: ${o.authorName} (${o.extractedPhone})`);
+      console.log(`       Extracted: ${o.extractedQuantity}x ${o.productName} (${o.extractedColor} / ${o.extractedSize})`);
+      console.log(`       Total Amount: ৳${o.totalAmountBdt.toLocaleString()} (${o.paymentMethod.toUpperCase()})`);
+      console.log(`       Confidence: ${Math.round(o.confidenceScore * 100)}%`);
+      console.log(`       bKash 1-Tap URL: ${o.checkoutUrl}`);
+
+      // Now confirm the order
+      const conf = await post('http://127.0.0.1:8080/api/v1/live-selling/orders/confirm', {
+        orderId: o.orderId
+      });
+      if (conf.status === 200 && conf.body.success) {
+        console.log(`       [PASS] Live Order Paid & Inventory Permanently Finalized (HTTP 200)`);
+      }
+    } else {
+      console.error(`[FAIL] Live comment parsing failed with HTTP ${commentResp.status}`, commentResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Live Comment Parsing: ${err.message}`);
   }
 
   console.log('\n================================================================');

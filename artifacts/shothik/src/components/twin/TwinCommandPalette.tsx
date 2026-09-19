@@ -83,6 +83,7 @@ export interface TwinCommandPaletteProps {
   onOpenCrossBorderCustoms?: () => void;
   onOpenPlatformElevators?: () => void;
   onOpenFranchiseMultiBranch?: () => void;
+  onOpenLiveSelling?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -154,6 +155,7 @@ export function TwinCommandPalette({
   onOpenCrossBorderCustoms,
   onOpenPlatformElevators,
   onOpenFranchiseMultiBranch,
+  onOpenLiveSelling,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -673,6 +675,25 @@ export function TwinCommandPalette({
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
               ⌘F
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="live selling facebook live tiktok stream comment to order parsing stock lock 15 min ttl 1 tap bkash payment shorts clip"
+            onSelect={() => handleSelect(onOpenLiveSelling)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                <Video className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Live-Selling & Comment-to-Order Studio</span>
+                <span className="text-[11px] text-zinc-500">Autonomous live comment parser, 15-min stock locks, 1-tap bKash links & 9:16 reels</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘L
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>
