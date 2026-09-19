@@ -46,6 +46,7 @@ import { WasmVectorIndexModal } from "@/components/twin/WasmVectorIndexModal";
 import { DeveloperTwinModal } from "@/components/twin/DeveloperTwinModal";
 import { PlatformServicesModal } from "@/components/twin/PlatformServicesModal";
 import { WhatsAppCommerceModal } from "@/components/twin/WhatsAppCommerceModal";
+import { MushakTaxStudioModal } from "@/components/twin/MushakTaxStudioModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -348,8 +349,9 @@ export default function TwinPage() {
   const [developerTwinOpen, setDeveloperTwinOpen] = useState(false);
   const [platformServicesOpen, setPlatformServicesOpen] = useState(false);
   const [whatsAppCommerceOpen, setWhatsAppCommerceOpen] = useState(false);
+  const [mushakTaxStudioOpen, setMushakTaxStudioOpen] = useState(false);
 
-  // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
+  // Global ⌘K / Ctrl+K, ⌘W, ⌘X and multi-tool keyboard shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -358,6 +360,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
         e.preventDefault();
         setWhatsAppCommerceOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "x") {
+        e.preventDefault();
+        setMushakTaxStudioOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
@@ -2159,6 +2164,7 @@ export default function TwinPage() {
         onOpenDeveloperTwin={() => setDeveloperTwinOpen(true)}
         onOpenPlatformServices={() => setPlatformServicesOpen(true)}
         onOpenWhatsAppCommerce={() => setWhatsAppCommerceOpen(true)}
+        onOpenMushakTaxStudio={() => setMushakTaxStudioOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2185,6 +2191,7 @@ export default function TwinPage() {
       <DeveloperTwinModal open={developerTwinOpen} onOpenChange={setDeveloperTwinOpen} companyName={companyName} />
       <PlatformServicesModal open={platformServicesOpen} onOpenChange={setPlatformServicesOpen} />
       <WhatsAppCommerceModal open={whatsAppCommerceOpen} onOpenChange={setWhatsAppCommerceOpen} />
+      <MushakTaxStudioModal open={mushakTaxStudioOpen} onOpenChange={setMushakTaxStudioOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
