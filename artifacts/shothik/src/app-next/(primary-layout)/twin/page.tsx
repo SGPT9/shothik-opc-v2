@@ -45,6 +45,7 @@ import { ZkSnarkProverModal } from "@/components/twin/ZkSnarkProverModal";
 import { WasmVectorIndexModal } from "@/components/twin/WasmVectorIndexModal";
 import { DeveloperTwinModal } from "@/components/twin/DeveloperTwinModal";
 import { PlatformServicesModal } from "@/components/twin/PlatformServicesModal";
+import { WhatsAppCommerceModal } from "@/components/twin/WhatsAppCommerceModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -346,6 +347,7 @@ export default function TwinPage() {
   const [wasmVectorIndexOpen, setWasmVectorIndexOpen] = useState(false);
   const [developerTwinOpen, setDeveloperTwinOpen] = useState(false);
   const [platformServicesOpen, setPlatformServicesOpen] = useState(false);
+  const [whatsAppCommerceOpen, setWhatsAppCommerceOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K and ⌘V / Ctrl+V keyboard shortcut listeners
   useEffect(() => {
@@ -353,6 +355,9 @@ export default function TwinPage() {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCommandPaletteOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
+        e.preventDefault();
+        setWhatsAppCommerceOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
@@ -2153,6 +2158,7 @@ export default function TwinPage() {
         onOpenWasmVectorIndex={() => setWasmVectorIndexOpen(true)}
         onOpenDeveloperTwin={() => setDeveloperTwinOpen(true)}
         onOpenPlatformServices={() => setPlatformServicesOpen(true)}
+        onOpenWhatsAppCommerce={() => setWhatsAppCommerceOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2178,6 +2184,7 @@ export default function TwinPage() {
       <WasmVectorIndexModal open={wasmVectorIndexOpen} onOpenChange={setWasmVectorIndexOpen} />
       <DeveloperTwinModal open={developerTwinOpen} onOpenChange={setDeveloperTwinOpen} companyName={companyName} />
       <PlatformServicesModal open={platformServicesOpen} onOpenChange={setPlatformServicesOpen} />
+      <WhatsAppCommerceModal open={whatsAppCommerceOpen} onOpenChange={setWhatsAppCommerceOpen} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

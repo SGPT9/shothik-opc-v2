@@ -176,7 +176,7 @@ function runIteration(iterationNumber: number): BenchmarkSample {
 
     const vitestOutput = execSync(
       `npx vitest run ${testFiles.map((f) => `"${f}"`).join(" ")} --reporter=json`,
-      { encoding: "utf-8", timeout: 60000 }
+      { encoding: "utf-8", timeout: 60000, env: { ...process.env, VITE_CONFIG_NATIVE_IGNORE_WARNING: "true" } }
     );
     const jsonMatch = vitestOutput.slice(vitestOutput.indexOf("{"));
     const data = JSON.parse(jsonMatch);

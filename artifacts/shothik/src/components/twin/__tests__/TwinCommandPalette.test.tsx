@@ -1,9 +1,12 @@
 import "@testing-library/jest-dom/vitest";
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { TwinCommandPalette } from "../TwinCommandPalette";
 
 describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
+  beforeEach(() => {
+    window.HTMLElement.prototype.scrollIntoView = vi.fn();
+  });
   it("renders all 4 operational categories and their respective tools", () => {
     render(<TwinCommandPalette open={true} onOpenChange={() => {}} />);
 

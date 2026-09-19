@@ -78,7 +78,7 @@ export function buildDynamicDeck(topicTitle: string): SlideData[] {
   const cleanTopic = topicTitle || "Next-Gen Autonomous Platform";
   const lower = cleanTopic.toLowerCase();
 
-  if (lower.includes("seedstars") || lower.includes("accelerator") || lower.includes("accelerating asia") || lower.includes("pitch deck")) {
+  if ((lower.includes("seedstars") || lower.includes("accelerator") || lower.includes("accelerating asia") || lower.includes("pitch deck")) && !lower.includes("fintech") && !lower.includes("health") && !lower.includes("rmg") && !lower.includes("logistics") && !lower.includes("agri") && !lower.includes("edtech")) {
     return [
       {
         id: 1,
