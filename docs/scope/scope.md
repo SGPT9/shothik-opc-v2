@@ -39,8 +39,8 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 26 | NBR Mushak-6.3 VAT Invoice & TDS Statutory Studio | Tax & Legal | done |
 | 27 | Mushak-9.1 Monthly VAT Return Aggregator | Tax & Legal | done |
 | 28 | WhatsApp Commerce & Automated Merchant Agent Hub | Slice 28 | done |
-| 29 | Autonomous AI Outbound Calling & COD Order Verification | Slice 29 | active |
-| 30 | Cross-Border Sourcing & Customs Declaration Engine | Slice 30 | planned |
+| 29 | Autonomous AI Outbound Calling & COD Order Verification | Slice 29 | done |
+| 30 | Cross-Border Sourcing & Customs Declaration Engine | Slice 30 | active |
 
 ---
 
@@ -83,10 +83,25 @@ Interactive conversational catalog, two-way WhatsApp message handler, automatic 
 - [x] Test it: `/test whatsapp commerce merchant hub`
 spec 0028 · code in `artifacts/api-server/src/routes/whatsapp.ts`, `artifacts/api-server/src/lib/commerce/whatsapp-cart-engine.ts`, and `artifacts/shothik/src/components/twin/WhatsAppCommerceModal.tsx`
 
-### 29. Autonomous AI Outbound Calling & COD Order Verification · active
-Autonomous voice agent that calls customer phone numbers in natural Bengali to verify high-risk COD orders, confirm exact delivery addresses, and filter bogus orders before dispatching to Pathao/Steadfast.
-**Done when:** Automated SIP/WebRTC audio bot dials recipient phone, transcribes customer confirmation, and updates order status to `verified_for_dispatch` or `cancelled_fraud`.
-- [ ] Design it (spec): `/architect ai outbound phone verification`
+### 29. Autonomous AI Outbound Calling & COD Order Verification · done
+Autonomous voice IVR bot that calls customer phone numbers in natural regional Bengali (Standard, Dhakaiya, Sylheti, Chatgaya) to verify COD orders, confirm delivery addresses, filter bogus orders, enforce BTRC calling windows (09:00–20:00 BST), and auto-book Steadfast consignments.
+**Done when:** Automated telephony engine dials recipient, plays statutory disclosure, transcribes confirmation dialog, manages supervised high-value orders (>= ৳10,000), and auto-books Steadfast Courier consignment.
+- [x] Design it (spec): `/architect ai outbound phone verification` (Spec 0029)
+- [x] Build it: `/develop ai outbound phone verification`
+   - [x] BTRC telecom window enforcement & E.164 phone normalization (AC-1, AC-5)
+   - [x] 4-stage conversational state machine with Banglish intent classification (AC-2)
+   - [x] Vernacular dialect synthesis & automatic Steadfast booking (AC-3, AC-4)
+   - [x] Supervised Autonomy escalation for high-value COD orders (AC-6)
+   - [x] Frontend Twin Outbound Calling & Verification Modal with shortcut ⌘O (AC-7)
+- [x] Verify it: `/check verify ai outbound phone verification`
+- [x] Test it: `/test ai outbound phone verification`
+spec 0029 · code in `artifacts/api-server/src/lib/telephony/outbound-calling-engine.ts`, `artifacts/api-server/src/routes/telephony.ts`, and `artifacts/shothik/src/components/twin/OutboundCallVerificationModal.tsx`
+
+### 30. Cross-Border Sourcing & Customs Declaration Engine · active
+AliExpress/Taobao/1688 import costing engine, Bangladesh Customs Harmonized System (HS) code classification, regulatory duty (RD), supplementary duty (SD), advance income tax (AIT), and Chittagong Port clearing workflow.
+**Done when:** Merchant inputs product link or HS code, receives landed cost calculation with NBR tariff breakdown, and generates C&F agent clearing brief.
+- [ ] Design it (spec): `/architect cross border sourcing customs`
+
 
 ---
 
