@@ -40,6 +40,7 @@ Therefore, all route files under `src/routes/` MUST declare their paths starting
 
 ## 4. Domain Subsystems
 - **Tax & Statutory Compliance (`src/lib/tax/`, `src/lib/audit/`):** NBR Mushak-6.3 VAT calculations (0%, 5%, 7.5%, 10%, 15%), TDS withholding (2%-10%), 13-digit BIN Luhn check, Mushak-9.1 return aggregator, double-entry general ledger with 6 Chart of Accounts categories, real-time trial balance balancing proof, and cryptographically sealed NBR Statutory Audit Dossier compiler with SHA-256 seal.
+- **Freelancer Remittance & BB ICT Subsidy (`src/lib/remittance/`, `src/routes/remittance-incentive.ts`):** Inward remittance calculation & tracking (Wise, Payoneer, Swift Wire, Upwork, Fiverr), Bangladesh Bank FE Circular 02/2024 cash subsidy computation (4% freelancer, 10% registered IT exporter), automated Form-C foreign exchange declaration generator, PRC/FFC reconciliation, and milestone escrow contract compiler.
 - **BTRC Telephony & Voice IVR (`src/lib/telephony/`):** Autonomous outbound calling for COD order verification, BTRC compliance window (09:00-20:00 BST), Banglish speech intent parsing, Steadfast auto-booking.
 - **WhatsApp Commerce & MFS QR (`src/lib/commerce/`):** WhatsApp catalog cart session engine, multi-dialect customer assistant, instant bKash dynamic QR generation.
 - **Nilkhet Commercial POD Press (`src/lib/publishing/`):** CMYK imposition calculator, paper weight/spine thickness compiler, print job ticket dispatch.

@@ -149,6 +149,11 @@ Dynamic 4-carrier logistics arbitrage (Steadfast vs. Pathao vs. RedX vs. Paperfl
 **Done when:** 4-carrier rate cards dynamically evaluate parcel destination and COD value, pick the optimal provider, register consignments with tracking code and barcode, and flag RTO risks.
 spec 0035 · code in `artifacts/api-server/src/lib/logistics/courier-arbitrage-engine.ts`, `artifacts/api-server/src/routes/courier-arbitrage.ts`, and `artifacts/shothik/src/components/twin/CourierArbitrageModal.tsx`
 
+### 36. Autonomous Freelancer Remittance & Bangladesh Bank ICT Incentive Ledger · done
+Inward remittance calculation and reconciliation across Wise, Payoneer, Swift Wire, Upwork, and Fiverr, automated 4% to 10% statutory cash subsidy/export incentive computation under Bangladesh Bank FE Circular 02/2024, Form-C Foreign Exchange declaration generation, Proceeds Realization Certificate (PRC) matching, and bilingual international milestone escrow service contract generation with SHA-256 seal.
+**Done when:** Foreign inward remittances calculate exact BDT realization and statutory government subsidies, compile compliant Form-C declarations, reconcile bank PRCs, and emit signed milestone escrow agreements.
+spec 0036 · code in `artifacts/api-server/src/lib/remittance/freelancer-incentive-engine.ts`, `artifacts/api-server/src/routes/remittance-incentive.ts`, and `artifacts/shothik/src/components/twin/FreelancerRemittanceModal.tsx`
+
 ---
 
 ## Deferred Features
