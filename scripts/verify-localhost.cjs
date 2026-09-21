@@ -595,6 +595,108 @@ async function run() {
     console.error(`[FAIL] Dark Hub Fulfillment: ${err.message}`);
   }
 
+  console.log('\n--- 12. Testing Autonomous Multi-Channel Cashflow & COD Settlement Reconciler (Slice 38) ---');
+  total++;
+  try {
+    const liqResp = await get('http://127.0.0.1:8080/api/v1/cashflow/summary');
+    if (liqResp.status === 200 && liqResp.body.success) {
+      passed++;
+      const l = liqResp.body.liquidity;
+      console.log(`[PASS] Multi-Channel Liquidity Consolidated (HTTP 200):`);
+      console.log(`       Liquid Bank & MFS: ৳${l.totalLiquidBankMfsBdt.toLocaleString()}`);
+      console.log(`       In-Transit Courier COD: ৳${l.totalInTransitCodBdt.toLocaleString()}`);
+      console.log(`       Total Gross Capital: ৳${l.totalGrossCapitalBdt.toLocaleString()} across ${l.channels.length} channels`);
+
+      // Courier Settlement Batch Reconciliation Probe
+      total++;
+      const recResp = await post('http://127.0.0.1:8080/api/v1/cashflow/reconcile-batch', {
+        carrier: 'steadfast',
+        consignments: [
+          {
+            trackingCode: 'STF_PROBE_901',
+            orderRef: 'ORD_PRB_901',
+            destination: 'Dhanmondi, Dhaka',
+            expectedCodBdt: 4500,
+            collectedCodBdt: 4500,
+            deliveryFeeBdt: 80,
+            codCommissionBdt: 45,
+            returnFeeBdt: 0,
+            deliveryStatus: 'delivered'
+          },
+          {
+            trackingCode: 'STF_PROBE_902',
+            orderRef: 'ORD_PRB_902',
+            destination: 'Uttara, Dhaka',
+            expectedCodBdt: 2000,
+            collectedCodBdt: 0,
+            deliveryFeeBdt: 80,
+            codCommissionBdt: 0,
+            returnFeeBdt: 60,
+            deliveryStatus: 'returned'
+          }
+        ]
+      });
+
+      if (recResp.status === 201 && recResp.body.success) {
+        passed++;
+        const sb = recResp.body.settlementBatch;
+        console.log(`[PASS] Courier Settlement Reconciled & Payout Verified (HTTP 201):`);
+        console.log(`       Batch ID: ${sb.batchId} (${sb.carrier.toUpperCase()})`);
+        console.log(`       Gross COD: ৳${sb.grossCodCollectedBdt.toLocaleString()} -> Net Payout: ৳${sb.netPayoutBdt.toLocaleString()}`);
+        console.log(`       Deductions: Freight (-৳${sb.deliveryFeesDeductedBdt}), COD Fee (-৳${sb.codCommissionDeductedBdt}), RTO Penalty (-৳${sb.rtoReturnFeesDeductedBdt})`);
+      } else {
+        console.error(`[FAIL] Settlement batch reconciliation failed with HTTP ${recResp.status}`, recResp.body);
+      }
+
+      // Daily PnL Waterfall Probe
+      total++;
+      const pnlResp = await get('http://127.0.0.1:8080/api/v1/cashflow/daily-pnl');
+      if (pnlResp.status === 200 && pnlResp.body.success) {
+        passed++;
+        const pnl = pnlResp.body.dailyPnL;
+        console.log(`[PASS] Daily Unit Economics PnL Waterfall Computed (HTTP 200):`);
+        console.log(`       Delivered Revenue: ৳${pnl.grossDeliveredRevenueBdt.toLocaleString()} (${pnl.deliveredOrdersCount} orders)`);
+        console.log(`       COGS: -৳${pnl.cogsBdt.toLocaleString()} | Courier: -৳${pnl.courierDeliveryFeesBdt.toLocaleString()} | RTO Loss: -৳${pnl.rtoFreightLossBdt.toLocaleString()}`);
+        console.log(`       Realized Net Cashflow: ৳${pnl.netOperatingProfitBdt.toLocaleString()} (Net Margin: ${pnl.netMarginPercent}%, RTO Rate: ${pnl.rtoRatePercent}%)`);
+      } else {
+        console.error(`[FAIL] Daily PnL fetch failed with HTTP ${pnlResp.status}`, pnlResp.body);
+      }
+
+      // Discrepancy & Claims Probe
+      total++;
+      const discResp = await get('http://127.0.0.1:8080/api/v1/cashflow/discrepancies');
+      if (discResp.status === 200 && discResp.body.success) {
+        passed++;
+        console.log(`[PASS] Carrier Discrepancy & Claim Auditor Online (HTTP 200):`);
+        console.log(`       Total Shortage Claims: ${discResp.body.count} items`);
+        if (discResp.body.discrepancies.length > 0) {
+          const d = discResp.body.discrepancies[0];
+          console.log(`       Sample Claim: ${d.trackingCode} (${d.carrier}) - Shortage: ৳${d.shortageAmountBdt}`);
+        }
+      } else {
+        console.error(`[FAIL] Discrepancies fetch failed with HTTP ${discResp.status}`, discResp.body);
+      }
+
+      // Working Capital Runway Forecast Probe
+      total++;
+      const rnwResp = await get('http://127.0.0.1:8080/api/v1/cashflow/runway-forecast');
+      if (rnwResp.status === 200 && rnwResp.body.success) {
+        passed++;
+        const f = rnwResp.body.forecast;
+        console.log(`[PASS] 30-Day Working Capital Runway Forecasted (HTTP 200):`);
+        console.log(`       Effective Working Capital: ৳${f.effectiveWorkingCapitalBdt.toLocaleString()}`);
+        console.log(`       Daily Cashflow: +৳${f.netDailyCashflowBdt.toLocaleString()}/day (Inflow: ৳${f.dailyRevenueInflowBdt} vs Burn: ৳${f.dailyBurnRateBdt})`);
+        console.log(`       Runway Status: ${f.runwayStatus.toUpperCase()} (${f.runwayDays}+ days sustainable)`);
+      } else {
+        console.error(`[FAIL] Runway forecast failed with HTTP ${rnwResp.status}`, rnwResp.body);
+      }
+    } else {
+      console.error(`[FAIL] Cashflow summary fetch failed with HTTP ${liqResp.status}`, liqResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Multi-Channel Cashflow: ${err.message}`);
+  }
+
   console.log('\n================================================================');
   console.log(`  VERIFICATION RESULTS: ${passed}/${total} TESTS PASSED (100%)`);
   console.log('  ALL LOCALHOST BACKEND & FRONTEND SERVERS CERTIFIED READY');

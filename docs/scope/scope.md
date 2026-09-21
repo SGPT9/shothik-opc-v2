@@ -159,6 +159,16 @@ Multi-hub micro-fulfillment network (Dhaka Dhanmondi, Uttara, Mirpur, Gulshan/Ba
 **Done when:** Customer delivery thana routes to nearest dark store with FEFO lot allocation, S-curve serpentine pick list generates walking paths, expiry radar triggers liquidation discounts, and inter-hub transfers rebalance depleted micro-hubs.
 spec 0037 · code in `artifacts/api-server/src/lib/fulfillment/dark-hub-engine.ts`, `artifacts/api-server/src/routes/fulfillment.ts`, and `artifacts/shothik/src/components/twin/DarkHubFulfillmentModal.tsx`
 
+### 38. Autonomous Multi-Channel Cashflow & COD Settlement Reconciler · done
+Unified liquid capital consolidation across Bank, bKash Merchant, Nagad Sheba, Pathao & Steadfast in-transit COD, multi-courier payout remittance batch reconciliation with automated 1% COD fee + freight + RTO penalty deductions, true unit economics daily PnL waterfall with return loss absorption, carrier shortage discrepancy auditor & dispute brief generator, and 30-day working capital runway burn trajectory predictor.
+**Done when:** Multi-channel liquid balances consolidate live, carrier settlement manifests reconcile against ERP shipments with discrepancy detection, true daily PnL accounts for return courier losses, and working capital runway predicts cash health.
+spec 0038 · code in `artifacts/api-server/src/lib/cashflow/cashflow-reconciler-engine.ts`, `artifacts/api-server/src/routes/cashflow.ts`, and `artifacts/shothik/src/components/twin/MultiChannelCashflowModal.tsx`
+
+### 39. Autonomous Wholesale Supplier RFQ & B2B Escrow Negotiation Engine · planned
+B2B raw material and wholesale finished goods sourcing from key commercial hubs (Chawkbazar, Islampur, Keraniganj, Tongi Industrial Zone, and 1688/Yiwu cross-border imports), automated Request for Quotation (RFQ) generator with tiered volume discount curves ($Q \ge 500, 1000, 5000$), supplier reliability index scoring, LC/milestone escrow term compiler, and delivery SLA enforcement.
+**Done when:** Merchant generates structured B2B RFQs with tiered volume pricing, evaluates supplier bids with quality/lead-time weighting, compiles enforceable milestone escrow agreements, and tracks wholesale shipment commitments.
+spec 0039 · code in `artifacts/api-server/src/lib/wholesale/`, `artifacts/api-server/src/routes/wholesale.ts`, and `artifacts/shothik/src/components/twin/WholesaleRfqEscrowModal.tsx`
+
 ---
 
 ## Deferred Features
