@@ -55,6 +55,7 @@ import { LiveSellingStudioModal } from "@/components/twin/LiveSellingStudioModal
 import { AuditLedgerStudioModal } from "@/components/twin/AuditLedgerStudioModal";
 import { CourierArbitrageModal } from "@/components/twin/CourierArbitrageModal";
 import { FreelancerRemittanceModal } from "@/components/twin/FreelancerRemittanceModal";
+import { DarkHubFulfillmentModal } from "@/components/twin/DarkHubFulfillmentModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -366,6 +367,7 @@ export default function TwinPage() {
   const [auditLedgerOpen, setAuditLedgerOpen] = useState(false);
   const [courierArbitrageOpen, setCourierArbitrageOpen] = useState(false);
   const [freelancerRemittanceOpen, setFreelancerRemittanceOpen] = useState(false);
+  const [darkHubFulfillmentOpen, setDarkHubFulfillmentOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -400,6 +402,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
         e.preventDefault();
         setFreelancerRemittanceOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "h") {
+        e.preventDefault();
+        setDarkHubFulfillmentOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
@@ -2204,6 +2209,7 @@ export default function TwinPage() {
         onOpenAuditLedger={() => setAuditLedgerOpen(true)}
         onOpenCourierArbitrage={() => setCourierArbitrageOpen(true)}
         onOpenFreelancerRemittance={() => setFreelancerRemittanceOpen(true)}
+        onOpenDarkHubFulfillment={() => setDarkHubFulfillmentOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2239,6 +2245,7 @@ export default function TwinPage() {
       <AuditLedgerStudioModal isOpen={auditLedgerOpen} onClose={() => setAuditLedgerOpen(false)} />
       <CourierArbitrageModal isOpen={courierArbitrageOpen} onClose={() => setCourierArbitrageOpen(false)} />
       <FreelancerRemittanceModal isOpen={freelancerRemittanceOpen} onClose={() => setFreelancerRemittanceOpen(false)} />
+      <DarkHubFulfillmentModal isOpen={darkHubFulfillmentOpen} onClose={() => setDarkHubFulfillmentOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

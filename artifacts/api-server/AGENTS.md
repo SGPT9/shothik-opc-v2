@@ -45,6 +45,7 @@ Therefore, all route files under `src/routes/` MUST declare their paths starting
 - **WhatsApp Commerce & MFS QR (`src/lib/commerce/`):** WhatsApp catalog cart session engine, multi-dialect customer assistant, instant bKash dynamic QR generation.
 - **Nilkhet Commercial POD Press (`src/lib/publishing/`):** CMYK imposition calculator, paper weight/spine thickness compiler, print job ticket dispatch.
 - **Second-Me Semantic Memory (`src/lib/memory/`):** Vector embeddings, episodic fact extraction, long-term memory retrieval.
+- **Hyperlocal Dark Store & Micro-Hub (`src/lib/fulfillment/`, `src/routes/fulfillment.ts`):** Multi-hub micro-fulfillment network (Dhaka Dhanmondi, Uttara, Mirpur, Gulshan/Badda, Old Dhaka + Chittagong GEC & Sylhet Zindabazar), geofenced thana order routing with FEFO lot allocation, S-curve 3D bin pick-path optimizer (`Aisle-Rack-Shelf-Bin`), batch/perishable expiry markdown radar, and velocity-driven inter-hub stock rebalancing from Central Mega-Hub.
 - **Courier Logistics & Fleet Arbitrage (`src/routes/courier-arbitrage.ts`, `src/lib/logistics/`):** Dynamic 4-carrier rate cards & DSR arbitrage (Steadfast, Pathao, RedX, Paperfly), 64-district delivery matrix, composite optimization scoring ($w_{\text{dsr}}=0.50$, $w_{\text{cost}}=0.30$, $w_{\text{speed}}=0.20$), 1-click booking, printable barcode generation, and AI RTO risk mitigation.
 
 ---

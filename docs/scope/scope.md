@@ -154,6 +154,11 @@ Inward remittance calculation and reconciliation across Wise, Payoneer, Swift Wi
 **Done when:** Foreign inward remittances calculate exact BDT realization and statutory government subsidies, compile compliant Form-C declarations, reconcile bank PRCs, and emit signed milestone escrow agreements.
 spec 0036 · code in `artifacts/api-server/src/lib/remittance/freelancer-incentive-engine.ts`, `artifacts/api-server/src/routes/remittance-incentive.ts`, and `artifacts/shothik/src/components/twin/FreelancerRemittanceModal.tsx`
 
+### 37. Autonomous Hyperlocal Dark Store & Micro-Fulfillment Dark Hub Orchestrator · done
+Multi-hub micro-fulfillment network (Dhaka Dhanmondi, Uttara, Mirpur, Gulshan/Badda, Old Dhaka + Chittagong GEC & Sylhet Zindabazar), geofenced thana order routing with FEFO lot allocation, S-curve 3D bin pick-path optimizer, batch/perishable expiry markdown radar, and velocity-driven inter-hub stock rebalancing from Central Mega-Hub.
+**Done when:** Customer delivery thana routes to nearest dark store with FEFO lot allocation, S-curve serpentine pick list generates walking paths, expiry radar triggers liquidation discounts, and inter-hub transfers rebalance depleted micro-hubs.
+spec 0037 · code in `artifacts/api-server/src/lib/fulfillment/dark-hub-engine.ts`, `artifacts/api-server/src/routes/fulfillment.ts`, and `artifacts/shothik/src/components/twin/DarkHubFulfillmentModal.tsx`
+
 ---
 
 ## Deferred Features
