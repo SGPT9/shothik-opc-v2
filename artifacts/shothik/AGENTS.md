@@ -16,7 +16,8 @@ This document establishes the UI architecture, state management patterns, and te
 
 ## 2. Twin Architecture & Modals (`src/components/twin/`)
 The primary UI shell runs the **Twin Doctrine** (OPC merchant command center with 34 specialized modals):
-- **Command Palette (`TwinCommandPalette.tsx`):** Triggered by `⌘K` or `Ctrl+K`. Global shortcut dispatcher for all 34 tools.
+- **Command Palette (`TwinCommandPalette.tsx`):** Triggered by `⌘K` or `Ctrl+K`. Global shortcut dispatcher for all 35 tools.
+- **Audit Ledger Studio (`AuditLedgerStudioModal.tsx`):** Triggered by `⌘D` or `Ctrl+D`. 4-tab statutory studio (Chart of Accounts, General Ledger, Real-time Trial Balance, NBR Sealed Audit Dossier).
 - **Mushak Tax Studio (`MushakTaxStudioModal.tsx`):** Triggered by `⌘X` or `Ctrl+X`. 4-tab studio (Invoice Generator, Statutory Printable Canvas, TDS Ledger, Mushak-9.1 Summary).
 - **AI Outbound Phone Verification (`OutboundCallVerificationModal.tsx`):** Triggered by `⌘O` or `Ctrl+O`. Voice IVR bot, Banglish intent parsing, BTRC compliance window (09:00-20:00 BST), Steadfast auto-dispatch.
 - **WhatsApp Commerce & bKash QR (`WhatsAppCommerceModal.tsx`):** Triggered by `⌘W` or `Ctrl+W`. Multi-dialect customer assistant, bKash dynamic QR, Steadfast parcel booking.

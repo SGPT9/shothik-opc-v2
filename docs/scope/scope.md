@@ -44,6 +44,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 31 | Platform Elevators & Viral Growth Triggers | Slice 31 | done |
 | 32 | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Slice 32 | done |
 | 33 | Autonomous Social Commerce Live-Selling & Comment Parser | Slice 33 | done |
+| 34 | NBR Statutory Audit Dossier & Double-Entry Ledger | Slice 34 | done |
 
 ---
 
@@ -137,6 +138,11 @@ spec 0032 · code in `artifacts/api-server/src/lib/franchise/`, `artifacts/api-s
 Real-time high-velocity comment parsing (Banglish/Bengali), 15-minute temporary inventory locks to prevent live overselling, instant 1-tap bKash PGW dynamic payment links, COD draft booking, and automated 9:16 TikTok/Reels vertical promo video generator.
 **Done when:** Live broadcast stream captures and drafts customer orders from comments with >90% precision and enforces 15-minute TTL stock reservation.
 spec 0033 · code in `artifacts/api-server/src/lib/live-selling/`, `artifacts/api-server/src/routes/live-selling.ts`, and `artifacts/shothik/src/components/twin/LiveSellingStudioModal.tsx`
+
+### 34. NBR Statutory Audit Dossier & Double-Entry Ledger · done
+Mathematical double-entry general ledger with 6 standard Chart of Accounts categories, real-time Trial Balance balancing proof, and cryptographically sealed NBR Statutory Audit Dossier generator with 13-digit BIN validation and SHA-256 seal.
+**Done when:** Journal entries enforce debit/credit equilibrium invariant, trial balance computes live, and NBR compliance dossier compiles with cryptographic verification seal.
+spec 0034 · code in `artifacts/api-server/src/lib/audit/`, `artifacts/api-server/src/routes/audit-ledger.ts`, and `artifacts/shothik/src/components/twin/AuditLedgerStudioModal.tsx`
 
 ---
 
