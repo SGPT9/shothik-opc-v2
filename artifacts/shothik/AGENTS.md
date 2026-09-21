@@ -15,7 +15,8 @@ This document establishes the UI architecture, state management patterns, and te
 ---
 
 ## 2. Twin Architecture & Modals (`src/components/twin/`)
-- **Command Palette (`TwinCommandPalette.tsx`):** Triggered by `⌘K` or `Ctrl+K`. Global shortcut dispatcher for all 36 tools.
+- **Command Palette (`TwinCommandPalette.tsx`):** Triggered by `⌘K` or `Ctrl+K`. Global shortcut dispatcher for all 37 tools.
+- **Freelancer Remittance & ICT Subsidy (`FreelancerRemittanceModal.tsx`):** Triggered by `⌘I` or `Ctrl+I`. 4-tab studio (Incentive Calculator & Remittance Ledger, Bangladesh Bank Form-C Declaration, Inward PRC Reconciler, Milestone Escrow Contract Studio).
 - **Courier Fleet Arbitrage (`CourierArbitrageModal.tsx`):** Triggered by `⌘R` or `Ctrl+R`. 4-carrier dynamic rate cards & DSR arbitrage (Steadfast vs. Pathao vs. RedX vs. Paperfly), 64-district SLA matrix, 1-click booking, and AI RTO risk mitigation.
 - **Audit Ledger Studio (`AuditLedgerStudioModal.tsx`):** Triggered by `⌘D` or `Ctrl+D`. 4-tab statutory studio (Chart of Accounts, General Ledger, Real-time Trial Balance, NBR Sealed Audit Dossier).
 - **Mushak Tax Studio (`MushakTaxStudioModal.tsx`):** Triggered by `⌘X` or `Ctrl+X`. 4-tab studio (Invoice Generator, Statutory Printable Canvas, TDS Ledger, Mushak-9.1 Summary).

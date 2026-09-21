@@ -71,6 +71,8 @@ async function run() {
     { name: 'Courier Fleet 64-District Matrix', url: 'http://127.0.0.1:8080/api/v1/logistics/arbitrage/matrix' },
     { name: 'Courier Active Consignments Feed', url: 'http://127.0.0.1:8080/api/v1/logistics/consignments' },
     { name: 'Courier RTO Risk Predictive Alerts', url: 'http://127.0.0.1:8080/api/v1/logistics/rto/alerts' },
+    { name: 'Bangladesh Bank Remittance FX Rates', url: 'http://127.0.0.1:8080/api/v1/remittance/rates' },
+    { name: 'Freelancer Remittances Inward Feed', url: 'http://127.0.0.1:8080/api/v1/remittance/transactions' },
     { name: 'Frontend Vite Web App (Port 5000)', url: 'http://127.0.0.1:5000/' },
     { name: 'Frontend Digital Twin Route', url: 'http://127.0.0.1:5000/twin' }
   ];
@@ -425,6 +427,91 @@ async function run() {
     }
   } catch (err) {
     console.error(`[FAIL] Courier Arbitrage Engine: ${err.message}`);
+  }
+
+  console.log('\n--- 10. Testing Autonomous Freelancer Remittance & Bangladesh Bank ICT Subsidy Ledger ---');
+  total++;
+  try {
+    const calcResp = await post('http://127.0.0.1:8080/api/v1/remittance/incentive/calculate', {
+      foreignCurrency: 'USD',
+      foreignAmount: 3500,
+      exporterCategory: 'ict_freelancer_individual',
+      customExchangeRate: 122.50
+    });
+
+    if (calcResp.status === 200 && calcResp.body.success) {
+      passed++;
+      const c = calcResp.body.calculation || calcResp.body;
+      console.log(`[PASS] Remittance Incentive Evaluated (HTTP 200):`);
+      console.log(`       Inward Amount: $${c.foreignAmount.toLocaleString()} ${c.foreignCurrency} @ ৳${c.exchangeRateBdt}`);
+      console.log(`       Gross Realization: ৳${c.grossAmountBdt.toLocaleString()}`);
+      console.log(`       Govt. Cash Incentive (${c.incentivePercent}%): +৳${c.incentiveAmountBdt.toLocaleString()}`);
+      console.log(`       Net Disbursed to Bank: ৳${c.netDisbursedBdt.toLocaleString()} (0% Tax Holiday Sec 52Q)`);
+
+      // Generate Form-C
+      total++;
+      const formCResp = await post('http://127.0.0.1:8080/api/v1/remittance/form-c/generate', {
+        beneficiaryName: 'Tanvir Ahmed',
+        beneficiaryAccountNo: '1501204899201001',
+        beneficiaryNidOrPassport: '1994269104882190',
+        tinNumber: '789123456712',
+        freelancerIdOrBasisNo: 'FL-ICT-88210',
+        adBankName: 'BRAC Bank PLC',
+        adBranchName: 'Gulshan Principal Branch',
+        adRoutingNumber: '060260481',
+        foreignCurrency: 'USD',
+        foreignAmount: 3500,
+        sendingCountry: 'United States',
+        remitterName: 'Silicon Cloud Labs Inc.',
+        descriptionOfWork: 'Fullstack AI & Next.js SaaS Web Application Development',
+        exporterCategory: 'ict_freelancer_individual'
+      });
+
+      if (formCResp.status === 200 && formCResp.body.success) {
+        passed++;
+        const fc = formCResp.body.declaration;
+        console.log(`[PASS] Bangladesh Bank Form-C Declaration Generated (HTTP 200):`);
+        console.log(`       Form-C Serial: ${fc.formCNumber}`);
+        console.log(`       Beneficiary: ${fc.beneficiary.name} (A/C: ${fc.beneficiary.accountNo})`);
+        console.log(`       BOP Category: ${fc.purposeOfInward.bopCategory}`);
+        console.log(`       Claimed Subsidy: ৳${fc.statutoryIncentiveClaimed.claimedAmountBdt.toLocaleString()} (${fc.statutoryIncentiveClaimed.percentage}%)`);
+        console.log(`       SHA-256 Seal: ${fc.verificationSeal.signature.substring(0, 32)}...`);
+      } else {
+        console.error(`[FAIL] Form-C generation failed with HTTP ${formCResp.status}`, formCResp.body);
+      }
+
+      // Generate Escrow Contract
+      total++;
+      const contractResp = await post('http://127.0.0.1:8080/api/v1/remittance/contracts/generate', {
+        contractTitle: 'Enterprise AI Multi-Agent Gateway',
+        clientName: 'Nordic Software AS',
+        clientCountry: 'Norway',
+        freelancerName: 'Tanvir Ahmed',
+        freelancerAddress: 'Dhaka, Bangladesh',
+        scopeOfWork: ['Architecture Design', 'Core Agentic Mesh', 'Production Release'],
+        totalValueCurrency: 'USD',
+        milestones: [
+          { title: 'Milestone 1: Architectural Blueprint', amount: 1000 },
+          { title: 'Milestone 2: Agentic Workflow & API', amount: 1500 },
+          { title: 'Milestone 3: Verification & Load Acceptance', amount: 1000 }
+        ]
+      });
+
+      if (contractResp.status === 201 && contractResp.body.success) {
+        passed++;
+        const ctr = contractResp.body.contract;
+        console.log(`[PASS] Milestone Escrow Contract Generated (HTTP 201):`);
+        console.log(`       Contract ID: ${ctr.contractId} ("${ctr.contractTitle}")`);
+        console.log(`       Total Value: $${ctr.totalValueAmount} ${ctr.totalValueCurrency} across ${ctr.milestones.length} milestones`);
+        console.log(`       Integrity Hash: ${ctr.contractHash.substring(0, 32)}...`);
+      } else {
+        console.error(`[FAIL] Escrow contract generation failed with HTTP ${contractResp.status}`, contractResp.body);
+      }
+    } else {
+      console.error(`[FAIL] Remittance calculation failed with HTTP ${calcResp.status}`, calcResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Remittance Engine: ${err.message}`);
   }
 
   console.log('\n================================================================');
