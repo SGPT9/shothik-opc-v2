@@ -57,6 +57,7 @@ import { CourierArbitrageModal } from "@/components/twin/CourierArbitrageModal";
 import { FreelancerRemittanceModal } from "@/components/twin/FreelancerRemittanceModal";
 import { DarkHubFulfillmentModal } from "@/components/twin/DarkHubFulfillmentModal";
 import { MultiChannelCashflowModal } from "@/components/twin/MultiChannelCashflowModal";
+import { WholesaleRfqEscrowModal } from "@/components/twin/WholesaleRfqEscrowModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -370,6 +371,7 @@ export default function TwinPage() {
   const [freelancerRemittanceOpen, setFreelancerRemittanceOpen] = useState(false);
   const [darkHubFulfillmentOpen, setDarkHubFulfillmentOpen] = useState(false);
   const [multiChannelCashflowOpen, setMultiChannelCashflowOpen] = useState(false);
+  const [wholesaleRfqEscrowOpen, setWholesaleRfqEscrowOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -410,6 +412,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "m") {
         e.preventDefault();
         setMultiChannelCashflowOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "q") {
+        e.preventDefault();
+        setWholesaleRfqEscrowOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
@@ -2216,6 +2221,7 @@ export default function TwinPage() {
         onOpenFreelancerRemittance={() => setFreelancerRemittanceOpen(true)}
         onOpenDarkHubFulfillment={() => setDarkHubFulfillmentOpen(true)}
         onOpenMultiChannelCashflow={() => setMultiChannelCashflowOpen(true)}
+        onOpenWholesaleRfqEscrow={() => setWholesaleRfqEscrowOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2253,6 +2259,7 @@ export default function TwinPage() {
       <FreelancerRemittanceModal isOpen={freelancerRemittanceOpen} onClose={() => setFreelancerRemittanceOpen(false)} />
       <DarkHubFulfillmentModal isOpen={darkHubFulfillmentOpen} onClose={() => setDarkHubFulfillmentOpen(false)} />
       <MultiChannelCashflowModal isOpen={multiChannelCashflowOpen} onClose={() => setMultiChannelCashflowOpen(false)} />
+      <WholesaleRfqEscrowModal isOpen={wholesaleRfqEscrowOpen} onClose={() => setWholesaleRfqEscrowOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
