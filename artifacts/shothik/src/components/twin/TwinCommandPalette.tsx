@@ -92,6 +92,7 @@ export interface TwinCommandPaletteProps {
   onOpenFreelancerRemittance?: () => void;
   onOpenDarkHubFulfillment?: () => void;
   onOpenMultiChannelCashflow?: () => void;
+  onOpenWholesaleRfqEscrow?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -169,6 +170,7 @@ export function TwinCommandPalette({
   onOpenFreelancerRemittance,
   onOpenDarkHubFulfillment,
   onOpenMultiChannelCashflow,
+  onOpenWholesaleRfqEscrow,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -802,6 +804,25 @@ export function TwinCommandPalette({
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
               ⌘M
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="wholesale supplier rfq b2b escrow chawkbazar islampur keraniganj tongi 1688 yiwu volume discount tier factory sourcing milestone agreement"
+            onSelect={() => handleSelect(onOpenWholesaleRfqEscrow)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Store className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Wholesale Supplier RFQ & B2B Escrow Engine</span>
+                <span className="text-[11px] text-zinc-500">Chawkbazar/Islampur/1688 price discovery, volume discount curves & milestone contracts</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘B
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>

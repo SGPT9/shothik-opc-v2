@@ -697,6 +697,88 @@ async function run() {
     console.error(`[FAIL] Multi-Channel Cashflow: ${err.message}`);
   }
 
+  console.log('\n--- 13. Testing Autonomous Wholesale Supplier RFQ & B2B Escrow Engine (Slice 39) ---');
+  total++;
+  try {
+    const hubsResp = await get('http://127.0.0.1:8080/api/v1/wholesale/hubs/overview');
+    if (hubsResp.status === 200 && hubsResp.body.success) {
+      passed++;
+      console.log(`[PASS] Wholesale Commercial Hubs Active (HTTP 200):`);
+      console.log(`       Monitored Hubs: ${hubsResp.body.hubs.length} major zones (Chawkbazar, Islampur, Keraniganj, Tongi, 1688)`);
+      const topHub = hubsResp.body.hubs[0];
+      console.log(`       Sample Hub: ${topHub.name} (${topHub.activeSuppliersCount} suppliers, ${topHub.priceAdvantageVsRetail})`);
+
+      // RFQ Generation Probe
+      total++;
+      const rfqResp = await post('http://127.0.0.1:8080/api/v1/wholesale/rfq/generate', {
+        title: 'Bulk Premium Combed Cotton Fabric (180 GSM)',
+        hub: 'islampur',
+        category: 'textiles',
+        skuName: 'SKU-FABRIC-COTTON-180',
+        specifications: '100% Combed Cotton, Bio-washed, Reactive dyed jet black',
+        targetQuantity: 1000,
+        estimatedBasePriceBdt: 420,
+        deliverySlaDays: 8,
+        sampleRequired: true,
+        incoterm: 'ddp_warehouse'
+      });
+
+      if (rfqResp.status === 201 && rfqResp.body.success) {
+        passed++;
+        const rfq = rfqResp.body.rfq;
+        console.log(`[PASS] Structured B2B RFQ Generated (HTTP 201):`);
+        console.log(`       RFQ ID: ${rfq.rfqId} | Volume: ${rfq.targetQuantity} units`);
+        console.log(`       Volume Tiers: ${rfq.volumeTiers.length} tiers (Max Discount: ${rfq.volumeTiers[rfq.volumeTiers.length - 1].discountPercent}%)`);
+        console.log(`       Cryptographic Seal: ${rfq.sha256Seal.slice(0, 32)}...`);
+
+        // Bids Evaluation Probe
+        total++;
+        const bidsResp = await post('http://127.0.0.1:8080/api/v1/wholesale/rfq/evaluate-bids', {
+          rfq
+        });
+
+        if (bidsResp.status === 200 && bidsResp.body.success) {
+          passed++;
+          const evalResult = bidsResp.body.evaluation;
+          const topBid = evalResult.recommendedBid;
+          console.log(`[PASS] Supplier Bids Ranked & SRI Evaluated (HTTP 200):`);
+          console.log(`       Total Mill Quotations: ${evalResult.totalBids}`);
+          console.log(`       Recommended Winner: ${topBid.supplierName} (SRI: ${topBid.compositeScore})`);
+          console.log(`       Winning Unit Rate: ৳${topBid.unitPriceBdt} (Lead: ${topBid.leadTimeDays} days, MOQ: ${topBid.moq})`);
+
+          // Milestone Escrow Contract Probe
+          total++;
+          const contractResp = await post('http://127.0.0.1:8080/api/v1/wholesale/escrow/compile-contract', {
+            rfq,
+            bid: topBid,
+            buyerName: 'Shothik D2C Apparel Ltd.'
+          });
+
+          if (contractResp.status === 201 && contractResp.body.success) {
+            passed++;
+            const ctr = contractResp.body.contract;
+            console.log(`[PASS] 3-Stage Milestone Escrow Contract Compiled (HTTP 201):`);
+            console.log(`       Contract ID: ${ctr.contractId} | Total Value: ৳${ctr.totalContractValueBdt.toLocaleString()}`);
+            console.log(`       Milestone 1 (30% Deposit): ৳${ctr.milestones[0].amountBdt.toLocaleString()} [${ctr.milestones[0].status.toUpperCase()}]`);
+            console.log(`       Milestone 2 (40% QC Pass): ৳${ctr.milestones[1].amountBdt.toLocaleString()} [${ctr.milestones[1].status.toUpperCase()}]`);
+            console.log(`       Milestone 3 (30% Warehouse GRN): ৳${ctr.milestones[2].amountBdt.toLocaleString()} [${ctr.milestones[2].status.toUpperCase()}]`);
+            console.log(`       Digital SHA-256 Seal: ${ctr.sha256Seal.slice(0, 32)}...`);
+          } else {
+            console.error(`[FAIL] Contract compilation failed with HTTP ${contractResp.status}`, contractResp.body);
+          }
+        } else {
+          console.error(`[FAIL] Bids evaluation failed with HTTP ${bidsResp.status}`, bidsResp.body);
+        }
+      } else {
+        console.error(`[FAIL] RFQ generation failed with HTTP ${rfqResp.status}`, rfqResp.body);
+      }
+    } else {
+      console.error(`[FAIL] Wholesale hubs overview failed with HTTP ${hubsResp.status}`, hubsResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Wholesale RFQ Escrow: ${err.message}`);
+  }
+
   console.log('\n================================================================');
   console.log(`  VERIFICATION RESULTS: ${passed}/${total} TESTS PASSED (100%)`);
   console.log('  ALL LOCALHOST BACKEND & FRONTEND SERVERS CERTIFIED READY');

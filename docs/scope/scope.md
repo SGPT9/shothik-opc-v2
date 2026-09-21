@@ -164,10 +164,15 @@ Unified liquid capital consolidation across Bank, bKash Merchant, Nagad Sheba, P
 **Done when:** Multi-channel liquid balances consolidate live, carrier settlement manifests reconcile against ERP shipments with discrepancy detection, true daily PnL accounts for return courier losses, and working capital runway predicts cash health.
 spec 0038 · code in `artifacts/api-server/src/lib/cashflow/cashflow-reconciler-engine.ts`, `artifacts/api-server/src/routes/cashflow.ts`, and `artifacts/shothik/src/components/twin/MultiChannelCashflowModal.tsx`
 
-### 39. Autonomous Wholesale Supplier RFQ & B2B Escrow Negotiation Engine · planned
+### 39. Autonomous Wholesale Supplier RFQ & B2B Escrow Negotiation Engine · done
 B2B raw material and wholesale finished goods sourcing from key commercial hubs (Chawkbazar, Islampur, Keraniganj, Tongi Industrial Zone, and 1688/Yiwu cross-border imports), automated Request for Quotation (RFQ) generator with tiered volume discount curves ($Q \ge 500, 1000, 5000$), supplier reliability index scoring, LC/milestone escrow term compiler, and delivery SLA enforcement.
 **Done when:** Merchant generates structured B2B RFQs with tiered volume pricing, evaluates supplier bids with quality/lead-time weighting, compiles enforceable milestone escrow agreements, and tracks wholesale shipment commitments.
-spec 0039 · code in `artifacts/api-server/src/lib/wholesale/`, `artifacts/api-server/src/routes/wholesale.ts`, and `artifacts/shothik/src/components/twin/WholesaleRfqEscrowModal.tsx`
+spec 0039 · code in `artifacts/api-server/src/lib/wholesale/wholesale-rfq-escrow-engine.ts`, `artifacts/api-server/src/routes/wholesale.ts`, and `artifacts/shothik/src/components/twin/WholesaleRfqEscrowModal.tsx`
+
+### 40. Autonomous Agri-Commodity Sourcing & Wholesale Mandi Price Radar · planned
+Live wholesale price discovery across major Bangladeshi commodity trading hubs (Khatunganj Chittagong, Badamtoli Fruit Market Dhaka, Karwan Bazar Wholesale Arat, Bogra Spice Yard & Rajshahi Fruit Belt), seasonal harvest price fluctuation predictor, cold chain temperature-monitored refrigerated transport dispatch scheduler, and instant farmer micro-advance payout via bKash/Nagad MFS.
+**Done when:** Merchant tracks real-time mandi spot prices vs. 7-day moving averages, calculates moisture/spoilage shrinkage buffers, books Reefer cold-chain transport, and disburses farmer harvesting advances via automated MFS payroll.
+spec 0040 · code in `artifacts/api-server/src/lib/agri/`, `artifacts/api-server/src/routes/agri.ts`, and `artifacts/shothik/src/components/twin/AgriMandiRadarModal.tsx`
 
 ---
 
