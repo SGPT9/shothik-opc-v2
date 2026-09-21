@@ -44,9 +44,7 @@ Therefore, all route files under `src/routes/` MUST declare their paths starting
 - **WhatsApp Commerce & MFS QR (`src/lib/commerce/`):** WhatsApp catalog cart session engine, multi-dialect customer assistant, instant bKash dynamic QR generation.
 - **Nilkhet Commercial POD Press (`src/lib/publishing/`):** CMYK imposition calculator, paper weight/spine thickness compiler, print job ticket dispatch.
 - **Second-Me Semantic Memory (`src/lib/memory/`):** Vector embeddings, episodic fact extraction, long-term memory retrieval.
-- **Payment Gateways (`src/routes/payment.ts`, `src/lib/mfs/`):** bKash PGW (1.85% fee), Nagad direct checkout (1.50% fee), COD fraud risk scoring.
-- **Courier Logistics (`src/routes/courier.ts`, `src/lib/courier/`):** Pathao Merchant API, Steadfast Courier live parcel consignment & tracking.
-- **Model Router (`src/lib/router.ts`):** Sub-50ms speculative inference mesh, Bangla & Banglish dialect token routing.
+- **Courier Logistics & Fleet Arbitrage (`src/routes/courier-arbitrage.ts`, `src/lib/logistics/`):** Dynamic 4-carrier rate cards & DSR arbitrage (Steadfast, Pathao, RedX, Paperfly), 64-district delivery matrix, composite optimization scoring ($w_{\text{dsr}}=0.50$, $w_{\text{cost}}=0.30$, $w_{\text{speed}}=0.20$), 1-click booking, printable barcode generation, and AI RTO risk mitigation.
 
 ---
 

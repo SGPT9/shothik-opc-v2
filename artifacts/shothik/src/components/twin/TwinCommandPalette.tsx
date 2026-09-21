@@ -86,6 +86,7 @@ export interface TwinCommandPaletteProps {
   onOpenFranchiseMultiBranch?: () => void;
   onOpenLiveSelling?: () => void;
   onOpenAuditLedger?: () => void;
+  onOpenCourierArbitrage?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -159,6 +160,7 @@ export function TwinCommandPalette({
   onOpenFranchiseMultiBranch,
   onOpenLiveSelling,
   onOpenAuditLedger,
+  onOpenCourierArbitrage,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -716,6 +718,25 @@ export function TwinCommandPalette({
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
               ⌘D
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="courier fleet arbitrage micro hub dispatcher steadfast pathao redx paperfly dsr dynamic rate rto prevention"
+            onSelect={() => handleSelect(onOpenCourierArbitrage)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+                <Truck className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Autonomous Courier Fleet Arbitrage & Micro-Hub</span>
+                <span className="text-[11px] text-zinc-500">Steadfast vs. Pathao vs. RedX vs. Paperfly dynamic routing & DSR % optimization</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘R
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>

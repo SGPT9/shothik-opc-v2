@@ -68,6 +68,9 @@ async function run() {
     { name: 'General Ledger Chart of Accounts', url: 'http://127.0.0.1:8080/api/v1/audit/accounts' },
     { name: 'Real-Time General Ledger Trial Balance', url: 'http://127.0.0.1:8080/api/v1/audit/trial-balance' },
     { name: 'General Ledger Journal Records Feed', url: 'http://127.0.0.1:8080/api/v1/audit/journals' },
+    { name: 'Courier Fleet 64-District Matrix', url: 'http://127.0.0.1:8080/api/v1/logistics/arbitrage/matrix' },
+    { name: 'Courier Active Consignments Feed', url: 'http://127.0.0.1:8080/api/v1/logistics/consignments' },
+    { name: 'Courier RTO Risk Predictive Alerts', url: 'http://127.0.0.1:8080/api/v1/logistics/rto/alerts' },
     { name: 'Frontend Vite Web App (Port 5000)', url: 'http://127.0.0.1:5000/' },
     { name: 'Frontend Digital Twin Route', url: 'http://127.0.0.1:5000/twin' }
   ];
@@ -370,6 +373,58 @@ async function run() {
     }
   } catch (err) {
     console.error(`[FAIL] Audit Ledger Engine: ${err.message}`);
+  }
+
+  console.log('\n--- 9. Testing Autonomous Courier Fleet Arbitrage & Micro-Hub Dispatcher ---');
+  total++;
+  try {
+    const arbResp = await post('http://127.0.0.1:8080/api/v1/logistics/arbitrage/evaluate', {
+      district: 'Dhaka',
+      codAmountBdt: 4500,
+      weightKg: 1.2,
+      preference: 'balanced'
+    });
+
+    if (arbResp.status === 200 && arbResp.body.success) {
+      passed++;
+      const data = arbResp.body.evaluation || arbResp.body.data || arbResp.body;
+      const rec = data.carriers?.find((c) => c.carrier === data.optimalCarrier) || data.carriers?.[0];
+      console.log(`[PASS] Fleet Arbitrage Evaluated (HTTP 200):`);
+      console.log(`       Destination: ${data.district} (Zone: ${data.zone})`);
+      console.log(`       Optimal Recommended Carrier: ${rec?.carrierName} (Score: ${rec?.compositeScore?.toFixed(1)})`);
+      console.log(`       Reason: ${rec?.recommendationReason}`);
+      console.log(`       Delivery Fee: ৳${rec?.baseDeliveryFeeBdt} (COD Fee: ৳${rec?.codFeeBdt}, Total: ৳${rec?.totalDeliveryCostBdt})`);
+      console.log(`       Historical DSR: ${rec?.expectedDsrPercent}% | SLA: ${rec?.estimatedDeliveryHours}h`);
+
+      // Dispatch consignment with optimal carrier
+      total++;
+      const dispatchResp = await post('http://127.0.0.1:8080/api/v1/logistics/consignments/dispatch', {
+        orderRef: 'ORD_ARB_9941',
+        carrier: data.optimalCarrier || 'steadfast',
+        customerName: 'Tariqul Islam',
+        customerPhone: '01719887766',
+        deliveryAddress: 'Road 8, House 21, Uttara Sector 4, Dhaka',
+        district: 'Dhaka',
+        codAmountBdt: 4500,
+        weightKg: 1.2
+      });
+
+      if (dispatchResp.status === 201 && dispatchResp.body.success) {
+        passed++;
+        const cns = dispatchResp.body.consignment;
+        console.log(`[PASS] Autonomous Consignment Dispatched (HTTP 201):`);
+        console.log(`       Consignment ID: ${cns.consignmentId}`);
+        console.log(`       Carrier: ${cns.carrierName} (Tracking: ${cns.trackingCode})`);
+        console.log(`       Tracking URL: ${cns.trackingUrl}`);
+        console.log(`       Barcode Data: ${cns.barcodeData}`);
+      } else {
+        console.error(`[FAIL] Consignment dispatch failed with HTTP ${dispatchResp.status}`, dispatchResp.body);
+      }
+    } else {
+      console.error(`[FAIL] Arbitrage evaluation failed with HTTP ${arbResp.status}`, arbResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Courier Arbitrage Engine: ${err.message}`);
   }
 
   console.log('\n================================================================');

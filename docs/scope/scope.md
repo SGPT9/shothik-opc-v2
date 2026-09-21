@@ -144,6 +144,11 @@ Mathematical double-entry general ledger with 6 standard Chart of Accounts categ
 **Done when:** Journal entries enforce debit/credit equilibrium invariant, trial balance computes live, and NBR compliance dossier compiles with cryptographic verification seal.
 spec 0034 · code in `artifacts/api-server/src/lib/audit/`, `artifacts/api-server/src/routes/audit-ledger.ts`, and `artifacts/shothik/src/components/twin/AuditLedgerStudioModal.tsx`
 
+### 35. Autonomous Courier Fleet Arbitrage & Micro-Hub Dispatcher · done
+Dynamic 4-carrier logistics arbitrage (Steadfast vs. Pathao vs. RedX vs. Paperfly) optimizing across 64 Bangladesh districts, composite delivery scoring ($w_{\text{dsr}}=0.50$, $w_{\text{cost}}=0.30$, $w_{\text{speed}}=0.20$), 1-click booking, barcode generation, and AI RTO risk mitigation.
+**Done when:** 4-carrier rate cards dynamically evaluate parcel destination and COD value, pick the optimal provider, register consignments with tracking code and barcode, and flag RTO risks.
+spec 0035 · code in `artifacts/api-server/src/lib/logistics/courier-arbitrage-engine.ts`, `artifacts/api-server/src/routes/courier-arbitrage.ts`, and `artifacts/shothik/src/components/twin/CourierArbitrageModal.tsx`
+
 ---
 
 ## Deferred Features
