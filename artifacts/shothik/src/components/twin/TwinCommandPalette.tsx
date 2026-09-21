@@ -36,6 +36,8 @@ import {
   FileText,
   PhoneCall,
   Scale,
+  DollarSign,
+  Store,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -88,6 +90,7 @@ export interface TwinCommandPaletteProps {
   onOpenAuditLedger?: () => void;
   onOpenCourierArbitrage?: () => void;
   onOpenFreelancerRemittance?: () => void;
+  onOpenDarkHubFulfillment?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -163,6 +166,7 @@ export function TwinCommandPalette({
   onOpenAuditLedger,
   onOpenCourierArbitrage,
   onOpenFreelancerRemittance,
+  onOpenDarkHubFulfillment,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -758,6 +762,25 @@ export function TwinCommandPalette({
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
               ⌘I
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="dark store micro fulfillment hub dhaka dhanmondi uttara mirpur chittagong sylhet s curve bin pick path fefo lot expiry rebalance replenishment"
+            onSelect={() => handleSelect(onOpenDarkHubFulfillment)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Store className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Autonomous Hyperlocal Dark Store & Micro-Hub</span>
+                <span className="text-[11px] text-zinc-500">Dhaka/Chittagong/Sylhet geofencing, S-curve bin pick path & FEFO expiry radar</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘H
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>

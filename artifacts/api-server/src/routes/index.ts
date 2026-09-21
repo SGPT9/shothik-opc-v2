@@ -57,6 +57,7 @@ import { liveSellingRouter } from "./live-selling.js";
 import { auditLedgerRouter } from "./audit-ledger.js";
 import { courierArbitrageRouter } from "./courier-arbitrage.js";
 import { remittanceIncentiveRouter } from "./remittance-incentive.js";
+import { fulfillmentRouter } from "./fulfillment.js";
 
 const router: IRouter = Router();
 
@@ -69,6 +70,7 @@ router.use(liveSellingRouter);
 router.use(auditLedgerRouter);
 router.use(courierArbitrageRouter);
 router.use(remittanceIncentiveRouter);
+router.use(fulfillmentRouter);
 router.use("/telemetry", telemetryRouter);
 router.use(agentTracesRouter);
 router.use(authRouter);

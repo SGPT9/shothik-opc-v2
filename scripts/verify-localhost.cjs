@@ -514,6 +514,87 @@ async function run() {
     console.error(`[FAIL] Remittance Engine: ${err.message}`);
   }
 
+  console.log('\n--- 11. Testing Autonomous Hyperlocal Dark Store & Micro-Hub Orchestrator (Slice 37) ---');
+  total++;
+  try {
+    const hubsResp = await get('http://127.0.0.1:8080/api/v1/fulfillment/hubs');
+    if (hubsResp.status === 200 && hubsResp.body.success) {
+      passed++;
+      console.log(`[PASS] Dark Hub Network Active (HTTP 200):`);
+      console.log(`       Total Micro-Fulfillment Hubs: ${hubsResp.body.totalHubs}`);
+      console.log(`       Primary Hub: ${hubsResp.body.hubs[0].name} (${hubsResp.body.hubs[0].hubId}) - SLA: ${hubsResp.body.hubs[0].averageDispatchMinutes}m`);
+
+      // Route Order Probe
+      total++;
+      const routeResp = await post('http://127.0.0.1:8080/api/v1/fulfillment/route-order', {
+        customerThana: 'Kalabagan',
+        items: [{ sku: 'SKU_SHAMPOO_ONION_250ML', quantity: 4 }]
+      });
+
+      if (routeResp.status === 200 && routeResp.body.success) {
+        passed++;
+        const r = routeResp.body.routing;
+        console.log(`[PASS] Order Geofence & FEFO Lot Routed (HTTP 200):`);
+        console.log(`       Customer Thana: ${r.customerThana} -> Assigned Hub: ${r.assignedHub.name} (${r.assignedHub.hubId})`);
+        console.log(`       Fulfillment Mode: ${r.fulfilmentType} (Est. Delivery: ${r.estimatedDeliveryMinutes} mins)`);
+        console.log(`       Allocated Lot: ${r.allocatedItems[0]?.batchNumber} @ Bin: ${r.allocatedItems[0]?.binLocation}`);
+      } else {
+        console.error(`[FAIL] Order routing failed with HTTP ${routeResp.status}`, routeResp.body);
+      }
+
+      // Pick List S-Curve Probe
+      total++;
+      const pickResp = await post('http://127.0.0.1:8080/api/v1/fulfillment/pick-list', {
+        hubId: 'HUB-DHK-01',
+        items: [
+          { sku: 'SKU_SHAMPOO_ONION_250ML', quantity: 6 },
+          { sku: 'SKU_SERUM_VITC_30ML', quantity: 2 }
+        ]
+      });
+
+      if (pickResp.status === 200 && pickResp.body.success) {
+        passed++;
+        const p = pickResp.body.pickList;
+        console.log(`[PASS] S-Curve Serpentine Pick-List Generated (HTTP 200):`);
+        console.log(`       Pick List ID: ${p.pickListId} (${p.pathOptimization})`);
+        console.log(`       Tasks: ${p.tasks.length} items | Walking: ${p.estimatedWalkingMeters}m | Est Time: ${p.estimatedPickTimeSeconds}s`);
+      } else {
+        console.error(`[FAIL] Pick list failed with HTTP ${pickResp.status}`, pickResp.body);
+      }
+
+      // Expiry Alerts Probe
+      total++;
+      const expiryResp = await get('http://127.0.0.1:8080/api/v1/fulfillment/expiry-alerts?referenceDate=2026-09-21');
+      if (expiryResp.status === 200 && expiryResp.body.success) {
+        passed++;
+        console.log(`[PASS] FEFO Expiry Radar Online (HTTP 200):`);
+        console.log(`       Active Expiry Alerts: ${expiryResp.body.count} batches`);
+        if (expiryResp.body.alerts.length > 0) {
+          const a = expiryResp.body.alerts[0];
+          console.log(`       Top Alert: ${a.name} (${a.batchNumber}) - ${a.daysRemaining}d left -> ${a.recommendedDiscountPercent}% Markdown (৳${a.suggestedMarkdownPriceBDT})`);
+        }
+      } else {
+        console.error(`[FAIL] Expiry alerts failed with HTTP ${expiryResp.status}`, expiryResp.body);
+      }
+
+      // Rebalance Plan Probe
+      total++;
+      const rebalanceResp = await post('http://127.0.0.1:8080/api/v1/fulfillment/rebalance-plan', {});
+      if (rebalanceResp.status === 200 && rebalanceResp.body.success) {
+        passed++;
+        const rb = rebalanceResp.body.rebalancePlan;
+        console.log(`[PASS] Inter-Hub Rebalance Computed (HTTP 200):`);
+        console.log(`       Plan ID: ${rb.planId} | Total Units to Move: ${rb.totalUnitsToMove} across ${rb.totalTransfers} transfers`);
+      } else {
+        console.error(`[FAIL] Rebalance plan failed with HTTP ${rebalanceResp.status}`, rebalanceResp.body);
+      }
+    } else {
+      console.error(`[FAIL] Dark Hub network fetch failed with HTTP ${hubsResp.status}`, hubsResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Dark Hub Fulfillment: ${err.message}`);
+  }
+
   console.log('\n================================================================');
   console.log(`  VERIFICATION RESULTS: ${passed}/${total} TESTS PASSED (100%)`);
   console.log('  ALL LOCALHOST BACKEND & FRONTEND SERVERS CERTIFIED READY');

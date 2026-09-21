@@ -37,6 +37,8 @@ interface RemittanceItem {
   sourceCountry: string;
   remitterName: string;
   beneficiaryName: string;
+  beneficiaryBank?: string;
+  beneficiaryAccountNo?: string;
   foreignCurrency: ForeignCurrency;
   foreignAmount: number;
   exchangeRateBdt: number;
