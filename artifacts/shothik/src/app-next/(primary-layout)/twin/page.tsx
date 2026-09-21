@@ -53,6 +53,7 @@ import { PlatformElevatorsViralModal } from "@/components/twin/PlatformElevators
 import { FranchiseMultiBranchModal } from "@/components/twin/FranchiseMultiBranchModal";
 import { LiveSellingStudioModal } from "@/components/twin/LiveSellingStudioModal";
 import { AuditLedgerStudioModal } from "@/components/twin/AuditLedgerStudioModal";
+import { CourierArbitrageModal } from "@/components/twin/CourierArbitrageModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -362,8 +363,9 @@ export default function TwinPage() {
   const [franchiseMultiBranchOpen, setFranchiseMultiBranchOpen] = useState(false);
   const [liveSellingOpen, setLiveSellingOpen] = useState(false);
   const [auditLedgerOpen, setAuditLedgerOpen] = useState(false);
+  const [courierArbitrageOpen, setCourierArbitrageOpen] = useState(false);
 
-  // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D and multi-tool keyboard shortcut listeners
+  // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -390,6 +392,9 @@ export default function TwinPage() {
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") {
         e.preventDefault();
         setAuditLedgerOpen((prev) => !prev);
+      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "r") {
+        e.preventDefault();
+        setCourierArbitrageOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();
         setMultiDialectVoiceOpen((prev) => !prev);
@@ -2192,6 +2197,7 @@ export default function TwinPage() {
         onOpenFranchiseMultiBranch={() => setFranchiseMultiBranchOpen(true)}
         onOpenLiveSelling={() => setLiveSellingOpen(true)}
         onOpenAuditLedger={() => setAuditLedgerOpen(true)}
+        onOpenCourierArbitrage={() => setCourierArbitrageOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2225,6 +2231,7 @@ export default function TwinPage() {
       <FranchiseMultiBranchModal isOpen={franchiseMultiBranchOpen} onClose={() => setFranchiseMultiBranchOpen(false)} />
       <LiveSellingStudioModal isOpen={liveSellingOpen} onClose={() => setLiveSellingOpen(false)} />
       <AuditLedgerStudioModal isOpen={auditLedgerOpen} onClose={() => setAuditLedgerOpen(false)} />
+      <CourierArbitrageModal isOpen={courierArbitrageOpen} onClose={() => setCourierArbitrageOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
