@@ -65,6 +65,9 @@ async function run() {
     { name: 'Franchise In-Transit Stock Transfers', url: 'http://127.0.0.1:8080/api/v1/franchise/transfers' },
     { name: 'Live-Selling Active Stream Session', url: 'http://127.0.0.1:8080/api/v1/live-selling/sessions/active' },
     { name: 'Live-Selling Captured Orders Feed', url: 'http://127.0.0.1:8080/api/v1/live-selling/orders' },
+    { name: 'General Ledger Chart of Accounts', url: 'http://127.0.0.1:8080/api/v1/audit/accounts' },
+    { name: 'Real-Time General Ledger Trial Balance', url: 'http://127.0.0.1:8080/api/v1/audit/trial-balance' },
+    { name: 'General Ledger Journal Records Feed', url: 'http://127.0.0.1:8080/api/v1/audit/journals' },
     { name: 'Frontend Vite Web App (Port 5000)', url: 'http://127.0.0.1:5000/' },
     { name: 'Frontend Digital Twin Route', url: 'http://127.0.0.1:5000/twin' }
   ];
@@ -315,6 +318,58 @@ async function run() {
     }
   } catch (err) {
     console.error(`[FAIL] Live Comment Parsing: ${err.message}`);
+  }
+
+  console.log('\n--- 8. Testing Double-Entry Ledger Balancing & NBR Statutory Audit Dossier ---');
+  total++;
+  try {
+    const journalResp = await post('http://127.0.0.1:8080/api/v1/audit/journal', {
+      transactionRef: 'INV-COD-8822',
+      transactionType: 'sale_cod',
+      memo: 'Steadfast Courier COD delivery realization',
+      lines: [
+        { accountCode: '1030', debitBdt: 5000, creditBdt: 0, description: 'COD receivable' },
+        { accountCode: '4010', debitBdt: 0, creditBdt: 4347.83, description: 'Gross sales' },
+        { accountCode: '2010', debitBdt: 0, creditBdt: 652.17, description: '15% NBR VAT' }
+      ]
+    });
+
+    if (journalResp.status === 201 && journalResp.body.success) {
+      passed++;
+      const j = journalResp.body.entry;
+      console.log(`[PASS] Double-Entry Journal Posted & Balanced (HTTP 201):`);
+      console.log(`       Entry ID: ${j.entryId}`);
+      console.log(`       Total Debits = Total Credits = ৳${j.totalDebitBdt.toLocaleString()}`);
+      console.log(`       SHA-256 Audit Seal: ${j.auditHash.substring(0, 32)}...`);
+
+      // Now compile NBR Statutory Audit Dossier
+      total++;
+      const dossierResp = await post('http://127.0.0.1:8080/api/v1/audit/dossier/compile', {
+        merchantId: 'merch_dhk_power_01',
+        merchantName: 'Shothik Artisan Commerce Ltd.',
+        binNumber: '001928374-0101',
+        taxYear: '2026-2027'
+      });
+
+      if (dossierResp.status === 200 && dossierResp.body.success) {
+        passed++;
+        const d = dossierResp.body.dossier;
+        console.log(`[PASS] NBR Statutory Audit Dossier Compiled (HTTP 200):`);
+        console.log(`       Dossier ID: ${d.dossierId}`);
+        console.log(`       Entity: ${d.merchantName} (BIN: ${d.binNumber})`);
+        console.log(`       Compliance Status: ${d.complianceStatus.toUpperCase()}`);
+        console.log(`       Gross Revenue: ৳${d.financialSummary.grossRevenueBdt.toLocaleString()}`);
+        console.log(`       Net Statutory Profit: ৳${d.financialSummary.netProfitBdt.toLocaleString()}`);
+        console.log(`       Mushak-6.3 VAT Output: ৳${d.financialSummary.vatCollectedBdt.toLocaleString()}`);
+        console.log(`       Cryptographic Seal: ${d.verificationSeal.signature}`);
+      } else {
+        console.error(`[FAIL] NBR Dossier compilation failed with HTTP ${dossierResp.status}`, dossierResp.body);
+      }
+    } else {
+      console.error(`[FAIL] Double-entry journal posting failed with HTTP ${journalResp.status}`, journalResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Audit Ledger Engine: ${err.message}`);
   }
 
   console.log('\n================================================================');

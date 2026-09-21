@@ -54,6 +54,7 @@ import { customsRouter } from "./customs.js";
 import { growthRouter } from "./growth.js";
 import { franchiseRouter } from "./franchise.js";
 import { liveSellingRouter } from "./live-selling.js";
+import { auditLedgerRouter } from "./audit-ledger.js";
 
 const router: IRouter = Router();
 
@@ -63,6 +64,7 @@ router.use(customsRouter);
 router.use(growthRouter);
 router.use(franchiseRouter);
 router.use(liveSellingRouter);
+router.use(auditLedgerRouter);
 router.use("/telemetry", telemetryRouter);
 router.use(agentTracesRouter);
 router.use(authRouter);
