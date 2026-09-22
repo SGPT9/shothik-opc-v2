@@ -779,6 +779,118 @@ async function run() {
     console.error(`[FAIL] Wholesale RFQ Escrow: ${err.message}`);
   }
 
+  console.log('\n--- 14. Testing Autonomous Agri-Commodity Sourcing & Mandi Radar (Slice 40) ---');
+  total++;
+  try {
+    const mandisResp = await get('http://127.0.0.1:8080/api/v1/agri/mandis/overview');
+    if (mandisResp.status === 200 && mandisResp.body.success) {
+      passed++;
+      console.log(`[PASS] Wholesale Mandi Trading Yards Active (HTTP 200):`);
+      console.log(`       Major Trading Hubs: ${mandisResp.body.mandis.length} zones (Karwan Bazar, Badamtoli, Khatunganj, Bogra, Rajshahi)`);
+      const topMandi = mandisResp.body.mandis[0];
+      console.log(`       Sample Mandi: ${topMandi.name} (${topMandi.dailyTradingVolumeTons.toLocaleString()} Tons/day, ${topMandi.tradingHours})`);
+
+      // Commodities Spot Index Probe
+      total++;
+      const commResp = await get('http://127.0.0.1:8080/api/v1/agri/commodities');
+      if (commResp.status === 200 && commResp.body.success) {
+        passed++;
+        console.log(`[PASS] Agri-Commodity Spot Radar Active (HTTP 200):`);
+        console.log(`       Tracked Commodities: ${commResp.body.commodities.length} items`);
+        const sampleComm = commResp.body.commodities[0];
+        console.log(`       Sample Crop: ${sampleComm.name} [${sampleComm.banglaName}]`);
+        console.log(`       Farmgate: ৳${sampleComm.farmgatePriceBdt}/kg -> Mandi Spot: ৳${sampleComm.wholesaleMandiPriceBdt}/kg (Trend: ${sampleComm.priceTrend.toUpperCase()})`);
+
+        // Spatial Arbitrage & Shrinkage Buffer Probe
+        total++;
+        const arbResp = await post('http://127.0.0.1:8080/api/v1/agri/arbitrage/evaluate', {
+          commodityId: 'AGRI_ONION_01',
+          quantityKg: 5000,
+          transitHours: 14,
+          transportType: 'open_bed_truck'
+        });
+
+        if (arbResp.status === 200 && arbResp.body.success) {
+          passed++;
+          const arb = arbResp.body.analysis;
+          console.log(`[PASS] Spatial Arbitrage & Shrinkage Evaluated (HTTP 200):`);
+          console.log(`       Batch: ${arb.quantityKg} kg -> Arrival Weight: ${arb.effectiveArrivalWeightKg} kg (-${arb.shrinkageLossKg} kg / ${arb.shrinkagePercentage}% moisture loss)`);
+          console.log(`       Financials: Sourcing ৳${arb.farmgateSourcingCostBdt.toLocaleString()} + Freight ৳${arb.estimatedFreightCostBdt.toLocaleString()} -> Net Profit: ৳${arb.netGrossProfitBdt.toLocaleString()} (${arb.netMarginPercent}% margin)`);
+          console.log(`       Arbitrage Rating: [${arb.arbitrageRating}]`);
+
+          // Sourcing Lot & Farmer Advance Creation Probe
+          total++;
+          const lotResp = await post('http://127.0.0.1:8080/api/v1/agri/lots/create', {
+            commodityId: 'AGRI_POTATO_01',
+            farmerName: 'Kuddus Bepari',
+            farmerPhone: '01711223344',
+            farmerMfsNumber: '01711223344',
+            mfsProvider: 'bkash',
+            farmLocation: 'Munshiganj Sadar',
+            quantityMaund: 75,
+            advancePercentage: 30
+          });
+
+          if (lotResp.status === 201 && lotResp.body.success) {
+            passed++;
+            const lot = lotResp.body.lot;
+            console.log(`[PASS] Sourcing Lot Created with 1 Maund = 40kg (HTTP 201):`);
+            console.log(`       Lot ID: ${lot.lotId} | Volume: ${lot.quantityMaund} Maund (${lot.totalKg.toLocaleString()} kg)`);
+            console.log(`       Gross Value: ৳${lot.estimatedGrossValueBdt.toLocaleString()} | Advance: ৳${lot.advanceAmountBdt.toLocaleString()} (30%)`);
+            console.log(`       Grower MFS: ${lot.farmerMfsNumber} (${lot.mfsProvider.toUpperCase()}) | SHA-256 Seal: ${lot.sha256Seal.slice(0, 32)}...`);
+
+            // Farmer Advance Disbursement Probe
+            total++;
+            const disburseResp = await post('http://127.0.0.1:8080/api/v1/agri/lots/disburse-advance', {
+              lot
+            });
+
+            if (disburseResp.status === 200 && disburseResp.body.success) {
+              passed++;
+              const rcpt = disburseResp.body.receipt;
+              console.log(`[PASS] Digital Farmer Advance Disbursed via MFS (HTTP 200):`);
+              console.log(`       TrxID: ${rcpt.trxId} | Disbursed: ৳${rcpt.disbursedAmountBdt.toLocaleString()} to ${rcpt.beneficiaryMfs}`);
+              console.log(`       MFS Receipt Seal: ${rcpt.receiptSeal.slice(0, 32)}...`);
+
+              // Cold-Chain Reefer Plan Probe
+              total++;
+              const ccResp = await post('http://127.0.0.1:8080/api/v1/agri/logistics/cold-chain-plan', {
+                origin: 'Sariakandi & Shibganj, Bogra',
+                destination: 'Karwan Bazar Central Arat, Dhaka',
+                commodityId: 'AGRI_CHILI_01',
+                quantityKg: 3000,
+                distanceKm: 230
+              });
+
+              if (ccResp.status === 200 && ccResp.body.success) {
+                passed++;
+                const plan = ccResp.body.plan;
+                console.log(`[PASS] Cold-Chain Reefer Logistics Dispatched (HTTP 200):`);
+                console.log(`       Route Plan: ${plan.planId} (${plan.origin} -> ${plan.destination}, ${plan.distanceKm} km)`);
+                console.log(`       Reefer Freight: ৳${plan.totalFreightCostBdt.toLocaleString()} (Surcharge: ৳${plan.coldChainSurchargeBdt.toLocaleString()})`);
+                console.log(`       Shrinkage Preserved Value: ৳${plan.shrinkageMitigationSavingsBdt.toLocaleString()} -> Net Benefit: +৳${plan.netEconomicBenefitBdt.toLocaleString()}`);
+              } else {
+                console.error(`[FAIL] Cold chain plan failed with HTTP ${ccResp.status}`, ccResp.body);
+              }
+            } else {
+              console.error(`[FAIL] Farmer advance disbursement failed with HTTP ${disburseResp.status}`, disburseResp.body);
+            }
+          } else {
+            console.error(`[FAIL] Sourcing lot creation failed with HTTP ${lotResp.status}`, lotResp.body);
+          }
+        } else {
+          console.error(`[FAIL] Arbitrage evaluation failed with HTTP ${arbResp.status}`, arbResp.body);
+        }
+      } else {
+        console.error(`[FAIL] Commodities fetch failed with HTTP ${commResp.status}`, commResp.body);
+      }
+    } else {
+      console.error(`[FAIL] Mandis overview failed with HTTP ${mandisResp.status}`, mandisResp.body);
+    }
+  } catch (err) {
+    console.error(`[FAIL] Agri Mandi Radar: ${err.message}`);
+  }
+
   console.log('\n================================================================');
   console.log(`  VERIFICATION RESULTS: ${passed}/${total} TESTS PASSED (100%)`);
   console.log('  ALL LOCALHOST BACKEND & FRONTEND SERVERS CERTIFIED READY');
@@ -786,3 +898,4 @@ async function run() {
 }
 
 run();
+

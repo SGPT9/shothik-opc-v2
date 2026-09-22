@@ -169,10 +169,15 @@ B2B raw material and wholesale finished goods sourcing from key commercial hubs 
 **Done when:** Merchant generates structured B2B RFQs with tiered volume pricing, evaluates supplier bids with quality/lead-time weighting, compiles enforceable milestone escrow agreements, and tracks wholesale shipment commitments.
 spec 0039 · code in `artifacts/api-server/src/lib/wholesale/wholesale-rfq-escrow-engine.ts`, `artifacts/api-server/src/routes/wholesale.ts`, and `artifacts/shothik/src/components/twin/WholesaleRfqEscrowModal.tsx`
 
-### 40. Autonomous Agri-Commodity Sourcing & Wholesale Mandi Price Radar · planned
+### 40. Autonomous Agri-Commodity Sourcing & Wholesale Mandi Price Radar · done
 Live wholesale price discovery across major Bangladeshi commodity trading hubs (Khatunganj Chittagong, Badamtoli Fruit Market Dhaka, Karwan Bazar Wholesale Arat, Bogra Spice Yard & Rajshahi Fruit Belt), seasonal harvest price fluctuation predictor, cold chain temperature-monitored refrigerated transport dispatch scheduler, and instant farmer micro-advance payout via bKash/Nagad MFS.
 **Done when:** Merchant tracks real-time mandi spot prices vs. 7-day moving averages, calculates moisture/spoilage shrinkage buffers, books Reefer cold-chain transport, and disburses farmer harvesting advances via automated MFS payroll.
-spec 0040 · code in `artifacts/api-server/src/lib/agri/`, `artifacts/api-server/src/routes/agri.ts`, and `artifacts/shothik/src/components/twin/AgriMandiRadarModal.tsx`
+spec 0040 · code in `artifacts/api-server/src/lib/agri/agri-commodity-radar-engine.ts`, `artifacts/api-server/src/routes/agri.ts`, and `artifacts/shothik/src/components/twin/AgriMandiRadarModal.tsx`
+
+### 41. Autonomous Micro-Franchise Field Agent POS & Offline Bluetooth Thermal Print Engine · planned
+Offline-first mobile POS for rural field sales agents and roadside pop-ups: local CRDT SQLite transaction sync, raw 58mm/80mm ESC/POS thermal receipt bytecode generation over Web Bluetooth, dynamic bKash/Nagad static+dynamic merchant QR invoice generator, and field float replenishment reconciler.
+**Done when:** Field agent registers offline sales, prints bilingual Bengali/English ESC/POS thermal receipts over Bluetooth, generates dynamic payment QR codes, and syncs queued transactions on network reconnection.
+spec 0041 · code in `artifacts/api-server/src/lib/pos/`, `artifacts/api-server/src/routes/pos.ts`, and `artifacts/shothik/src/components/twin/FieldAgentPosModal.tsx`
 
 ---
 
