@@ -38,6 +38,7 @@ import {
   Scale,
   DollarSign,
   Store,
+  Wheat,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -93,6 +94,7 @@ export interface TwinCommandPaletteProps {
   onOpenDarkHubFulfillment?: () => void;
   onOpenMultiChannelCashflow?: () => void;
   onOpenWholesaleRfqEscrow?: () => void;
+  onOpenAgriMandiRadar?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -171,6 +173,7 @@ export function TwinCommandPalette({
   onOpenDarkHubFulfillment,
   onOpenMultiChannelCashflow,
   onOpenWholesaleRfqEscrow,
+  onOpenAgriMandiRadar,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -823,6 +826,25 @@ export function TwinCommandPalette({
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
               ⌘B
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="agri commodity sourcing wholesale mandi price radar khatunganj badamtoli karwan bazar bogra rajshahi maund mon shrinkage reefer cold chain farmer bkash advance"
+            onSelect={() => handleSelect(onOpenAgriMandiRadar)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Wheat className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Agri-Commodity Sourcing & Mandi Price Radar</span>
+                <span className="text-[11px] text-zinc-500">Khatunganj/Badamtoli/Karwan Bazar spot index, 1 Maund=40kg, shrinkage buffer & reefer dispatch</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘A
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>
