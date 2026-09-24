@@ -86,5 +86,9 @@ describe("TwinCommandPalette Component (TwinCommandPalette.tsx)", () => {
     // Select NBR Mushak-6.3 Tax Studio
     const taxItem = screen.getByText("NBR Mushak-6.3 Statutory VAT & TDS Studio");
     expect(taxItem).toBeInTheDocument();
+
+    // Select AI Legal Contracts & Stamp Duty Act 1899 Studio
+    const legalItem = screen.getByText("AI Legal Contracts & Stamp Duty Act 1899 Studio");
+    expect(legalItem).toBeInTheDocument();
   });
 });

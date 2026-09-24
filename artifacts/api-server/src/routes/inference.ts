@@ -96,3 +96,34 @@ inferenceRouter.post("/v1/inference/chat", async (req: Request, res: Response): 
     }
   }
 });
+
+/**
+ * POST /api/v1/system1/evaluate
+ * Fast System 1 typed decisions over arbitrary state (<10ms).
+ */
+inferenceRouter.post("/v1/system1/evaluate", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { state, questions } = req.body;
+
+    if (!state || typeof state !== "object" || !questions || typeof questions !== "object") {
+      res.status(400).json({
+        success: false,
+        error: "state and questions objects are required in request body",
+      });
+      return;
+    }
+
+    const { LayaSystemOneEngine } = await import("../lib/system1/laya-system-one-engine.js");
+    const engine = LayaSystemOneEngine.getInstance();
+    const result = await engine.systemOne(state, questions);
+
+    res.json({
+      success: true,
+      result,
+    });
+  } catch (err: any) {
+    logger.error(`[inference-router] System 1 evaluation failed: ${err.message}`);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+

@@ -379,9 +379,9 @@ export class EpistemicConsensusVault {
       } else if (confidenceScore < 0.70) {
         voteDecision = 'REJECT';
         reasoning = 'Rejection: Confidence score below 0.70 threshold.';
-      } else if (!isDomainSpecialty && Math.random() < 0.15) {
+      } else if (!isDomainSpecialty && confidenceScore < 0.75) {
         voteDecision = 'ABSTAIN';
-        reasoning = 'Abstained: Out of regional validator specialty domain.';
+        reasoning = 'Abstained: Out of regional validator specialty domain with moderate confidence.';
       }
 
       if (voteDecision === 'APPROVE') {

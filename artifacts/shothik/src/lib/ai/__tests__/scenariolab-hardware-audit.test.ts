@@ -20,7 +20,7 @@ describe('ScenarioLab Hardware & Demography Audit (2GB RAM / 3G / bKash / Steadf
 
     expect(route.tier).toBe('tier0_micro_edge');
     expect(route.expectedVramMb).toBeLessThanOrEqual(35);
-    expect(route.engine).toBe('needle_2');
+    expect(route.engine).toBe('needle_3');
   });
 
   it('correctly calculates bKash 1.85% fee with exact decimal precision', () => {

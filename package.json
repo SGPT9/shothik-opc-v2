@@ -32,6 +32,7 @@
   },
   "private": true,
   "dependencies": {
+    "@receptron/laya": "^0.1.2",
     "@replit/connectors-sdk": "^0.4.3"
   },
   "devDependencies": {
@@ -96,6 +97,7 @@
     "tree-sitter-json",
     "tree-sitter",
     "unrs-resolver",
-    "workerd"
+    "workerd",
+    "onnxruntime-node"
   ]
 }
