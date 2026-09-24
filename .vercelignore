@@ -1,18 +1,38 @@
+# Dependencies & local stores
 node_modules
 **/node_modules/**
-node_modules/**
 .pnpm-store
 **/.pnpm-store/**
+
+# Git & agents
 .git
 **/.git/**
 .agents
 **/.agents/**
-.next
-**/.next/**
-dist
-**/dist/**
-build
-**/build/**
+
+# Backend, models, microservices
+api
+api/**
+artifacts/api-server
+artifacts/api-server/**
+lib/hermes
+lib/hermes/**
+models
+models/**
+packages
+packages/**
+deploy
+deploy/**
+
+# Subrepos & references
+shothik-opc-v2
+shothik-soup
+deer-flow-backend
+github-prompt-reverse-engineer
+reference-repos
+reference-repos/**
+
+# Cache & logs
 .turbo
 **/.turbo/**
 .cache
@@ -20,12 +40,6 @@ build
 playwright-report
 test-results
 coverage
-shothik-opc-v2
-shothik-soup
-deer-flow-backend
-github-prompt-reverse-engineer
-reference-repos
-reference-repos/**
 scratch
 tmp
 data
@@ -35,9 +49,13 @@ data
 *.db
 *.db-shm
 *.db-wal
+*.onnx
+*.bin
+*.tar*
+*.zip
+
+# Docs & tests
 docs/**
 attached_assets/**
 scripts/**
 tests/**
-api
-api/**
