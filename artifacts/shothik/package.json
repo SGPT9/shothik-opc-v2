@@ -9,6 +9,7 @@
     "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
     "typecheck": "node run_typecheck.cjs",
     "test": "vitest run",
+    "test:demography": "vitest run",
     "test:scenariolab": "npx tsx scratch/test_scenariolab.cjs"
   },
   "devDependencies": {

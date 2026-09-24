@@ -297,7 +297,7 @@ export const DutyDrawbackModal: React.FC<DutyDrawbackModalProps> = ({ isOpen, on
         statutoryFlatRatePercent: flatRatePercent,
       },
       importedInputs: [],
-      fobExportValueBdt,
+      fobExportValueBdt: fobValueBdt,
       totalClaimableDrawbackBdt: totalDrawback,
       drawbackBreakdown: {
         customsDutyRefundBdt: Math.round(totalDrawback * 0.6),
