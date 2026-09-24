@@ -1,17 +1,23 @@
 /**
- * ModelMeshRouter — Smart Stage Router across AirLLM, FunctionGemma, Colibri, Needle 2, and NVIDIA Switchyard
+ * ModelMeshRouter — Smart Stage Router across Laya System 1, Needle 3, FunctionGemma, AirLLM, and NVIDIA Switchyard
  * Orchestrated with Wayfinder Decision Mapping & Continuous Hardware Awareness
  * 
  * Compute Hierarchy:
- *  - Tier 0: Micro-Edge (<35MB RAM, <5ms) — Needle 2 (45M) & Colibri
+ *  - Tier -1: System 1 Probabilistic Decision (<10ms, <15MB) — Laya / Open-Jev (Typed Parallel Heads)
+ *  - Tier 0: Micro-Edge Automation (<29MB RAM, <15ms) — Needle 3 (Laddered SAN 2-20 layers, 2-bit Cactus Quants) & Colibri
  *  - Tier 1: Fast Small Language Model (SLM) — FunctionGemma (270M)
  *  - Tier 2: Layer-Streaming Local Big Models (4-8GB VRAM) — AirLLM 70B
- *  - Tier 3: Cloud Frontier & Resilient Proxy — NVIDIA NeMo Switchyard
+ *  - Tier 3: Cloud Frontier & Resilient Proxy — DeepSeek / Gemini / Claude via Switchyard
  */
 
 import { StudioMode } from './needle-dispatcher';
 
-export type ComputeTier = 'tier0_micro_edge' | 'tier1_fast_slm' | 'tier2_local_airllm' | 'tier3_cloud_frontier';
+export type ComputeTier =
+  | 'tier_neg1_system1_laya'
+  | 'tier0_micro_edge'
+  | 'tier1_fast_slm'
+  | 'tier2_local_airllm'
+  | 'tier3_cloud_frontier';
 
 export interface DeviceHardwareProfile {
   ramGb: number;
@@ -23,7 +29,14 @@ export interface DeviceHardwareProfile {
 
 export interface ModelRouteSelection {
   tier: ComputeTier;
-  engine: 'needle_2' | 'colibri_embed' | 'function_gemma_270m' | 'air_llm_70b' | 'switchyard_stage_router';
+  engine:
+    | 'laya_system1'
+    | 'needle_3'
+    | 'needle_2'
+    | 'colibri_embed'
+    | 'function_gemma_270m'
+    | 'air_llm_70b'
+    | 'switchyard_stage_router';
   expectedVramMb: number;
   layerStreamingEnabled?: boolean;
   protocolTranslation?: 'universal_anthropic_openai' | 'native';
@@ -49,6 +62,7 @@ export interface WayfinderMap {
 
 export class ModelMeshRouter {
   private availableTiers: ComputeTier[] = [
+    'tier_neg1_system1_laya',
     'tier0_micro_edge',
     'tier1_fast_slm',
     'tier2_local_airllm',
@@ -64,10 +78,21 @@ export class ModelMeshRouter {
     mode: StudioMode;
     confidence: number;
     device: DeviceHardwareProfile;
+    isSystemOneCandidate?: boolean;
   }): ModelRouteSelection {
-    const { mode, confidence, device } = options;
+    const { mode, confidence, device, isSystemOneCandidate } = options;
 
-    // 1. If offline or ultra-low RAM (<=2GB), enforce Tier 0 Edge (Needle 2 / Colibri)
+    // 0. System 1 Candidate (Classification / Verification / Rubric Scoring)
+    if (isSystemOneCandidate && confidence >= 0.70) {
+      return {
+        tier: 'tier_neg1_system1_laya',
+        engine: 'laya_system1',
+        expectedVramMb: 12,
+        reason: 'Typed decision task: Dispatched to Laya / Open-Jev System 1 model (<10ms, zero-token generation).',
+      };
+    }
+
+    // 1. If offline or ultra-low RAM (<=2GB), enforce Tier 0 Edge (Needle 3 / Colibri)
     if (!device.isOnline || (device.ramGb <= 2 && confidence >= 0.80)) {
       if (!device.isOnline && device.hasGpu && device.vramGb >= 4 && confidence < 0.80) {
         // Offline with Workstation GPU -> Tier 2 AirLLM Layer Streaming
@@ -82,9 +107,9 @@ export class ModelMeshRouter {
 
       return {
         tier: 'tier0_micro_edge',
-        engine: 'needle_2',
-        expectedVramMb: 28,
-        reason: 'Low-RAM or offline environment: Dispatched to Needle 2 45M edge engine (28MB RAM).',
+        engine: 'needle_3',
+        expectedVramMb: 18,
+        reason: 'Low-RAM or offline environment: Dispatched to Needle 3 Laddered SAN engine (18MB RAM, 2-bit quants).',
       };
     }
 
@@ -98,7 +123,7 @@ export class ModelMeshRouter {
       };
     }
 
-    // 3. If online with ambiguous/complex queries -> Tier 3 NVIDIA Switchyard
+    // 3. If online with ambiguous/complex queries -> Tier 3 Cloud Frontier Switchyard
     return {
       tier: 'tier3_cloud_frontier',
       engine: 'switchyard_stage_router',

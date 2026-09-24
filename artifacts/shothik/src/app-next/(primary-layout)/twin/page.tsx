@@ -59,6 +59,21 @@ import { DarkHubFulfillmentModal } from "@/components/twin/DarkHubFulfillmentMod
 import { MultiChannelCashflowModal } from "@/components/twin/MultiChannelCashflowModal";
 import { WholesaleRfqEscrowModal } from "@/components/twin/WholesaleRfqEscrowModal";
 import { AgriMandiRadarModal } from "@/components/twin/AgriMandiRadarModal";
+import { FieldAgentPosModal } from "@/components/twin/FieldAgentPosModal";
+import { Mushak43DeclarationModal } from "@/components/twin/Mushak43DeclarationModal";
+import { MultiCarrierWebhookModal } from "@/components/twin/MultiCarrierWebhookModal";
+import { ExportComplianceModal } from "@/components/twin/ExportComplianceModal";
+import { FxHedgingModal } from "@/components/twin/FxHedgingModal";
+import { PayrollTaxModal } from "@/components/twin/PayrollTaxModal";
+import { CorporateTaxModal } from "@/components/twin/CorporateTaxModal";
+import { InvoiceFactoringModal } from "@/components/twin/InvoiceFactoringModal";
+import { DebtRecoveryModal } from "@/components/twin/DebtRecoveryModal";
+import { VoiceCommerceModal } from "@/components/twin/VoiceCommerceModal";
+import { LegalContractsModal } from "@/components/twin/LegalContractsModal";
+import { DutyDrawbackModal } from "@/components/twin/DutyDrawbackModal";
+import { HalalGovernanceModal } from "@/components/twin/HalalGovernanceModal";
+import { CollectiveBuyingModal } from "@/components/twin/CollectiveBuyingModal";
+import { TenderBidModal } from "@/components/twin/TenderBidModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -374,6 +389,21 @@ export default function TwinPage() {
   const [multiChannelCashflowOpen, setMultiChannelCashflowOpen] = useState(false);
   const [wholesaleRfqEscrowOpen, setWholesaleRfqEscrowOpen] = useState(false);
   const [agriMandiRadarOpen, setAgriMandiRadarOpen] = useState(false);
+  const [fieldAgentPosOpen, setFieldAgentPosOpen] = useState(false);
+  const [mushak43DeclarationOpen, setMushak43DeclarationOpen] = useState(false);
+  const [multiCarrierWebhookOpen, setMultiCarrierWebhookOpen] = useState(false);
+  const [exportComplianceOpen, setExportComplianceOpen] = useState(false);
+  const [fxHedgingOpen, setFxHedgingOpen] = useState(false);
+  const [payrollTaxOpen, setPayrollTaxOpen] = useState(false);
+  const [corporateTaxOpen, setCorporateTaxOpen] = useState(false);
+  const [invoiceFactoringOpen, setInvoiceFactoringOpen] = useState(false);
+  const [debtRecoveryOpen, setDebtRecoveryOpen] = useState(false);
+  const [voiceCommerceOpen, setVoiceCommerceOpen] = useState(false);
+  const [legalContractsOpen, setLegalContractsOpen] = useState(false);
+  const [dutyDrawbackOpen, setDutyDrawbackOpen] = useState(false);
+  const [halalGovernanceOpen, setHalalGovernanceOpen] = useState(false);
+  const [collectiveBuyingOpen, setCollectiveBuyingOpen] = useState(false);
+  const [tenderBidOpen, setTenderBidOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -2228,6 +2258,21 @@ export default function TwinPage() {
         onOpenMultiChannelCashflow={() => setMultiChannelCashflowOpen(true)}
         onOpenWholesaleRfqEscrow={() => setWholesaleRfqEscrowOpen(true)}
         onOpenAgriMandiRadar={() => setAgriMandiRadarOpen(true)}
+        onOpenFieldAgentPos={() => setFieldAgentPosOpen(true)}
+        onOpenMushak43Declaration={() => setMushak43DeclarationOpen(true)}
+        onOpenMultiCarrierWebhook={() => setMultiCarrierWebhookOpen(true)}
+        onOpenExportCompliance={() => setExportComplianceOpen(true)}
+        onOpenFxHedging={() => setFxHedgingOpen(true)}
+        onOpenPayrollTax={() => setPayrollTaxOpen(true)}
+        onOpenCorporateTax={() => setCorporateTaxOpen(true)}
+        onOpenInvoiceFactoring={() => setInvoiceFactoringOpen(true)}
+        onOpenDebtRecovery={() => setDebtRecoveryOpen(true)}
+        onOpenVoiceCommerce={() => setVoiceCommerceOpen(true)}
+        onOpenLegalContracts={() => setLegalContractsOpen(true)}
+        onOpenDutyDrawback={() => setDutyDrawbackOpen(true)}
+        onOpenHalalGovernance={() => setHalalGovernanceOpen(true)}
+        onOpenCollectiveBuying={() => setCollectiveBuyingOpen(true)}
+        onOpenTenderBid={() => setTenderBidOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2267,6 +2312,21 @@ export default function TwinPage() {
       <MultiChannelCashflowModal isOpen={multiChannelCashflowOpen} onClose={() => setMultiChannelCashflowOpen(false)} />
       <WholesaleRfqEscrowModal isOpen={wholesaleRfqEscrowOpen} onClose={() => setWholesaleRfqEscrowOpen(false)} />
       <AgriMandiRadarModal isOpen={agriMandiRadarOpen} onClose={() => setAgriMandiRadarOpen(false)} />
+      <FieldAgentPosModal isOpen={fieldAgentPosOpen} onClose={() => setFieldAgentPosOpen(false)} />
+      <Mushak43DeclarationModal isOpen={mushak43DeclarationOpen} onClose={() => setMushak43DeclarationOpen(false)} />
+      <MultiCarrierWebhookModal isOpen={multiCarrierWebhookOpen} onClose={() => setMultiCarrierWebhookOpen(false)} />
+      <ExportComplianceModal isOpen={exportComplianceOpen} onClose={() => setExportComplianceOpen(false)} />
+      <FxHedgingModal isOpen={fxHedgingOpen} onClose={() => setFxHedgingOpen(false)} />
+      <PayrollTaxModal isOpen={payrollTaxOpen} onClose={() => setPayrollTaxOpen(false)} />
+      <CorporateTaxModal isOpen={corporateTaxOpen} onClose={() => setCorporateTaxOpen(false)} />
+      <InvoiceFactoringModal isOpen={invoiceFactoringOpen} onClose={() => setInvoiceFactoringOpen(false)} />
+      <DebtRecoveryModal isOpen={debtRecoveryOpen} onClose={() => setDebtRecoveryOpen(false)} />
+      <VoiceCommerceModal isOpen={voiceCommerceOpen} onClose={() => setVoiceCommerceOpen(false)} />
+      <LegalContractsModal isOpen={legalContractsOpen} onClose={() => setLegalContractsOpen(false)} />
+      <DutyDrawbackModal isOpen={dutyDrawbackOpen} onClose={() => setDutyDrawbackOpen(false)} />
+      <HalalGovernanceModal isOpen={halalGovernanceOpen} onClose={() => setHalalGovernanceOpen(false)} />
+      <CollectiveBuyingModal isOpen={collectiveBuyingOpen} onClose={() => setCollectiveBuyingOpen(false)} />
+      <TenderBidModal isOpen={tenderBidOpen} onClose={() => setTenderBidOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

@@ -39,6 +39,7 @@ import {
   DollarSign,
   Store,
   Wheat,
+  Factory,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -95,6 +96,21 @@ export interface TwinCommandPaletteProps {
   onOpenMultiChannelCashflow?: () => void;
   onOpenWholesaleRfqEscrow?: () => void;
   onOpenAgriMandiRadar?: () => void;
+  onOpenFieldAgentPos?: () => void;
+  onOpenMushak43Declaration?: () => void;
+  onOpenMultiCarrierWebhook?: () => void;
+  onOpenExportCompliance?: () => void;
+  onOpenFxHedging?: () => void;
+  onOpenPayrollTax?: () => void;
+  onOpenCorporateTax?: () => void;
+  onOpenInvoiceFactoring?: () => void;
+  onOpenDebtRecovery?: () => void;
+  onOpenVoiceCommerce?: () => void;
+  onOpenLegalContracts?: () => void;
+  onOpenDutyDrawback?: () => void;
+  onOpenHalalGovernance?: () => void;
+  onOpenCollectiveBuying?: () => void;
+  onOpenTenderBid?: () => void;
   // Category 4: DevOps & Cloud
   onOpenStartupBuilds?: () => void;
   onOpenWebsiteHub?: () => void;
@@ -174,6 +190,21 @@ export function TwinCommandPalette({
   onOpenMultiChannelCashflow,
   onOpenWholesaleRfqEscrow,
   onOpenAgriMandiRadar,
+  onOpenFieldAgentPos,
+  onOpenMushak43Declaration,
+  onOpenMultiCarrierWebhook,
+  onOpenExportCompliance,
+  onOpenFxHedging,
+  onOpenPayrollTax,
+  onOpenCorporateTax,
+  onOpenInvoiceFactoring,
+  onOpenDebtRecovery,
+  onOpenVoiceCommerce,
+  onOpenLegalContracts,
+  onOpenDutyDrawback,
+  onOpenHalalGovernance,
+  onOpenCollectiveBuying,
+  onOpenTenderBid,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -845,6 +876,291 @@ export function TwinCommandPalette({
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
               ⌘A
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="field agent pos bluetooth thermal print escpos 58mm 80mm roadside pop up bkash nagad dynamic qr offline crdt queue cash float balancing"
+            onSelect={() => handleSelect(onOpenFieldAgentPos)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Store className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Field Agent POS & Bluetooth Thermal Print</span>
+                <span className="text-[11px] text-zinc-500">Offline-first roadside POS, ESC/POS 58mm/80mm bytecode, bKash dynamic QR & float tally</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘P
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="nbr mushak 4.3 input output coefficient declarator factory costing bom raw material wastage value addition divisional vat office 7.5% refiling variance"
+            onSelect={() => handleSelect(onOpenMushak43Declaration)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Factory className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">NBR Mushak-4.3 Factory Costing & BOM</span>
+                <span className="text-[11px] text-zinc-500">Statutory input-output coefficient declaration (মূসক-৪.৩), BOM wastage % & 7.5% variance gate</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘4
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="carrier webhook logistics settlement reconciler steadfast pathao redx paperfly cod dispute underpayment double entry gl ledger"
+            onSelect={() => handleSelect(onOpenMultiCarrierWebhook)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Truck className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Multi-Carrier Webhooks & COD Reconciler</span>
+                <span className="text-[11px] text-zinc-500">Steadfast/Pathao/RedX webhooks, automated double-entry GL ledger & underpayment claims</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘W
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="cross border export compliance bangladesh bank form exp erc registration asycuda customs manifest letter of credit lc repatriation swift prc"
+            onSelect={() => handleSelect(onOpenExportCompliance)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Cross-Border Export Manifest & BB Form-EXP</span>
+                <span className="text-[11px] text-zinc-500">Bangladesh Bank Form-EXP compiler, ERC statutory validator & 120-day FERA repatriation radar</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘E
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="cross border fx hedging forward contract rate lock bangladesh bank cirp sofr smart interest rate parity margin lien mark to market mtm"
+            onSelect={() => handleSelect(onOpenFxHedging)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Cross-Border FX Hedging & Forward Rate Lock</span>
+                <span className="text-[11px] text-zinc-500">BB FERA forward rate lock, CIRP pricing curve, 5% margin lien & MTM stress test</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘X
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="sme payroll statutory withholding income tax provident fund nbr bangladesh labour act section 50 ait salary payslip 108 return"
+            onSelect={() => handleSelect(onOpenPayrollTax)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <DollarSign className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">SME Payroll, Tax & Provident Fund</span>
+                <span className="text-[11px] text-zinc-500">NBR Income Tax Act 2023 progressive slabs, Section 50 salary withholding & Labour Act PF trustee</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘Y
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="corporate income tax nbr form 82c section 163 minimum turnover tax ait credit ledger vat mushak 9.1 sub-form 9.1 ites tax exemption return"
+            onSelect={() => handleSelect(onOpenCorporateTax)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Building2 className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Corporate Tax & VAT Mushak-9.1</span>
+                <span className="text-[11px] text-zinc-500">NBR Form 82C minimum tax floor, AIT withholding credit vault & Mushak-9.1 VAT adjustment</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘9
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="b2b invoice factoring bill discounting islamic murabaha cash advance mushak 6.3 pran square walton aarong escrow lien dscr"
+            onSelect={() => handleSelect(onOpenInvoiceFactoring)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Scale className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">B2B Invoice Factoring & Islamic Murabaha</span>
+                <span className="text-[11px] text-zinc-500">85% instant cash advance, Mushak-6.3 verification, Shariah Murabaha vs SMART & escrow lien</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘I
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="b2b trade credit insurance debt recovery ni act 1881 section 138 bounced cheque dishonor legal notice artha rin adalat indemnity"
+            onSelect={() => handleSelect(onOpenDebtRecovery)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                <ShieldAlert className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Trade Credit Insurance & NI Act 138 Recovery</span>
+                <span className="text-[11px] text-zinc-500">90% default indemnity bond, 30-day bounced cheque Section 138 notice & Artha Rin dossier</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘R
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="vernacular voice commerce webrtc banglish agent 1-click bkash payment link sms speech to intent sylheti chittagonian noakhali"
+            onSelect={() => handleSelect(onOpenVoiceCommerce)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-pink-500/10 text-pink-500 border border-pink-500/20">
+                <Mic className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Vernacular Voice Commerce & WebRTC</span>
+                <span className="text-[11px] text-zinc-500">Sub-150ms Banglish speech-to-intent, regional dialects & 1-click bKash payment SMS</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘V
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="ai legal contracts stamp duty act 1899 compliance bilingual non judicial stamp sha256 digital signature ict act 2006 vendor lease nda vesting"
+            onSelect={() => handleSelect(onOpenLegalContracts)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Scale className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">AI Legal Contracts & Stamp Duty Act 1899 Studio</span>
+                <span className="text-[11px] text-zinc-500">Bilingual contract generator, non-judicial e-stamp calculator & SHA-256 digital signature seal</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘L
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="nbr customs duty drawback dec export tariff refund dedo form a b dedo asycuda world form exp rmgs leather footwear"
+            onSelect={() => handleSelect(onOpenDutyDrawback)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-cyan-500/10 text-cyan-500 border border-cyan-500/20">
+                <Ship className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">NBR Customs Duty Drawback & DEC Studio</span>
+                <span className="text-[11px] text-zinc-500">Customs Act 2023 Sec 33/34 tariff refund, DEDO Form-A/B filing & Form-EXP cross-reconciler</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘B
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="halal certification islamic shariah governance bsti bds 1907 aaoifi 21 e-number food additive screener murabaha purification csbib"
+            onSelect={() => handleSelect(onOpenHalalGovernance)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Award className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Halal Certification & Islamic Shariah Governance</span>
+                <span className="text-[11px] text-zinc-500">BSTI BDS 1907 food & cosmetic compliance, E-number screener & AAOIFI 21 financial auditor</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘J
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="b2b collective buying bulk freight pooling 1688 yiwu khatunganj cbm volumetric tariff sharing moq escrow margin steadfast parcel splitter"
+            onSelect={() => handleSelect(onOpenCollectiveBuying)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-violet-500/10 text-violet-500 border border-violet-500/20">
+                <Package className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Micro-Merchant Collective Buying & Freight Pooling</span>
+                <span className="text-[11px] text-zinc-500">1688/Yiwu container pooling, CBM landed cost sharing & automated micro-hub parcel dispatch</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘P
+            </CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="government egp tender b2b corporate rfp cptu ppr 2008 ppa 2006 boq rate analysis bank guarantee tender security pg3 pw2"
+            onSelect={() => handleSelect(onOpenTenderBid)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Landmark className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Government e-GP Tender & Corporate Bid Studio</span>
+                <span className="text-[11px] text-zinc-500">CPTU STD PG3/PW2 bid generator, BOQ rate analysis & tender security bank guarantee tracker</span>
+              </div>
+            </div>
+            <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
+              ⌘T
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>

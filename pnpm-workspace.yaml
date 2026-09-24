@@ -85,6 +85,7 @@ onlyBuiltDependencies:
   - tree-sitter-json
   - unrs-resolver
   - workerd
+  - onnxruntime-node
 
 overrides:
   # replit uses linux-x64 only, we can exclude all other platforms
@@ -176,10 +177,11 @@ allowBuilds:
   '@prisma/engines': false
   '@scarf/scarf': false
   '@tree-sitter-grammars/tree-sitter-yaml': false
-  better-sqlite3: set this to true or false
+  better-sqlite3: false
   core-js: false
   core-js-pure: false
   esbuild: false
+  onnxruntime-node: false
   prisma: false
   sharp: false
   tree-sitter: false

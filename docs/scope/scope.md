@@ -45,6 +45,23 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 32 | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Slice 32 | done |
 | 33 | Autonomous Social Commerce Live-Selling & Comment Parser | Slice 33 | done |
 | 34 | NBR Statutory Audit Dossier & Double-Entry Ledger | Slice 34 | done |
+| 35 | Autonomous Courier Fleet Arbitrage & Micro-Hub Dispatcher | Slice 35 | done |
+| 36 | Autonomous Freelancer Remittance & Bangladesh Bank ICT Incentive Ledger | Slice 36 | done |
+| 37 | Autonomous Hyperlocal Dark Store & Micro-Fulfillment Dark Hub Orchestrator | Slice 37 | done |
+| 38 | Autonomous Multi-Channel Cashflow & COD Settlement Reconciler | Slice 38 | done |
+| 39 | Autonomous Wholesale Supplier RFQ & B2B Escrow Negotiation Engine | Slice 39 | done |
+| 40 | Autonomous Agri-Commodity Sourcing & Wholesale Mandi Price Radar | Slice 40 | done |
+| 41 | Autonomous Micro-Franchise Field Agent POS & Offline Bluetooth Thermal Print Engine | Slice 41 | done |
+| 43 | Autonomous Multi-Carrier Inbound Webhook Dispatcher & Real-Time Double-Entry Settlement Reconciler | Slice 43 | done |
+| 44 | Autonomous Cross-Border Export Manifest, ERC Validator & Bangladesh Bank Form-EXP Compiler | Slice 44 | done |
+| 45 | Autonomous Cross-Border FX Hedging, CIRP Arbitrage & Forward Contract Rate-Lock Engine | Slice 45 | done |
+| 46 | Autonomous SME Payroll Tax, Surcharge & Provident Fund Statutory Compliance Engine | Slice 46 | done |
+| 47 | Autonomous Corporate Income Tax, NBR Form-82C Minimum Tax & Mushak-9.1 e-Return Reconciler | Slice 47 | done |
+| 48 | Autonomous B2B Invoice Factoring, Bill Discounting & Islamic Murabaha Cash Advance Engine | Slice 48 | done |
+| 49 | Autonomous B2B Trade Credit Insurance, NI Act 138 Cheque Default & Debt Recovery Engine | Slice 49 | done |
+| 50 | Autonomous Vernacular Voice Commerce, WebRTC Banglish Agent & 1-Click MFS Voice Checkout Engine | Slice 50 | done |
+| 51 | Autonomous AI Legal Contract Generator & Stamp Duty Act 1899 Compliance Engine | Slice 51 | done |
+| 52 | Autonomous NBR Customs Duty Drawback & Duty-Exemption Certificate (DEC) Engine | Slice 52 | done |
 
 ---
 
@@ -174,10 +191,204 @@ Live wholesale price discovery across major Bangladeshi commodity trading hubs (
 **Done when:** Merchant tracks real-time mandi spot prices vs. 7-day moving averages, calculates moisture/spoilage shrinkage buffers, books Reefer cold-chain transport, and disburses farmer harvesting advances via automated MFS payroll.
 spec 0040 · code in `artifacts/api-server/src/lib/agri/agri-commodity-radar-engine.ts`, `artifacts/api-server/src/routes/agri.ts`, and `artifacts/shothik/src/components/twin/AgriMandiRadarModal.tsx`
 
-### 41. Autonomous Micro-Franchise Field Agent POS & Offline Bluetooth Thermal Print Engine · planned
+### 41. Autonomous Micro-Franchise Field Agent POS & Offline Bluetooth Thermal Print Engine · done
 Offline-first mobile POS for rural field sales agents and roadside pop-ups: local CRDT SQLite transaction sync, raw 58mm/80mm ESC/POS thermal receipt bytecode generation over Web Bluetooth, dynamic bKash/Nagad static+dynamic merchant QR invoice generator, and field float replenishment reconciler.
 **Done when:** Field agent registers offline sales, prints bilingual Bengali/English ESC/POS thermal receipts over Bluetooth, generates dynamic payment QR codes, and syncs queued transactions on network reconnection.
-spec 0041 · code in `artifacts/api-server/src/lib/pos/`, `artifacts/api-server/src/routes/pos.ts`, and `artifacts/shothik/src/components/twin/FieldAgentPosModal.tsx`
+- [x] Design it (spec): `/architect micro-franchise field agent pos` (Spec 0041)
+- [x] Build it: `/develop micro-franchise field agent pos`
+   - [x] POS catalog, cart VAT calculation & offline CRDT queue (AC-1)
+   - [x] Raw ESC/POS 58mm/80mm bytecode generator with control codes & NBR seal (AC-2)
+   - [x] Dynamic bKash & Nagad EMVCo QR code payload compiler (AC-3)
+   - [x] Batch transaction sync with conflict resolution & duplicate detection (AC-4)
+   - [x] End-of-day cash float reconciliation & supervisor sign-off hash (AC-5)
+   - [x] Frontend Twin Field Agent POS Studio Modal with keyboard shortcut ⌘P (AC-6)
+- [x] Verify it: `/check verify micro-franchise field agent pos`
+- [x] Test it: `/test micro-franchise field agent pos`
+spec 0041 · code in `artifacts/api-server/src/lib/pos/field-agent-pos-engine.ts`, `artifacts/api-server/src/routes/pos.ts`, and `artifacts/shothik/src/components/twin/FieldAgentPosModal.tsx`
+
+### 42. Autonomous NBR Mushak-4.3 Input-Output Coefficient Declarator & Factory Costing Engine · done
+Statutory manufacturing input-output coefficient declaration (Mushak-4.3 / মূসক-৪.৩) under Value Added Tax and Supplementary Duty Act 2012: raw material Bill of Materials (BOM) decomposition, standard wastage percentages, direct labor & packaging overhead amortization, NBR Divisional VAT Office submission packet compiler, and automated production batch COGS variance auditor.
+**Done when:** Manufacturer or food processor declares input-output coefficients, calculates exact raw material consumption ratios per unit of finished product, and compiles compliant Mushak-4.3 declaration forms with cryptographic verification seal.
+- [x] Design it (spec): `/architect nbr mushak 4.3 factory costing` (Spec 0042)
+- [x] Build it: `/develop nbr mushak 4.3 factory costing`
+   - [x] Bill of Materials (BOM) decomposition & gross/net wastage calculation (AC-1)
+   - [x] Direct labor & overhead allocation per unit of supply (AC-2)
+   - [x] Statutory value addition percentage calculator under VAT Act 2012 (AC-3)
+   - [x] 7.5% input price fluctuation refiling trigger & variance auditor (AC-4)
+   - [x] Official NBR Mushak-4.3 tabular form compiler with verification seal (AC-5)
+   - [x] Frontend Twin Mushak-4.3 Studio Modal with keyboard shortcut ⌘4 (AC-6)
+- [x] Verify it: `/check verify nbr mushak 4.3 factory costing`
+- [x] Test it: `/test nbr mushak 4.3 factory costing`
+spec 0042 · code in `artifacts/api-server/src/lib/mushak43/mushak43-engine.ts`, `artifacts/api-server/src/routes/mushak43.ts`, and `artifacts/shothik/src/components/twin/Mushak43DeclarationModal.tsx`
+
+### 43. Autonomous Multi-Carrier Inbound Webhook Dispatcher & Real-Time Double-Entry Settlement Reconciler · done
+Carrier-agnostic inbound webhook normalizer and automated general ledger reconciler for Steadfast, Pathao, RedX, and Paperfly: cryptographic signature validation, delivery lifecycle state machine, real-time double-entry GL ledger journal postings (COD clearing, freight fees, 1% handling commission), underpayment variance detector, and automated bilingual dispute letter compiler.
+**Done when:** Logistics webhooks from Steadfast, Pathao, RedX, and Paperfly are ingested in real-time, automatically balanced in the double-entry general ledger, and flagged for underpayment disputes with instant Bangla/English claim letters.
+- [x] Design it (spec): `/architect multicarrier webhook settlement` (Spec 0043)
+- [x] Build it: `/develop multicarrier webhook settlement`
+   - [x] Unified carrier payload normalization for Steadfast, Pathao, RedX & Paperfly (AC-1)
+   - [x] Cryptographic HMAC-SHA256 signature verification & deduplication (AC-2)
+   - [x] Automated double-entry GL journal posting engine for delivery, return & settlement (AC-3)
+   - [x] COD disbursement variance detector & fee surcharge auditor (AC-4)
+   - [x] Real-time SLA breach radar & geographic high-risk return rate analyzer (AC-5)
+   - [x] Frontend Twin Webhook & Settlement Studio Modal with keyboard shortcut ⌘W (AC-6)
+- [x] Verify it: `/check verify multicarrier webhook settlement`
+- [x] Test it: `/test multicarrier webhook settlement`
+spec 0043 · code in `artifacts/api-server/src/lib/logistics/multi-carrier-webhook-engine.ts`, `artifacts/api-server/src/routes/carrier-webhooks.ts`, and `artifacts/shothik/src/components/twin/MultiCarrierWebhookModal.tsx`
+
+### 44. Autonomous Cross-Border Export Manifest & Form-EXP / BB ERC Compliance Engine · done
+Bangladesh Bank Foreign Exchange Regulation Act (FERA) export compliance automation: NBR ASYCUDA World export manifest generator, automated Form-EXP filing compiler, Export Registration Certificate (ERC) statutory validator, LC/CAD payment milestone auditor, and international freight forwarder BL/AWB reconciliation.
+**Done when:** Exporter or merchant compiles compliant Form-EXP packets, cross-verifies HS codes with NBR ASYCUDA export tariffs, tracks Letter of Credit (LC) milestones, and reconciles foreign exchange inward realizations against outward export manifests.
+- [x] Design it (spec): `/architect cross border export form exp` (Spec 0044)
+- [x] Build it: `/develop cross border export form exp`
+   - [x] Bangladesh Bank Online Form-EXP compiler & NBR ASYCUDA World manifest (AC-1)
+   - [x] 10-digit ERC & 13-digit BIN statutory entity validator with CCI&E standing (AC-2)
+   - [x] Letter of Credit (LC) & CAD milestone tracker with inward SWIFT reconciliation (AC-3)
+   - [x] 120-Day FERA foreign exchange repatriation countdown & extension petition generator (AC-4)
+   - [x] Inward Proceeds Realization Certificate (PRC) & export cash subsidy accrual (AC-5)
+   - [x] Frontend Twin Export Compliance Studio Modal with keyboard shortcut ⌘E (AC-6)
+- [x] Verify it: `/check verify cross border export form exp`
+- [x] Test it: `/test cross border export form exp`
+spec 0044 · code in `artifacts/api-server/src/lib/export/export-compliance-engine.ts`, `artifacts/api-server/src/routes/export-compliance.ts`, and `artifacts/shothik/src/components/twin/ExportComplianceModal.tsx`
+
+### 45. Autonomous Cross-Border FX Hedging & Forward Rate Lock Engine · done
+Bangladesh Bank Authorized Dealer forward foreign currency hedging and exchange rate risk management: USD/BDT spot vs forward arbitrage rate predictor, Interest Rate Parity (IRP) premium calculator, 30/60/90-day forward contract booking packet compiler, and automated export receivables downside hedge generator.
+**Done when:** Exporter locks forward foreign exchange rates, amortizes forward booking premiums, and protects cross-border turnover against currency devaluations.
+- [x] Design it (spec): `/architect cross border fx hedging forward lock` (Spec 0045)
+- [x] Build it: `/develop cross border fx hedging forward lock`
+   - [x] Dynamic CIRP forward curve model for 30/60/90/180-day tenors (AC-1)
+   - [x] Form-EXP linked forward contract booking engine with 5% margin lien (AC-2)
+   - [x] Real-time daily Mark-to-Market (MTM) unrealized gain/loss auditor (AC-3)
+   - [x] Inward SWIFT remittance settlement & collateral lien release engine (AC-4)
+   - [x] Export portfolio hedge ratio & weighted average rate ledger (AC-5)
+   - [x] Frontend Twin FX Hedging Studio Modal with keyboard shortcut ⌘X (AC-6)
+- [x] Verify it: `/check verify cross border fx hedging forward lock`
+- [x] Test it: `/test cross border fx hedging forward lock`
+spec 0045 · code in `artifacts/api-server/src/lib/hedging/fx-hedging-engine.ts`, `artifacts/api-server/src/routes/fx-hedging.ts`, and `artifacts/shothik/src/components/twin/FxHedgingModal.tsx`
+
+### 46. Autonomous SME Payroll Tax & Statutory Provident Fund / Gratuity Ledger Engine · done
+Bangladesh Income Tax Act 2023 individual progressive tax calculator (0%-25% tax slabs, gender rebates), statutory Provident Fund (PF) & Gratuity liability amortization, direct salary disbursement via bKash/Nagad MFS Payroll API and BEFTN/NPSB, and automated monthly NBR salary withholding tax deduction return compiler.
+- [x] Build it: `/develop sme payroll tax provident fund`
+   - [x] NBR Income Tax Act 2023 progressive slabs (0%, 5%, 10%, 15%, 20%, 25%) with gender/senior/freedom fighter exemptions (AC-1)
+   - [x] Statutory 1/3rd gross or ৳4,50,000 max standard tax exemption ceiling (AC-2)
+   - [x] Labour Act 2006 compliant Recognized Provident Fund (RPF) 10% matching trustee ledger (AC-3)
+   - [x] Monthly Gratuity reserve amortization engine (AC-4)
+   - [x] Direct MFS (bKash/Nagad) and BEFTN/NPSB disbursement batch generator with verification hashes (AC-5)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘Y (AC-6)
+- [x] Verify it: `/check verify sme payroll tax provident fund`
+- [x] Test it: `/test sme payroll tax provident fund`
+spec 0046 · code in `artifacts/api-server/src/lib/payroll/`, `artifacts/api-server/src/routes/payroll.ts`, and `artifacts/shothik/src/components/twin/PayrollTaxModal.tsx`
+
+### 47. Autonomous Corporate Income Tax (NBR Form 82C / Minimum Tax) & VAT Sub-Form 9.1 AIT Reconciliation Engine · done
+Automated corporate income tax calculator under Bangladesh Income Tax Act 2023 (27.5% non-listed / 22.5% OPC/SME rate vs Section 163/82C 0.6% gross turnover minimum tax floor), Advance Income Tax (AIT) Section 120 credit ledger, VAT Mushak-9.1 input-output adjustment reconciler, and NBR e-Return XML/JSON compiler.
+- [x] Build it: `/develop corporate income tax nbr form 82c ait mushak 9.1`
+   - [x] Corporate Tax Slabs for Non-listed (27.5%/25%), OPC (22.5%/20%), ITES (0%), and RMG/Textile (12%/10%) (AC-1)
+   - [x] Section 163 / 82C Gross Turnover 0.6% minimum tax floor auditor (AC-2)
+   - [x] Advance Income Tax (AIT) Section 120/86/89/123 withholding credit vault (AC-3)
+   - [x] VAT Mushak-9.1 Input Tax Credit (ITC) & VDS increasing/decreasing adjustment reconciler (AC-4)
+   - [x] Statutory e-Return XML/JSON compiler for NBR e-Return company portal (AC-5)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘9 (AC-6)
+- [x] Verify it: `/check verify corporate income tax nbr form 82c ait mushak 9.1`
+- [x] Test it: `/test corporate income tax nbr form 82c ait mushak 9.1`
+spec 0047 · code in `artifacts/api-server/src/lib/corporate-tax/`, `artifacts/api-server/src/routes/corporate-tax.ts`, and `artifacts/shothik/src/components/twin/CorporateTaxModal.tsx`
+
+### 48. Autonomous B2B Invoice Factoring, Bill Discounting & Islamic Murabaha Cash Advance Engine · done
+Automated B2B receivables discounting for MSMEs supplying enterprise conglomerates, Mushak-6.3 e-Invoice OCR verification, dual conventional discounting (SMART reference rate + spread) & Shariah-compliant Murabaha markup mode, debtor creditworthiness scoring, and instant working capital disbursement via corporate MFS/BEFTN.
+- [x] Build it: `/develop b2b invoice factoring bill discounting islamic murabaha`
+   - [x] Enterprise Debtor Creditworthiness Scoring Matrix (Tier 1 AAA, Tier 2 A+, Tier 3 BBB) (AC-1)
+   - [x] Dual Pricing Simulator (Conventional SMART 11.5% + spread vs Shariah Murabaha cost-plus markup) (AC-2)
+   - [x] Irrevocable Receivables Escrow Lien & Automated Buyer Settlement Reconciler (AC-3)
+   - [x] Instant Advance Disbursal via bKash Corporate / Nagad Enterprise / BEFTN (AC-4)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘I (AC-5)
+- [x] Verify it: `/check verify b2b invoice factoring bill discounting islamic murabaha`
+- [x] Test it: `/test b2b invoice factoring bill discounting islamic murabaha`
+spec 0048 · code in `artifacts/api-server/src/lib/factoring/`, `artifacts/api-server/src/routes/invoice-factoring.ts`, and `artifacts/shothik/src/components/twin/InvoiceFactoringModal.tsx`
+
+### 49. Autonomous B2B Trade Credit Insurance, NI Act 138 Cheque Default & Debt Recovery Engine · done
+Underwriting engine for trade credit insurance (90% non-payment indemnity for supply contracts), Negotiable Instruments Act 1881 Section 138 statutory dishonored cheque legal notice compiler, Artha Rin Adalat court dossier builder, and automated corporate debtor CIB delinquency reporting.
+- [x] Build it: `/develop b2b trade credit insurance debt recovery ni act 138`
+   - [x] Trade Credit Insurance Policy underwriter with 90% default indemnity bonding (AC-1)
+   - [x] Dishonored Cheque Logger & 30-Day Statutory Limitation Clock (AC-2)
+   - [x] Bilingual Section 138 Statutory Legal Notice Generator (Bangla & English) (AC-3)
+   - [x] Instant Insurance Claim Indemnity Disbursal Engine (AC-4)
+   - [x] Artha Rin Adalat court evidence dossier & CIB delinquency exporter (AC-5)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘R (AC-6)
+- [x] Verify it: `/check verify b2b trade credit insurance debt recovery ni act 138`
+- [x] Test it: `/test b2b trade credit insurance debt recovery ni act 138`
+spec 0049 · code in `artifacts/api-server/src/lib/recovery/`, `artifacts/api-server/src/routes/debt-recovery.ts`, and `artifacts/shothik/src/components/twin/DebtRecoveryModal.tsx`
+
+### 50. Autonomous Vernacular Voice Commerce, WebRTC Banglish Agent & 1-Click MFS Voice Checkout Engine · done
+Real-time WebRTC audio duplex stream, sub-150ms Banglish speech-to-intent engine, regional dialect phonetics (Sylheti, Chittagonian, Noakhali), automated voice-based COD address verification, and instant dynamic bKash/Nagad 1-click payment link SMS dispatch.
+- [x] Build it: `/develop vernacular voice commerce webrtc banglish agent`
+   - [x] Sub-150ms Hybrid Banglish Speech-to-Intent Engine with entity slot extraction (AC-1)
+   - [x] Regional Dialect Phonetic Adaptation (Sylheti, Chittagonian, Noakhali, Standard) (AC-2)
+   - [x] Delivery fee & dynamic 1-click bKash/Nagad payment link generator (AC-3)
+   - [x] Automated SMS Payment Gateway Dispatcher (AC-4)
+   - [x] Steadfast/Pathao Courier Consignment generator from spoken addresses (AC-5)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘V (AC-6)
+- [x] Verify it: `/check verify vernacular voice commerce webrtc banglish agent`
+- [x] Test it: `/test vernacular voice commerce webrtc banglish agent`
+spec 0050 · code in `artifacts/api-server/src/lib/voice-commerce/`, `artifacts/api-server/src/routes/voice-commerce.ts`, and `artifacts/shothik/src/components/twin/VoiceCommerceModal.tsx`
+
+### 51. Autonomous AI Legal Contract Generator & Stamp Duty Act 1899 Compliance Engine · done
+Bilingual legal contract generator complying with Contract Act 1872 & Stamp Act 1899, Non-Judicial E-Stamp Duty calculator (৳300, ৳500, ৳1000, ৳2000 slabs), bilateral e-Signatures under ICT Act 2006, and SHA-256 verification seal.
+- [x] Build it: `/develop ai legal contract stamp duty compliance`
+   - [x] Statutory Template Repository (Vendor, Lease, NDA, Vesting, Freelancer) (AC-1)
+   - [x] Non-Judicial E-Stamp Duty Calculator under Stamp Act 1899 Schedule 1 (AC-2)
+   - [x] Dual-Party Digital Signature & SHA-256 Cryptographic Audit Seal (AC-3)
+   - [x] Bilingual Contract Exporter (Bangla & English) (AC-4)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘L (AC-5)
+- [x] Verify it: `/check verify ai legal contract stamp duty compliance`
+- [x] Test it: `/test ai legal contract stamp duty compliance`
+spec 0051 · code in `artifacts/api-server/src/lib/contracts/`, `artifacts/api-server/src/routes/legal-contracts.ts`, and `artifacts/shothik/src/components/twin/LegalContractsModal.tsx`
+
+### 52. Autonomous NBR Customs Duty Drawback & Duty-Exemption Certificate (DEC) Engine · done
+Automated export manufacturing duty drawback claims under Customs Act 2023 Sections 33 & 34, 8-digit HS Code input-output tariff calculator (CD 5%-25%, RD 3%, SD 20%-100%, VAT 15%), ASYCUDA World import Bill of Entry (B/E) & Bangladesh Bank Form-EXP cross-reconciler, DEDO Form-A/Form-B legal filing generator, and SHA-256 cryptographic seal.
+- [x] Build it: `/develop nbr customs duty drawback dec engine`
+   - [x] Customs Duty Drawback Calculator & 8-Digit HS Tariff Matrix (AC-1)
+   - [x] Dual Claim Mode: DEDO Statutory Flat Rate vs. Actual BOM Costing (AC-2)
+   - [x] Import Bill of Entry & BB Form-EXP Cross-Reconciler (AC-3)
+   - [x] NBR DEDO Statutory Claim Dossier & Cryptographic SHA-256 Seal (AC-4)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘B (AC-5)
+- [x] Verify it: `/check verify nbr customs duty drawback dec engine`
+- [x] Test it: `/test nbr customs duty drawback dec engine`
+spec 0052 · code in `artifacts/api-server/src/lib/customs/duty-drawback-engine.ts`, `artifacts/api-server/src/routes/duty-drawback.ts`, and `artifacts/shothik/src/components/twin/DutyDrawbackModal.tsx`
+
+### 53. Autonomous Halal Certification & Islamic Shariah Governance Engine · done
+Food, cosmetic, and pharmaceutical Halal compliance pre-audit engine under Bangladesh BSTI BDS 1907:2016 and OIC-SMIIC standards, 500+ E-number and food additive screener (Halal/Haram/Mushbooh), AAOIFI Shariah Standard No. 21 corporate financial ratio auditor (Debt ≤ 33%, Interest securities ≤ 33%, Non-halal revenue ≤ 5%), income purification calculator, and SHA-256 sealed Shariah board audit dossier generator.
+- [x] Build it: `/develop halal certification shariah governance engine`
+   - [x] Halal E-Number & Additive Screener with substitute suggestions (AC-1)
+   - [x] AAOIFI Shariah Standard No. 21 Financial Ratio & Income Purification Screener (AC-2)
+   - [x] Islamic Murabaha & Shariah Financing Contract Auditor (AC-3)
+   - [x] BSTI BDS 1907 Statutory Application Dossier & SHA-256 Cryptographic Seal (AC-4)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘J (AC-5)
+- [x] Verify it: `/check verify halal certification shariah governance engine`
+- [x] Test it: `/test halal certification shariah governance engine`
+spec 0053 · code in `artifacts/api-server/src/lib/shariah/halal-governance-engine.ts`, `artifacts/api-server/src/routes/halal-governance.ts`, and `artifacts/shothik/src/components/twin/HalalGovernanceModal.tsx`
+
+### 54. Autonomous Micro-Merchant B2B Collective Buying & Bulk Freight Pooling Engine · done
+Micro-merchant collective buying pools for 1688 Guangzhou, Yiwu, Khatunganj, and Chawkbazar sourcing, MOQ countdown threshold manager, CBM volumetric freight & NBR customs duty cost sharing allocator, 30% advance escrow margin locking via bKash/Nagad, and central hub unboxing parcel splitter with automated Steadfast/Pathao courier dispatch.
+- [x] Build it: `/develop micro merchant collective buying bulk freight pooling`
+   - [x] Collective Buying Pool Lifecycle & Threshold Engine (AC-1)
+   - [x] CBM & Weight Freight Cost Allocator (AC-2)
+   - [x] Merchant Escrow Margin & bKash Disbursal (AC-3)
+   - [x] Domestic Micro-Hub Parcel Splitter & Courier Booking (AC-4)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘P (AC-5)
+- [x] Verify it: `/check verify micro merchant collective buying bulk freight pooling`
+- [x] Test it: `/test micro merchant collective buying bulk freight pooling`
+spec 0054 · code in `artifacts/api-server/src/lib/commerce/collective-buying-engine.ts`, `artifacts/api-server/src/routes/collective-buying.ts`, and `artifacts/shothik/src/components/twin/CollectiveBuyingModal.tsx`
+
+### 55. Autonomous AI B2B Tender & Government e-GP Bid Generator & CPTU Compliance Engine · done
+Government e-GP and corporate RFP tender bid preparation engine compliant with CPTU Standard Tender Documents (STD PG1, PG2, PG3, PW2), Public Procurement Act 2006 (PPA 2006), and PPR 2008, itemized BOQ rate analysis with 7.5% VAT and 5% AIT withholding deduction calculation, 2.5% Tender Security and 10% Performance Bank Guarantee tracking, and SHA-256 sealed bid dossier generator.
+- [x] Build it: `/develop egp tender bid cptu compliance engine`
+   - [x] e-GP Tender Qualification & PPR 2008 Rule 54 Screener (AC-1)
+   - [x] BOQ Rate Analysis & Statutory Tax Withholding Calculator (AC-2)
+   - [x] Tender Security & Bank Guarantee (BG) Tracker (AC-3)
+   - [x] e-GP Bid Dossier Generator & SHA-256 Verification Seal (AC-4)
+   - [x] Frontend Twin Studio Modal with keyboard shortcut ⌘T (AC-5)
+- [x] Verify it: `/check verify egp tender bid cptu compliance engine`
+- [x] Test it: `/test egp tender bid cptu compliance engine`
+spec 0055 · code in `artifacts/api-server/src/lib/tenders/tender-bid-engine.ts`, `artifacts/api-server/src/routes/tender-bids.ts`, and `artifacts/shothik/src/components/twin/TenderBidModal.tsx`
 
 ---
 

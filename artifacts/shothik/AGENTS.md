@@ -28,6 +28,11 @@ This document establishes the UI architecture, state management patterns, and te
 - **Vast.ai Spot GPU Orchestrator (`VastSpotGpuModal.tsx`):** Triggered by `⌘B` or `Ctrl+B`. Spot cluster allocation & fallback inference.
 - **CRDT Edge Mesh Studio (`EdgeMeshStudioModal.tsx`):** Triggered by `⌘E` or `Ctrl+E`. P2P offline state sync.
 - **Canary Traffic Director (`CanaryTrafficDirectorModal.tsx`):** Triggered by `⌘T` or `Ctrl+T`. Blue/green traffic splitting.
+- **AI Legal Contracts & Stamp Duty Act 1899 Studio (`LegalContractsModal.tsx`):** Triggered by `⌘L` or `Ctrl+L`. 4-tab statutory studio (Active Executed Contracts, New Contract Drafter & Stamp Calculator, Contract Preview & Digital Signature Seal, Stamp Act 1899 Statutory Tariff Schedule).
+- **NBR Customs Duty Drawback & DEC Studio (`DutyDrawbackModal.tsx`):** Triggered by `⌘B` or `Ctrl+B`. 4-tab export studio (Active Drawback Claims, New Claim Drafter & Duty Calculator, B/E to Form-EXP Cross-Matcher, DEDO Statutory Tariff Schedule).
+- **Halal Certification & Islamic Shariah Governance Studio (`HalalGovernanceModal.tsx`):** Triggered by `⌘J` or `Ctrl+J`. 4-tab studio (Halal & Shariah Certificates, E-Number & Ingredient Screener, AAOIFI Financial Shariah Screener, BSTI BDS 1907 & AAOIFI Standards).
+- **Micro-Merchant Collective Buying & Freight Pooling Studio (`CollectiveBuyingModal.tsx`):** Triggered by `⌘P` or `Ctrl+P`. 4-tab studio (Live Buying Pools, New Collective Pool Creator, CBM Freight & Landed Cost Allocator, Central Hub Parcel Splitter).
+- **Government e-GP Tender & Corporate Bid Studio (`TenderBidModal.tsx`):** Triggered by `⌘T` or `Ctrl+T`. 4-tab studio (Active Tender Bids, New Bid Dossier Drafter, CPTU BOQ Rate Analysis, PPR 2008 Eligibility Screener).
 - **Courier Logistics Hub (`SteadfastCourierModal.tsx`):** Live consignment booking & printable shipping labels.
 - **Supervised Gatekeeper Modal (`SupervisedApprovalModal.tsx`):** Mandatory founder approval for any protected actions >= ৳10,000 or irreversible public broadcasts.
 

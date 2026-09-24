@@ -18,7 +18,7 @@ import { ComponentErrorBoundary } from "./components/ChatErrorBoundaries";
 
 import { Composer, type ComposerAction } from "@/components/chat/Composer";
 import { cn } from "@/lib/utils";
-import { needle2 } from "@/lib/ai/needle-dispatcher";
+import { needle3, needle2 } from "@/lib/ai/needle-dispatcher";
 import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveState";
 import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
@@ -837,7 +837,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
 
       const chatMode = autoChatMode;
-      const needleRoute = needle2.routeIntent("chat", text.trim());
+      const needleRoute = needle3.routeIntent("chat", text.trim());
       const chatHistory = messages.slice(-8).map((m) => ({ role: m.role, content: m.content })).concat([{ role: "user", content: text.trim() }]);
       const cognitivePrompt = recallContext(text.trim());
       let accumulatedResponse = "";

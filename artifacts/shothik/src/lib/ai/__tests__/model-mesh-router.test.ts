@@ -6,18 +6,41 @@ import {
   type ModelRouteSelection
 } from '../model-mesh-router';
 
-describe('ModelMeshRouter (AirLLM + FunctionGemma + Colibri + Needle + Switchyard + Wayfinder)', () => {
-  it('registers all 4 compute tiers accurately', () => {
+describe('ModelMeshRouter (Laya System 1 + Needle 3 + FunctionGemma + AirLLM + Switchyard + Wayfinder)', () => {
+  it('registers all 5 compute tiers accurately including System 1', () => {
     const router = new ModelMeshRouter();
     const tiers = router.getAvailableTiers();
     
-    expect(tiers).toContain('tier0_micro_edge'); // Needle 2 (45M) & Colibri
+    expect(tiers).toContain('tier_neg1_system1_laya'); // Laya System 1 (<10ms)
+    expect(tiers).toContain('tier0_micro_edge'); // Needle 3 (8-29MB) & Colibri
     expect(tiers).toContain('tier1_fast_slm');   // FunctionGemma (270M)
     expect(tiers).toContain('tier2_local_airllm'); // AirLLM 70B (Layer-offload)
-    expect(tiers).toContain('tier3_cloud_frontier'); // Switchyard Proxy (Claude/Gemini)
+    expect(tiers).toContain('tier3_cloud_frontier'); // Switchyard Proxy (Claude/Gemini/DeepSeek)
   });
 
-  it('routes to Tier 0 (Needle/Colibri) for offline low-RAM (2GB) devices when intent confidence is high', () => {
+  it('routes to Tier -1 (Laya System 1) for typed classification and evaluation tasks', () => {
+    const router = new ModelMeshRouter();
+    const device: DeviceHardwareProfile = {
+      ramGb: 4,
+      vramGb: 0,
+      isOnline: true,
+      hasGpu: false,
+    };
+
+    const route: ModelRouteSelection = router.selectRoute({
+      query: 'classify customer intent into refund or tracking',
+      mode: 'chat',
+      confidence: 0.90,
+      device,
+      isSystemOneCandidate: true,
+    });
+
+    expect(route.tier).toBe('tier_neg1_system1_laya');
+    expect(route.engine).toBe('laya_system1');
+    expect(route.expectedVramMb).toBeLessThan(20);
+  });
+
+  it('routes to Tier 0 (Needle 3) for offline low-RAM (2GB) devices when intent confidence is high', () => {
     const router = new ModelMeshRouter();
     const lowEndDevice: DeviceHardwareProfile = {
       ramGb: 2,
@@ -34,8 +57,8 @@ describe('ModelMeshRouter (AirLLM + FunctionGemma + Colibri + Needle + Switchyar
     });
 
     expect(route.tier).toBe('tier0_micro_edge');
-    expect(route.engine).toBe('needle_2');
-    expect(route.expectedVramMb).toBeLessThan(35);
+    expect(route.engine).toBe('needle_3');
+    expect(route.expectedVramMb).toBeLessThan(25);
   });
 
   it('routes to Tier 1 (FunctionGemma) for fast structured tool calling when online and 4GB+ RAM available', () => {
