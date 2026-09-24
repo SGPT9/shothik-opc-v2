@@ -71,7 +71,7 @@ describe("LegalContractsModal Component (LegalContractsModal.tsx)", () => {
     });
     fireEvent.click(previewTab);
 
-    expect(screen.getByText(/STAMP DUTY PAID/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/STAMP DUTY PAID/i)[0]).toBeInTheDocument();
     expect(screen.getByText(/Operative Statutory Clauses/i)).toBeInTheDocument();
 
     const banglaBtn = screen.getByRole("button", { name: /বাংলা/i });

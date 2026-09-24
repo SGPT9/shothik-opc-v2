@@ -40,6 +40,11 @@ import {
   Store,
   Wheat,
   Factory,
+  ShieldAlert,
+  Ship,
+  Award,
+  Package,
+  Landmark,
 } from "lucide-react";
 import {
   CommandDialog,

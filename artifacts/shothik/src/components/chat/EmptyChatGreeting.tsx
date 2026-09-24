@@ -17,6 +17,8 @@ import {
   Code2,
   CreditCard,
   ShoppingBag,
+  Package,
+  Landmark,
 } from "lucide-react";
 import { type ChatPersona } from "@/lib/chat/types";
 
@@ -150,7 +152,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     desc: "Generate enforceable Vendor, Lease, NDA, or Founder Vesting contracts with Stamp Act 1899 duty calculations.",
     prompt: "Draft a bilingual Commercial Vendor Supply Agreement with ৳500 non-judicial stamp duty, Section 7 ICT Act 2006 digital signatures, and dispute arbitration in Dhaka.",
     mode: "cofounder",
-    tab: "doc",
+    tab: "research",
   },
   {
     id: "trade-credit-recovery",
@@ -173,7 +175,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     desc: "BSTI BDS 1907 E-number screener with plant substitutes & AAOIFI Standard 21 corporate Shariah ratio audit.",
     prompt: "Screen our FMCG ingredient bill of materials for Haram/Mushbooh additives under BSTI BDS 1907 and run an AAOIFI Shariah financial ratio audit on our debt and revenue.",
     mode: "cofounder",
-    tab: "doc",
+    tab: "research",
   },
   {
     id: "collective-buying-freight",
@@ -197,7 +199,7 @@ const GENSPARK_CARDS: SparkCardItem[] = [
     desc: "Draft compliant CPTU STD PG3/PW2 tender proposals, calculate BOQ unit rates with 7.5% VAT & 5% AIT, and track Bank Guarantees.",
     prompt: "Draft a government e-GP tender proposal for IT networking hardware under CPTU STD PG3 with BOQ item costing and a 2.5% Tender Security Bank Guarantee calculation.",
     mode: "cofounder",
-    tab: "doc",
+    tab: "research",
   },
 ];
 
