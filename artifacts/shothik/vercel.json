@@ -20,7 +20,7 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://api.shothik.internal/api/:path*" },
+    { "source": "/api/(.*)", "destination": "https://api.shothikgpt.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
