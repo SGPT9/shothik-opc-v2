@@ -40,14 +40,14 @@ export const globalTaskWorker = new LeasedTaskWorker(
 // Start worker
 globalTaskWorker.start();
 
-tasksRouter.get("/tasks", async (req, res) => {
+tasksRouter.get(["/tasks", "/v1/tasks", "/api/v1/tasks"], async (req, res) => {
   const owner = (req.query.owner as string) || "default-owner";
   const records = await globalTaskStore.scan<AgentTask>("tasks");
   const userTasks = records.filter((r) => r.owner === owner).map((r) => r.value);
   res.json({ success: true, count: userTasks.length, tasks: userTasks, workerRunning: globalTaskWorker.isRunning });
 });
 
-tasksRouter.post("/tasks", async (req, res) => {
+tasksRouter.post(["/tasks", "/v1/tasks", "/api/v1/tasks"], async (req, res) => {
   const owner = (req.body.owner as string) || "default-owner";
   const { title, prompt, kind = "agent", plan = [] } = req.body;
 
@@ -82,9 +82,10 @@ tasksRouter.post("/tasks", async (req, res) => {
   res.status(201).json({ success: true, task });
 });
 
-tasksRouter.get("/tasks/:id", async (req, res) => {
+tasksRouter.get(["/tasks/:id", "/v1/tasks/:id", "/api/v1/tasks/:id"], async (req, res) => {
   const owner = (req.query.owner as string) || "default-owner";
-  const task = await globalTaskStore.get<AgentTask>(owner, "tasks", req.params.id);
+  const taskId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const task = await globalTaskStore.get<AgentTask>(owner, "tasks", taskId);
   if (!task) {
     res.status(404).json({ success: false, error: "Task not found" });
     return;
@@ -92,10 +93,11 @@ tasksRouter.get("/tasks/:id", async (req, res) => {
   res.json({ success: true, task });
 });
 
-tasksRouter.post("/tasks/:id/cancel", async (req, res) => {
+tasksRouter.post(["/tasks/:id/cancel", "/v1/tasks/:id/cancel", "/api/v1/tasks/:id/cancel"], async (req, res) => {
   const owner = (req.body?.owner as string) || (req.query.owner as string) || "default-owner";
-  globalTaskWorker.abort(req.params.id);
-  const task = await globalTaskStore.get<AgentTask>(owner, "tasks", req.params.id);
+  const taskId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  globalTaskWorker.abort(taskId);
+  const task = await globalTaskStore.get<AgentTask>(owner, "tasks", taskId);
   if (task) {
     task.status = "cancelled";
     task.updatedAt = new Date().toISOString();

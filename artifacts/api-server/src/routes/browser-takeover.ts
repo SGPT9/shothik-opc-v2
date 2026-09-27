@@ -3,13 +3,13 @@ import { globalBrowserEngine, browserActionInputSchema } from "../lib/browser/br
 
 export const browserTakeoverRouter = Router();
 
-browserTakeoverRouter.get("/browser/sessions", (req, res) => {
+browserTakeoverRouter.get(["/browser/sessions", "/v1/browser/sessions", "/api/v1/browser/sessions"], (req, res) => {
   const owner = req.query.owner as string | undefined;
   const sessions = globalBrowserEngine.listSessions(owner);
   res.json({ success: true, count: sessions.length, sessions });
 });
 
-browserTakeoverRouter.post("/browser/sessions", (req, res) => {
+browserTakeoverRouter.post(["/browser/sessions", "/v1/browser/sessions", "/api/v1/browser/sessions"], (req, res) => {
   try {
     const owner = (req.body.owner as string) || "default-owner";
     const url = (req.body.url as string) || "https://news.ycombinator.com";
@@ -20,8 +20,9 @@ browserTakeoverRouter.post("/browser/sessions", (req, res) => {
   }
 });
 
-browserTakeoverRouter.get("/browser/sessions/:id", (req, res) => {
-  const session = globalBrowserEngine.getSession(req.params.id);
+browserTakeoverRouter.get(["/browser/sessions/:id", "/v1/browser/sessions/:id", "/api/v1/browser/sessions/:id"], (req, res) => {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const session = globalBrowserEngine.getSession(id);
   if (!session) {
     res.status(404).json({ success: false, error: "Session not found" });
     return;
@@ -29,7 +30,7 @@ browserTakeoverRouter.get("/browser/sessions/:id", (req, res) => {
   res.json({ success: true, session });
 });
 
-browserTakeoverRouter.post("/browser/sessions/:id/action", (req, res) => {
+browserTakeoverRouter.post(["/browser/sessions/:id/action", "/v1/browser/sessions/:id/action", "/api/v1/browser/sessions/:id/action"], (req, res) => {
   const parsed = browserActionInputSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ success: false, error: parsed.error.issues });
@@ -37,16 +38,18 @@ browserTakeoverRouter.post("/browser/sessions/:id/action", (req, res) => {
   }
 
   try {
-    const result = globalBrowserEngine.executeAction(req.params.id, parsed.data);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const result = globalBrowserEngine.executeAction(id, parsed.data);
     res.json({ ...result });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
   }
 });
 
-browserTakeoverRouter.post("/browser/sessions/:id/close", (req, res) => {
+browserTakeoverRouter.post(["/browser/sessions/:id/close", "/v1/browser/sessions/:id/close", "/api/v1/browser/sessions/:id/close"], (req, res) => {
   try {
-    const session = globalBrowserEngine.closeSession(req.params.id);
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const session = globalBrowserEngine.closeSession(id);
     res.json({ success: true, message: "Browser session closed", session });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
