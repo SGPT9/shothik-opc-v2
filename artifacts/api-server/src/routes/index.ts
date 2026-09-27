@@ -95,6 +95,7 @@ import { marketingRouter } from "./marketing.js";
 import { kycOcrRouter } from "./kyc-ocr.js";
 import { rtoFraudRouter } from "./rto-fraud.js";
 import { flashInventoryRouter } from "./flash-inventory.js";
+import { landRegistryRouter } from "./land-registry.js";
 
 const router: IRouter = Router();
 
@@ -117,6 +118,7 @@ router.use(marketingRouter);
 router.use(kycOcrRouter);
 router.use(rtoFraudRouter);
 router.use(flashInventoryRouter);
+router.use(landRegistryRouter);
 
 router.use(taxRouter);
 router.use(telephonyRouter);

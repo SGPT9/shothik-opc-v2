@@ -587,6 +587,13 @@ Atomic 15-minute leased reservations with two-phase commit, multi-channel quota 
 - [x] Test it: `/test multichannel flash sale reservation lock engine`
 spec 0078 · code in `artifacts/api-server/src/lib/inventory/flash-reservation-engine.ts`, `artifacts/api-server/src/routes/flash-inventory.ts`, and `artifacts/shothik/src/components/twin/FlashSaleInventoryModal.tsx`
 
+### 79. Autonomous Bengali Land Record (Khatian/Porcha/দলিল) Verification, Chain-of-Ownership Title Search & Stamp Duty Valuation Engine · done
+Automated CS, SA, RS, BS, and City Survey Porcha/Khatian verification, chronological chain-of-ownership (বায়া দলিল ধারাবাহিকতা) sequence auditing with grantor-grantee linkage validation and Daag over-allocation detection, statutory Sub-Registry registration and stamp duty calculation (Registration Act 1908, Stamp Act 1899, Section 53FF AIT), AC Land e-Mutation (ই-নামজারি) readiness screening, and SHA-256 cryptographic title audit seal generation.
+- [x] Build it: `/develop bengali land record deed verification title search stamp duty engine`
+- [x] Verify it: `/check verify bengali land record deed verification title search stamp duty engine`
+- [x] Test it: `/test bengali land record deed verification title search stamp duty engine`
+spec 0079 · code in `artifacts/api-server/src/lib/land-registry/deed-verification-engine.ts`, `artifacts/api-server/src/routes/land-registry.ts`, and `artifacts/shothik/src/components/twin/LandRegistryModal.tsx`
+
 ---
 
 ## Deferred Features

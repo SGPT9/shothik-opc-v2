@@ -83,6 +83,7 @@ import { MetaCapiModal } from "@/components/twin/MetaCapiModal";
 import { KycOcrModal } from "@/components/twin/KycOcrModal";
 import { RtoFraudShieldModal } from "@/components/twin/RtoFraudShieldModal";
 import { FlashSaleInventoryModal } from "@/components/twin/FlashSaleInventoryModal";
+import { LandRegistryModal } from "@/components/twin/LandRegistryModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -422,6 +423,7 @@ export default function TwinPage() {
   const [kycOcrOpen, setKycOcrOpen] = useState(false);
   const [rtoFraudShieldOpen, setRtoFraudShieldOpen] = useState(false);
   const [flashInventoryOpen, setFlashInventoryOpen] = useState(false);
+  const [landRegistryOpen, setLandRegistryOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -501,6 +503,9 @@ export default function TwinPage() {
       } else if (e.altKey && e.key.toLowerCase() === "i") {
         e.preventDefault();
         setFlashInventoryOpen((prev) => !prev);
+      } else if (e.altKey && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        setLandRegistryOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2306,6 +2311,7 @@ export default function TwinPage() {
         onOpenKycOcr={() => setKycOcrOpen(true)}
         onOpenRtoFraudShield={() => setRtoFraudShieldOpen(true)}
         onOpenFlashInventory={() => setFlashInventoryOpen(true)}
+        onOpenLandRegistry={() => setLandRegistryOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2369,6 +2375,7 @@ export default function TwinPage() {
       <KycOcrModal isOpen={kycOcrOpen} onClose={() => setKycOcrOpen(false)} />
       <RtoFraudShieldModal isOpen={rtoFraudShieldOpen} onClose={() => setRtoFraudShieldOpen(false)} />
       <FlashSaleInventoryModal isOpen={flashInventoryOpen} onClose={() => setFlashInventoryOpen(false)} />
+      <LandRegistryModal isOpen={landRegistryOpen} onClose={() => setLandRegistryOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

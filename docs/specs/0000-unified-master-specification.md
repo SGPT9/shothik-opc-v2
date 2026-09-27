@@ -348,6 +348,7 @@ All routes mounted under `/api/v1` or `/v1` in `artifacts/api-server/src/routes/
 ├── /kyc/ocr-extract                     (POST) - Bengali NID & Trade License OCR extraction & SHA-256 seal
 ├── /logistics/rto-prediction            (POST) - Multi-carrier buyer credibility, RTO risk & fraud blacklist
 ├── /inventory/flash-sale                (GET/POST) - 15-min leased reservation locks & panic freeze switch
+├── /land-registry/deed-verification     (POST) - Bengali land record Porcha audit, Baya deed chain & stamp fees
 ├── /tasks/cas-leased                    (GET/POST) - Distributed CAS leased task worker & heartbeat renewal
 ├── /actions/proposals                   (GET/POST) - Protected Action review state machine & SHA-256 seals
 └── /gatekeeper/evaluate-action          (POST) - Supervised Autonomy policy risk evaluation
