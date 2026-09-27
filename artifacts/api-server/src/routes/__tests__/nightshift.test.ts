@@ -20,7 +20,7 @@ describe("Nightshift Autonomous 2:00 AM Swarm Engine Suite", () => {
     }
   });
 
-  it("POST /api/v1/nightshift/run-cycle executes all 4 nocturnal pipelines and returns a CEO Morning Digest", async () => {
+  it("POST /api/v1/nightshift/run-cycle executes all 5 nocturnal pipelines and returns a CEO Morning Digest", async () => {
     const res = await fetch(`${baseUrl}/api/v1/nightshift/run-cycle`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -34,7 +34,7 @@ describe("Nightshift Autonomous 2:00 AM Swarm Engine Suite", () => {
     const json = (await res.json()) as any;
     expect(json.success).toBe(true);
     expect(json.cycleId).toMatch(/^ns_cycle_/);
-    expect(json.skillsExecutedCount).toBe(4);
+    expect(json.skillsExecutedCount).toBe(5);
     expect(json.overallHealthScore).toBeGreaterThanOrEqual(90);
     expect(json.topActionItems.length).toBeGreaterThan(0);
     expect(json.digest.markdownReport).toContain("CEO Morning Briefing");
@@ -46,7 +46,7 @@ describe("Nightshift Autonomous 2:00 AM Swarm Engine Suite", () => {
     const json = (await res.json()) as any;
     expect(json.success).toBe(true);
     expect(json.digest).toBeDefined();
-    expect(json.digest.skillsExecuted.length).toBe(4);
+    expect(json.digest.skillsExecuted.length).toBe(5);
   });
 
   it("GET /api/v1/nightshift/status returns scheduler state and 2:00 AM countdown", async () => {

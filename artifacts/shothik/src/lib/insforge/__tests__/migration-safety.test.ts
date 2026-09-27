@@ -82,9 +82,14 @@ describe("InsForge Migration Safety Guardrails", () => {
   });
 
   it("throws error when approving or rejecting nonexistent migration ID", async () => {
-    await expect(
-      approveAndApplyMigration("missing_id", "admin")
-    ).rejects.toThrow("Migration with ID missing_id not found.");
+    let error: Error | null = null;
+    try {
+      await approveAndApplyMigration("missing_id", "admin");
+    } catch (err: any) {
+      error = err;
+    }
+    expect(error).not.toBeNull();
+    expect(error?.message).toContain("Migration with ID missing_id not found.");
 
     expect(() => rejectMigration("missing_id", "admin")).toThrow(
       "Migration with ID missing_id not found."

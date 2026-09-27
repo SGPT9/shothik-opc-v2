@@ -519,6 +519,55 @@ router.post("/v1/mfs/parse-sms", (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/v1/mfs/nagad/initiate
+ * Initializes a Nagad Tokenized Checkout session
+ */
+router.post("/v1/mfs/nagad/initiate", async (req: Request, res: Response) => {
+  try {
+    const { orderId, amountBDT, customerPhone, callbackUrl } = req.body;
+    if (!orderId || !amountBDT || !customerPhone) {
+      return res.status(400).json({ success: false, error: "orderId, amountBDT, and customerPhone are required" });
+    }
+
+    const { nagadPgwClient } = await import("../lib/mfs/nagad-pgw-client.js");
+    const result = await nagadPgwClient.initializePayment({
+      orderId,
+      amountBDT: Number(amountBDT),
+      customerPhone,
+      callbackUrl,
+    });
+
+    return res.status(200).json(result);
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/mfs/nagad/verify
+ * Verifies a completed Nagad payment callback
+ */
+router.post("/v1/mfs/nagad/verify", async (req: Request, res: Response) => {
+  try {
+    const { paymentReferenceId, orderId, amountBDT } = req.body;
+    if (!paymentReferenceId || !orderId) {
+      return res.status(400).json({ success: false, error: "paymentReferenceId and orderId are required" });
+    }
+
+    const { nagadPgwClient } = await import("../lib/mfs/nagad-pgw-client.js");
+    const result = await nagadPgwClient.verifyPayment(
+      paymentReferenceId,
+      orderId,
+      Number(amountBDT || 0)
+    );
+
+    return res.status(200).json(result);
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;
 
 

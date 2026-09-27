@@ -1,0 +1,11 @@
+node_modules
+**/node_modules/**
+.git
+**/.git/**
+scratch
+tmp
+*.log
+*.tsbuildinfo
+coverage
+test-results
+server
