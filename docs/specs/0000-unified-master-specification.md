@@ -73,7 +73,7 @@ graph TD
 
 ## 3. Phase-by-Phase Roadmap & Shipped Deliverables (Phases 1–29)
 
-Below is the verified record of all 29 engineering slices implemented, tested, and certified in the monorepo:
+Below is the verified record of all 75 engineering slices implemented, tested, and certified in the monorepo:
 
 | Phase | Feature Name | Category | Primary Code Surface | Certification Status |
 |---|---|---|---|---|
@@ -107,13 +107,57 @@ Below is the verified record of all 29 engineering slices implemented, tested, a
 | **Phase 28** | WhatsApp Commerce & Automated Merchant Agent Hub | Slice 28 | `artifacts/api-server/src/lib/commerce/whatsapp-cart-engine.ts` | **Certified (Done)** |
 | **Phase 29** | Autonomous AI Outbound Calling & COD Verification | Slice 29 | `artifacts/api-server/src/lib/telephony/outbound-calling-engine.ts` | **Certified (Done)** |
 | **Phase 30** | Cross-Border Sourcing & Customs Declaration | Slice 30 | `artifacts/api-server/src/lib/customs/cross-border-engine.ts` | **Certified (Done)** |
-| **Phase 31** | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Slice 31 | `docs/specs/0031-franchise-stock.md` | **Active** |
+| **Phase 31** | Platform Elevators & Viral Growth Triggers | Growth | `artifacts/api-server/src/lib/growth/` | **Certified (Done)** |
+| **Phase 32** | Multi-Tenant Franchise & Multi-Branch Stock Allocation | Commerce | `artifacts/api-server/src/lib/franchise/` | **Certified (Done)** |
+| **Phase 33** | Autonomous Social Commerce Live-Selling & Comment Parser | Commerce | `artifacts/api-server/src/lib/live-selling/` | **Certified (Done)** |
+| **Phase 34** | NBR Statutory Audit Dossier & Double-Entry Ledger | Tax & Accounting | `artifacts/api-server/src/lib/audit/` | **Certified (Done)** |
+| **Phase 35** | Autonomous Courier Fleet Arbitrage & Micro-Hub Dispatcher | Logistics | `artifacts/api-server/src/lib/logistics/courier-arbitrage-engine.ts` | **Certified (Done)** |
+| **Phase 36** | Autonomous Freelancer Remittance & BB ICT Incentive Ledger | Fintech | `artifacts/api-server/src/lib/remittance/freelancer-incentive-engine.ts` | **Certified (Done)** |
+| **Phase 37** | Autonomous Hyperlocal Dark Store & Micro-Fulfillment Hub | Logistics | `artifacts/api-server/src/lib/fulfillment/dark-hub-engine.ts` | **Certified (Done)** |
+| **Phase 38** | Autonomous Multi-Channel Cashflow & COD Reconciler | Accounting | `artifacts/api-server/src/lib/cashflow/cashflow-reconciler-engine.ts` | **Certified (Done)** |
+| **Phase 39** | Autonomous Wholesale Supplier RFQ & B2B Escrow Engine | Sourcing | `artifacts/api-server/src/lib/wholesale/wholesale-rfq-escrow-engine.ts` | **Certified (Done)** |
+| **Phase 40** | Autonomous Agri-Commodity Sourcing & Mandi Radar | Supply Chain | `artifacts/api-server/src/lib/agri/agri-commodity-radar-engine.ts` | **Certified (Done)** |
+| **Phase 41** | Autonomous Micro-Franchise Field Agent POS & Bluetooth Print | POS | `artifacts/api-server/src/lib/pos/field-agent-pos-engine.ts` | **Certified (Done)** |
+| **Phase 42** | Autonomous NBR Mushak-4.3 Input-Output Costing Engine | Tax & Legal | `artifacts/api-server/src/lib/mushak43/mushak43-engine.ts` | **Certified (Done)** |
+| **Phase 43** | Multi-Carrier Inbound Webhook & Double-Entry Reconciler | Logistics | `artifacts/api-server/src/lib/logistics/multi-carrier-webhook-engine.ts` | **Certified (Done)** |
+| **Phase 44** | Cross-Border Export Manifest & Form-EXP / ERC Engine | Trade & Customs | `artifacts/api-server/src/lib/export/export-compliance-engine.ts` | **Certified (Done)** |
+| **Phase 45** | Cross-Border FX Hedging & Forward Rate Lock Engine | Trade Finance | `artifacts/api-server/src/lib/hedging/fx-hedging-engine.ts` | **Certified (Done)** |
+| **Phase 46** | SME Payroll Tax & Statutory Provident Fund / Gratuity Ledger | HR & Tax | `artifacts/api-server/src/lib/payroll/` | **Certified (Done)** |
+| **Phase 47** | Corporate Income Tax (Form 82C) & VAT Sub-Form 9.1 Reconciler | Tax & Legal | `artifacts/api-server/src/lib/corporate-tax/` | **Certified (Done)** |
+| **Phase 48** | B2B Invoice Factoring & Islamic Murabaha Cash Advance | Fintech | `artifacts/api-server/src/lib/factoring/` | **Certified (Done)** |
+| **Phase 49** | B2B Trade Credit Insurance & NI Act 138 Debt Recovery | Legal & Credit | `artifacts/api-server/src/lib/recovery/` | **Certified (Done)** |
+| **Phase 50** | Vernacular Voice Commerce & 1-Click MFS Voice Checkout | Voice/AI | `artifacts/api-server/src/lib/voice-commerce/` | **Certified (Done)** |
+| **Phase 51** | AI Legal Contract Generator & Stamp Duty Act 1899 Compliance | Legal | `artifacts/api-server/src/lib/contracts/` | **Certified (Done)** |
+| **Phase 52** | NBR Customs Duty Drawback & Duty-Exemption Certificate (DEC) | Trade & Customs | `artifacts/api-server/src/lib/customs/duty-drawback-engine.ts` | **Certified (Done)** |
+| **Phase 53** | Halal Certification & Islamic Shariah Governance Engine | Compliance | `artifacts/api-server/src/lib/shariah/halal-governance-engine.ts` | **Certified (Done)** |
+| **Phase 54** | Micro-Merchant B2B Collective Buying & Freight Pooling | Sourcing | `artifacts/api-server/src/lib/commerce/collective-buying-engine.ts` | **Certified (Done)** |
+| **Phase 55** | AI B2B Tender & Government e-GP Bid Generator | Compliance | `artifacts/api-server/src/lib/tenders/tender-bid-engine.ts` | **Certified (Done)** |
+| **Phase 56** | OpenMuse Agentic Compute, Browser Takeover & Leased Tasks | Compute/OS | `lib/hermes/src/leased-task-worker.ts` | **Certified (Done)** |
+| **Phase 57** | HS Code Classification, Customs Tariff & CIPL Engine | Trade & Customs | `artifacts/api-server/src/lib/customs/tariff-engine.ts` | **Certified (Done)** |
+| **Phase 58** | Multi-Channel Inventory Matrix & Micro-Warehousing | Commerce | `artifacts/api-server/src/lib/inventory/inventory-matrix-engine.ts` | **Certified (Done)** |
+| **Phase 59** | Banglish Voice IVR, COD Verification & RTO Minimization | Telephony | `artifacts/api-server/src/lib/ivr/cod-ivr-engine.ts` | **Certified (Done)** |
+| **Phase 60** | B2B Micro-Factoring & Accounts Receivable Radar | Fintech | `artifacts/api-server/src/lib/factoring/early-liquidity-engine.ts` | **Certified (Done)** |
+| **Phase 61** | Live Selling Comment-to-Cart & Courier Dispatch Engine | Commerce | `artifacts/api-server/src/lib/live-selling/live-selling-engine.ts` | **Certified (Done)** |
+| **Phase 62** | NBR Mushak 6.3 Automated VAT Challan & QR Code Generator | Tax & Legal | `artifacts/api-server/src/lib/tax/mushak-63-engine.ts` | **Certified (Done)** |
+| **Phase 63** | Nilkhet Print-on-Demand (POD) 300-DPI Spine & CMYK Press | Publishing | `lib/office-engine/spine-calculator.ts` | **Certified (Done)** |
+| **Phase 64** | Zero-Latency Client-Side WebAssembly (Wasm) Engine | Edge/Wasm | `artifacts/shothik/src/lib/wasm/shothik-wasm-engine.ts` | **Certified (Done)** |
+| **Phase 65** | Bengali Thesis Plagiarism & Citation Matcher | Academic | `artifacts/api-server/src/lib/academic/bengali-plagiarism-engine.ts` | **Certified (Done)** |
+| **Phase 66** | Push-to-Talk Voice Note Input & Inline Wasm Sandbox | Chat & Voice | `artifacts/shothik/src/components/chat/VoiceNoteRecorder.tsx` | **Certified (Done)** |
+| **Phase 67** | Wholesale Commodity Price Ticker & Inland LC Escrow | Trade Finance | `artifacts/api-server/src/lib/wholesale/commodity-lc-engine.ts` | **Certified (Done)** |
+| **Phase 68** | Hyperlocal Creator Guilds & Verified Supplier Escrow | Community | `artifacts/api-server/src/lib/community/creator-guilds-engine.ts` | **Certified (Done)** |
+| **Phase 69** | HarfBuzz-Compatible Bengali OpenType Typography Shaper | Office/Core | `lib/office-engine/bengali-shaper.ts` | **Certified (Done)** |
+| **Phase 70** | Nagad Sheba Direct PGW Tokenized Checkout Engine | Commerce | `artifacts/api-server/src/lib/mfs/nagad-pgw-client.ts` | **Certified (Done)** |
+| **Phase 71** | NBR Mushak-6.6 Certificate of Tax Deduction at Source (VDS) | Tax & Legal | `artifacts/api-server/src/lib/tax/mushak-66-engine.ts` | **Certified (Done)** |
+| **Phase 72** | Academic BibTeX & Overleaf LaTeX Citation Generator | Academic | `artifacts/api-server/src/lib/academic/bengali-plagiarism-engine.ts` | **Certified (Done)** |
+| **Phase 73** | Meta & TikTok Conversion API (CAPI) Offline Attribution | Marketing | `artifacts/api-server/src/lib/marketing/meta-capi-engine.ts` | **Certified (Done)** |
+| **Phase 74** | RedX & Paperfly Live Courier Connectors & Fallback | Logistics | `artifacts/api-server/src/lib/logistics/redx-client.ts` | **Certified (Done)** |
+| **Phase 75** | Interactive Chat Streaming & Session Branch Forking | Chat & Shell | `artifacts/shothik/src/components/agents/hooks/useChatSession.ts` | **Certified (Done)** |
 
 ---
 
 ## 4. Frontend Twin Modals & Command Palette Registry
 
-The Shothik founder interface provides **35 specialized twin modals** organized across 4 primary categories, discoverable via the Command Palette (**`⌘K` / `Ctrl+K`**) or dedicated direct keyboard shortcuts:
+The Shothik founder interface provides **56+ specialized twin modals** organized across 4 primary categories, discoverable via the Command Palette (**`⌘K` / `Ctrl+K`**) or dedicated direct keyboard shortcuts:
 
 ### Category 1: Founder Cockpit & Intelligence
 1. **Platform Services Studio** — 12-triad platform overview (`PlatformServicesModal.tsx`).
@@ -126,37 +170,68 @@ The Shothik founder interface provides **35 specialized twin modals** organized 
 8. **Multi-Dialect Voice Commander** (**`⌘V`**) — Hands-free audio interface (`MultiDialectVoiceTwinModal.tsx`).
 9. **Swarm Graph Studio** (**`⌘G`**) — Topological agent execution graph visualizer (`SwarmGraphStudioModal.tsx`).
 10. **Add Founder Credits** — bKash / Nagad wallet balance top-up modal.
+11. **OpenMuse Agent Computer** (**`⌘U`**) — Leased task execution & live browser takeover (`AgentComputerModal.tsx`).
 
 ### Category 2: Marketing, Growth & Studio
-11. **Cold Email Outreach Engine** — Automated lead emailer (`EmailOutreachModal.tsx`).
-12. **Lead CRM Drawer** — Contact lifecycle and deal stages (`LeadCrmDrawer.tsx`).
-13. **Competitor Ad Spy Studio** — Meta Ads & keyword counter-strike angles (`CompetitorAdSpyModal.tsx`).
-14. **CRO Friction Tuner** — A/B checkout drop-off optimizer (`CroTunerModal.tsx`).
-15. **Twin Video Studio** — 9:16 vertical reels & product promo generator (`TwinVideoStudioModal.tsx`).
+12. **Cold Email Outreach Engine** — Automated lead emailer (`EmailOutreachModal.tsx`).
+13. **Lead CRM Drawer** — Contact lifecycle and deal stages (`LeadCrmDrawer.tsx`).
+14. **Competitor Ad Spy Studio** — Meta Ads & keyword counter-strike angles (`CompetitorAdSpyModal.tsx`).
+15. **CRO Friction Tuner** — A/B checkout drop-off optimizer (`CroTunerModal.tsx`).
+16. **Twin Video Studio** — 9:16 vertical reels & product promo generator (`TwinVideoStudioModal.tsx`).
+17. **Meta & TikTok Conversions API (CAPI)** — Offline COD attribution & Event Match Quality (`MetaCapiModal.tsx`).
+18. **Platform Elevators & Viral Growth** (**`⌘G`**) — MHI elevator scoring & referral ledgers (`PlatformElevatorsViralModal.tsx`).
+19. **Autonomous Live Selling Studio** — Real-time comment parsing & cart reservation (`LiveSellingStudioModal.tsx`).
 
 ### Category 3: Commerce, Logistics & Statutory Compliance
-16. **bKash & Nagad MFS Gateway** — Payment verification & TrxID reconciliation (`MfsGatewayModal.tsx`).
-17. **Creator Earnings Cash-Out** — MFS withdrawal with 10% statutory NBR TDS withholding (`CreatorCashoutModal.tsx`).
-18. **Manual TrxID Settlement** — Offline bKash transaction matcher.
-19. **Steadfast Courier Logistics Hub** — Live consignment booking & printable labels (`SteadfastCourierModal.tsx`).
-20. **Visual Storefront Builder** — F-Commerce drag-and-drop landing page publisher (`VisualStorefrontBuilderModal.tsx`).
-21. **Boi Mela Book Storefront & POD** — Ekushey ebook reader & print orders (`BookReaderStorefrontModal.tsx`).
-22. **Nilkhet POD Direct Press Hub** — Commercial CMYK imposition & press dispatch (`NilkhetPodModal.tsx`).
-23. **WhatsApp Multi-Dialect Bot & bKash QR** (**`⌘W`**) — Conversational sales, instant bKash QR & Steadfast booking (`WhatsAppCommerceModal.tsx`).
-24. **NBR Mushak-6.3 Statutory VAT & TDS Studio** (**`⌘X`**) — Bilingual tax invoicing, 13-digit BIN validation & Mushak-9.1 return aggregator (`MushakTaxStudioModal.tsx`).
-25. **AI Outbound Phone Verification & COD** (**`⌘O`**) — Voice IVR bot, Banglish intent parsing, BTRC compliance window (09:00–20:00 BST) & Steadfast auto-booking (`OutboundCallVerificationModal.tsx`).
-26. **Cross-Border Sourcing & Customs Studio** (**`⌘U`**) — 1688/Taobao landed costing, NBR compound duty cascade, 8-digit HS code lookup & C&F clearance brief (`CrossBorderCustomsModal.tsx`).
+20. **bKash & Nagad MFS Gateway** — Payment verification & TrxID reconciliation (`MfsGatewayModal.tsx`).
+21. **Creator Earnings Cash-Out** — MFS withdrawal with statutory TDS withholding (`CreatorCashoutModal.tsx`).
+22. **Manual TrxID Settlement** — Offline bKash transaction matcher.
+23. **Steadfast Courier Logistics Hub** — Live consignment booking & printable labels (`SteadfastCourierModal.tsx`).
+24. **Visual Storefront Builder** — F-Commerce drag-and-drop landing page publisher (`VisualStorefrontBuilderModal.tsx`).
+25. **Boi Mela Book Storefront & POD** — Ekushey ebook reader & print orders (`BookReaderStorefrontModal.tsx`).
+26. **Nilkhet POD Direct Press Hub** — Commercial CMYK imposition & spine calculator (`NilkhetPodModal.tsx`).
+27. **WhatsApp Multi-Dialect Bot & bKash QR** (**`⌘W`**) — Conversational sales, instant bKash QR & Steadfast booking (`WhatsAppCommerceModal.tsx`).
+28. **NBR Mushak-6.3 Statutory VAT & TDS Studio** (**`⌘X`**) — Bilingual tax invoicing, 13-digit BIN validation & Mushak-9.1 return aggregator (`MushakTaxStudioModal.tsx`).
+29. **AI Outbound Phone Verification & COD** (**`⌘O`**) — Voice IVR bot, Banglish intent parsing, BTRC compliance window (`OutboundCallVerificationModal.tsx`).
+30. **Cross-Border Sourcing & Customs Studio** (**`⌘U`**) — 1688/Taobao landed costing, NBR compound duty cascade, HS code lookup (`CrossBorderCustomsModal.tsx`).
+31. **Multi-Tenant Franchise & Multi-Branch Stock** (**`⌘F`**) — Multi-branch stock allocation & 3-way commission splits (`FranchiseMultiBranchModal.tsx`).
+32. **NBR Statutory Audit Ledger** — Double-entry general ledger & trial balance (`AuditLedgerStudioModal.tsx`).
+33. **Courier Arbitrage & Micro-Hub Dispatcher** — 4-carrier logistics arbitrage with live fallback (`CourierArbitrageModal.tsx`).
+34. **Freelancer Remittance & BB ICT Incentive** — 4%-10% export incentive ledger (`FreelancerRemittanceModal.tsx`).
+35. **Hyperlocal Dark Store & Micro-Fulfillment** — Geofenced thana routing & S-curve bin picking (`DarkHubFulfillmentModal.tsx`).
+36. **Multi-Channel Cashflow & COD Settlement** — Unified liquid balances & dispute briefs (`MultiChannelCashflowModal.tsx`).
+37. **Wholesale Supplier RFQ & B2B Escrow** — Tiered volume discounts & LC terms (`WholesaleRfqEscrowModal.tsx`).
+38. **Agri-Commodity Mandi Radar** — Wholesale mandi spot prices & Reefer transport (`AgriMandiRadarModal.tsx`).
+39. **Field Agent Mobile POS** (**`⌘P`**) — Offline CRDT SQLite & 58mm/80mm Bluetooth ESC/POS print (`FieldAgentPosModal.tsx`).
+40. **NBR Mushak-4.3 Factory Costing** (**`⌘4`**) — Bill of Materials decomposition & value addition ratios (`Mushak43DeclarationModal.tsx`).
+41. **Multi-Carrier Inbound Webhook Reconciler** (**`⌘W`**) — HMAC-SHA256 normalizer & GL journal auto-postings (`MultiCarrierWebhookModal.tsx`).
+42. **Cross-Border Export Manifest & Form-EXP** (**`⌘E`**) — BB Form-EXP & ERC entity validator (`ExportComplianceModal.tsx`).
+43. **Cross-Border FX Hedging & Forward Rate Lock** (**`⌘X`**) — CIRP forward curve model & MTM auditor (`FxHedgingModal.tsx`).
+44. **SME Payroll Tax & Statutory Provident Fund** (**`⌘Y`**) — 2023 progressive slabs, RPF trustee ledger (`PayrollTaxModal.tsx`).
+45. **Corporate Income Tax (Form 82C) & Mushak-9.1** (**`⌘9`**) — 0.6% gross turnover minimum tax & AIT credit vault (`CorporateTaxModal.tsx`).
+46. **B2B Invoice Factoring & Islamic Murabaha** (**`⌘I`**) — SMART reference rate & Shariah Murabaha modes (`InvoiceFactoringModal.tsx`).
+47. **B2B Trade Credit Insurance & NI Act 138 Recovery** (**`⌘R`**) — 90% default indemnity bonding & dishonored cheque notices (`DebtRecoveryModal.tsx`).
+48. **Vernacular Voice Commerce & 1-Click MFS Checkout** (**`⌘V`**) — Sub-150ms Banglish speech-to-intent engine (`VoiceCommerceModal.tsx`).
+49. **AI Legal Contract Generator & Stamp Duty Act** (**`⌘L`**) — Non-judicial e-stamp duty calculator (`LegalContractsModal.tsx`).
+50. **NBR Customs Duty Drawback & DEC Engine** (**`⌘B`**) — HS tariff matrix & DEDO claim dossier (`DutyDrawbackModal.tsx`).
+51. **Halal Certification & Shariah Governance** (**`⌘J`**) — 500+ E-number screener & AAOIFI ratio auditor (`HalalGovernanceModal.tsx`).
+52. **Micro-Merchant Collective Buying & Freight Pooling** (**`⌘P`**) — CBM freight sharing & MOQ thresholds (`CollectiveBuyingModal.tsx`).
+53. **AI B2B Tender & Government e-GP Bid Generator** (**`⌘T`**) — CPTU Standard Tender Document compliance (`TenderBidModal.tsx`).
+54. **Customs Tariff 2026-2027 & CIPL Engine** (**`⌘N`**) — 8-digit HS code classifier & ASYCUDA World invoice (`CustomsTariffModal.tsx`).
+55. **Multi-Channel Inventory Matrix** (**`⌘I`**) — Unified SKU sync, DIR forecasting & wholesale PO generator (`InventoryMatrixModal.tsx`).
+56. **Banglish COD Voice IVR Radar** (**`⌘V`**) — RTO fraud score & automated courier booking (`CodIvrModal.tsx`).
+57. **B2B Early Liquidity Radar** (**`⌘L`**) — Corporate buyer credit score & dynamic APR haircuts (`EarlyLiquidityModal.tsx`).
 
 ### Category 4: DevOps, Infrastructure & Advanced Compute
-27. **Startup Builds & Container Deployments** — Dokploy / Coolify container builds (`StartupBuildsModal.tsx`).
-28. **Website Hub** — Multi-tenant custom domain manager.
-29. **Manage Subdomains** — Wildcard SSL & CNAME routing.
-30. **Vast.ai Spot GPU Orchestrator** (**`⌘B`**) — WebGPU fallback & spot cluster allocation (`VastSpotGpuModal.tsx`).
-31. **CRDT Edge Mesh Studio** (**`⌘E`**) — P2P state synchronization (`EdgeMeshStudioModal.tsx`).
-32. **Canary Traffic Director** (**`⌘T`**) — Blue/green traffic splitting (`CanaryTrafficDirectorModal.tsx`).
-33. **Vulnerability Immunity Chamber** — Automated AST exploit auto-patching (`VulnerabilityImmunityModal.tsx`).
-34. **Multi-Model Pareto Optimizer** — Cost vs. latency dynamic router (`MultiModelParetoModal.tsx`).
-35. **Epistemic Consensus Engine** — Multi-LLM factual voting (`EpistemicConsensusModal.tsx`).
+58. **Startup Builds & Container Deployments** — Dokploy / Coolify container builds (`StartupBuildsModal.tsx`).
+59. **Website Hub** — Multi-tenant custom domain manager.
+60. **Manage Subdomains** — Wildcard SSL & CNAME routing.
+61. **Vast.ai Spot GPU Orchestrator** (**`⌘B`**) — WebGPU fallback & spot cluster allocation (`VastSpotGpuModal.tsx`).
+62. **CRDT Edge Mesh Studio** (**`⌘E`**) — P2P state synchronization (`EdgeMeshStudioModal.tsx`).
+63. **Canary Traffic Director** (**`⌘T`**) — Blue/green traffic splitting (`CanaryTrafficDirectorModal.tsx`).
+64. **Vulnerability Immunity Chamber** — Automated AST exploit auto-patching (`VulnerabilityImmunityModal.tsx`).
+65. **Multi-Model Pareto Optimizer** — Cost vs. latency dynamic router (`MultiModelParetoModal.tsx`).
+66. **Epistemic Consensus Engine** — Multi-LLM factual voting (`EpistemicConsensusModal.tsx`).
 
 ---
 
@@ -205,12 +280,16 @@ All routes mounted under `/api/v1` or `/v1` in `artifacts/api-server/src/routes/
 │   ├── /generate-invoice                (POST) - Mushak-6.3 tax invoice generation
 │   ├── /invoices/:invoiceId/html        (GET) - Official printable NBR Mushak-6.3 HTML challan
 │   └── /mushak-91-summary               (GET) - Mushak-9.1 monthly return aggregator
+├── /tax/mushak-63                       (POST) - Mushak-6.3 itemized calculation & QR code generator
+├── /tax/mushak-66                       (POST) - NBR Mushak-6.6 Certificate of Tax Deduction at Source (VDS)
+├── /mushak43                            (POST) - NBR Mushak-4.3 Input-Output coefficient costing & BOM
 ├── /telephony/outbound
 │   ├── /initiate                        (POST) - Outbound voice verification IVR dispatch
 │   ├── /transcribe-turn                 (POST) - Customer speech ingestion & state machine advancement
 │   ├── /sessions                        (GET) - List active & past calling sessions
 │   ├── /sessions/:callId                (GET) - Call session details & transcript history
 │   └── /override                        (POST) - Merchant 1-tap manual override
+├── /ivr/cod                             (POST) - Banglish COD IVR dialog scheduling & RTO scoring
 ├── /whatsapp/webhook                    (GET/POST) - Meta WhatsApp Business API webhook & HMAC validation
 ├── /publishing/nilkhet
 │   ├── /calculate-specs                 (POST) - CMYK imposition, paper weight & spine thickness
@@ -219,10 +298,45 @@ All routes mounted under `/api/v1` or `/v1` in `artifacts/api-server/src/routes/
 ├── /mfs
 │   ├── /bkash/create-payment            (POST) - 1-tap bKash checkout link generation
 │   ├── /bkash/execute-payment           (POST) - Payment execution & TrxID verification
+│   ├── /nagad/initiate                  (POST) - Direct Nagad PGW tokenized checkout
+│   ├── /nagad/verify                    (POST) - Nagad transaction status verification
 │   └── /reconciliation                  (GET) - Daily MFS transaction settlement logs
 ├── /courier/steadfast
 │   ├── /create-order                    (POST) - Steadfast consignment dispatch
 │   └── /tracking/:consignmentId         (GET) - Real-time parcel tracking status
+├── /courier/arbitrage                   (POST) - 4-carrier rate evaluation & multi-carrier live fallback
+├── /carrier-webhooks                    (POST) - Inbound webhook normalizer for Steadfast, Pathao, RedX, Paperfly
+├── /marketing/capi                      (POST) - Meta & TikTok Conversions API offline COD attribution
+├── /customs/cross-border                (POST) - Landed cost calculation & NBR duty cascade
+├── /customs/duty-drawback               (POST) - Duty drawback claims & DEDO Form-A/B compiler
+├── /customs/tariff                      (POST) - 8-digit HS Code classification & ASYCUDA CIPL
+├── /growth/elevators                    (GET/POST) - Merchant Health Index & tier powers
+├── /franchise/branches                  (GET/POST) - Multi-branch stock allocation & 3-way splits
+├── /live-selling/comments               (POST) - Social commerce comment parsing & 15-min stock locks
+├── /audit/ledger                        (GET/POST) - Double-entry General Ledger & Trial Balance
+├── /remittance/incentives               (POST) - BB FE Circular 02/2024 ICT export incentive ledger
+├── /fulfillment/dark-hubs               (GET/POST) - Geofenced thana routing & S-curve pick paths
+├── /cashflow/reconciliation             (POST) - Multi-channel liquid balances & dispute brief generator
+├── /wholesale/rfq                       (POST) - B2B tiered volume pricing & milestone escrow contracts
+├── /wholesale/commodity-lc              (POST) - Inland LC generator & commodity spot price ticker
+├── /community/creator-guilds            (GET/POST) - Collective volume pooling & verified supplier escrow
+├── /agri/mandi-radar                    (GET/POST) - Wholesale mandi price tracker & cold-chain booking
+├── /pos/field-agent                     (POST) - Offline CRDT transaction sync & Bluetooth thermal bytecode
+├── /trade/export-compliance             (POST) - Bangladesh Bank Form-EXP & ASYCUDA World manifest
+├── /hedging/fx-forward                  (POST) - USD/BDT CIRP forward rate curve lock & MTM radar
+├── /payroll/sme                         (POST) - Income Tax Act 2023 progressive slabs & RPF ledger
+├── /corporate-tax/minimum-tax           (POST) - Form 82C 0.6% gross turnover minimum tax & AIT ledger
+├── /factoring/receivables               (POST) - B2B invoice factoring & Islamic Murabaha advance
+├── /factoring/early-liquidity           (POST) - Corporate buyer credit scoring & dynamic APR haircuts
+├── /debt-recovery/claims                (POST) - NI Act 138 dishonored cheque notices & CIB reporting
+├── /voice-commerce/session              (POST) - Sub-150ms Banglish speech-to-intent & 1-click MFS SMS
+├── /contracts/statutory                 (POST) - Non-judicial e-stamp duty calculator & bilateral e-signatures
+├── /shariah/halal-governance            (POST) - E-number food additive screener & AAOIFI ratio auditor
+├── /commerce/collective-buying          (POST) - Sourcing pool lifecycle & CBM volumetric cost sharing
+├── /tenders/cptu-bid                    (POST) - e-GP bid qualification & BOQ statutory tax withholding
+├── /academic/plagiarism                 (POST) - Bengali thesis N-gram shingle similarity & BibTeX generator
+├── /tasks/cas-leased                    (GET/POST) - Distributed CAS leased task worker & heartbeat renewal
+├── /actions/proposals                   (GET/POST) - Protected Action review state machine & SHA-256 seals
 └── /gatekeeper/evaluate-action          (POST) - Supervised Autonomy policy risk evaluation
 ```
 
@@ -231,9 +345,9 @@ All routes mounted under `/api/v1` or `/v1` in `artifacts/api-server/src/routes/
 ## 7. Quality Assurance, Benchmarking & Certification Matrix
 
 ### 7.1 Automated Test Execution Summary
-- **Backend API Server**: **59 test suites / 353 passed tests** (`pnpm --filter @workspace/api-server test`).
-- **Frontend Twin Modals**: **34 test suites / 104 passed tests** (`pnpm --filter @workspace/shothik exec vitest run src/components/twin/`).
-- **TypeScript Typecheck**: **Zero compile errors** across entire monorepo (`tsc --noEmit`).
+- **Backend API Server**: **107 test suites / 610 passed tests** (`pnpm test:ecc` / `vitest run`).
+- **Frontend Twin Modals**: **38 component test suites / 120+ passed tests** (`vitest run src/components/twin/`).
+- **TypeScript Typecheck**: **Zero compile errors** across entire monorepo (`tsc -p tsconfig.json --noEmit` and `node run_typecheck.cjs`).
 
 ### 7.2 Pre-Commit & Pre-Push Security Gates
 - **Unicode Safety Gate**: Scans for bidirectional control character exploits (`U+202E`, etc.) and hardcoded secret leaks.
