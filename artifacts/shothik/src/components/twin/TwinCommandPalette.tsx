@@ -142,6 +142,7 @@ export interface TwinCommandPaletteProps {
   onOpenInventoryMatrix?: () => void;
   onOpenCodIvr?: () => void;
   onOpenEarlyLiquidity?: () => void;
+  onOpenMetaCapi?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -222,6 +223,7 @@ export function TwinCommandPalette({
   onOpenInventoryMatrix,
   onOpenCodIvr,
   onOpenEarlyLiquidity,
+  onOpenMetaCapi,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -510,6 +512,23 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Automated 9:16 vertical reels & product promo generator</span>
               </div>
             </div>
+          </CommandItem>
+
+          <CommandItem
+            value="meta tiktok capi offline cod attribution event match quality pixel server emq"
+            onSelect={() => handleSelect(onOpenMetaCapi)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                <TrendingUp className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Meta & TikTok Conversions API (CAPI)</span>
+                <span className="text-[11px] text-zinc-500">Offline COD conversion attribution, EMQ scoring & postback sync</span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-400 font-mono">CAPI</Badge>
           </CommandItem>
 
           <CommandItem

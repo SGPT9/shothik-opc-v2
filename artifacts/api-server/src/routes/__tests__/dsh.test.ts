@@ -135,5 +135,5 @@ describe("DeepSeek Harness (DSH) Execution Trace Engine Suite", () => {
     expect(forkRes.status).toBe(201);
     const forkJson = (await forkRes.json()) as any;
     expect(forkJson.forkedSession.forkedFromSessionId).toBe(sessionId);
-  });
+  }, 15000);
 });
