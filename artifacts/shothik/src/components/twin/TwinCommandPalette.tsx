@@ -144,6 +144,7 @@ export interface TwinCommandPaletteProps {
   onOpenEarlyLiquidity?: () => void;
   onOpenMetaCapi?: () => void;
   onOpenKycOcr?: () => void;
+  onOpenRtoFraudShield?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -226,6 +227,7 @@ export function TwinCommandPalette({
   onOpenEarlyLiquidity,
   onOpenMetaCapi,
   onOpenKycOcr,
+  onOpenRtoFraudShield,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -1610,6 +1612,23 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘K</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="rto fraud shield courier blacklist steadfast pathao delivery success rate dsr bkash advance policy fake orders serial returners"
+            onSelect={() => handleSelect(onOpenRtoFraudShield)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-red-500/10 text-red-500 border border-red-500/20">
+                <ShieldAlert className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">RTO Fraud Shield & Courier Blacklist</span>
+                <span className="text-[11px] text-zinc-500">Steadfast & Pathao DSR scoring, community blacklist & dynamic bKash advance</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥F</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>

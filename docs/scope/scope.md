@@ -72,6 +72,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 74 | RedX & Paperfly Live Courier API Connectors with Multi-Carrier Fallback | Slice 74 | done |
 | 75 | Interactive Chat Streaming Component System with Session Forking | Slice 75 | done |
 | 76 | Autonomous Multi-Modal Bengali OCR & NID/Trade License Extraction Engine | Slice 76 | done |
+| 77 | Autonomous Steadfast & Pathao RTO Prediction, Delivery Success Scoring & Fraud Blacklist Sync Engine | Slice 77 | done |
 
 ---
 
@@ -571,6 +572,13 @@ Multi-modal Bengali and English National ID (10-digit Smart NID, 17-digit legacy
 - [x] Verify it: `/check verify bengali ocr nid trade license extraction engine`
 - [x] Test it: `/test bengali ocr nid trade license extraction engine`
 spec 0076 · code in `artifacts/api-server/src/lib/kyc/kyc-ocr-engine.ts`, `artifacts/api-server/src/routes/kyc-ocr.ts`, and `artifacts/shothik/src/components/twin/KycOcrModal.tsx`
+
+### 77. Autonomous Steadfast & Pathao RTO Prediction, Delivery Success Scoring & Fraud Blacklist Sync Engine · done
+Unified multi-carrier buyer credibility evaluation (Steadfast, Pathao, RedX), community-wide fraud blacklist sync, RTO risk tiering with dynamic bKash/Nagad partial advance requirement, and pre-formatted WhatsApp/SMS templates.
+- [x] Build it: `/develop steadfast pathao rto fraud blacklist sync engine`
+- [x] Verify it: `/check verify steadfast pathao rto fraud blacklist sync engine`
+- [x] Test it: `/test steadfast pathao rto fraud blacklist sync engine`
+spec 0077 · code in `artifacts/api-server/src/lib/logistics/rto-fraud-engine.ts`, `artifacts/api-server/src/routes/rto-fraud.ts`, and `artifacts/shothik/src/components/twin/RtoFraudShieldModal.tsx`
 
 ---
 

@@ -93,6 +93,7 @@ import { commodityLCRouter } from "./commodity-lc.js";
 import { creatorGuildsRouter } from "./creator-guilds.js";
 import { marketingRouter } from "./marketing.js";
 import { kycOcrRouter } from "./kyc-ocr.js";
+import { rtoFraudRouter } from "./rto-fraud.js";
 
 const router: IRouter = Router();
 
@@ -113,6 +114,7 @@ router.use(commodityLCRouter);
 router.use(creatorGuildsRouter);
 router.use(marketingRouter);
 router.use(kycOcrRouter);
+router.use(rtoFraudRouter);
 
 router.use(taxRouter);
 router.use(telephonyRouter);
