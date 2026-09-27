@@ -62,6 +62,12 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 50 | Autonomous Vernacular Voice Commerce, WebRTC Banglish Agent & 1-Click MFS Voice Checkout Engine | Slice 50 | done |
 | 51 | Autonomous AI Legal Contract Generator & Stamp Duty Act 1899 Compliance Engine | Slice 51 | done |
 | 52 | Autonomous NBR Customs Duty Drawback & Duty-Exemption Certificate (DEC) Engine | Slice 52 | done |
+| 53 | Autonomous Halal Certification & Islamic Shariah Governance Engine | Slice 53 | done |
+| 54 | Autonomous Micro-Merchant B2B Collective Buying & Bulk Freight Pooling Engine | Slice 54 | done |
+| 55 | Autonomous AI B2B Tender & Government e-GP Bid Generator & CPTU Compliance Engine | Slice 55 | done |
+| 56 | OpenMuse Agentic Compute, Persistent Browser Takeover & CAS Leased Task Orchestration Engine | Slice 56 | done |
+| 57 | Autonomous HS Code Classification, Customs Tariff & Cross-Border Commercial Invoice Engine | Slice 57 | done |
+| 58 | Autonomous Multi-Channel Inventory Matrix, Stock-Out Prediction & Micro-Warehousing Engine | Slice 58 | queued |
 
 ---
 
@@ -389,6 +395,150 @@ Government e-GP and corporate RFP tender bid preparation engine compliant with C
 - [x] Verify it: `/check verify egp tender bid cptu compliance engine`
 - [x] Test it: `/test egp tender bid cptu compliance engine`
 spec 0055 · code in `artifacts/api-server/src/lib/tenders/tender-bid-engine.ts`, `artifacts/api-server/src/routes/tender-bids.ts`, and `artifacts/shothik/src/components/twin/TenderBidModal.tsx`
+
+### 56. OpenMuse Agentic Compute, Persistent Browser Takeover & CAS Leased Task Orchestration Engine · done
+Distributed SQL Compare-and-Swap (CAS) leased task worker engine with heartbeat renewal and zero-lost-job crash recovery, protected action proposal and stored review state machine with SHA-256 seals, Playwright egress-proxied browser worker with remote screenshot takeover and coordinate normalization, Nilkhet interactive PDF form field extraction and signed delivery receipt engine, and cross-platform AG-UI Twin Studio modal with shortcut ⌘U.
+- [x] Build it: `/develop openmuse agentic compute browser takeover cas task engine`
+   - [x] Distributed SQL Compare-and-Swap (CAS) Leased Task Worker Engine (AC-1)
+   - [x] Protected Action Proposal & Stored Review State Machine with SHA-256 Seals (AC-2)
+   - [x] Egress-Proxied Browser Worker & Live Screenshot Takeover (AC-3)
+   - [x] Nilkhet Interactive PDF Form Field Extraction & Signed Receipt Engine (AC-4)
+   - [x] Frontend AG-UI Twin Studio Modal (⌘U) & Action Proposal Chat Cards (AC-5)
+- [x] Verify it: `/check verify openmuse agentic compute browser takeover cas task engine`
+- [x] Test it: `/test openmuse agentic compute browser takeover cas task engine`
+spec 0056 · code in `lib/hermes/src/leased-task-worker.ts`, `artifacts/api-server/src/lib/actions/action-proposal-engine.ts`, `artifacts/api-server/src/lib/browser/browser-takeover-engine.ts`, `lib/office-engine/src/pdf-form-engine.ts`, and `artifacts/shothik/src/components/twin/AgentComputerModal.tsx`
+
+### 57. Autonomous HS Code Classification, Customs Tariff & Cross-Border Commercial Invoice Engine · done
+Bangladesh Customs Tariff 2026-2027 8-digit HS Code classifier, NBR Customs Act 2023 Total Tax Incidence (TTI) compounding duty calculator (CD, SD, VAT, AIT, RD, AT), Ministry of Commerce Import Policy Order (IPO) regulatory screener, ASYCUDA World Commercial Invoice & Packing List (CIPL) generator with SHA-256 seals, and cross-platform Twin Studio modal with shortcut ⌘N.
+- [x] Build it: `/develop hs code classification customs tariff commercial invoice engine`
+   - [x] 8-Digit HS Code Classifier & Tariff Rate Engine (AC-1)
+   - [x] Total Tax Incidence (TTI) Assessment Calculator (AC-2)
+   - [x] IPO Regulatory & Mandatory Agency Clearance Screener (AC-3)
+   - [x] ASYCUDA World Commercial Invoice & Packing List Generator (AC-4)
+   - [x] Frontend AG-UI Twin Studio Modal with keyboard shortcut ⌘N (AC-5)
+- [x] Verify it: `/check verify hs code classification customs tariff commercial invoice engine`
+- [x] Test it: `/test hs code classification customs tariff commercial invoice engine`
+spec 0057 · code in `artifacts/api-server/src/lib/customs/tariff-engine.ts`, `artifacts/api-server/src/routes/tariff.ts`, and `artifacts/shothik/src/components/twin/CustomsTariffModal.tsx`
+
+### 58. Autonomous Multi-Channel Inventory Matrix, Stock-Out Prediction & Micro-Warehousing Engine · done
+Real-time unified SKU synchronization across Daraz, Shopify, WooCommerce, Facebook Live Selling, and WhatsApp Business Storefront, AI sales velocity & Days of Inventory Remaining (DIR) run-rate forecasting, dark store micro-hub allocation between Tejgaon, Dhanmondi, Banani, and Chittagong, automated wholesale reorder PO generator with SHA-256 seals, and cross-platform Twin Studio modal with shortcut ⌘I.
+- [x] Build it: `/develop multichannel inventory matrix stock out prediction engine`
+   - [x] Multi-Channel SKU Sync Matrix & Reservation Engine (AC-1)
+   - [x] Predictive Sales Velocity & Days of Inventory Remaining (DIR) Forecast (AC-2)
+   - [x] Hyperlocal Dark Store Micro-Hub Rebalancer (AC-3)
+   - [x] Automated Supplier Purchase Order (PO) Generator (AC-4)
+   - [x] Frontend AG-UI Twin Studio Modal with keyboard shortcut ⌘I (AC-5)
+- [x] Verify it: `/check verify multichannel inventory matrix stock out prediction engine`
+- [x] Test it: `/test multichannel inventory matrix stock out prediction engine`
+spec 0058 · code in `artifacts/api-server/src/lib/inventory/inventory-matrix-engine.ts`, `artifacts/api-server/src/routes/inventory-matrix.ts`, and `artifacts/shothik/src/components/twin/InventoryMatrixModal.tsx`
+
+### 59. Autonomous Banglish Voice IVR, Automated COD Order Verification & Courier Return Minimization Engine · done
+Natural Banglish/Bangla interactive voice response (IVR) phone verification engine, AI Return-to-Origin (RTO) courier fraud risk scoring, automated address sanitization and district/thana resolution, automated Pathao/Steadfast consignment booking upon verified voice/WhatsApp confirmation with SHA-256 seals, and cross-platform Twin Studio modal with shortcut ⌘V.
+- [x] Build it: `/develop banglish voice ivr cod verification courier return minimization engine`
+   - [x] Banglish/Bangla Voice IVR Call Scheduler & Interactive Dialogue Matrix (AC-1)
+   - [x] Return-to-Origin (RTO) Risk Scoring & Delivery Fraud Detection (AC-2)
+   - [x] Hyperlocal Address Parser & District/Thana Resolution Engine (AC-3)
+   - [x] Automated Courier Consignment Dispatch & Cryptographic Verification Audit (AC-4)
+   - [x] Frontend AG-UI Twin Studio Modal with keyboard shortcut ⌘V (AC-5)
+- [x] Verify it: `/check verify banglish voice ivr cod verification courier return minimization engine`
+- [x] Test it: `/test banglish voice ivr cod verification courier return minimization engine`
+spec 0059 · code in `artifacts/api-server/src/lib/ivr/cod-ivr-engine.ts`, `artifacts/api-server/src/routes/cod-ivr.ts`, and `artifacts/shothik/src/components/twin/CodIvrModal.tsx`
+
+### 60. Autonomous B2B Micro-Factoring, AI Accounts Receivable Radar & Early Liquidity Engine · done
+B2B credit scoring for Bangladeshi corporate buyers (Pran-RFL, Square, Akij, Beximco, ACI), automated receivables aging radar (0-30, 31-60, 61-90+ days), instant bKash/Nagad Enterprise early liquidity factoring with dynamic APR haircut calculation, automated legal promissory notes with SHA-256 verification seals, and cross-platform Twin Studio modal with shortcut ⌘L.
+- [x] Build it: `/develop b2b micro factoring accounts receivable early liquidity engine`
+   - [x] B2B Corporate Credit Scoring & Buyer Risk Engine (AC-1)
+   - [x] Accounts Receivable Aging Radar & Overdue Cashflow Forecaster (AC-2)
+   - [x] Dynamic Early Liquidity Factoring Calculator with APR Haircuts (AC-3)
+   - [x] Legal Promissory Note & Cryptographic Lien Generator (AC-4)
+   - [x] Frontend AG-UI Twin Studio Modal with keyboard shortcut ⌘L (AC-5)
+- [x] Verify it: `/check verify b2b micro factoring accounts receivable early liquidity engine`
+- [x] Test it: `/test b2b micro factoring accounts receivable early liquidity engine`
+spec 0060 · code in `artifacts/api-server/src/lib/factoring/early-liquidity-engine.ts`, `artifacts/api-server/src/routes/early-liquidity.ts`, and `artifacts/shothik/src/components/twin/EarlyLiquidityModal.tsx`
+
+### 61. Autonomous Live Selling Comment-to-Cart & Courier Dispatch Engine · done
+Real-time Banglish intent extraction from live social comments (Facebook/TikTok Live), automated SKU reservation, phone validation, and instant Steadfast/Pathao courier booking pipeline with SHA-256 state seal.
+- [x] Build it: `/develop live selling comment to cart courier dispatch engine`
+- [x] Verify it: `/check verify live selling comment to cart courier dispatch engine`
+- [x] Test it: `/test live selling comment to cart courier dispatch engine`
+spec 0061 · code in `artifacts/api-server/src/lib/live-selling/live-selling-engine.ts` and `artifacts/api-server/src/routes/live-selling.ts`
+
+### 62. NBR Mushak 6.3 Automated VAT Challan & QR Code Generator · done
+Bangladesh National Board of Revenue (NBR) VAT Act 2012 compliance, 9/13-digit BIN verification, itemized tax invoice calculation with CD, SD, VAT, VDS withholding, and official QR code payload with SHA-256 digital seals.
+- [x] Build it: `/develop nbr mushak 63 vat challan qr generator`
+- [x] Verify it: `/check verify nbr mushak 63 vat challan qr generator`
+- [x] Test it: `/test nbr mushak 63 vat challan qr generator`
+spec 0062 · code in `artifacts/api-server/src/lib/tax/mushak-63-engine.ts` and `artifacts/api-server/src/routes/mushak-63.ts`
+
+### 63. Nilkhet Print-on-Demand (POD) 300-DPI Spine & CMYK Press Engine · done
+Automated caliper & spine thickness calculator for softcover and casebound hardcover books, CMYK 300-DPI press layout margins, Bengali Unicode font embedding validation, and physical parcel weight estimator.
+- [x] Build it: `/develop nilkhet pod 300dpi spine cmyk press engine`
+- [x] Verify it: `/check verify nilkhet pod 300dpi spine cmyk press engine`
+- [x] Test it: `/test nilkhet pod 300dpi spine cmyk press engine`
+spec 0063 · code in `lib/office-engine/spine-calculator.ts`
+
+### 64. Zero-Latency Client-Side WebAssembly (Wasm) Engine · done
+Client-side in-browser fast engine for instant Banglish-to-Bengali phonetic transliteration, offline delivery zone & fee lookup, and compound tax incidence calculations with <5ms response times.
+- [x] Build it: `/develop zero latency client side wasm engine`
+- [x] Verify it: `/check verify zero latency client side wasm engine`
+- [x] Test it: `/test zero latency client side wasm engine`
+spec 0064 · code in `artifacts/shothik/src/lib/wasm/shothik-wasm-engine.ts`
+
+### 65. Bengali Thesis Plagiarism & Citation Matcher · done
+N-gram word shingles & semantic similarity scanner for academic Bengali thesis manuscripts with UGC compliance verification, similarity percentage scoring, and automated APA 7th / IEEE citation formatting.
+- [x] Build it: `/develop bengali thesis plagiarism citation matcher`
+- [x] Verify it: `/check verify bengali thesis plagiarism citation matcher`
+- [x] Test it: `/test bengali thesis plagiarism citation matcher`
+spec 0065 · code in `artifacts/api-server/src/lib/academic/bengali-plagiarism-engine.ts` and `artifacts/api-server/src/routes/plagiarism.ts`
+
+### 66. Push-to-Talk Voice Note Input & Inline Wasm Sandbox Runner · done
+WebAudio microphone recorder with real-time waveform visualization, Banglish speech transcription prompt integration, and interactive 1-tap inline Wasm code execution sandbox for chat messages.
+- [x] Build it: `/develop push to talk voice note inline wasm sandbox runner`
+- [x] Verify it: `/check verify push to talk voice note inline wasm sandbox runner`
+- [x] Test it: `/test push to talk voice note inline wasm sandbox runner`
+spec 0066 · code in `artifacts/shothik/src/components/chat/VoiceNoteRecorder.tsx` and `artifacts/shothik/src/components/chat/InlineWasmCodeRunner.tsx`
+
+### 67. Wholesale Commodity Price Ticker & Inland LC Escrow Engine · done
+Real-time wholesale market commodity tickers (Khatunganj, Chawkbazar, Narsingdi) and Bangladesh Bank compliant Inland Letter of Credit (Inland LC) generator with bKash/Steadfast escrow locking.
+- [x] Build it: `/develop wholesale commodity price ticker inland lc escrow engine`
+- [x] Verify it: `/check verify wholesale commodity price ticker inland lc escrow engine`
+- [x] Test it: `/test wholesale commodity price ticker inland lc escrow engine`
+spec 0067 · code in `artifacts/api-server/src/lib/wholesale/commodity-lc-engine.ts` and `artifacts/api-server/src/routes/commodity-lc.ts`
+
+### 68. Hyperlocal Creator Guilds & Verified Supplier Escrow Radar · done
+Regional vertical creator guilds (Dhaka Garments, Chittagong Gadgets, BoiMela Writers) with collective purchasing volume pools and trust-scored verified supplier escrow badges.
+- [x] Build it: `/develop creator guilds verified supplier escrow radar`
+- [x] Verify it: `/check verify creator guilds verified supplier escrow radar`
+- [x] Test it: `/test creator guilds verified supplier escrow radar`
+spec 0068 · code in `artifacts/api-server/src/lib/community/creator-guilds-engine.ts` and `artifacts/api-server/src/routes/creator-guilds.ts`
+
+### 69. HarfBuzz-Compatible Bengali OpenType Typography & Complex Script Shaper · done
+Unicode NFC normalization, complex conjunct (যুক্তবর্ণ) ligature mapping, pre-base vowel reordering, and 300-DPI / ESC-POS printable metric calculations for flawless PDF and thermal press layouts.
+- [x] Build it: `/develop harfbuzz bengali opentype typography shaper`
+- [x] Verify it: `/check verify harfbuzz bengali opentype typography shaper`
+- [x] Test it: `/test harfbuzz bengali opentype typography shaper`
+spec 0069 · code in `lib/office-engine/bengali-shaper.ts` and `lib/office-engine/__tests__/bengali-shaper.test.ts`
+
+### 70. Nagad Sheba Direct PGW Tokenized Checkout & MFS Clearing Engine · done
+Direct Nagad PGW client supporting payment session initialization, callback URL redirection, transaction verification, and SHA-256 cryptographic state seals.
+- [x] Build it: `/develop nagad sheba direct pgw clearing engine`
+- [x] Verify it: `/check verify nagad sheba direct pgw clearing engine`
+- [x] Test it: `/test nagad sheba direct pgw clearing engine`
+spec 0070 · code in `artifacts/api-server/src/lib/mfs/nagad-pgw-client.ts`, `artifacts/api-server/src/routes/mfs.ts`, and `artifacts/api-server/src/routes/__tests__/nagad-pgw.test.ts`
+
+### 71. NBR Mushak-6.6 Certificate of Tax Deduction at Source (VDS) Engine · done
+National Board of Revenue (NBR) Value Added Tax and Supplementary Duty Act 2012 (মূসক-৬.৬) certificate generator with itemized VDS calculations, supplier net disbursement, and e-Treasury deposit code formatting.
+- [x] Build it: `/develop nbr mushak 66 vds certificate engine`
+- [x] Verify it: `/check verify nbr mushak 66 vds certificate engine`
+- [x] Test it: `/test nbr mushak 66 vds certificate engine`
+spec 0071 · code in `artifacts/api-server/src/lib/tax/mushak-66-engine.ts`, `artifacts/api-server/src/routes/mushak-66.ts`, and `artifacts/api-server/src/routes/__tests__/mushak-66.test.ts`
+
+### 72. Academic BibTeX & Overleaf LaTeX Citation Generator · done
+Automated `.bib` entry generation and Overleaf-ready LaTeX `\cite{}` snippets for BUET, DU, and SUST engineering and thesis manuscripts.
+- [x] Build it: `/develop academic bibtex overleaf latex citation generator`
+- [x] Verify it: `/check verify academic bibtex overleaf latex citation generator`
+- [x] Test it: `/test academic bibtex overleaf latex citation generator`
+spec 0072 · code in `artifacts/api-server/src/lib/academic/bengali-plagiarism-engine.ts` and `artifacts/api-server/src/routes/__tests__/plagiarism.test.ts`
 
 ---
 

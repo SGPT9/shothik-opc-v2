@@ -6,3 +6,4 @@ export * from "./tools/definition";
 export * from "./tools/bridge";
 export * from "./client/adapter";
 export * from "./client/useHermes";
+export * from "./leased-task-worker";

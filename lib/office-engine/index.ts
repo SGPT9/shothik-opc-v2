@@ -8,6 +8,9 @@ export * as DocxEngine from "./docx/index.js";
 export * as PptxEngine from "./pptx/index.js";
 export * as OfficeParser from "./parse/index.js";
 export * as AgentSkillEngine from "./agent/skillComposer.js";
+export * from "./pdf-form-engine.js";
+export * from "./spine-calculator.js";
+export * from "./bengali-shaper.js";
 export { parseFileToText } from "./parse/index.js";
 export { composeSkills, createClaimActionGuard } from "./agent/skillComposer.js";
 

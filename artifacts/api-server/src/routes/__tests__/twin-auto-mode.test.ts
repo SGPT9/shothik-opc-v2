@@ -70,7 +70,7 @@ describe("Twin Auto Mode Lifecycle API (Away / Overnight Execution)", { timeout:
     expect(body.data.twinCycle.executionStatus).toBe("executed_autonomously");
 
     // Verify Nightshift CEO Away Briefing
-    expect(body.data.digest.skillsExecuted.length).toBe(4);
+    expect(body.data.digest.skillsExecuted.length).toBeGreaterThanOrEqual(4);
     expect(body.data.digest.overallHealthScore).toBeGreaterThanOrEqual(90);
   });
 

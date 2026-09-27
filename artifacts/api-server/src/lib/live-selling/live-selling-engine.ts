@@ -4,6 +4,8 @@
  * automated 1-tap bKash checkout link generation, and live stream telemetry.
  */
 
+import { CodIvrEngine } from "../ivr/cod-ivr-engine.js";
+
 export interface LiveSellingSession {
   sessionId: string;
   channel: "facebook_live" | "tiktok_live" | "instagram_live" | "youtube_live";
@@ -273,6 +275,51 @@ export class LiveSellingEngine {
     }
 
     return { success: true, order, message: "Live order confirmed and stock finalized!" };
+  }
+
+  /**
+   * Autonomous Auto-Courier Dispatch Pipeline:
+   * Assesses RTO Risk, normalizes address, books Steadfast/Pathao consignment with SHA-256 seal.
+   */
+  static autoDispatchCourierPipeline(
+    orderId: string,
+    courierProvider: "steadfast" | "pathao" | "redx" | "paperfly" = "steadfast"
+  ): { success: boolean; consignment?: any; message: string } {
+    const order = this.orders.get(orderId);
+    if (!order) {
+      return { success: false, message: `Order ID ${orderId} not found` };
+    }
+
+    if (!order.extractedPhone) {
+      return { success: false, message: "Customer phone number is missing from live order" };
+    }
+
+    // Auto-confirm the order
+    this.confirmOrder(orderId);
+
+    const consignment = CodIvrEngine.dispatchCourierConsignment(
+      {
+        orderId: order.orderId,
+        customerName: order.authorName,
+        customerPhone: order.extractedPhone,
+        items: [{
+          sku: order.extractedSku || "SKU-GENERIC",
+          name: order.productName || "Live Stream Item",
+          quantity: order.extractedQuantity,
+          unitPrice: order.unitPriceBdt,
+        }],
+        codAmount: order.totalAmountBdt,
+        rawAddress: order.extractedDistrict ? `${order.extractedDistrict}, Bangladesh` : "Dhaka, Bangladesh",
+      },
+      courierProvider,
+      "voice_ivr"
+    );
+
+    return {
+      success: true,
+      consignment,
+      message: `Consignment auto-booked with ${courierProvider.toUpperCase()} (${consignment.trackingCode})`,
+    };
   }
 
   /**

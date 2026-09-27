@@ -115,6 +115,26 @@ liveSellingRouter.post("/v1/live-selling/orders/confirm", (req: Request, res: Re
 });
 
 /**
+ * POST /v1/live-selling/orders/auto-dispatch
+ */
+liveSellingRouter.post("/v1/live-selling/orders/auto-dispatch", (req: Request, res: Response) => {
+  try {
+    const { orderId, courierProvider = "steadfast" } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ success: false, error: "orderId is required" });
+    }
+
+    const result = LiveSellingEngine.autoDispatchCourierPipeline(orderId, courierProvider);
+    return res.status(result.success ? 200 : 400).json(result);
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error?.message || "Failed to auto-dispatch live order to courier",
+    });
+  }
+});
+
+/**
  * GET /v1/live-selling/orders
  */
 liveSellingRouter.get("/v1/live-selling/orders", (req: Request, res: Response) => {

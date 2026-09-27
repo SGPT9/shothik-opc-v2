@@ -40,8 +40,9 @@ describe("WhatsAppMessengerBotConnector Service", () => {
   });
 
   it("throws error for invalid phone number", async () => {
-    await expect(
-      whatsAppMessengerBotConnector.sendBkashPaymentInvoice({
+    let error: Error | null = null;
+    try {
+      await whatsAppMessengerBotConnector.sendBkashPaymentInvoice({
         platform: "whatsapp",
         recipientPhone: "123", // invalid
         customerName: "Unknown",
@@ -49,7 +50,11 @@ describe("WhatsAppMessengerBotConnector Service", () => {
         bkashCheckoutUrl: "https://shothik.ai/pay/bKash/bk_0000",
         amountBdt: 100,
         productName: "Item",
-      })
-    ).rejects.toThrow("Invalid recipient phone number");
+      });
+    } catch (err: any) {
+      error = err;
+    }
+    expect(error).not.toBeNull();
+    expect(error?.message).toContain("Invalid recipient phone number");
   });
 });

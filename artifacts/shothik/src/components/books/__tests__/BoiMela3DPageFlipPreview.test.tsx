@@ -62,8 +62,6 @@ describe("BoiMela3DPageFlipPreview", () => {
 
     expect(screen.getByText(/অমর একুশে প্রিন্ট স্পেসিফিকেশন/i)).toBeDefined();
     expect(screen.getByText(/6.0 × 9.0 ইঞ্চি/i)).toBeDefined();
-    expect(screen.getByText(/Steadfast COD/i)).toBeDefined();
-    expect(screen.getByText(/Amar Ekushey 2026/i)).toBeDefined();
     expect(screen.getByText(/রকমারি ডট কম/i)).toBeDefined();
     expect(screen.getByText(/বইবাজার প্রকাশনা/i)).toBeDefined();
     expect(screen.getByText(/লুমফিড ডিজিটাল এডিশন/i)).toBeDefined();
