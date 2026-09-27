@@ -221,6 +221,8 @@ The Shothik founder interface provides **56+ specialized twin modals** organized
 55. **Multi-Channel Inventory Matrix** (**`⌘I`**) — Unified SKU sync, DIR forecasting & wholesale PO generator (`InventoryMatrixModal.tsx`).
 56. **Banglish COD Voice IVR Radar** (**`⌘V`**) — RTO fraud score & automated courier booking (`CodIvrModal.tsx`).
 57. **B2B Early Liquidity Radar** (**`⌘L`**) — Corporate buyer credit score & dynamic APR haircuts (`EarlyLiquidityModal.tsx`).
+58. **Bengali KYC & NID / Trade License OCR** (**`⌘K`**) — Autonomous Smart NID & municipal trade license extraction with SHA-256 seal (`KycOcrModal.tsx`).
+59. **RTO Fraud Shield & Courier Blacklist** (**`⌥F`**) — Steadfast & Pathao DSR scoring, community blacklist & dynamic bKash advance (`RtoFraudShieldModal.tsx`).
 
 ### Category 4: DevOps, Infrastructure & Advanced Compute
 58. **Startup Builds & Container Deployments** — Dokploy / Coolify container builds (`StartupBuildsModal.tsx`).
@@ -305,6 +307,14 @@ All routes mounted under `/api/v1` or `/v1` in `artifacts/api-server/src/routes/
 │   ├── /create-order                    (POST) - Steadfast consignment dispatch
 │   └── /tracking/:consignmentId         (GET) - Real-time parcel tracking status
 ├── /courier/arbitrage                   (POST) - 4-carrier rate evaluation & multi-carrier live fallback
+├── /logistics/fraud/check               (POST) - Multi-carrier credibility & phone blacklist status lookup
+├── /logistics/fraud/report              (POST) - Report fraudulent buyer phone to community blacklist
+├── /logistics/fraud/blacklist           (GET/DELETE) - Community fraud blacklist query & whitelist removal
+├── /logistics/rto/predict               (POST) - Multi-factor RTO risk probability & dynamic bKash advance
+├── /logistics/rto/advance-policy        (POST) - Pre-formatted customer WhatsApp/SMS advance request generator
+├── /kyc/ocr/process-nid                 (POST) - Smart & legacy NID extraction, conjunct parsing & zone segmentation
+├── /kyc/ocr/process-trade-license       (POST) - Municipal trade license normalization, ward & fiscal year audit
+├── /kyc/ocr/verify-dossier              (POST) - Cryptographic verification of KYC dossier SHA-256 seal
 ├── /carrier-webhooks                    (POST) - Inbound webhook normalizer for Steadfast, Pathao, RedX, Paperfly
 ├── /marketing/capi                      (POST) - Meta & TikTok Conversions API offline COD attribution
 ├── /customs/cross-border                (POST) - Landed cost calculation & NBR duty cascade
