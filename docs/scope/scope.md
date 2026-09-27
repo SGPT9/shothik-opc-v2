@@ -71,6 +71,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 73 | Autonomous Meta & TikTok Conversion API (CAPI) with Offline COD Attribution | Slice 73 | done |
 | 74 | RedX & Paperfly Live Courier API Connectors with Multi-Carrier Fallback | Slice 74 | done |
 | 75 | Interactive Chat Streaming Component System with Session Forking | Slice 75 | done |
+| 76 | Autonomous Multi-Modal Bengali OCR & NID/Trade License Extraction Engine | Slice 76 | done |
 
 ---
 
@@ -563,6 +564,13 @@ Live component block streaming and conversation branch forking (`forkSession`) i
 - [x] Verify it: `/check verify interactive chat streaming session forking`
 - [x] Test it: `/test interactive chat streaming session forking`
 spec 0075 · code in `artifacts/shothik/src/components/agents/hooks/useChatSession.ts` and `artifacts/shothik/src/components/agents/ChatAgentPage.tsx`
+
+### 76. Autonomous Multi-Modal Bengali OCR & NID/Trade License Extraction Engine · done
+Multi-modal Bengali and English National ID (10-digit Smart NID, 17-digit legacy birth-year prefix, 13-digit legacy) and municipal Trade License (DNCC, DSCC, CCC, Union Parishad) OCR extraction engine with document zone segmentation, demographic confidence scoring, and cryptographic SHA-256 sealed audit dossiers.
+- [x] Build it: `/develop bengali ocr nid trade license extraction engine`
+- [x] Verify it: `/check verify bengali ocr nid trade license extraction engine`
+- [x] Test it: `/test bengali ocr nid trade license extraction engine`
+spec 0076 · code in `artifacts/api-server/src/lib/kyc/kyc-ocr-engine.ts`, `artifacts/api-server/src/routes/kyc-ocr.ts`, and `artifacts/shothik/src/components/twin/KycOcrModal.tsx`
 
 ---
 

@@ -92,6 +92,7 @@ import { plagiarismRouter } from "./plagiarism.js";
 import { commodityLCRouter } from "./commodity-lc.js";
 import { creatorGuildsRouter } from "./creator-guilds.js";
 import { marketingRouter } from "./marketing.js";
+import { kycOcrRouter } from "./kyc-ocr.js";
 
 const router: IRouter = Router();
 
@@ -111,6 +112,7 @@ router.use(plagiarismRouter);
 router.use(commodityLCRouter);
 router.use(creatorGuildsRouter);
 router.use(marketingRouter);
+router.use(kycOcrRouter);
 
 router.use(taxRouter);
 router.use(telephonyRouter);
