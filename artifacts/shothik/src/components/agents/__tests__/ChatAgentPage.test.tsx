@@ -58,16 +58,16 @@ describe("ChatAgentPage — DeepSeek-Close Shell", () => {
     render(<ChatAgentPage />);
 
     expect(
-      screen.getByText("What do you want to accomplish today?")
+      screen.getByText("What are we building today?")
     ).toBeInTheDocument();
   });
 
-  it("renders 3 outcome-based starter prompt cards (Research, Analysis, Create)", () => {
+  it("renders starter prompt cards across creative and operational pillars", () => {
     render(<ChatAgentPage />);
 
-    expect(screen.getByText("Research")).toBeInTheDocument();
-    expect(screen.getByText("Analysis")).toBeInTheDocument();
-    expect(screen.getByText("Create")).toBeInTheDocument();
+    expect(screen.getByText("Self-Healing Bug & Test Fixer")).toBeInTheDocument();
+    expect(screen.getByText("bKash & Nagad MFS Settlement Ledger")).toBeInTheDocument();
+    expect(screen.getByText("Dhaka F-Commerce Order Ledger")).toBeInTheDocument();
   });
 
   it("renders the composer dispatch seam ready for typing without blocking overlays", () => {
