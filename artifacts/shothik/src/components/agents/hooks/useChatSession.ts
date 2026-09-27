@@ -113,6 +113,28 @@ export function useChatSession(initialConversationId?: string) {
     );
   }, []);
 
+  const forkSession = useCallback((fromMessageId?: string) => {
+    const newConvId = `conv_fork_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    let forkedMessages = [...messages];
+    if (fromMessageId) {
+      const targetIndex = messages.findIndex((m) => m.id === fromMessageId || m._id === fromMessageId);
+      if (targetIndex !== -1) {
+        forkedMessages = messages.slice(0, targetIndex + 1);
+      }
+    }
+    setConversationId(newConvId);
+    setMessages(forkedMessages);
+
+    const firstUser = forkedMessages.find((m) => m.role === "user");
+    saveChatSession({
+      id: newConvId,
+      title: firstUser ? `Branch: ${firstUser.content.slice(0, 40)}` : "Forked Session",
+      preview: forkedMessages[forkedMessages.length - 1]?.content.slice(0, 80) || "",
+    });
+
+    return newConvId;
+  }, [conversationId, messages]);
+
   return {
     conversationId,
     messages,
@@ -122,6 +144,7 @@ export function useChatSession(initialConversationId?: string) {
     updateLastAssistantMessage,
     finalizeLastAssistantMessage,
     updateMessageMetadata,
+    forkSession,
     setMessages,
   };
 }
