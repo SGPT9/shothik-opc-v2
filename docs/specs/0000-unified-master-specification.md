@@ -345,6 +345,9 @@ All routes mounted under `/api/v1` or `/v1` in `artifacts/api-server/src/routes/
 ├── /commerce/collective-buying          (POST) - Sourcing pool lifecycle & CBM volumetric cost sharing
 ├── /tenders/cptu-bid                    (POST) - e-GP bid qualification & BOQ statutory tax withholding
 ├── /academic/plagiarism                 (POST) - Bengali thesis N-gram shingle similarity & BibTeX generator
+├── /kyc/ocr-extract                     (POST) - Bengali NID & Trade License OCR extraction & SHA-256 seal
+├── /logistics/rto-prediction            (POST) - Multi-carrier buyer credibility, RTO risk & fraud blacklist
+├── /inventory/flash-sale                (GET/POST) - 15-min leased reservation locks & panic freeze switch
 ├── /tasks/cas-leased                    (GET/POST) - Distributed CAS leased task worker & heartbeat renewal
 ├── /actions/proposals                   (GET/POST) - Protected Action review state machine & SHA-256 seals
 └── /gatekeeper/evaluate-action          (POST) - Supervised Autonomy policy risk evaluation
@@ -355,8 +358,8 @@ All routes mounted under `/api/v1` or `/v1` in `artifacts/api-server/src/routes/
 ## 7. Quality Assurance, Benchmarking & Certification Matrix
 
 ### 7.1 Automated Test Execution Summary
-- **Backend API Server**: **107 test suites / 610 passed tests** (`pnpm test:ecc` / `vitest run`).
-- **Frontend Twin Modals**: **38 component test suites / 120+ passed tests** (`vitest run src/components/twin/`).
+- **Backend API Server**: **111 test suites / 638 passed tests** (`pnpm test:ecc` / `vitest run`).
+- **Frontend Twin Modals**: **39 component test suites / 125+ passed tests** (`vitest run src/components/twin/`).
 - **TypeScript Typecheck**: **Zero compile errors** across entire monorepo (`tsc -p tsconfig.json --noEmit` and `node run_typecheck.cjs`).
 
 ### 7.2 Pre-Commit & Pre-Push Security Gates

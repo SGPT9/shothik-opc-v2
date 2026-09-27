@@ -94,6 +94,7 @@ import { creatorGuildsRouter } from "./creator-guilds.js";
 import { marketingRouter } from "./marketing.js";
 import { kycOcrRouter } from "./kyc-ocr.js";
 import { rtoFraudRouter } from "./rto-fraud.js";
+import { flashInventoryRouter } from "./flash-inventory.js";
 
 const router: IRouter = Router();
 
@@ -115,6 +116,7 @@ router.use(creatorGuildsRouter);
 router.use(marketingRouter);
 router.use(kycOcrRouter);
 router.use(rtoFraudRouter);
+router.use(flashInventoryRouter);
 
 router.use(taxRouter);
 router.use(telephonyRouter);

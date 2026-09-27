@@ -580,6 +580,13 @@ Unified multi-carrier buyer credibility evaluation (Steadfast, Pathao, RedX), co
 - [x] Test it: `/test steadfast pathao rto fraud blacklist sync engine`
 spec 0077 · code in `artifacts/api-server/src/lib/logistics/rto-fraud-engine.ts`, `artifacts/api-server/src/routes/rto-fraud.ts`, and `artifacts/shothik/src/components/twin/RtoFraudShieldModal.tsx`
 
+### 78. Multi-Channel Real-Time Inventory Matrix & Flash-Sale Reservation Lock Engine · done
+Atomic 15-minute leased reservations with two-phase commit, multi-channel quota allocation across Daraz, WooCommerce, Shopify, Facebook Live, and WhatsApp, race-condition anti-overselling guards, automatic TTL expiration sweep, emergency panic freeze switch, and real-time frontend AG-UI matrix with flash surge simulator.
+- [x] Build it: `/develop multichannel flash sale reservation lock engine`
+- [x] Verify it: `/check verify multichannel flash sale reservation lock engine`
+- [x] Test it: `/test multichannel flash sale reservation lock engine`
+spec 0078 · code in `artifacts/api-server/src/lib/inventory/flash-reservation-engine.ts`, `artifacts/api-server/src/routes/flash-inventory.ts`, and `artifacts/shothik/src/components/twin/FlashSaleInventoryModal.tsx`
+
 ---
 
 ## Deferred Features

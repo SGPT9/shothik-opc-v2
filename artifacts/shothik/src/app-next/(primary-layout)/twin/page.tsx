@@ -82,6 +82,7 @@ import { EarlyLiquidityModal } from "@/components/twin/EarlyLiquidityModal";
 import { MetaCapiModal } from "@/components/twin/MetaCapiModal";
 import { KycOcrModal } from "@/components/twin/KycOcrModal";
 import { RtoFraudShieldModal } from "@/components/twin/RtoFraudShieldModal";
+import { FlashSaleInventoryModal } from "@/components/twin/FlashSaleInventoryModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -420,6 +421,7 @@ export default function TwinPage() {
   const [metaCapiOpen, setMetaCapiOpen] = useState(false);
   const [kycOcrOpen, setKycOcrOpen] = useState(false);
   const [rtoFraudShieldOpen, setRtoFraudShieldOpen] = useState(false);
+  const [flashInventoryOpen, setFlashInventoryOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -496,6 +498,9 @@ export default function TwinPage() {
       } else if (e.altKey && e.key.toLowerCase() === "f") {
         e.preventDefault();
         setRtoFraudShieldOpen((prev) => !prev);
+      } else if (e.altKey && e.key.toLowerCase() === "i") {
+        e.preventDefault();
+        setFlashInventoryOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2300,6 +2305,7 @@ export default function TwinPage() {
         onOpenMetaCapi={() => setMetaCapiOpen(true)}
         onOpenKycOcr={() => setKycOcrOpen(true)}
         onOpenRtoFraudShield={() => setRtoFraudShieldOpen(true)}
+        onOpenFlashInventory={() => setFlashInventoryOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2362,6 +2368,7 @@ export default function TwinPage() {
       <MetaCapiModal isOpen={metaCapiOpen} onClose={() => setMetaCapiOpen(false)} />
       <KycOcrModal isOpen={kycOcrOpen} onClose={() => setKycOcrOpen(false)} />
       <RtoFraudShieldModal isOpen={rtoFraudShieldOpen} onClose={() => setRtoFraudShieldOpen(false)} />
+      <FlashSaleInventoryModal isOpen={flashInventoryOpen} onClose={() => setFlashInventoryOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
