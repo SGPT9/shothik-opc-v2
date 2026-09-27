@@ -82,23 +82,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
       let resolved = false;
 
-      // #region debug-point A:hydrate-start
-      fetch("http://127.0.0.1:7777/event", {
-        method: "POST",
-        body: JSON.stringify({
-          sessionId: "chat-auth-session",
-          runId: "pre-fix",
-          hypothesisId: "A",
-          location: "providers/AuthProvider.tsx:hydrateAuth:start",
-          msg: "[DEBUG] Auth hydration started",
-          data: {
-            hasLegacyToken: Boolean(localStorage.getItem("jwt_token")),
-            path: window.location.pathname,
-          },
-          ts: Date.now(),
-        }),
-      }).catch(() => undefined);
-      // #endregion
+
 
       try {
         const sessionResponse = await withTimeout(
