@@ -67,7 +67,10 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 55 | Autonomous AI B2B Tender & Government e-GP Bid Generator & CPTU Compliance Engine | Slice 55 | done |
 | 56 | OpenMuse Agentic Compute, Persistent Browser Takeover & CAS Leased Task Orchestration Engine | Slice 56 | done |
 | 57 | Autonomous HS Code Classification, Customs Tariff & Cross-Border Commercial Invoice Engine | Slice 57 | done |
-| 58 | Autonomous Multi-Channel Inventory Matrix, Stock-Out Prediction & Micro-Warehousing Engine | Slice 58 | queued |
+| 58 | Autonomous Multi-Channel Inventory Matrix, Stock-Out Prediction & Micro-Warehousing Engine | Slice 58 | done |
+| 73 | Autonomous Meta & TikTok Conversion API (CAPI) with Offline COD Attribution | Slice 73 | done |
+| 74 | RedX & Paperfly Live Courier API Connectors with Multi-Carrier Fallback | Slice 74 | done |
+| 75 | Interactive Chat Streaming Component System with Session Forking | Slice 75 | done |
 
 ---
 
@@ -539,6 +542,27 @@ Automated `.bib` entry generation and Overleaf-ready LaTeX `\cite{}` snippets fo
 - [x] Verify it: `/check verify academic bibtex overleaf latex citation generator`
 - [x] Test it: `/test academic bibtex overleaf latex citation generator`
 spec 0072 · code in `artifacts/api-server/src/lib/academic/bengali-plagiarism-engine.ts` and `artifacts/api-server/src/routes/__tests__/plagiarism.test.ts`
+
+### 73. Autonomous Meta & TikTok Conversion API (CAPI) with Offline COD Attribution · done
+Server-side Conversion API integration with E.164 normalization, SHA-256 PII hashing, Event Match Quality scoring, and postback sync for delivered COD orders.
+- [x] Build it: `/develop meta tiktok capi offline attribution`
+- [x] Verify it: `/check verify meta tiktok capi offline attribution`
+- [x] Test it: `/test meta tiktok capi offline attribution`
+spec 0073 · code in `artifacts/api-server/src/lib/marketing/meta-capi-engine.ts`, `artifacts/api-server/src/routes/marketing.ts`, and `artifacts/shothik/src/components/twin/MetaCapiModal.tsx`
+
+### 74. RedX & Paperfly Live Courier API Connectors with Multi-Carrier Fallback · done
+Nationwide courier coverage through RedX and Paperfly API connectors with automatic failover fallback in the courier arbitrage engine.
+- [x] Build it: `/develop redx paperfly live courier connectors`
+- [x] Verify it: `/check verify redx paperfly live courier connectors`
+- [x] Test it: `/test redx paperfly live courier connectors`
+spec 0074 · code in `artifacts/api-server/src/lib/logistics/redx-client.ts`, `artifacts/api-server/src/lib/logistics/paperfly-client.ts`, and `artifacts/api-server/src/lib/logistics/courier-arbitrage-engine.ts`
+
+### 75. Interactive Chat Streaming Component System with Session Forking · done
+Live component block streaming and conversation branch forking (`forkSession`) in the frontier workspace chat shell.
+- [x] Build it: `/develop interactive chat streaming session forking`
+- [x] Verify it: `/check verify interactive chat streaming session forking`
+- [x] Test it: `/test interactive chat streaming session forking`
+spec 0075 · code in `artifacts/shothik/src/components/agents/hooks/useChatSession.ts` and `artifacts/shothik/src/components/agents/ChatAgentPage.tsx`
 
 ---
 
