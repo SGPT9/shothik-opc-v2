@@ -74,6 +74,11 @@ import { DutyDrawbackModal } from "@/components/twin/DutyDrawbackModal";
 import { HalalGovernanceModal } from "@/components/twin/HalalGovernanceModal";
 import { CollectiveBuyingModal } from "@/components/twin/CollectiveBuyingModal";
 import { TenderBidModal } from "@/components/twin/TenderBidModal";
+import { AgentComputerModal } from "@/components/twin/AgentComputerModal";
+import { CustomsTariffModal } from "@/components/twin/CustomsTariffModal";
+import { InventoryMatrixModal } from "@/components/twin/InventoryMatrixModal";
+import { CodIvrModal } from "@/components/twin/CodIvrModal";
+import { EarlyLiquidityModal } from "@/components/twin/EarlyLiquidityModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -404,6 +409,11 @@ export default function TwinPage() {
   const [halalGovernanceOpen, setHalalGovernanceOpen] = useState(false);
   const [collectiveBuyingOpen, setCollectiveBuyingOpen] = useState(false);
   const [tenderBidOpen, setTenderBidOpen] = useState(false);
+  const [agentComputerOpen, setAgentComputerOpen] = useState(false);
+  const [customsTariffOpen, setCustomsTariffOpen] = useState(false);
+  const [inventoryMatrixOpen, setInventoryMatrixOpen] = useState(false);
+  const [codIvrOpen, setCodIvrOpen] = useState(false);
+  const [earlyLiquidityOpen, setEarlyLiquidityOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -2273,6 +2283,11 @@ export default function TwinPage() {
         onOpenHalalGovernance={() => setHalalGovernanceOpen(true)}
         onOpenCollectiveBuying={() => setCollectiveBuyingOpen(true)}
         onOpenTenderBid={() => setTenderBidOpen(true)}
+        onOpenAgentComputer={() => setAgentComputerOpen(true)}
+        onOpenCustomsTariff={() => setCustomsTariffOpen(true)}
+        onOpenInventoryMatrix={() => setInventoryMatrixOpen(true)}
+        onOpenCodIvr={() => setCodIvrOpen(true)}
+        onOpenEarlyLiquidity={() => setEarlyLiquidityOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2327,6 +2342,11 @@ export default function TwinPage() {
       <HalalGovernanceModal isOpen={halalGovernanceOpen} onClose={() => setHalalGovernanceOpen(false)} />
       <CollectiveBuyingModal isOpen={collectiveBuyingOpen} onClose={() => setCollectiveBuyingOpen(false)} />
       <TenderBidModal isOpen={tenderBidOpen} onClose={() => setTenderBidOpen(false)} />
+      <AgentComputerModal isOpen={agentComputerOpen} onClose={() => setAgentComputerOpen(false)} />
+      <CustomsTariffModal isOpen={customsTariffOpen} onClose={() => setCustomsTariffOpen(false)} />
+      <InventoryMatrixModal isOpen={inventoryMatrixOpen} onClose={() => setInventoryMatrixOpen(false)} />
+      <CodIvrModal isOpen={codIvrOpen} onClose={() => setCodIvrOpen(false)} />
+      <EarlyLiquidityModal isOpen={earlyLiquidityOpen} onClose={() => setEarlyLiquidityOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

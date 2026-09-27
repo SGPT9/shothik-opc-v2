@@ -16,7 +16,6 @@ import {
   X,
   Play,
   Pause,
-  Keypad,
   Hash
 } from "lucide-react";
 
