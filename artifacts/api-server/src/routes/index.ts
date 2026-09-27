@@ -91,6 +91,7 @@ import { mushak66Router } from "./mushak-66.js";
 import { plagiarismRouter } from "./plagiarism.js";
 import { commodityLCRouter } from "./commodity-lc.js";
 import { creatorGuildsRouter } from "./creator-guilds.js";
+import { marketingRouter } from "./marketing.js";
 
 const router: IRouter = Router();
 
@@ -109,6 +110,7 @@ router.use(mushak66Router);
 router.use(plagiarismRouter);
 router.use(commodityLCRouter);
 router.use(creatorGuildsRouter);
+router.use(marketingRouter);
 
 router.use(taxRouter);
 router.use(telephonyRouter);

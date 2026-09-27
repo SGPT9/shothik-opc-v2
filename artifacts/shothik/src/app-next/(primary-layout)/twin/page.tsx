@@ -79,6 +79,7 @@ import { CustomsTariffModal } from "@/components/twin/CustomsTariffModal";
 import { InventoryMatrixModal } from "@/components/twin/InventoryMatrixModal";
 import { CodIvrModal } from "@/components/twin/CodIvrModal";
 import { EarlyLiquidityModal } from "@/components/twin/EarlyLiquidityModal";
+import { MetaCapiModal } from "@/components/twin/MetaCapiModal";
 import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
@@ -414,6 +415,7 @@ export default function TwinPage() {
   const [inventoryMatrixOpen, setInventoryMatrixOpen] = useState(false);
   const [codIvrOpen, setCodIvrOpen] = useState(false);
   const [earlyLiquidityOpen, setEarlyLiquidityOpen] = useState(false);
+  const [metaCapiOpen, setMetaCapiOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -2288,6 +2290,7 @@ export default function TwinPage() {
         onOpenInventoryMatrix={() => setInventoryMatrixOpen(true)}
         onOpenCodIvr={() => setCodIvrOpen(true)}
         onOpenEarlyLiquidity={() => setEarlyLiquidityOpen(true)}
+        onOpenMetaCapi={() => setMetaCapiOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2347,6 +2350,7 @@ export default function TwinPage() {
       <InventoryMatrixModal isOpen={inventoryMatrixOpen} onClose={() => setInventoryMatrixOpen(false)} />
       <CodIvrModal isOpen={codIvrOpen} onClose={() => setCodIvrOpen(false)} />
       <EarlyLiquidityModal isOpen={earlyLiquidityOpen} onClose={() => setEarlyLiquidityOpen(false)} />
+      <MetaCapiModal isOpen={metaCapiOpen} onClose={() => setMetaCapiOpen(false)} />
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

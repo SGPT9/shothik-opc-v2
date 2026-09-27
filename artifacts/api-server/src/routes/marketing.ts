@@ -1,60 +1,119 @@
-import { Router, type Request, type Response } from "express";
+import { Router, type IRouter, type Request, type Response } from "express";
+import { metaCapiEngine } from "../lib/marketing/meta-capi-engine.js";
 
-const router = Router();
-
-/**
- * GET /api/v1/marketing/ambassador/leaderboard
- * Returns inter-campus referral leaderboard
- */
-router.get("/v1/marketing/ambassador/leaderboard", (_req: Request, res: Response) => {
-  const leaderboard = [
-    {
-      id: "amb_du_01",
-      studentName: "আরিফুর রহমান",
-      universityName: "Dhaka University (DU)",
-      referralCode: "SHOTHIK_DU_ARIF",
-      totalReferralsCount: 42,
-      totalEarnedCommissionBdt: 6300,
-      unpaidCommissionBdt: 1200,
-    },
-    {
-      id: "amb_buet_02",
-      studentName: "নাসরিন সুলতানা",
-      universityName: "BUET",
-      referralCode: "SHOTHIK_BUET_NASRIN",
-      totalReferralsCount: 68,
-      totalEarnedCommissionBdt: 10200,
-      unpaidCommissionBdt: 2400,
-    },
-  ];
-
-  return res.status(200).json({
-    success: true,
-    leaderboard,
-  });
-});
+export const marketingRouter: IRouter = Router();
 
 /**
- * POST /api/v1/marketing/ambassador/redeem
- * Process referral code redemption and award 15% bKash commission
+ * POST /api/marketing/capi/event
+ * Dispatches a realtime or client-side conversion event to Meta & TikTok CAPI
  */
-router.post("/v1/marketing/ambassador/redeem", (req: Request, res: Response) => {
-  const { referralCode, purchaseBdt = 1000 } = req.body;
+marketingRouter.post("/marketing/capi/event", async (req: Request, res: Response) => {
+  try {
+    const { eventName, eventId, userData, customData, channel } = req.body;
 
-  if (!referralCode) {
-    return res.status(400).json({ success: false, error: "referralCode is required" });
+    if (!eventName || !customData) {
+      res.status(400).json({
+        success: false,
+        error: "Missing required eventName or customData payload",
+      });
+      return;
+    }
+
+    const deterministicEventId = eventId || `ev_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+
+    const metaRes = await metaCapiEngine.dispatchMetaEvent({
+      eventName,
+      eventTime: Math.floor(Date.now() / 1000),
+      eventId: deterministicEventId,
+      actionSource: "website",
+      userData: userData || {},
+      customData,
+    });
+
+    res.status(200).json({
+      success: true,
+      metaEventId: metaRes.eventId,
+      emq: metaRes.emq,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to dispatch CAPI event",
+    });
   }
-
-  const ambassadorCommissionBdt = Math.round(purchaseBdt * 0.15);
-  const buyerBonusCredits = 500;
-
-  return res.status(200).json({
-    success: true,
-    referralCode,
-    buyerBonusCredits,
-    ambassadorCommissionBdt,
-    timestamp: new Date().toISOString(),
-  });
 });
 
-export default router;
+/**
+ * POST /api/marketing/capi/offline-attribution
+ * Reconciles an offline COD courier delivery or return with original ad campaign
+ */
+marketingRouter.post("/marketing/capi/offline-attribution", async (req: Request, res: Response) => {
+  try {
+    const {
+      orderId,
+      deliveryStatus,
+      courier,
+      amountBdt,
+      customerPhone,
+      customerEmail,
+      fbclid,
+      ttclid,
+    } = req.body;
+
+    if (!orderId || !deliveryStatus || !customerPhone || amountBdt === undefined) {
+      res.status(400).json({
+        success: false,
+        error: "Missing required orderId, deliveryStatus, customerPhone, or amountBdt",
+      });
+      return;
+    }
+
+    const clientIp = (req.headers["x-forwarded-for"] || req.socket.remoteAddress) as string;
+    const userAgent = req.headers["user-agent"] as string;
+
+    const record = await metaCapiEngine.reconcileOfflineCodDelivery({
+      orderId,
+      deliveryStatus,
+      courier: courier || "Steadfast",
+      amountBdt: Number(amountBdt),
+      customerPhone,
+      customerEmail,
+      fbclid,
+      ttclid,
+      clientIp,
+      userAgent,
+    });
+
+    res.status(201).json({
+      success: true,
+      attribution: record,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to process offline attribution",
+    });
+  }
+});
+
+/**
+ * GET /api/marketing/capi/pixel-health
+ * Retrieves Event Match Quality, deduplication health, and ROAS impact ledger
+ */
+marketingRouter.get("/marketing/capi/pixel-health", (_req: Request, res: Response) => {
+  try {
+    const health = metaCapiEngine.getPixelHealthMetrics();
+    res.status(200).json({
+      success: true,
+      data: health,
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: error.message || "Failed to retrieve pixel health metrics",
+    });
+  }
+});
+
+export default marketingRouter;
