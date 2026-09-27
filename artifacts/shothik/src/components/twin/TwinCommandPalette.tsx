@@ -45,6 +45,7 @@ import {
   Award,
   Package,
   Landmark,
+  Layers,
 } from "lucide-react";
 import {
   CommandDialog,
@@ -135,6 +136,12 @@ export interface TwinCommandPaletteProps {
   onOpenZkSnarkProver?: () => void;
   onOpenWasmVectorIndex?: () => void;
   onOpenDeveloperTwin?: () => void;
+  // Category 5: Agentic Compute & Slices 56-60
+  onOpenAgentComputer?: () => void;
+  onOpenCustomsTariff?: () => void;
+  onOpenInventoryMatrix?: () => void;
+  onOpenCodIvr?: () => void;
+  onOpenEarlyLiquidity?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -210,6 +217,11 @@ export function TwinCommandPalette({
   onOpenHalalGovernance,
   onOpenCollectiveBuying,
   onOpenTenderBid,
+  onOpenAgentComputer,
+  onOpenCustomsTariff,
+  onOpenInventoryMatrix,
+  onOpenCodIvr,
+  onOpenEarlyLiquidity,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -1464,6 +1476,102 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘Y</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+
+        <CommandSeparator className="my-1 border-zinc-200 dark:border-zinc-800" />
+
+        {/* ── Category 5: Agentic Compute & Autonomous Operations (Slices 56-60) ── */}
+        <CommandGroup
+          heading={
+            <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-purple-500 dark:text-purple-400 font-bold py-1">
+              <span>🤖 5. Agentic Compute & Autonomous Ops</span>
+            </div>
+          }
+        >
+          <CommandItem
+            value="agent computer openmuse browser takeover cas leased tasks action proposals pdf form filling asycuda form exp"
+            onSelect={() => handleSelect(onOpenAgentComputer)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                <Monitor className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">OpenMuse Agentic Compute & Browser Takeover</span>
+                <span className="text-[11px] text-zinc-500">CAS leased task worker, human approval gates & PDF form filler</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘U</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="customs tariff hs code classifier tti calculator commercial invoice cipl chittagong asycuda bangladesh customs"
+            onSelect={() => handleSelect(onOpenCustomsTariff)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                <Ship className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">HS Code Tariff & Commercial Invoice Engine</span>
+                <span className="text-[11px] text-zinc-500">8-digit HS Code classifier, Total Tax Incidence (TTI) & CIPL generator</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘N</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="multi-channel inventory matrix dark store rebalancer stock out prediction safety stock daraz facebook shop pos"
+            onSelect={() => handleSelect(onOpenInventoryMatrix)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Layers className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Multi-Channel Inventory Matrix & Rebalancer</span>
+                <span className="text-[11px] text-zinc-500">Cross-channel buffer allocation, stock-out radar & dark store rebalancing</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘I</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="banglish voice ivr cod verification courier return minimizer steadfast pathao twilio fraud prevention otp"
+            onSelect={() => handleSelect(onOpenCodIvr)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                <PhoneCall className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Banglish Voice IVR & COD Return Minimizer</span>
+                <span className="text-[11px] text-zinc-500">Autonomous outbound calling, address verification & fraud deterrence</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘V</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="b2b micro factoring early liquidity radar invoice discounting bkash instant advance rfq supplier payout"
+            onSelect={() => handleSelect(onOpenEarlyLiquidity)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Coins className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">B2B Micro-Factoring & Early Liquidity Radar</span>
+                <span className="text-[11px] text-zinc-500">Automated invoice discount scoring, 80% advance disbursement & MFS settlement</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘L</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
