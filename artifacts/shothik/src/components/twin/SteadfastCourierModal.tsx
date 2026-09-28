@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { saveOfflineTask } from "@/lib/offline/offline-storage";
+import { formatBanglaCurrency } from "@/utils/currencyUtils";
 
 export interface SteadfastConsignment {
   id: string;
@@ -203,7 +204,7 @@ export function SteadfastCourierModal({
           <div className="p-3 rounded-xl border border-slate-800 bg-slate-900/40">
             <span className="text-[10px] text-slate-400 uppercase">Pending COD Payout</span>
             <p className="text-base font-bold text-cyan-400 mt-0.5">
-              ৳{consignments.reduce((acc, c) => acc + c.codAmountBdt, 0).toLocaleString()} BDT
+              {formatBanglaCurrency(consignments.reduce((acc, c) => acc + c.codAmountBdt, 0), { locale: "bn" })}
             </p>
           </div>
         </div>
@@ -275,9 +276,14 @@ export function SteadfastCourierModal({
 
         {/* Modal: New Parcel Booking */}
         {showNewParcelModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="new-parcel-title"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          >
             <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-[#0b101b] p-6 space-y-4 shadow-2xl font-mono">
-              <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
+              <h3 id="new-parcel-title" className="text-sm font-bold text-slate-100 flex items-center gap-2">
                 <Truck className="h-4 w-4 text-orange-400" /> Book Steadfast COD Parcel
               </h3>
               <div className="space-y-3 text-xs">
@@ -288,16 +294,20 @@ export function SteadfastCourierModal({
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Tanvir Hossain"
+                    aria-label="Recipient Name"
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-100"
                   />
                 </div>
                 <div>
                   <label className="block text-slate-400 text-[10px] uppercase mb-1">Phone Number (11 digits)</label>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    placeholder="e.g. 01712345678"
+                    placeholder="01XXXXXXXXX"
+                    aria-label="Recipient Phone Number"
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-100"
                   />
                 </div>
@@ -308,6 +318,7 @@ export function SteadfastCourierModal({
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="House, Road, Area, Thana..."
+                    aria-label="Delivery Address"
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-100"
                   />
                 </div>
@@ -342,14 +353,15 @@ export function SteadfastCourierModal({
                   size="sm"
                   variant="outline"
                   onClick={() => setShowNewParcelModal(false)}
-                  className="text-xs"
+                  className="text-xs min-h-[38px] cursor-pointer"
                 >
                   Cancel
                 </Button>
                 <Button
                   size="sm"
+                  disabled={!name || !phone || !address}
                   onClick={handleCreateParcel}
-                  className="text-xs bg-orange-600 hover:bg-orange-500 text-slate-950 font-bold"
+                  className="text-xs bg-orange-600 hover:bg-orange-500 text-slate-950 font-bold min-h-[38px] cursor-pointer"
                 >
                   Confirm Booking
                 </Button>
@@ -360,11 +372,16 @@ export function SteadfastCourierModal({
 
         {/* Modal: Printable Shipping Label */}
         {activeLabel && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="active-label-title"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+          >
             <div className="w-full max-w-sm rounded-2xl border-2 border-slate-300 bg-white text-slate-950 p-5 shadow-2xl font-mono space-y-4">
               <div className="border-b-2 border-dashed border-slate-300 pb-3 flex items-center justify-between">
                 <div>
-                  <h4 className="text-sm font-black tracking-tight">STEADFAST COURIER</h4>
+                  <h4 id="active-label-title" className="text-sm font-black tracking-tight">STEADFAST COURIER</h4>
                   <p className="text-[10px] text-slate-600">Nationwide Express Delivery</p>
                 </div>
                 <Badge className="bg-slate-950 text-white text-[10px] font-mono">
@@ -401,7 +418,7 @@ export function SteadfastCourierModal({
                   size="sm"
                   variant="outline"
                   onClick={() => setActiveLabel(null)}
-                  className="flex-1 text-xs border-slate-400 text-slate-700"
+                  className="flex-1 text-xs border-slate-400 text-slate-700 min-h-[38px] cursor-pointer"
                 >
                   Close
                 </Button>
@@ -410,7 +427,7 @@ export function SteadfastCourierModal({
                   onClick={() => {
                     if (typeof window !== "undefined") window.print();
                   }}
-                  className="flex-1 text-xs bg-slate-950 hover:bg-slate-800 text-white gap-1"
+                  className="flex-1 text-xs bg-slate-950 hover:bg-slate-800 text-white gap-1 min-h-[38px] cursor-pointer"
                 >
                   <Printer className="h-3.5 w-3.5" /> Print
                 </Button>

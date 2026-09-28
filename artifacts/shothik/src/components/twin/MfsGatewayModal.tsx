@@ -322,7 +322,10 @@ export function MfsGatewayModal({
                   Merchant Wallet MSISDN
                 </label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  aria-label="Merchant Wallet MSISDN"
                   value={merchantNumber}
                   onChange={(e) => setMerchantNumber(e.target.value)}
                   className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-pink-500"
@@ -403,7 +406,10 @@ export function MfsGatewayModal({
                           Your bKash Account Number
                         </label>
                         <input
-                          type="text"
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          aria-label="bKash Account Number"
                           value={simPhone}
                           onChange={(e) => setSimPhone(e.target.value)}
                           className="w-full rounded-lg border border-slate-300 p-2 text-sm font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-pink-500"
@@ -423,6 +429,10 @@ export function MfsGatewayModal({
                         </label>
                         <input
                           type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          autoComplete="one-time-code"
+                          aria-label="Verification Code (OTP)"
                           value={simOtp}
                           onChange={(e) => setSimOtp(e.target.value)}
                           className="w-full rounded-lg border border-slate-300 p-2 text-sm font-mono font-bold text-center tracking-widest text-slate-900 focus:outline-none focus:ring-2 focus:ring-pink-500"
@@ -442,6 +452,9 @@ export function MfsGatewayModal({
                         </label>
                         <input
                           type="password"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          aria-label="bKash 5-Digit PIN"
                           value={simPin}
                           onChange={(e) => setSimPin(e.target.value)}
                           className="w-full rounded-lg border border-slate-300 p-2 text-sm font-mono font-bold text-center tracking-widest text-slate-900 focus:outline-none focus:ring-2 focus:ring-pink-500"
@@ -577,6 +590,8 @@ export function MfsGatewayModal({
                     type="text"
                     required
                     placeholder="e.g. BK88291029X"
+                    autoCapitalize="characters"
+                    aria-label="10-Digit SMS Transaction ID (TrxID)"
                     value={manualTrxId}
                     onChange={(e) => setManualTrxId(e.target.value.toUpperCase())}
                     className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-100 uppercase tracking-widest focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-pink-500"
@@ -589,9 +604,12 @@ export function MfsGatewayModal({
                     Sender Mobile Number
                   </label>
                   <input
-                    type="text"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
                     required
                     placeholder="017XXXXXXXX"
+                    aria-label="Sender Mobile Number"
                     value={manualPhone}
                     onChange={(e) => setManualPhone(e.target.value)}
                     className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3 py-2 text-slate-100 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-pink-500"
@@ -631,7 +649,7 @@ export function MfsGatewayModal({
                 <Button
                   type="submit"
                   disabled={manualIsVerifying}
-                  className="rounded-xl px-5 bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs gap-1.5 cursor-pointer"
+                  className="rounded-xl px-5 bg-pink-600 hover:bg-pink-500 text-white font-bold text-xs gap-1.5 cursor-pointer min-h-[44px]"
                   data-testid="button-verify-manual-trx"
                 >
                   {manualIsVerifying ? (

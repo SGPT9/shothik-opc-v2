@@ -694,6 +694,7 @@ export function NilkhetPodModal({
                         <Input
                           value={recipientName}
                           onChange={(e) => setRecipientName(e.target.value)}
+                          aria-label="Recipient Name"
                           className="bg-zinc-950 border-zinc-800 text-xs"
                         />
                       </div>
@@ -701,6 +702,11 @@ export function NilkhetPodModal({
                       <div>
                         <label className="text-[11px] text-zinc-400 block mb-1">Contact Phone</label>
                         <Input
+                          type="tel"
+                          inputMode="tel"
+                          autoComplete="tel"
+                          placeholder="01XXXXXXXXX"
+                          aria-label="Contact Phone"
                           value={recipientPhone}
                           onChange={(e) => setRecipientPhone(e.target.value)}
                           className="bg-zinc-950 border-zinc-800 text-xs"
@@ -712,6 +718,7 @@ export function NilkhetPodModal({
                         <Input
                           value={deliveryAddress}
                           onChange={(e) => setDeliveryAddress(e.target.value)}
+                          aria-label="Delivery Address"
                           className="bg-zinc-950 border-zinc-800 text-xs"
                         />
                       </div>
@@ -719,7 +726,7 @@ export function NilkhetPodModal({
                       <Button
                         onClick={handleDispatch}
                         disabled={isDispatching}
-                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-emerald-500/10 transition mt-2"
+                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs py-2.5 rounded-lg shadow-lg shadow-emerald-500/10 transition mt-2 min-h-[44px] cursor-pointer"
                       >
                         {isDispatching ? "Dispatching to Heidelberg Press..." : "1-Tap Dispatch Order to Press Hub"}
                       </Button>
