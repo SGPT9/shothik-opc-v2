@@ -14,6 +14,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { formatBanglaCurrency } from "@/utils/currencyUtils";
 
 export interface CourierTrackingModalProps {
   isOpen: boolean;
@@ -117,13 +118,14 @@ export function CourierTrackingModal({
                 value={trackingCode}
                 onChange={(e) => setTrackingCode(e.target.value)}
                 placeholder="Enter Consignment or Tracking ID (e.g. BD_ST_755448)..."
+                aria-label="Enter Consignment or Tracking ID"
                 className="w-full pl-9 pr-3 py-2 text-xs bg-zinc-900 rounded-xl border border-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-400 font-mono"
               />
             </div>
             <Button
               type="submit"
               disabled={loading || !trackingCode.trim()}
-              className="bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs"
+              className="bg-amber-500 hover:bg-amber-400 text-black font-bold text-xs min-h-[38px] px-4 cursor-pointer"
             >
               {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Track"}
             </Button>
@@ -155,7 +157,9 @@ export function CourierTrackingModal({
                 </h4>
                 <div className="flex items-center justify-between text-xs text-zinc-300 pt-1 border-t border-zinc-800/80">
                   <span>প্রাপক: <strong>{parcelData.recipientName || "গ্রাহক"}</strong> ({parcelData.city || "Dhaka"})</span>
-                  <span className="font-mono text-emerald-400 font-bold">COD: ৳{parcelData.codAmountBdt || 0} BDT</span>
+                  <span className="font-mono text-emerald-400 font-bold">
+                    COD: {formatBanglaCurrency(parcelData.codAmountBdt || 0, { locale: "bn" })}
+                  </span>
                 </div>
               </div>
 
@@ -204,7 +208,7 @@ export function CourierTrackingModal({
             variant="outline"
             size="sm"
             onClick={onClose}
-            className="text-xs border-zinc-700 text-zinc-300 hover:text-white"
+            className="text-xs border-zinc-700 text-zinc-300 hover:text-white min-h-[36px] cursor-pointer"
           >
             Close Tracker
           </Button>
