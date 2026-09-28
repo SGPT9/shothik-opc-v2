@@ -1461,7 +1461,8 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 <button
                   type="button"
                   onClick={() => setIsMobileTabDrawerOpen(false)}
-                  className="p-1 rounded-lg bg-muted text-muted-foreground hover:text-foreground cursor-pointer"
+                  className="p-1.5 rounded-lg bg-muted text-muted-foreground hover:text-foreground cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
+                  aria-label="Close canvas picker"
                 >
                   <X className="h-4 w-4" />
                 </button>

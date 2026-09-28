@@ -36,6 +36,7 @@ export function CitationBadge({
             else onClick?.(cleanRef);
           }}
           title={title || `View Source [${num}]`}
+          aria-label={`Citation ${num}`}
           className={cn(
             "inline-flex items-center justify-center h-4 min-w-4 px-1.5 mx-0.5 text-[10px] font-mono font-bold rounded-full",
             "bg-cyan-500/15 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-500 hover:text-white transition-all duration-150",

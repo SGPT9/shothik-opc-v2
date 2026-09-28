@@ -51,4 +51,29 @@ Emerging market logistics in Bangladesh showcase accelerated cross-border trade 
     fireEvent.click(researchLens);
     expect(researchLens).toBeInTheDocument();
   });
+
+  it("renders accessible citation link with aria-label", () => {
+    render(<MarkdownMessage content="According to official statistics [1], inflation slowed down." />);
+    const citationBtn = screen.getByRole("button", { name: "Citation 1" });
+    expect(citationBtn).toBeInTheDocument();
+    expect(citationBtn).toHaveAttribute("title", "View Source [1]");
+  });
+
+  it("renders code block toolbar with language indicator and copy button", () => {
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: vi.fn().mockImplementation(() => Promise.resolve()),
+      },
+    });
+
+    const codeSnippet = "```python\nprint('Shothik AI')\n```";
+    render(<MarkdownMessage content={codeSnippet} />);
+
+    expect(screen.getByText("python")).toBeInTheDocument();
+    const copyBtn = screen.getByTitle("Copy code to clipboard");
+    expect(copyBtn).toBeInTheDocument();
+
+    fireEvent.click(copyBtn);
+    expect(navigator.clipboard.writeText).toHaveBeenCalledWith("print('Shothik AI')");
+  });
 });

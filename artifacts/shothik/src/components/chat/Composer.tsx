@@ -798,7 +798,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   disabled={disabled || activeStreaming}
                   aria-label="Add attachment or open workspace"
                   title="Attach file or open workspace (+)"
-                  className="flex items-center justify-center h-8 w-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white transition cursor-pointer"
+                  className="flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white transition cursor-pointer"
                 >
                   <Plus className={cn("h-4 w-4 transition-transform duration-200", attachMenuOpen && "rotate-45")} />
                 </button>
@@ -1035,7 +1035,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 <Button
                   type="button"
                   size="icon"
-                  className="h-8 w-8 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-150 cursor-pointer shadow-2xs font-medium"
+                  className="h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-150 cursor-pointer shadow-2xs font-medium"
                   onClick={handleTextSubmit}
                   disabled={disabled}
                   aria-label="Send message"
@@ -1052,7 +1052,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   disabled={disabled}
                   aria-label="Start Voice Mode"
                   title="Start Realtime Conversational Voice Mode"
-                  className="flex items-center justify-center h-8 w-8 rounded-xl bg-muted/60 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer"
+                  className="flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-muted/60 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer"
                 >
                   <Phone className="h-3.5 w-3.5 text-muted-foreground" />
                 </button>
