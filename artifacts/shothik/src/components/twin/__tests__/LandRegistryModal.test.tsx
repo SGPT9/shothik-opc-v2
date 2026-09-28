@@ -35,9 +35,9 @@ describe("Frontend AG-UI Component: LandRegistryModal (Slice 79)", () => {
     render(<LandRegistryModal isOpen={true} onClose={() => {}} />);
 
     expect(
-      screen.getByText(/Bengali Land Record & Title Verification Studio/i)
+      screen.getByText(/(জমি রেকর্ড ও বায়া দলিল যাচাইকরণ স্টুডিও|Bengali Land Record & Title Verification Studio)/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/খতিয়ান ও দলিল যাচাই/i)).toBeInTheDocument();
+    expect(screen.getByText(/খতিয়ান ও দলিল/i)).toBeInTheDocument();
     expect(screen.getByText(/পরিমাপ রূপান্তর \(Area Units\)/i)).toBeInTheDocument();
     expect(
       screen.getByText(/স্ট্যাম্প ও রেজিস্ট্রেশন ফি \(Stamp & Fees\)/i)
@@ -57,6 +57,31 @@ describe("Frontend AG-UI Component: LandRegistryModal (Slice 79)", () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it("toggles between Bengali and English language modes", () => {
+    render(<LandRegistryModal isOpen={true} onClose={() => {}} />);
+
+    // Initially in Bengali mode
+    expect(
+      screen.getByText(/জমি রেকর্ড ও বায়া দলিল যাচাইকরণ স্টুডিও/i)
+    ).toBeInTheDocument();
+
+    // Click EN button
+    const enBtn = screen.getByRole("button", { name: "EN" });
+    fireEvent.click(enBtn);
+
+    expect(
+      screen.getByText(/Bengali Land Record & Title Verification Studio/i)
+    ).toBeInTheDocument();
+
+    // Click বাং button
+    const bnBtn = screen.getByRole("button", { name: "বাং" });
+    fireEvent.click(bnBtn);
+
+    expect(
+      screen.getByText(/জমি রেকর্ড ও বায়া দলিল যাচাইকরণ স্টুডিও/i)
+    ).toBeInTheDocument();
+  });
+
   it("switches tabs to Stamp & Fees Calculator and calculates fees", () => {
     render(<LandRegistryModal isOpen={true} onClose={() => {}} />);
 
@@ -67,10 +92,10 @@ describe("Frontend AG-UI Component: LandRegistryModal (Slice 79)", () => {
       screen.getByText(/Statutory Deed Registration & Stamp Duty Calculator/i)
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/Total Government Fees \(মোট সরকারি খরচ\)/i)
+      screen.getByText(/(Total Government Fees|মোট সরকারি খরচ)/i)
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /Calculate Statutory Fees/i })
+      screen.getByRole("button", { name: /(সরকারি ফি হিসাব করুন|Calculate Statutory Fees)/i })
     ).toBeInTheDocument();
   });
 
@@ -108,8 +133,16 @@ describe("Frontend AG-UI Component: LandRegistryModal (Slice 79)", () => {
     const onCloseMock = vi.fn();
     render(<LandRegistryModal isOpen={true} onClose={onCloseMock} />);
 
-    const closeBtn = screen.getByRole("button", { name: /Close/i });
+    const closeBtn = screen.getByLabelText("Close");
     fireEvent.click(closeBtn);
+    expect(onCloseMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("calls onClose when Escape key is pressed", () => {
+    const onCloseMock = vi.fn();
+    render(<LandRegistryModal isOpen={true} onClose={onCloseMock} />);
+
+    fireEvent.keyDown(window, { key: "Escape" });
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
 });

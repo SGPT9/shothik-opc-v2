@@ -16,7 +16,14 @@ import {
   Scale,
   Sparkles,
   ExternalLink,
+  Languages,
 } from "lucide-react";
+import {
+  formatBanglaCurrency,
+  formatSouthAsianNumber,
+  getLakhCroreDescription,
+} from "@/utils/currencyUtils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface LandRegistryModalProps {
   isOpen: boolean;
@@ -39,6 +46,7 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
   const [activeTab, setActiveTab] = useState<
     "converter" | "calculator" | "chain_auditor" | "mutation_screener"
   >("converter");
+  const [locale, setLocale] = useState<"bn" | "en">("bn");
 
   // --- Tab 1: Unit Converter State ---
   const [convertValue, setConvertValue] = useState<number>(5);
@@ -168,6 +176,8 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
 
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+
+  useModalA11y({ isOpen, onClose });
 
   if (!isOpen) return null;
 
@@ -331,42 +341,80 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
       role="dialog"
       aria-modal="true"
       aria-labelledby="land-registry-title"
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-sm p-0 sm:p-4 animate-in fade-in"
     >
-      <div className="bg-[#0d1117] border border-gray-800 rounded-xl w-full max-w-5xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+      <div className="bg-[#0d1117] border-t sm:border border-gray-800 rounded-t-2xl sm:rounded-xl w-full max-w-5xl max-h-[94vh] sm:max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+        {/* Mobile Pull Handle */}
+        <div className="sm:hidden w-12 h-1 bg-gray-700/80 rounded-full mx-auto my-2 shrink-0" />
+
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-gray-800 px-6 py-4 bg-gray-900/60">
+        <div className="flex items-center justify-between border-b border-gray-800 px-4 sm:px-6 py-3.5 bg-gray-900/60">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+            <div className="p-2 sm:p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0">
               <Landmark className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2
                   id="land-registry-title"
-                  className="text-lg font-bold text-gray-100 flex items-center gap-2"
+                  className="text-base sm:text-lg font-bold text-gray-100 flex items-center gap-2"
                 >
-                  Bengali Land Record & Title Verification Studio
-                  <span className="text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    খতিয়ান ও দলিল যাচাই
+                  {locale === "bn"
+                    ? "জমি রেকর্ড ও বায়া দলিল যাচাইকরণ স্টুডিও"
+                    : "Bengali Land Record & Title Verification Studio"}
+                  <span className="hidden sm:inline-block text-xs px-2 py-0.5 rounded-full font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    খতিয়ান ও দলিল
                   </span>
                 </h2>
               </div>
-              <p className="text-xs text-gray-400">
-                CS ➔ SA ➔ RS ➔ BS Title Search, Baya Deed Chain Audit & AC Land e-Mutation Engine
+              <p className="text-[11px] sm:text-xs text-gray-400 line-clamp-1">
+                {locale === "bn"
+                  ? "সিএস ➔ এসএ ➔ আরএস ➔ বিএস পর্চা অডিট, বায়া দলিল ধারাবাহিকতা ও ই-নামজারি"
+                  : "CS ➔ SA ➔ RS ➔ BS Title Search, Baya Deed Chain Audit & AC Land e-Mutation Engine"}
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-200 transition-colors p-1.5 rounded-lg hover:bg-gray-800"
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Language Quick Toggle */}
+            <div className="flex items-center bg-gray-950 p-0.5 sm:p-1 rounded-lg border border-gray-800 text-xs">
+              <button
+                type="button"
+                onClick={() => setLocale("bn")}
+                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors ${
+                  locale === "bn"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-gray-400 hover:text-gray-200"
+                }`}
+              >
+                বাং
+              </button>
+              <button
+                type="button"
+                onClick={() => setLocale("en")}
+                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors ${
+                  locale === "en"
+                    ? "bg-emerald-600 text-white shadow-sm"
+                    : "text-gray-400 hover:text-gray-200"
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
+            {/* Mobile Touch-Friendly Close Button (44px target) */}
+            <button
+              onClick={onClose}
+              aria-label="Close"
+              className="text-gray-400 hover:text-gray-200 transition-colors w-10 h-10 flex items-center justify-center rounded-lg hover:bg-gray-800"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center border-b border-gray-800 px-6 bg-gray-950/40 gap-2 overflow-x-auto">
+        {/* Tab Navigation with Touch Scroll & Indicators */}
+        <div className="flex items-center border-b border-gray-800 px-4 sm:px-6 bg-gray-950/40 gap-1 sm:gap-2 overflow-x-auto scrollbar-none">
           <button
             onClick={() => setActiveTab("converter")}
             className={`flex items-center gap-2 px-4 py-3 text-xs font-semibold border-b-2 transition-all whitespace-nowrap ${
@@ -535,7 +583,9 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="text-xs text-gray-400 mb-1 block">
-                      Deed Value / Consideration (দলিল মূল্য ৳)
+                      {locale === "bn"
+                        ? "দলিল মূল্য / Consideration (টাকা ৳)"
+                        : "Deed Value / Consideration (BDT ৳)"}
                     </label>
                     <input
                       type="number"
@@ -544,6 +594,14 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
                       onChange={(e) => setConsiderationBdt(parseFloat(e.target.value) || 0)}
                       className="w-full bg-gray-950 border border-gray-800 rounded-lg px-3 py-2 text-sm text-gray-100 font-mono focus:border-emerald-500 focus:outline-none"
                     />
+                    <div className="flex items-center justify-between mt-1 text-[11px] text-emerald-400 font-medium">
+                      <span>{getLakhCroreDescription(considerationBdt, locale)}</span>
+                      <span className="font-mono">
+                        {formatBanglaCurrency(considerationBdt, {
+                          bengaliDigits: locale === "bn",
+                        })}
+                      </span>
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs text-gray-400 mb-1 block">
@@ -581,7 +639,13 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
                   disabled={loading}
                   className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold transition-colors flex items-center gap-2"
                 >
-                  {loading ? "হিসাব করা হচ্ছে..." : "Calculate Statutory Fees"}
+                  {loading
+                    ? locale === "bn"
+                      ? "হিসাব করা হচ্ছে..."
+                      : "Calculating..."
+                    : locale === "bn"
+                    ? "সরকারি ফি হিসাব করুন"
+                    : "Calculate Statutory Fees"}
                 </button>
               </div>
 
@@ -590,11 +654,17 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
                 <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 space-y-4">
                   <div className="flex items-center justify-between pb-3 border-b border-gray-800">
                     <span className="text-sm font-semibold text-gray-200">
-                      Total Government Fees (মোট সরকারি খরচ)
+                      {locale === "bn"
+                        ? "মোট সরকারি খরচ (Total Govt Fees)"
+                        : "Total Government Fees (মোট সরকারি খরচ)"}
                     </span>
                     <div className="text-right">
                       <span className="text-xl font-bold text-emerald-400 font-mono">
-                        ৳ {feeBreakdown.totalGovtFeesBdt?.toLocaleString()}
+                        {formatBanglaCurrency(feeBreakdown.totalGovtFeesBdt, {
+                          showWords: true,
+                          locale,
+                          bengaliDigits: locale === "bn",
+                        })}
                       </span>
                       <span className="text-xs text-gray-400 block font-mono">
                         ({feeBreakdown.effectiveTaxPercentage}% of deed value)
@@ -606,37 +676,52 @@ export const LandRegistryModal: React.FC<LandRegistryModalProps> = ({
                     <div className="p-3 bg-gray-950/60 rounded-lg border border-gray-800/80">
                       <span className="text-gray-400 block">রেজিস্ট্রেশন ফি (Registration Fee 1%)</span>
                       <span className="text-sm font-semibold text-gray-100 font-mono mt-1 block">
-                        ৳ {feeBreakdown.registrationFeeBdt?.toLocaleString()}
+                        {formatBanglaCurrency(feeBreakdown.registrationFeeBdt, {
+                          bengaliDigits: locale === "bn",
+                        })}
                       </span>
                     </div>
                     <div className="p-3 bg-gray-950/60 rounded-lg border border-gray-800/80">
                       <span className="text-gray-400 block">স্ট্যাম্প শুল্ক (Stamp Duty 1.5%)</span>
                       <span className="text-sm font-semibold text-gray-100 font-mono mt-1 block">
-                        ৳ {feeBreakdown.stampDutyBdt?.toLocaleString()}
+                        {formatBanglaCurrency(feeBreakdown.stampDutyBdt, {
+                          bengaliDigits: locale === "bn",
+                        })}
                       </span>
                     </div>
                     <div className="p-3 bg-gray-950/60 rounded-lg border border-gray-800/80">
                       <span className="text-gray-400 block">স্থানীয় সরকার কর (Local Govt Tax 2-3%)</span>
                       <span className="text-sm font-semibold text-gray-100 font-mono mt-1 block">
-                        ৳ {feeBreakdown.localGovtTaxBdt?.toLocaleString()}
+                        {formatBanglaCurrency(feeBreakdown.localGovtTaxBdt, {
+                          bengaliDigits: locale === "bn",
+                        })}
                       </span>
                     </div>
                     <div className="p-3 bg-gray-950/60 rounded-lg border border-gray-800/80">
                       <span className="text-gray-400 block">উৎস কর / এআইটি (Section 53FF AIT)</span>
                       <span className="text-sm font-semibold text-emerald-400 font-mono mt-1 block">
-                        ৳ {feeBreakdown.sourceTaxAitBdt?.toLocaleString()}
+                        {formatBanglaCurrency(feeBreakdown.sourceTaxAitBdt, {
+                          bengaliDigits: locale === "bn",
+                        })}
                       </span>
                     </div>
                     <div className="p-3 bg-gray-950/60 rounded-lg border border-gray-800/80">
                       <span className="text-gray-400 block">ই-গভর্ন্যান্স ও এন-ফি (E-Gov / N Fee)</span>
                       <span className="text-sm font-semibold text-gray-100 font-mono mt-1 block">
-                        ৳ {(feeBreakdown.eGovernanceFeeBdt + feeBreakdown.nFeeBdt)?.toLocaleString()}
+                        {formatBanglaCurrency(
+                          feeBreakdown.eGovernanceFeeBdt + feeBreakdown.nFeeBdt,
+                          {
+                            bengaliDigits: locale === "bn",
+                          }
+                        )}
                       </span>
                     </div>
                     <div className="p-3 bg-gray-950/60 rounded-lg border border-gray-800/80">
                       <span className="text-gray-400 block">হলফনামা স্ট্যাম্প (Affidavit Stamp)</span>
                       <span className="text-sm font-semibold text-gray-100 font-mono mt-1 block">
-                        ৳ {feeBreakdown.affidavitFeeBdt?.toLocaleString()}
+                        {formatBanglaCurrency(feeBreakdown.affidavitFeeBdt, {
+                          bengaliDigits: locale === "bn",
+                        })}
                       </span>
                     </div>
                   </div>

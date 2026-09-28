@@ -428,10 +428,27 @@ export default function TwinPage() {
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // 1. Allow Cmd+K / Ctrl+K from anywhere to toggle the central Command Palette
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
         setCommandPaletteOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
+        return;
+      }
+
+      // 2. Protect typing: Never hijack keyboard shortcuts when user is focused on an input, textarea, select, or contentEditable element
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable ||
+          target.getAttribute("role") === "textbox")
+      ) {
+        return;
+      }
+
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
         e.preventDefault();
         setWhatsAppCommerceOpen((prev) => !prev);
       } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "x") {
