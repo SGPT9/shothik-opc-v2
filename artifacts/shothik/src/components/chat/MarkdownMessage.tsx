@@ -36,7 +36,7 @@ export function MarkdownMessage({
   className,
   onOpenSource,
 }: MarkdownMessageProps) {
-  const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [runningCode, setRunningCode] = useState<string | null>(null);
   const [consoleLogs, setConsoleLogs] = useState<Record<string, string>>({});
   const [openConsole, setOpenConsole] = useState<Record<string, boolean>>({});
@@ -58,10 +58,10 @@ export function MarkdownMessage({
       return `[${citationNum}](#source:citation_${citationNum})`;
     });
 
-  const handleCopy = (text: string) => {
+  const handleCopy = (id: string, text: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedCode(text);
-    setTimeout(() => setCopiedCode(null), 2000);
+    setCopiedCodeId(id);
+    setTimeout(() => setCopiedCodeId(null), 2000);
   };
 
   const handleDownloadCode = (code: string, lang: string) => {
@@ -188,7 +188,7 @@ export function MarkdownMessage({
             };
 
             return (
-              <div className="group/table my-3 overflow-hidden rounded-2xl border border-border/70 bg-card/50 backdrop-blur-xs shadow-xs">
+              <div className="group/table my-3 overflow-hidden rounded-2xl border border-border/70 bg-card/50 backdrop-blur-xs shadow-xs max-w-full">
                 <div className="flex flex-wrap items-center justify-between gap-2 px-3 py-2 bg-muted/40 border-b border-border/60 text-[10px] font-mono text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold uppercase tracking-wider text-foreground">Data Matrix</span>
@@ -210,7 +210,7 @@ export function MarkdownMessage({
                     </button>
                   </div>
                 </div>
-                <div className="overflow-x-auto custom-scrollbar">
+                <div className="overflow-x-auto custom-scrollbar max-w-full touch-pan-x [webkit-overflow-scrolling:touch]">
                   <table className="w-full text-left text-xs border-collapse divide-y divide-border/60">
                     {children}
                   </table>
@@ -275,6 +275,7 @@ export function MarkdownMessage({
                   rel="noopener noreferrer"
                   className="inline-flex items-center justify-center h-4 min-w-4 px-1 mx-0.5 text-[10px] font-mono font-bold rounded-full bg-brand/15 text-brand border border-brand/30 hover:bg-brand hover:text-white transition-all no-underline align-super cursor-pointer shadow-2xs"
                   title={`View Verified Citation Source: ${href}`}
+                  aria-label={`Citation ${text.replace(/[\[\]]/g, "")}`}
                 >
                   {text.replace(/[\[\]]/g, "")}
                 </a>
@@ -295,7 +296,7 @@ export function MarkdownMessage({
           },
 
           pre: ({ children }) => (
-            <div className="my-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-white/[0.08] bg-zinc-950 dark:bg-black/90 text-xs font-mono shadow-md backdrop-blur-xl">
+            <div className="my-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-white/[0.08] bg-zinc-950 dark:bg-black/90 text-xs font-mono shadow-md backdrop-blur-xl max-w-full">
               {children}
             </div>
           ),
@@ -304,7 +305,7 @@ export function MarkdownMessage({
             const isInline = !String(codeClassName || "").includes("language-");
             const match = /language-(\w+)/.exec(codeClassName || "");
             const lang = match ? match[1] : "code";
-            const codeId = `code_${text.substring(0, 16).replace(/\W/g, "")}`;
+            const codeId = `code_${lang}_${text.length}_${text.substring(0, 16).replace(/\W/g, "")}`;
 
             if (isInline) {
               return (
@@ -315,7 +316,7 @@ export function MarkdownMessage({
             }
 
             const isRunning = runningCode === codeId;
-            const isCopied = copiedCode === text;
+            const isCopied = copiedCodeId === codeId;
             const logs = consoleLogs[codeId];
             const isConsoleOpen = openConsole[codeId] ?? false;
 
@@ -373,7 +374,7 @@ export function MarkdownMessage({
 
                     <button
                       type="button"
-                      onClick={() => handleCopy(text)}
+                      onClick={() => handleCopy(codeId, text)}
                       className="flex items-center space-x-1 rounded-md bg-white/[0.06] hover:bg-white/[0.12] border border-white/[0.08] px-2 sm:px-2.5 py-1 text-zinc-300 hover:text-white transition text-[10px] font-mono cursor-pointer select-none"
                       title="Copy code to clipboard"
                     >
@@ -408,7 +409,7 @@ export function MarkdownMessage({
                     )}
                   </div>
                 ) : (
-                  <div className="p-3.5 overflow-x-auto text-[11px] leading-relaxed text-zinc-200 bg-zinc-950 dark:bg-black/60 font-mono custom-scrollbar">
+                  <div className="p-3.5 overflow-x-auto text-[11px] leading-relaxed text-zinc-200 bg-zinc-950 dark:bg-black/60 font-mono custom-scrollbar max-w-full touch-pan-x [webkit-overflow-scrolling:touch]">
                     <code className={cn("block font-mono", codeClassName)} {...props}>
                       {children}
                     </code>

@@ -38,7 +38,7 @@ export function PwaInstallBanner() {
   if (!showBanner) return null;
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:w-96 z-50 p-3.5 rounded-2xl bg-popover/95 backdrop-blur-2xl border border-border/80 shadow-2xl animate-in slide-in-from-bottom-3 duration-200">
+    <div className="fixed top-16 left-3 right-3 md:top-auto md:left-auto md:right-6 md:bottom-6 md:w-96 z-50 p-3.5 rounded-2xl bg-popover/95 backdrop-blur-2xl border border-border/80 shadow-2xl animate-in slide-in-from-top-3 md:slide-in-from-bottom-3 duration-200">
       <div className="flex items-start gap-3">
         <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
           <Smartphone className="h-5 w-5" />
@@ -49,7 +49,7 @@ export function PwaInstallBanner() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="text-muted-foreground hover:text-foreground p-0.5 rounded-md"
+              className="text-muted-foreground hover:text-foreground p-1 rounded-md min-w-[32px] min-h-[32px] flex items-center justify-center cursor-pointer"
               aria-label="Dismiss banner"
             >
               <X className="h-3.5 w-3.5" />
@@ -62,7 +62,7 @@ export function PwaInstallBanner() {
             <button
               type="button"
               onClick={handleInstall}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition shadow-md shadow-emerald-500/20 cursor-pointer"
+              className="flex-1 min-h-[38px] flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition shadow-md shadow-emerald-500/20 cursor-pointer"
             >
               <Download className="h-3.5 w-3.5" />
               <span>Install (1-Tap)</span>
@@ -70,7 +70,7 @@ export function PwaInstallBanner() {
             <button
               type="button"
               onClick={handleDismiss}
-              className="px-2.5 py-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium transition cursor-pointer"
+              className="min-h-[38px] px-3 py-1.5 rounded-xl hover:bg-muted text-muted-foreground hover:text-foreground text-xs font-medium transition cursor-pointer"
             >
               Later
             </button>

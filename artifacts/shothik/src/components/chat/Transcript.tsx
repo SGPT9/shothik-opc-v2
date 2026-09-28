@@ -762,8 +762,9 @@ export function Transcript({
                       {/* Copy */}
                       <button
                         onClick={() => handleCopyAssistantMessage(message)}
-                        className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+                        className="flex items-center justify-center h-9 w-9 sm:h-7 sm:w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
                         title={copiedAssistantMsgId === message._id ? "Copied to clipboard!" : "Copy"}
+                        aria-label={copiedAssistantMsgId === message._id ? "Copied to clipboard" : "Copy response"}
                       >
                         {copiedAssistantMsgId === message._id ? (
                           <Check className="h-3.5 w-3.5 text-emerald-400" />
@@ -776,12 +777,13 @@ export function Transcript({
                       <button
                         onClick={() => handleSpeak(message._id, displayContent)}
                         className={cn(
-                          "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
+                          "flex items-center justify-center h-9 w-9 sm:h-7 sm:w-7 rounded-md transition cursor-pointer",
                           speakingMsgId === message._id
                             ? "text-brand bg-brand/10"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
                         title={speakingMsgId === message._id ? "Stop readout" : "Read aloud (বাংলা / English)"}
+                        aria-label={speakingMsgId === message._id ? "Stop readout" : "Read aloud response"}
                       >
                         {speakingMsgId === message._id ? (
                           <VolumeX className="h-3.5 w-3.5 text-brand animate-pulse" />
@@ -794,12 +796,13 @@ export function Transcript({
                       <button
                         onClick={() => handleFeedback(message._id, "up")}
                         className={cn(
-                          "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
+                          "flex items-center justify-center h-9 w-9 sm:h-7 sm:w-7 rounded-md transition cursor-pointer",
                           feedbackMap[message._id] === "up"
                             ? "text-emerald-400 bg-emerald-500/10 font-bold"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
                         title="Good response"
+                        aria-label="Good response"
                       >
                         <ThumbsUp className="h-3.5 w-3.5" />
                       </button>
@@ -808,12 +811,13 @@ export function Transcript({
                       <button
                         onClick={() => handleFeedback(message._id, "down")}
                         className={cn(
-                          "flex items-center justify-center h-7 w-7 rounded-md transition cursor-pointer",
+                          "flex items-center justify-center h-9 w-9 sm:h-7 sm:w-7 rounded-md transition cursor-pointer",
                           feedbackMap[message._id] === "down"
                             ? "text-rose-400 bg-rose-500/10 font-bold"
                             : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                         )}
                         title="Poor response"
+                        aria-label="Poor response"
                       >
                         <ThumbsDown className="h-3.5 w-3.5" />
                       </button>
@@ -822,8 +826,9 @@ export function Transcript({
                       {canRegenerate && (
                         <button
                           onClick={() => onRegenerate?.(message)}
-                          className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+                          className="flex items-center justify-center h-9 w-9 sm:h-7 sm:w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
                           title="Regenerate"
+                          aria-label="Regenerate response"
                         >
                           <RefreshCw className="h-3.5 w-3.5" />
                         </button>
@@ -832,8 +837,9 @@ export function Transcript({
                       {/* ⋯ Overflow — Deep Research, Slides */}
                       <div className="relative group/overflow">
                         <button
-                          className="flex items-center justify-center h-7 w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
+                          className="flex items-center justify-center h-9 w-9 sm:h-7 sm:w-7 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition cursor-pointer"
                           title="More actions"
+                          aria-label="More actions"
                         >
                           <span className="text-sm font-bold leading-none">⋯</span>
                         </button>
