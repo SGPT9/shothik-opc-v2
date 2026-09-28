@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 import { CourierTrackingModal } from "./CourierTrackingModal";
 
 export type PrintPreset = "research" | "book" | "chat";
@@ -45,6 +46,11 @@ export function UniversalPrintModal({
   chatMessages = [],
   sources = [],
 }: UniversalPrintModalProps) {
+  useModalA11y({
+    isOpen,
+    onClose,
+  });
+
   const [preset, setPreset] = useState<PrintPreset>(defaultPreset);
   const [paperSize, setPaperSize] = useState<PaperSize>("A4");
   const [fontSize, setFontSize] = useState<"compact" | "regular" | "large">("regular");
@@ -171,6 +177,9 @@ export function UniversalPrintModal({
   return (
     <div
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="universal-print-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200 select-none cursor-pointer"
     >
       <div
@@ -187,14 +196,15 @@ export function UniversalPrintModal({
                   <Printer className="h-4 w-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-foreground">Print & Export Studio</h3>
+                  <h3 id="universal-print-title" className="text-sm font-bold text-foreground">Print & Export Studio</h3>
                   <p className="text-[11px] text-muted-foreground">Publication-Grade PDF Engine</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={onClose}
-                className="md:hidden flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/60 transition"
+                className="md:hidden flex min-w-[36px] min-h-[36px] items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/60 transition cursor-pointer"
+                aria-label="Close print studio"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -642,8 +652,10 @@ export function UniversalPrintModal({
                     <label className="text-[11px] font-medium text-foreground">Phone Number (bKash/COD)</label>
                     <input
                       type="tel"
+                      inputMode="tel"
+                      autoComplete="tel"
                       required
-                      placeholder="017XXXXXXXX"
+                      placeholder="01XXXXXXXXX"
                       value={recipientPhone}
                       onChange={(e) => setRecipientPhone(e.target.value)}
                       className="w-full h-8 px-2.5 rounded-lg text-xs bg-background border border-border/60 text-foreground outline-none"
