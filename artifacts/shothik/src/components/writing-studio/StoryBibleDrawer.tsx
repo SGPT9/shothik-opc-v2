@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BookOpen, User, Globe, Anchor, Plus, X, Search, Sparkles } from 'lucide-react';
 import { StoryBibleMemoryService, StoryLoreEntry } from '@/lib/story-bible-memory';
 import { cn } from '@/lib/utils';
+import { useModalA11y } from '@/hooks/ui/useModalA11y';
 
 export interface StoryBibleDrawerProps {
   isOpen: boolean;
@@ -14,6 +15,8 @@ export interface StoryBibleDrawerProps {
 }
 
 export function StoryBibleDrawer({ isOpen, onClose, projectId = 'proj-default', className }: StoryBibleDrawerProps) {
+  useModalA11y({ isOpen, onClose });
+
   const [entries, setEntries] = useState<StoryLoreEntry[]>([]);
   const [activeTab, setActiveTab] = useState<'all' | 'character' | 'setting' | 'plot_hook'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -86,6 +89,9 @@ export function StoryBibleDrawer({ isOpen, onClose, projectId = 'proj-default', 
           initial={{ x: 380, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 380, opacity: 0 }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="story-bible-title"
           className={cn(
             'fixed right-0 top-0 bottom-0 w-[360px] bg-[#0b0f19] border-l border-slate-800 shadow-2xl z-50 flex flex-col font-sans text-xs text-slate-300',
             className
@@ -95,14 +101,19 @@ export function StoryBibleDrawer({ isOpen, onClose, projectId = 'proj-default', 
           <div className="p-4 border-b border-slate-800 bg-[#0d1322] flex items-center justify-between">
             <div className="flex items-center space-x-2 text-indigo-400 font-semibold text-sm">
               <BookOpen className="w-4 h-4 text-indigo-400" />
-              <span>Story Bible & Lore Vault</span>
+              <span id="story-bible-title">Story Bible & Lore Vault</span>
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded border border-emerald-500/30 flex items-center space-x-1 font-mono">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                 <span>2 Co-authors Live</span>
               </span>
-              <button onClick={onClose} className="text-slate-400 hover:text-white p-1 rounded transition">
+              <button
+                type="button"
+                onClick={onClose}
+                aria-label="Close story bible drawer"
+                className="text-slate-400 hover:text-white min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg transition cursor-pointer"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
@@ -117,6 +128,7 @@ export function StoryBibleDrawer({ isOpen, onClose, projectId = 'proj-default', 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search characters, lore, hooks..."
+                aria-label="Search characters, lore, hooks"
                 className="w-full pl-8 pr-3 py-1.5 bg-slate-900 border border-slate-800 rounded-md text-xs text-slate-200 focus:outline-none focus:border-indigo-500"
               />
             </div>

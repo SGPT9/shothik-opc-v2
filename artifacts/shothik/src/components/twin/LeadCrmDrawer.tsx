@@ -256,6 +256,7 @@ export function LeadCrmDrawer({
             <input
               type="text"
               placeholder="Search name, company, email..."
+              aria-label="Search name, company, email"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-800 bg-slate-950 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-cyan-500"
@@ -334,16 +335,18 @@ export function LeadCrmDrawer({
                             )},%20following%20up%20from%20${encodeURIComponent(companyName)}.`}
                             target="_blank"
                             rel="noreferrer"
-                            className="p-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition"
+                            className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition cursor-pointer"
                             title="Open WhatsApp Chat"
+                            aria-label={`Open WhatsApp Chat with ${lead.name}`}
                           >
                             <Smartphone className="h-3.5 w-3.5" />
                           </a>
                         )}
                         <a
                           href={`mailto:${lead.email}?subject=Follow%20up%20from%20${encodeURIComponent(companyName)}`}
-                          className="p-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 transition"
+                          className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700 transition cursor-pointer"
                           title="Send Email"
+                          aria-label={`Send Email to ${lead.name}`}
                         >
                           <Mail className="h-3.5 w-3.5" />
                         </a>
@@ -358,9 +361,14 @@ export function LeadCrmDrawer({
 
         {/* Modal: Add New Lead */}
         {showNewLeadModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="new-lead-title"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          >
             <div className="w-full max-w-md rounded-2xl border border-slate-800 bg-[#0b101b] p-6 space-y-4 shadow-2xl">
-              <h3 className="text-sm font-bold text-slate-100 font-mono">Add New Prospect Lead</h3>
+              <h3 id="new-lead-title" className="text-sm font-bold text-slate-100 font-mono">Add New Prospect Lead</h3>
               <div className="space-y-3 text-xs font-mono">
                 <div>
                   <label className="block text-slate-400 text-[10px] uppercase mb-1">Full Name</label>
@@ -369,6 +377,7 @@ export function LeadCrmDrawer({
                     value={newName}
                     onChange={(e) => setNewName(e.target.value)}
                     placeholder="e.g. Tanvir Hasan"
+                    aria-label="Lead Full Name"
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-100"
                   />
                 </div>
@@ -379,6 +388,7 @@ export function LeadCrmDrawer({
                     value={newCompany}
                     onChange={(e) => setNewCompany(e.target.value)}
                     placeholder="e.g. Dhaka Tech Ltd"
+                    aria-label="Lead Company Name"
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-100"
                   />
                 </div>
@@ -389,6 +399,7 @@ export function LeadCrmDrawer({
                     value={newEmail}
                     onChange={(e) => setNewEmail(e.target.value)}
                     placeholder="e.g. tanvir@dhakatech.bd"
+                    aria-label="Lead Email Address"
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-slate-100"
                   />
                 </div>
@@ -398,6 +409,7 @@ export function LeadCrmDrawer({
                     type="number"
                     value={newValue}
                     onChange={(e) => setNewValue(Number(e.target.value))}
+                    aria-label="Estimated Deal Value"
                     className="w-full rounded-lg border border-slate-800 bg-slate-950 p-2 text-emerald-400 font-bold"
                   />
                 </div>
@@ -407,14 +419,14 @@ export function LeadCrmDrawer({
                   size="sm"
                   variant="outline"
                   onClick={() => setShowNewLeadModal(false)}
-                  className="text-xs"
+                  className="text-xs min-h-[38px] cursor-pointer"
                 >
                   Cancel
                 </Button>
                 <Button
                   size="sm"
                   onClick={handleAddLead}
-                  className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white"
+                  className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white min-h-[38px] cursor-pointer"
                 >
                   Save Lead
                 </Button>
