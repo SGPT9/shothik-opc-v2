@@ -44,7 +44,8 @@ export function OfflineSyncBadge({
       <button
         type="button"
         onClick={() => flush()}
-        className={`inline-flex items-center gap-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-[11px] font-medium text-rose-400 hover:bg-rose-500/20 transition cursor-pointer backdrop-blur-md shadow-sm ${className}`}
+        aria-label={`${failedCount} failed sync operations. Click to retry.`}
+        className={`inline-flex items-center gap-1.5 min-h-[32px] rounded-full border border-rose-500/30 bg-rose-500/10 px-2.5 py-1 text-[11px] font-medium text-rose-400 hover:bg-rose-500/20 transition cursor-pointer backdrop-blur-md shadow-sm ${className}`}
       >
         <AlertCircle className="h-3 w-3 shrink-0 text-rose-500" />
         <span>{failedCount} failed · Retry</span>
@@ -57,7 +58,8 @@ export function OfflineSyncBadge({
       <button
         type="button"
         onClick={() => flush()}
-        className={`inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-400 hover:bg-amber-500/20 transition cursor-pointer backdrop-blur-md shadow-sm ${className}`}
+        aria-label={`${pendingCount} pending offline operations. Click to sync now.`}
+        className={`inline-flex items-center gap-1.5 min-h-[32px] rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-[11px] font-medium text-amber-400 hover:bg-amber-500/20 transition cursor-pointer backdrop-blur-md shadow-sm ${className}`}
       >
         <RefreshCw className="h-3 w-3 shrink-0" />
         <span>{pendingCount} pending</span>

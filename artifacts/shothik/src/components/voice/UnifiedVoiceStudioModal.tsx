@@ -24,6 +24,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface UnifiedVoiceStudioModalProps {
   isOpen: boolean;
@@ -76,6 +77,9 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
     }
   }, [isCameraActive]);
 
+  // Modal accessibility: global Escape key and document.body scroll lock
+  useModalA11y({ isOpen, onClose });
+
   useEffect(() => {
     if (!isOpen) {
       if (streamRef.current) {
@@ -85,17 +89,12 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
       setIsCameraActive(false);
       return;
     }
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -293,6 +292,7 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
               : "bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
           )}
           title={isCameraActive ? "Turn Off Camera Vision" : "Turn On Camera Vision (See & Speak)"}
+          aria-label={isCameraActive ? "Turn Off Camera Vision" : "Turn On Camera Vision (See & Speak)"}
         >
           {isCameraActive ? <CameraOff className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
         </button>
@@ -308,6 +308,7 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
               : "bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
           )}
           title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
+          aria-label={isMuted ? "Unmute Microphone" : "Mute Microphone"}
         >
           {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
         </button>
@@ -318,6 +319,7 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
           onClick={onClose}
           className="flex items-center justify-center w-15 h-15 rounded-full bg-zinc-800/90 hover:bg-rose-600 text-white border border-zinc-700/60 shadow-2xl transition-all duration-150 cursor-pointer active:scale-90"
           title="End Voice & Vision Session"
+          aria-label="End Voice & Vision Session"
         >
           <X className="w-6 h-6" />
         </button>
@@ -340,6 +342,7 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
               : "bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
           )}
           title={speechState === "speaking" ? "Interrupt AI" : "Tap to Speak"}
+          aria-label={speechState === "speaking" ? "Interrupt AI" : "Tap to Speak"}
         >
           {speechState === "speaking" ? <Square className="w-4 h-4 fill-current" /> : <Sparkles className="w-5 h-5 text-zinc-400" />}
         </button>
