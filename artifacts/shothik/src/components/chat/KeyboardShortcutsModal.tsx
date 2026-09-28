@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useMemo } from "react";
 import { X, Command, Keyboard, Sparkles } from "lucide-react";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 interface KeyboardShortcutsModalProps {
   open: boolean;
@@ -13,53 +14,52 @@ interface ShortcutCategory {
   items: { key: string; label: string; desc: string }[];
 }
 
-const SHORTCUT_CATEGORIES: ShortcutCategory[] = [
-  {
-    title: "Composer & Navigation",
-    items: [
-      { key: "/", label: "Focus / Slash Menu", desc: "Jump to composer and open specialized skill tools" },
-      { key: "Ctrl + Shift + O", label: "New Chat Session", desc: "Start a fresh conversation thread immediately" },
-      { key: "↑", label: "Prompt History Recall", desc: "Recall previous prompt when composer is empty" },
-      { key: "Enter", label: "Send Message", desc: "Submit active prompt to AI engine" },
-      { key: "Shift + Enter", label: "New Line", desc: "Insert a line break without sending" },
-    ],
-  },
-  {
-    title: "Artifacts & Studio Stages",
-    items: [
-      { key: "← / → / Space", label: "Flip Slides & Pages", desc: "Step through slides or document pages" },
-      { key: "Home / End", label: "First / Last Page", desc: "Jump directly to the beginning or end of slides/docs" },
-      { key: "Tab / Enter / Arrows", label: "Spreadsheet Grid Navigation", desc: "Move between active cells in financial sheet" },
-    ],
-  },
-  {
-    title: "Workspace & Tools",
-    items: [
-      { key: "Esc", label: "Dismiss Surfaces", desc: "Close details drawer, dropdowns, and modal dialogs" },
-      { key: "Ctrl + Shift + E", label: "Export Session", desc: "Download conversation as Markdown, JSON, or PDF" },
-      { key: "? or Ctrl + /", label: "Keyboard Cheat Sheet", desc: "Toggle this shortcut cheatsheet from anywhere" },
-    ],
-  },
-];
-
 export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcutsModalProps) {
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (!open) return;
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onOpenChange(false);
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onOpenChange]);
+  useModalA11y({
+    isOpen: open,
+    onClose: () => onOpenChange(false),
+  });
+
+  const isMac = typeof navigator !== "undefined" && /(Mac|iPhone|iPod|iPad)/i.test(navigator.platform || navigator.userAgent);
+  const modKey = isMac ? "⌘" : "Ctrl";
+
+  const categories: ShortcutCategory[] = useMemo(() => [
+    {
+      title: "Composer & Navigation",
+      items: [
+        { key: "/", label: "Focus / Slash Menu", desc: "Jump to composer and open specialized skill tools" },
+        { key: `${modKey} + Shift + O`, label: "New Chat Session", desc: "Start a fresh conversation thread immediately" },
+        { key: "↑", label: "Prompt History Recall", desc: "Recall previous prompt when composer is empty" },
+        { key: "Enter", label: "Send Message", desc: "Submit active prompt to AI engine" },
+        { key: "Shift + Enter", label: "New Line", desc: "Insert a line break without sending" },
+      ],
+    },
+    {
+      title: "Artifacts & Studio Stages",
+      items: [
+        { key: "← / → / Space", label: "Flip Slides & Pages", desc: "Step through slides or document pages" },
+        { key: "Home / End", label: "First / Last Page", desc: "Jump directly to the beginning or end of slides/docs" },
+        { key: "Tab / Enter / Arrows", label: "Spreadsheet Grid Navigation", desc: "Move between active cells in financial sheet" },
+      ],
+    },
+    {
+      title: "Workspace & Tools",
+      items: [
+        { key: "Esc", label: "Dismiss Surfaces", desc: "Close details drawer, dropdowns, and modal dialogs" },
+        { key: `${modKey} + Shift + E`, label: "Export Session", desc: "Download conversation as Markdown, JSON, or PDF" },
+        { key: `? or ${modKey} + /`, label: "Keyboard Cheat Sheet", desc: "Toggle this shortcut cheatsheet from anywhere" },
+      ],
+    },
+  ], [modKey]);
 
   if (!open) return null;
 
   return (
     <div
       onClick={() => onOpenChange(false)}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="keyboard-shortcuts-title"
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150 cursor-pointer"
     >
       <div
@@ -73,15 +73,15 @@ export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcuts
               <Keyboard className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-foreground">Keyboard Shortcuts</h2>
+              <h2 id="keyboard-shortcuts-title" className="text-base font-semibold text-foreground">Keyboard Shortcuts</h2>
               <p className="text-xs text-muted-foreground">Power shortcuts for high-speed agentic workflows</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition cursor-pointer"
-            aria-label="Close modal"
+            className="flex min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/60 hover:text-foreground transition cursor-pointer"
+            aria-label="Close keyboard shortcuts modal"
           >
             <X className="h-4 w-4" />
           </button>
@@ -89,7 +89,7 @@ export function KeyboardShortcutsModal({ open, onOpenChange }: KeyboardShortcuts
 
         {/* Shortcuts Grid */}
         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1 custom-scrollbar">
-          {SHORTCUT_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <div key={cat.title} className="space-y-2">
               <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
                 {cat.title}

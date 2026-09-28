@@ -18,6 +18,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 interface CommandPaletteModalProps {
   open: boolean;
@@ -43,6 +44,11 @@ export function CommandPaletteModal({
 }: CommandPaletteModalProps) {
   const [query, setQuery] = useState("");
   const [selectedIndex, setSelectedIndex] = useState(0);
+
+  useModalA11y({
+    isOpen: open,
+    onClose: () => onOpenChange(false),
+  });
 
   const commands: CommandItem[] = useMemo(() => [
     {
@@ -183,10 +189,7 @@ export function CommandPaletteModal({
   useEffect(() => {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        e.preventDefault();
-        onOpenChange(false);
-      } else if (e.key === "ArrowDown") {
+      if (e.key === "ArrowDown") {
         e.preventDefault();
         setSelectedIndex((prev) => (prev + 1 < filtered.length ? prev + 1 : 0));
       } else if (e.key === "ArrowUp") {
@@ -199,13 +202,16 @@ export function CommandPaletteModal({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [open, onOpenChange, filtered, selectedIndex]);
+  }, [open, filtered, selectedIndex]);
 
   if (!open) return null;
 
   return (
     <div
       onClick={() => onOpenChange(false)}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Command palette"
       className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150 cursor-pointer select-none"
     >
       <div
@@ -221,6 +227,7 @@ export function CommandPaletteModal({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Type a command or jump to studio... (↑ ↓ Enter)"
+            aria-label="Search tools and commands"
             className="w-full bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none font-medium"
           />
           <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded border border-border/60 bg-muted/60 text-[10px] font-mono text-muted-foreground">
@@ -229,7 +236,7 @@ export function CommandPaletteModal({
         </div>
 
         {/* Command List */}
-        <div className="max-h-[340px] overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+        <div role="listbox" aria-label="Available commands" className="max-h-[340px] overflow-y-auto space-y-1 pr-1 custom-scrollbar">
           {filtered.length === 0 ? (
             <div className="py-8 text-center text-xs text-muted-foreground">
               No matching tools or commands found.
@@ -241,10 +248,12 @@ export function CommandPaletteModal({
               return (
                 <div
                   key={item.id}
+                  role="option"
+                  aria-selected={isSelected}
                   onClick={() => item.action()}
                   onMouseEnter={() => setSelectedIndex(idx)}
                   className={cn(
-                    "flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer group",
+                    "flex items-center justify-between px-3 py-2 rounded-xl text-xs transition cursor-pointer group min-h-[44px]",
                     isSelected
                       ? "bg-brand/15 text-foreground font-semibold border border-brand/30 shadow-xs"
                       : "hover:bg-muted/60 text-muted-foreground"
