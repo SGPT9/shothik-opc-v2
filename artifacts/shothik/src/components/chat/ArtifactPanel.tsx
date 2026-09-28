@@ -347,7 +347,7 @@ export function ArtifactPanel({
             type="button"
             onClick={handleCopyContent}
             aria-label="Copy artifact content"
-            className="flex shrink-0 items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+            className="flex shrink-0 items-center justify-center h-8 w-8 sm:h-7 sm:w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
             title={copied ? "Copied to clipboard!" : "Copy raw artifact content"}
           >
             {copied ? (
@@ -380,10 +380,10 @@ export function ArtifactPanel({
             type="button"
             onClick={onClose}
             aria-label="Close artifact panel"
-            className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+            className="shrink-0 flex h-8 w-8 sm:h-7 sm:w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
             title="Close Canvas (Esc)"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </button>
         </div>
       </div>

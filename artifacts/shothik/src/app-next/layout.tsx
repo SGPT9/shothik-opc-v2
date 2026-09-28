@@ -11,7 +11,7 @@ import { Register } from "@/components/auth/components/Register";
 import UploadProgressIndicator from "@/components/tools/common/UploadProgressIndicator";
 import Providers from "@/providers";
 import LandingPageRedirectProvider from "@/providers/RedirectProvider";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { ThemeScript } from "@/components/common/ThemeScript";
@@ -20,6 +20,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Shothik AI",
   description: "Shothik AI is a platform for AI-powered tools and services.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  interactiveWidget: "resizes-content",
+  themeColor: "#040404",
 };
 
 export default function RootLayout({

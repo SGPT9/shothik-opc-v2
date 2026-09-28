@@ -173,11 +173,12 @@ export function BkashCourierActionCard() {
             className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-100 focus:outline-none focus:border-indigo-500"
           />
           <input
-            type="text"
+            type="tel"
+            inputMode="tel"
             value={recipientPhone}
             onChange={(e) => setRecipientPhone(e.target.value)}
-            placeholder="Recipient Phone"
-            className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-100 focus:outline-none focus:border-indigo-500"
+            placeholder="01XXXXXXXXX"
+            className="px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-100 focus:outline-none focus:border-indigo-500 font-mono text-xs"
           />
           <input
             type="text"

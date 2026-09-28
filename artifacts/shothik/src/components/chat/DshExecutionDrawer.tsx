@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface DshReplayStep {
   step: number;
@@ -55,6 +56,8 @@ export function DshExecutionDrawer({
   const [newMemoryContent, setNewMemoryContent] = useState("");
   const [newMemoryCategory, setNewMemoryCategory] = useState("preference");
   const [forkingStep, setForkingStep] = useState<number | null>(null);
+
+  useModalA11y({ isOpen: open, onClose });
 
   // Fetch DSH timeline and Memori profile
   useEffect(() => {
@@ -259,10 +262,12 @@ export function DshExecutionDrawer({
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors"
+            aria-label="Close drawer"
+            className="w-9 h-9 flex items-center justify-center rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/80 transition-colors cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 

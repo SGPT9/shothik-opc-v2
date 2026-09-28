@@ -162,7 +162,7 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
           {/* TAB 1: System Reliability Stress Test */}
           <TabsContent value="reliability" className="space-y-6 focus-visible:outline-none">
             {/* Executive KPI Summary Cards */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <Card className="bg-slate-900/60 border-slate-800/80 rounded-xl p-3.5">
                 <CardContent className="p-0 flex flex-col justify-between h-full">
                   <span className="text-xs font-medium text-slate-400 flex items-center justify-between">
@@ -299,7 +299,7 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
           {/* TAB 2: Financial TAM / SAM / SOM Modeling */}
           <TabsContent value="financial" className="space-y-6 focus-visible:outline-none">
             {/* Financial Parameters Inputs */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
                 <label className="text-xs font-semibold text-slate-300 block mb-2">
                   TAM (Total Addressable Market)
@@ -347,7 +347,7 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
             </div>
 
             {/* Currency & South Asian Risk Parameters */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
                 <label className="text-xs font-semibold text-slate-300 block mb-2">
                   Operating Currency
@@ -430,7 +430,7 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
             </div>
 
             {/* ARPU & CAC */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Card className="bg-slate-900/60 border-slate-800 rounded-xl p-4">
                 <label className="text-xs font-semibold text-slate-300 block mb-2">
                   ARPU (Avg Revenue Per User)
