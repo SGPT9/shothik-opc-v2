@@ -40,12 +40,15 @@ describe("CourierTrackingModal Component", () => {
     expect(screen.getByPlaceholderText(/Enter Consignment or Tracking ID/i)).toBeDefined();
   });
 
-  it("fetches tracking details and displays timeline", async () => {
+  it("fetches tracking details and displays timeline and formatted COD currency", async () => {
     render(<CourierTrackingModal isOpen={true} onClose={() => {}} initialTrackingCode="BD_ST_755448" />);
+
+    expect(screen.getByLabelText("Enter Consignment or Tracking ID")).toBeDefined();
 
     await waitFor(() => {
       expect(screen.getAllByText(/BD_ST_755448/i).length).toBeGreaterThan(0);
       expect(screen.getByText(/Steadfast Courier/i)).toBeDefined();
+      expect(screen.getByText(/COD: ৳ 1,450/i)).toBeDefined();
     });
   });
 });
