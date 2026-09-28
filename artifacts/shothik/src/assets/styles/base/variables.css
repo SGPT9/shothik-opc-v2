@@ -48,6 +48,9 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
+  /* Typography: South Asian & Bengali font fallbacks */
+  --font-bengali: "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", system-ui, -apple-system, sans-serif;
+
   /* Project-type semantic accent colors — available as CSS custom properties for var() in inline styles */
   --color-type-book: #137fec;
   --color-type-research: #10b981;

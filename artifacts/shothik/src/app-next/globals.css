@@ -49,7 +49,7 @@
   --font-manrope: var(--font-manrope);
   --font-geist-sans: var(--font-geist-sans);
   --font-geist-mono: var(--font-geist-mono);
-  --font-bengali: var(--font-bengali);
+  --font-bengali: var(--font-bengali, "Hind Siliguri", "Noto Sans Bengali", "SolaimanLipi", system-ui, sans-serif);
 
   /* Brand color tokens (Gaia design system) */
   --color-brand: #137fec;

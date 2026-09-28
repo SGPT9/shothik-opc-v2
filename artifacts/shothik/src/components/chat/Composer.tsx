@@ -510,6 +510,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const activeListLength = isSlashMenuVisible ? matchingSlashCommands.length : isMentionMenuVisible ? matchingMentions.length : 0;
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Guard against premature submission during IME composition (Bengali Avro, Google Input, macOS/Windows IME)
+      if (e.nativeEvent?.isComposing || (e as any).isComposing || (e as any).keyCode === 229) {
+        return;
+      }
+
       // Slash or Mention palette navigation
       if ((isSlashMenuVisible || isMentionMenuVisible) && activeListLength > 0) {
         if (e.key === "ArrowDown") {

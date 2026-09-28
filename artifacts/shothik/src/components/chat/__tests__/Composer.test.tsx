@@ -83,5 +83,24 @@ describe("Composer", () => {
       tab: "research",
     });
   });
+
+  it("does not submit on Enter key when user is composing via IME (isComposing: true)", () => {
+    const handleAction = vi.fn();
+    render(
+      <Composer
+        value="বাংলা "
+        onAction={handleAction}
+      />
+    );
+
+    const textarea = screen.getByRole("textbox");
+    fireEvent.keyDown(textarea, {
+      key: "Enter",
+      isComposing: true,
+      keyCode: 229,
+    });
+
+    expect(handleAction).not.toHaveBeenCalled();
+  });
 });
 
