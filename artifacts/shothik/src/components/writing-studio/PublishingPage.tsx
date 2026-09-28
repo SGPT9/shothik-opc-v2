@@ -688,10 +688,12 @@ export function PublishingPage({ project, onBackToEditor, onSaveDraft }: Publish
                         <div>
                           <label className="block text-[11px] font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Recipient Phone</label>
                           <input
-                            type="text"
+                            type="tel"
+                            inputMode="tel"
+                            placeholder="01XXXXXXXXX"
                             value={customerPhone}
                             onChange={(e) => setCustomerPhone(e.target.value)}
-                            className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                            className="w-full rounded-lg border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 px-3 py-1.5 text-xs text-zinc-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
                           />
                         </div>
                       </div>
@@ -767,10 +769,13 @@ export function PublishingPage({ project, onBackToEditor, onSaveDraft }: Publish
       </AnimatePresence>
 
       {/* Floating Publish Button */}
-      <div className="fixed bottom-8 right-8 z-50">
+      <div className="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-50">
         <button 
+          type="button"
           onClick={() => setShowPublishModal(true)}
-          className="bg-brand hover:scale-105 active:scale-95 text-white h-14 w-14 rounded-full flex items-center justify-center shadow-2xl shadow-brand/40 transition-all group"
+          aria-label="Publish Manuscript"
+          title="Publish Manuscript"
+          className="bg-brand hover:scale-105 active:scale-95 text-white h-14 w-14 rounded-full flex items-center justify-center shadow-2xl shadow-brand/40 transition-all group cursor-pointer"
         >
           <Send className="w-6 h-6 group-hover:rotate-12 transition-transform" />
         </button>
