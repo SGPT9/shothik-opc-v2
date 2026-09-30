@@ -52,6 +52,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 39 | Autonomous Wholesale Supplier RFQ & B2B Escrow Negotiation Engine | Slice 39 | done |
 | 40 | Autonomous Agri-Commodity Sourcing & Wholesale Mandi Price Radar | Slice 40 | done |
 | 41 | Autonomous Micro-Franchise Field Agent POS & Offline Bluetooth Thermal Print Engine | Slice 41 | done |
+| 42 | Autonomous NBR Mushak-4.3 Input-Output Coefficient Declarator & Factory Costing Engine | Slice 42 | done |
 | 43 | Autonomous Multi-Carrier Inbound Webhook Dispatcher & Real-Time Double-Entry Settlement Reconciler | Slice 43 | done |
 | 44 | Autonomous Cross-Border Export Manifest, ERC Validator & Bangladesh Bank Form-EXP Compiler | Slice 44 | done |
 | 45 | Autonomous Cross-Border FX Hedging, CIRP Arbitrage & Forward Contract Rate-Lock Engine | Slice 45 | done |
@@ -68,11 +69,27 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 56 | OpenMuse Agentic Compute, Persistent Browser Takeover & CAS Leased Task Orchestration Engine | Slice 56 | done |
 | 57 | Autonomous HS Code Classification, Customs Tariff & Cross-Border Commercial Invoice Engine | Slice 57 | done |
 | 58 | Autonomous Multi-Channel Inventory Matrix, Stock-Out Prediction & Micro-Warehousing Engine | Slice 58 | done |
+| 59 | Autonomous Banglish Voice IVR, Automated COD Order Verification & Courier Return Minimization Engine | Slice 59 | done |
+| 60 | Autonomous B2B Micro-Factoring, AI Accounts Receivable Radar & Early Liquidity Engine | Slice 60 | done |
+| 61 | Autonomous Live Selling Comment-to-Cart & Courier Dispatch Engine | Slice 61 | done |
+| 62 | NBR Mushak 6.3 Automated VAT Challan & QR Code Generator | Slice 62 | done |
+| 63 | Nilkhet Print-on-Demand (POD) 300-DPI Spine & CMYK Press Engine | Slice 63 | done |
+| 64 | Zero-Latency Client-Side WebAssembly (Wasm) Engine | Slice 64 | done |
+| 65 | Bengali Thesis Plagiarism & Citation Matcher | Slice 65 | done |
+| 66 | Push-to-Talk Voice Note Input & Inline Wasm Sandbox Runner | Slice 66 | done |
+| 67 | Wholesale Commodity Price Ticker & Inland LC Escrow Engine | Slice 67 | done |
+| 68 | Hyperlocal Creator Guilds & Verified Supplier Escrow Radar | Slice 68 | done |
+| 69 | HarfBuzz-Compatible Bengali OpenType Typography & Complex Script Shaper | Slice 69 | done |
+| 70 | Nagad Sheba Direct PGW Tokenized Checkout & MFS Clearing Engine | Slice 70 | done |
+| 71 | NBR Mushak-6.6 Certificate of Tax Deduction at Source (VDS) Engine | Slice 71 | done |
+| 72 | Academic BibTeX & Overleaf LaTeX Citation Generator | Slice 72 | done |
 | 73 | Autonomous Meta & TikTok Conversion API (CAPI) with Offline COD Attribution | Slice 73 | done |
 | 74 | RedX & Paperfly Live Courier API Connectors with Multi-Carrier Fallback | Slice 74 | done |
 | 75 | Interactive Chat Streaming Component System with Session Forking | Slice 75 | done |
 | 76 | Autonomous Multi-Modal Bengali OCR & NID/Trade License Extraction Engine | Slice 76 | done |
 | 77 | Autonomous Steadfast & Pathao RTO Prediction, Delivery Success Scoring & Fraud Blacklist Sync Engine | Slice 77 | done |
+| 78 | Multi-Channel Real-Time Inventory Matrix & Flash-Sale Reservation Lock Engine | Slice 78 | done |
+| 79 | Autonomous Bengali Land Record (Khatian/Porcha/দলিল) Verification, Chain-of-Ownership Title Search & Stamp Duty Valuation Engine | Slice 79 | done |
 
 ---
 
