@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { logger } from "./logger.js";
 import { dshRuntime } from "./dsh-runtime.js";
 
@@ -34,7 +35,9 @@ export class NightshiftEngine {
   constructor(journalPath?: string) {
     this.journalPath =
       journalPath ||
-      path.join(process.cwd(), ".data", "nightshift-digests.json");
+      (process.env.NODE_ENV === "test" || process.env.VITEST
+        ? path.join(os.tmpdir(), "shothik-nightshift-digests.json")
+        : path.join(process.cwd(), ".data", "nightshift-digests.json"));
     this.ensureStorage();
     this.loadDigests();
   }
@@ -47,9 +50,13 @@ export class NightshiftEngine {
   }
 
   private loadDigests(): void {
-    if (fs.existsSync(this.journalPath)) {
+    const targetPath = fs.existsSync(this.journalPath)
+      ? this.journalPath
+      : path.join(process.cwd(), ".data", "nightshift-digests.json");
+
+    if (fs.existsSync(targetPath)) {
       try {
-        const raw = fs.readFileSync(this.journalPath, "utf8");
+        const raw = fs.readFileSync(targetPath, "utf8");
         this.digests = JSON.parse(raw);
       } catch (err: any) {
         logger.warn({ err: err.message }, "[nightshift-engine] Failed to parse digests journal, initializing empty");
