@@ -376,6 +376,9 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                     value={buyerBin}
                     onChange={(e) => setBuyerBin(e.target.value)}
                     placeholder="001234567-0101"
+                    type="tel"
+                    inputMode="numeric"
+                    aria-label="13-Digit BIN"
                     className={`h-8 text-xs font-mono mt-1 ${
                       buyerBin && !isBinValid(buyerBin) ? "border-amber-500/60" : ""
                     }`}
@@ -426,6 +429,7 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                         <td className="py-2 px-1">
                           <Input
                             value={item.itemDescription}
+                            aria-label="Item description"
                             onChange={(e) => handleUpdateItem(item.id, { itemDescription: e.target.value })}
                             className="h-7 text-xs"
                           />
@@ -433,6 +437,9 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                         <td className="py-2 px-1">
                           <Input
                             type="number"
+                            inputMode="numeric"
+                            min={1}
+                            aria-label="Quantity"
                             value={item.quantity}
                             onChange={(e) => handleUpdateItem(item.id, { quantity: Math.max(1, Number(e.target.value)) })}
                             className="h-7 text-xs"
@@ -441,6 +448,7 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                         <td className="py-2 px-1">
                           <select
                             value={item.unit}
+                            aria-label="Unit"
                             onChange={(e) => handleUpdateItem(item.id, { unit: e.target.value as any })}
                             className="h-7 text-xs bg-background border border-input rounded px-1.5 w-full"
                           >
@@ -454,6 +462,9 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                         <td className="py-2 px-1">
                           <Input
                             type="number"
+                            inputMode="numeric"
+                            min={0}
+                            aria-label="Unit Price in BDT"
                             value={item.unitPriceBdt}
                             onChange={(e) => handleUpdateItem(item.id, { unitPriceBdt: Math.max(0, Number(e.target.value)) })}
                             className="h-7 text-xs font-mono"
@@ -462,6 +473,7 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                         <td className="py-2 px-1">
                           <select
                             value={item.vatRatePercent}
+                            aria-label="VAT Rate"
                             onChange={(e) => handleUpdateItem(item.id, { vatRatePercent: Number(e.target.value) })}
                             className="h-7 text-xs bg-background border border-input rounded px-1.5 w-full"
                           >
@@ -475,6 +487,7 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                         <td className="py-2 px-1">
                           <select
                             value={item.tdsCategory}
+                            aria-label="TDS Category"
                             onChange={(e) => handleUpdateItem(item.id, { tdsCategory: e.target.value as any })}
                             className="h-7 text-xs bg-background border border-input rounded px-1.5 w-full"
                           >
@@ -491,7 +504,8 @@ export function MushakTaxStudioModal({ open, onOpenChange }: MushakTaxStudioModa
                         <td className="py-2 px-1 text-center">
                           <button
                             onClick={() => handleRemoveItem(item.id)}
-                            className="text-muted-foreground hover:text-rose-400 p-1"
+                            aria-label="Remove item"
+                            className="min-w-[36px] min-h-[36px] inline-flex items-center justify-center text-muted-foreground hover:text-rose-400 p-1"
                             title="Remove item"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
