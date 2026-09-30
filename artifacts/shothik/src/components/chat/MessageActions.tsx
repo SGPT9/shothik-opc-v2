@@ -125,7 +125,7 @@ export function MessageActions({
         onClick={handleCopy}
         aria-label="Copy message"
         title={copied ? "Copied" : "Copy text"}
-        className="h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80"
+        className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer"
       >
         {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
       </Button>
@@ -139,7 +139,7 @@ export function MessageActions({
           onClick={onEdit}
           aria-label="Edit message"
           title="Edit prompt"
-          className="h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80"
+          className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer"
         >
           <Edit3 className="h-3.5 w-3.5" />
         </Button>
@@ -157,7 +157,7 @@ export function MessageActions({
             aria-label="Like response"
             title="Good response"
             className={cn(
-              "h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80",
+              "min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer",
               reaction === 'like' && "text-emerald-400 bg-emerald-950/30"
             )}
           >
@@ -172,7 +172,7 @@ export function MessageActions({
             aria-label="Dislike response"
             title="Poor response"
             className={cn(
-              "h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80",
+              "min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer",
               reaction === 'dislike' && "text-rose-400 bg-rose-950/30"
             )}
           >
@@ -188,7 +188,7 @@ export function MessageActions({
               onClick={onContinue}
               aria-label="Continue response"
               title="Continue generation"
-              className="h-7 w-7 text-cyan-400 hover:text-cyan-200 hover:bg-cyan-950/30"
+              className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-cyan-400 hover:text-cyan-200 hover:bg-cyan-950/30 cursor-pointer"
             >
               <Play className="h-3.5 w-3.5 fill-current" />
             </Button>
@@ -203,7 +203,7 @@ export function MessageActions({
               onClick={onRegenerate || onRetry}
               aria-label="Regenerate response"
               title="Regenerate"
-              className="h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80"
+              className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer"
             >
               <RotateCcw className="h-3.5 w-3.5" />
             </Button>
@@ -218,7 +218,7 @@ export function MessageActions({
               onClick={onBranch}
               aria-label="Branch conversation"
               title="Fork conversation from here"
-              className="h-7 w-7 text-purple-400 hover:text-purple-200 hover:bg-purple-950/30"
+              className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-purple-400 hover:text-purple-200 hover:bg-purple-950/30 cursor-pointer"
             >
               <GitBranch className="h-3.5 w-3.5" />
             </Button>
@@ -235,7 +235,7 @@ export function MessageActions({
           onClick={onStop}
           aria-label="Stop response"
           title="Stop generating"
-          className="h-7 w-7 text-rose-400 hover:text-rose-200 hover:bg-rose-950/40"
+          className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-rose-400 hover:text-rose-200 hover:bg-rose-950/40 cursor-pointer"
         >
           <Square className="h-3.5 w-3.5 fill-current" />
         </Button>
@@ -250,7 +250,7 @@ export function MessageActions({
         aria-label="Bookmark message"
         title={bookmarked ? "Bookmarked" : "Save bookmark"}
         className={cn(
-          "h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80",
+          "min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer",
           bookmarked && "text-amber-400 fill-amber-400/20"
         )}
       >
@@ -266,7 +266,7 @@ export function MessageActions({
           onClick={onShare}
           aria-label="Share message"
           title="Share message excerpt"
-          className="h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80"
+          className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer"
         >
           <Share2 className="h-3.5 w-3.5" />
         </Button>
@@ -281,7 +281,7 @@ export function MessageActions({
           onClick={() => setShowExportMenu(!showExportMenu)}
           aria-label="Export message"
           title="Export message"
-          className="h-7 w-7 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80"
+          className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-neutral-200 hover:bg-neutral-800/80 cursor-pointer"
         >
           <Download className="h-3.5 w-3.5" />
         </Button>
@@ -290,19 +290,19 @@ export function MessageActions({
           <div className="absolute right-0 bottom-full mb-1 w-32 bg-neutral-900 border border-neutral-800 rounded-lg shadow-xl py-1 z-50 text-xs">
             <button
               onClick={() => handleExport('markdown')}
-              className="w-full text-left px-3 py-1.5 hover:bg-neutral-800 text-neutral-300 transition-colors"
+              className="w-full text-left px-3 py-1.5 hover:bg-neutral-800 text-neutral-300 transition-colors cursor-pointer"
             >
               Export as .MD
             </button>
             <button
               onClick={() => handleExport('text')}
-              className="w-full text-left px-3 py-1.5 hover:bg-neutral-800 text-neutral-300 transition-colors"
+              className="w-full text-left px-3 py-1.5 hover:bg-neutral-800 text-neutral-300 transition-colors cursor-pointer"
             >
               Export as Plain Text
             </button>
             <button
               onClick={() => handleExport('json')}
-              className="w-full text-left px-3 py-1.5 hover:bg-neutral-800 text-neutral-300 transition-colors"
+              className="w-full text-left px-3 py-1.5 hover:bg-neutral-800 text-neutral-300 transition-colors cursor-pointer"
             >
               Export as JSON
             </button>
@@ -319,7 +319,7 @@ export function MessageActions({
           onClick={onDelete}
           aria-label="Delete message"
           title="Delete message"
-          className="h-7 w-7 text-neutral-400 hover:text-rose-400 hover:bg-rose-950/30"
+          className="min-w-[36px] min-h-[36px] sm:h-7 sm:w-7 p-1.5 text-neutral-400 hover:text-rose-400 hover:bg-rose-950/30 cursor-pointer"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>

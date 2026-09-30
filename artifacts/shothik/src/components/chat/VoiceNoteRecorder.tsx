@@ -46,9 +46,11 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({ onAudioRec
     <div className="flex items-center gap-2 p-2 bg-slate-900 border border-slate-700 rounded-2xl shadow-lg">
       {!isRecording ? (
         <button
+          type="button"
           onClick={startRecording}
           title="Hold or click to record Bangla voice note"
-          className="p-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl transition shadow-md shadow-emerald-500/20 flex items-center gap-1.5 text-xs font-bold"
+          aria-label="Record Bangla voice note"
+          className="p-2.5 min-h-[36px] bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl transition shadow-md shadow-emerald-500/20 flex items-center gap-1.5 text-xs font-bold cursor-pointer"
         >
           <Mic className="w-4 h-4" />
           <span>Voice Note</span>
@@ -74,15 +76,21 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({ onAudioRec
 
           {/* Action buttons */}
           <button
+            type="button"
             onClick={cancelRecording}
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+            aria-label="Cancel recording"
+            title="Cancel recording"
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition cursor-pointer"
           >
             <Trash2 className="w-4 h-4" />
           </button>
 
           <button
+            type="button"
             onClick={stopRecordingAndSend}
-            className="p-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl transition shadow-md shadow-emerald-500/20"
+            aria-label="Send recorded voice note"
+            title="Send voice note"
+            className="p-2 min-w-[36px] min-h-[36px] flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-slate-950 rounded-xl transition shadow-md shadow-emerald-500/20 cursor-pointer"
           >
             <Send className="w-4 h-4" />
           </button>

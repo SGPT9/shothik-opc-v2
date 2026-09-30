@@ -127,17 +127,19 @@ export function FloatingSelectionToolbar({
           <button
             type="submit"
             disabled={!customPrompt.trim()}
-            className="p-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black transition cursor-pointer disabled:opacity-40"
+            aria-label="Submit transformation"
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg bg-cyan-500 hover:bg-cyan-400 text-black transition cursor-pointer disabled:opacity-40"
           >
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
           <button
             type="button"
+            aria-label="Cancel custom transformation"
             onClick={() => {
               setShowCustomInput(false);
               setCustomPrompt("");
             }}
-            className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 transition cursor-pointer"
+            className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-zinc-300 transition cursor-pointer"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -148,8 +150,9 @@ export function FloatingSelectionToolbar({
           <button
             type="button"
             onClick={() => handleAction("polish")}
+            aria-label="Polish phrasing"
             title="Refine phrasing, tone, and clarity"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-zinc-200 hover:text-white hover:bg-white/15 transition cursor-pointer group"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-xl text-xs font-medium text-zinc-200 hover:text-white hover:bg-white/15 transition cursor-pointer group"
           >
             <Sparkles className="w-3.5 h-3.5 text-cyan-400 group-hover:scale-110 transition-transform" />
             <span>Polish</span>
@@ -159,8 +162,9 @@ export function FloatingSelectionToolbar({
           <button
             type="button"
             onClick={() => handleAction("bangla_harmony")}
+            aria-label="Bangla standard phrasing"
             title="সাধু ও চলিত ভাষার মিশ্রণ দূর করে প্রমিত রূপান্তর"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-emerald-300 hover:text-white hover:bg-emerald-500/20 transition cursor-pointer group"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-xl text-xs font-medium text-emerald-300 hover:text-white hover:bg-emerald-500/20 transition cursor-pointer group"
           >
             <Languages className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
             <span>{isBengali ? "শুদ্ধকরণ" : "Bangla"}</span>
@@ -170,8 +174,9 @@ export function FloatingSelectionToolbar({
           <button
             type="button"
             onClick={() => handleAction("forecast")}
+            aria-label="Forecast branch"
             title="Generate InkOS 3-scenario branch based on this text"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-purple-300 hover:text-white hover:bg-purple-500/20 transition cursor-pointer group"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-xl text-xs font-medium text-purple-300 hover:text-white hover:bg-purple-500/20 transition cursor-pointer group"
           >
             <GitBranch className="w-3.5 h-3.5 text-purple-400 group-hover:scale-110 transition-transform" />
             <span>Forecast</span>
@@ -181,8 +186,9 @@ export function FloatingSelectionToolbar({
           <button
             type="button"
             onClick={() => handleAction("shorten")}
+            aria-label="Shorten text"
             title="Trim words and eliminate fluff"
-            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-medium text-amber-300 hover:text-white hover:bg-amber-500/20 transition cursor-pointer group"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 min-h-[36px] rounded-xl text-xs font-medium text-amber-300 hover:text-white hover:bg-amber-500/20 transition cursor-pointer group"
           >
             <Scissors className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
             <span>Concise</span>
@@ -194,8 +200,9 @@ export function FloatingSelectionToolbar({
           <button
             type="button"
             onClick={() => handleAction("custom")}
+            aria-label="Custom AI prompt"
             title="Ask custom instruction"
-            className="flex items-center gap-1 px-2 py-1.5 rounded-xl text-xs font-medium text-cyan-400 hover:text-white hover:bg-cyan-500/20 transition cursor-pointer"
+            className="flex items-center gap-1 px-2.5 py-1.5 min-h-[36px] rounded-xl text-xs font-medium text-cyan-400 hover:text-white hover:bg-cyan-500/20 transition cursor-pointer"
           >
             <Wand2 className="w-3.5 h-3.5" />
             <span>Ask AI</span>
