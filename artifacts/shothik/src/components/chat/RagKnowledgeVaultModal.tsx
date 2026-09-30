@@ -155,7 +155,8 @@ export function RagKnowledgeVaultModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
+            aria-label="Close RAG Knowledge Vault dialog"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -167,7 +168,7 @@ export function RagKnowledgeVaultModal({
             type="button"
             onClick={() => setActiveTab("documents")}
             className={cn(
-              "px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5",
+              "min-h-[36px] px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5",
               activeTab === "documents"
                 ? "bg-zinc-800 text-white shadow-xs"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
@@ -180,7 +181,7 @@ export function RagKnowledgeVaultModal({
             type="button"
             onClick={() => setActiveTab("search")}
             className={cn(
-              "px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5",
+              "min-h-[36px] px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5",
               activeTab === "search"
                 ? "bg-zinc-800 text-white shadow-xs"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"
@@ -193,7 +194,7 @@ export function RagKnowledgeVaultModal({
             type="button"
             onClick={() => setActiveTab("ingest")}
             className={cn(
-              "px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5",
+              "min-h-[36px] px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5",
               activeTab === "ingest"
                 ? "bg-zinc-800 text-white shadow-xs"
                 : "text-zinc-400 hover:text-white hover:bg-zinc-800/50"

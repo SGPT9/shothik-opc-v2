@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Share2, Copy, Check, Lock, Globe, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/ui/useModalA11y';
 
 export interface ShareConversationModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export function ShareConversationModal({
   conversationId,
   selectedMessageContent,
 }: ShareConversationModalProps) {
+  useModalA11y({ isOpen, onClose });
+
   const [copied, setCopied] = useState(false);
   const [accessLevel, setAccessLevel] = useState<'private' | 'team' | 'public'>('public');
 
@@ -38,7 +41,12 @@ export function ShareConversationModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="share-conversation-title"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
+    >
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl text-neutral-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -46,12 +54,19 @@ export function ShareConversationModal({
               <Share2 className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-lg text-white">Share Conversation</h3>
+              <h3 id="share-conversation-title" className="font-semibold text-lg text-white">Share Conversation</h3>
               <p className="text-xs text-neutral-400">{conversationTitle}</p>
             </div>
           </div>
 
-          <Button type="button" variant="ghost" size="icon" onClick={onClose}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close share conversation dialog"
+            className="min-w-[36px] min-h-[36px]"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -122,7 +137,8 @@ export function ShareConversationModal({
             <Button
               type="button"
               onClick={handleCopyLink}
-              className="bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs px-4"
+              aria-label="Copy shareable link"
+              className="min-h-[36px] bg-cyan-600 hover:bg-cyan-500 text-white font-medium text-xs px-4"
             >
               {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               <span>{copied ? 'Copied!' : 'Copy'}</span>
