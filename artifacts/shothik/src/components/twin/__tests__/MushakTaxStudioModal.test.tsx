@@ -46,6 +46,9 @@ describe("MushakTaxStudioModal Component", () => {
 
     const binInput = screen.getByDisplayValue("002948172-0301");
     expect(binInput).toBeInTheDocument();
+    expect(binInput).toHaveAttribute("type", "tel");
+    expect(binInput).toHaveAttribute("inputMode", "numeric");
+    expect(binInput).toHaveAttribute("aria-label", "13-Digit BIN");
     expect(screen.getByText("✓ Valid BIN")).toBeInTheDocument();
 
     // Change to invalid BIN

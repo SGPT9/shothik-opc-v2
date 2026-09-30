@@ -19,6 +19,8 @@ import {
   Lock,
 } from "lucide-react";
 
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
+
 export interface RtoFraudShieldModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -28,6 +30,8 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
   isOpen,
   onClose,
 }) => {
+  useModalA11y({ isOpen, onClose });
+
   const [activeTab, setActiveTab] = useState<"predict" | "blacklist" | "advance">("predict");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -317,8 +321,8 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            aria-label="Close modal"
-            className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            aria-label="Close RTO Fraud Shield dialog"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -328,7 +332,7 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
         <div className="flex items-center gap-2 px-6 pt-3 border-b border-slate-800 bg-slate-950/30">
           <button
             onClick={() => setActiveTab("predict")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all ${
+            className={`min-h-[40px] flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-all ${
               activeTab === "predict"
                 ? "border-red-500 text-red-400 bg-red-500/5"
                 : "border-transparent text-slate-400 hover:text-slate-200"
@@ -339,7 +343,7 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab("blacklist")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all ${
+            className={`min-h-[40px] flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-all ${
               activeTab === "blacklist"
                 ? "border-red-500 text-red-400 bg-red-500/5"
                 : "border-transparent text-slate-400 hover:text-slate-200"
@@ -350,7 +354,7 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
           </button>
           <button
             onClick={() => setActiveTab("advance")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all ${
+            className={`min-h-[40px] flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-all ${
               activeTab === "advance"
                 ? "border-red-500 text-red-400 bg-red-500/5"
                 : "border-transparent text-slate-400 hover:text-slate-200"
@@ -431,7 +435,8 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
                     <Phone className="absolute left-3 top-2.5 w-4 h-4 text-slate-500" />
                     <input
                       id="customer-phone-input"
-                      type="text"
+                      type="tel"
+                      inputMode="tel"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="01XXXXXXXXX"
@@ -447,6 +452,7 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
                   <input
                     id="cod-amount-input"
                     type="number"
+                    inputMode="numeric"
                     value={codAmount}
                     onChange={(e) => setCodAmount(Number(e.target.value))}
                     className="w-full px-3 py-2 text-xs font-mono rounded-lg bg-slate-950 border border-slate-800 focus:border-red-500 focus:outline-none text-slate-200"
@@ -505,7 +511,7 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
                 <button
                   onClick={handlePredict}
                   disabled={loading}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-medium transition-all shadow-lg shadow-red-950/40 disabled:opacity-50"
+                  className="min-h-[44px] flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white text-xs font-medium transition-all shadow-lg shadow-red-950/40 disabled:opacity-50"
                 >
                   {loading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -637,7 +643,8 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
                     </label>
                     <input
                       id="report-phone-input"
-                      type="text"
+                      type="tel"
+                      inputMode="tel"
                       value={reportPhone}
                       onChange={(e) => setReportPhone(e.target.value)}
                       placeholder="01XXXXXXXXX"
@@ -701,7 +708,7 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
                   <button
                     onClick={handleReportFraud}
                     disabled={!reportPhone || loading}
-                    className="ml-auto flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition-all disabled:opacity-50"
+                    className="ml-auto min-h-[38px] flex items-center gap-2 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-xs font-medium transition-all disabled:opacity-50"
                   >
                     <Send className="w-3.5 h-3.5" />
                     Submit Fraud Report
@@ -808,7 +815,7 @@ export const RtoFraudShieldModal: React.FC<RtoFraudShieldModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
+            className="min-h-[36px] px-4 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
           >
             Close
           </button>

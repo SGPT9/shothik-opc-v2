@@ -48,4 +48,23 @@ describe("Frontend AG-UI Component: RtoFraudShieldModal (Slice 77)", () => {
     const phoneInput = screen.getByDisplayValue("01899112233");
     expect(phoneInput).toBeInTheDocument();
   });
+
+  it("conforms to WAI-ARIA modal dialog accessibility standards", () => {
+    const handleClose = vitest.fn();
+    render(<RtoFraudShieldModal isOpen={true} onClose={handleClose} />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAttribute("aria-labelledby", "rto-fraud-title");
+
+    const closeBtn = screen.getByRole("button", { name: /close rto fraud shield dialog/i });
+    expect(closeBtn).toBeInTheDocument();
+    fireEvent.click(closeBtn);
+    expect(handleClose).toHaveBeenCalledTimes(1);
+
+    // Test Escape key dismissal
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(handleClose).toHaveBeenCalledTimes(2);
+  });
 });

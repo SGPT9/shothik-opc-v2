@@ -15,12 +15,16 @@ import {
   Lock,
 } from "lucide-react";
 
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
+
 export interface KycOcrModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const KycOcrModal: React.FC<KycOcrModalProps> = ({ isOpen, onClose }) => {
+  useModalA11y({ isOpen, onClose });
+
   const [activeTab, setActiveTab] = useState<"nid" | "trade" | "dossiers">("nid");
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -172,7 +176,12 @@ DHAKA NORTH CITY CORPORATION
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="kyc-ocr-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm"
+    >
       <div className="relative flex max-h-[90vh] w-full max-w-4xl flex-col rounded-2xl border border-white/10 bg-[#0f172a] text-slate-100 shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
@@ -181,7 +190,7 @@ DHAKA NORTH CITY CORPORATION
               <Scan className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">Bengali KYC & NID / Trade License OCR</h2>
+              <h2 id="kyc-ocr-title" className="text-lg font-bold">Bengali KYC & NID / Trade License OCR</h2>
               <p className="text-xs text-slate-400">
                 Multi-Modal Smart Card & Municipal Trade License Extraction with SHA-256 Audit Seal
               </p>
@@ -189,20 +198,23 @@ DHAKA NORTH CITY CORPORATION
           </div>
           <button
             onClick={onClose}
-            className="rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
+            aria-label="Close KYC OCR dialog"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg p-2 text-slate-400 transition hover:bg-white/10 hover:text-white"
           >
             <X className="h-5 w-5" />
           </button>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex border-b border-white/10 bg-slate-900/50 px-6 pt-2">
+        <div className="flex border-b border-white/10 bg-slate-900/50 px-6 pt-2" role="tablist" aria-label="KYC Document Types">
           <button
+            role="tab"
+            aria-selected={activeTab === "nid"}
             onClick={() => {
               setActiveTab("nid");
               setDossierResult(null);
             }}
-            className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+            className={`min-h-[40px] flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
               activeTab === "nid"
                 ? "border-emerald-400 text-emerald-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
@@ -212,11 +224,13 @@ DHAKA NORTH CITY CORPORATION
             National ID (স্মার্ট এনআইডি)
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === "trade"}
             onClick={() => {
               setActiveTab("trade");
               setDossierResult(null);
             }}
-            className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
+            className={`min-h-[40px] flex items-center gap-2 border-b-2 px-4 py-2.5 text-sm font-semibold transition ${
               activeTab === "trade"
                 ? "border-emerald-400 text-emerald-400"
                 : "border-transparent text-slate-400 hover:text-slate-200"
@@ -242,6 +256,7 @@ DHAKA NORTH CITY CORPORATION
               rows={8}
               value={activeTab === "nid" ? nidText : tradeText}
               onChange={(e) => (activeTab === "nid" ? setNidText(e.target.value) : setTradeText(e.target.value))}
+              aria-label={activeTab === "nid" ? "NID Document Payload (OCR Text)" : "Trade License Document Payload"}
               className="w-full rounded-xl border border-white/10 bg-slate-950/80 p-3.5 font-mono text-xs text-slate-200 outline-none transition focus:border-emerald-500"
               placeholder="Paste raw OCR transcript or document data..."
             />
@@ -250,7 +265,7 @@ DHAKA NORTH CITY CORPORATION
               <button
                 onClick={activeTab === "nid" ? handleProcessNid : handleProcessTradeLicense}
                 disabled={loading}
-                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-3 text-sm font-semibold text-white shadow-lg transition hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50"
+                className="flex flex-1 min-h-[44px] items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 py-2.5 px-4 text-sm font-semibold text-white shadow-lg transition hover:from-emerald-400 hover:to-teal-400 disabled:opacity-50"
               >
                 {loading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Scan className="h-4 w-4" />}
                 {activeTab === "nid" ? "Process Smart NID OCR" : "Process Trade License OCR"}
@@ -390,9 +405,10 @@ DHAKA NORTH CITY CORPORATION
                     </span>
                     <button
                       onClick={copySeal}
-                      className="flex items-center gap-1 text-[10px] text-slate-400 hover:text-white"
+                      aria-label="Copy SHA-256 seal"
+                      className="min-w-[36px] min-h-[36px] flex items-center justify-center gap-1 text-[10px] text-slate-400 hover:text-white rounded-md transition"
                     >
-                      {copied ? <Check className="h-3 w-3 text-emerald-400" /> : <Copy className="h-3 w-3" />}
+                      {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
                       {copied ? "Copied" : "Copy"}
                     </button>
                   </div>

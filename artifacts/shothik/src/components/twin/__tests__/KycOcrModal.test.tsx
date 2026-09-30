@@ -35,4 +35,23 @@ describe("Frontend AG-UI Component: KycOcrModal (Slice 76)", () => {
     expect(screen.getByText(/No document processed yet/i)).toBeInTheDocument();
     expect(screen.getByText(/Click process to extract and verify entities/i)).toBeInTheDocument();
   });
+
+  it("conforms to WAI-ARIA modal dialog accessibility standards", () => {
+    const handleClose = vitest.fn();
+    render(<KycOcrModal isOpen={true} onClose={handleClose} />);
+
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveAttribute("aria-labelledby", "kyc-ocr-title");
+
+    const closeBtn = screen.getByRole("button", { name: /close kyc ocr dialog/i });
+    expect(closeBtn).toBeInTheDocument();
+    fireEvent.click(closeBtn);
+    expect(handleClose).toHaveBeenCalledTimes(1);
+
+    // Test Escape key dismissal
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(handleClose).toHaveBeenCalledTimes(2);
+  });
 });
