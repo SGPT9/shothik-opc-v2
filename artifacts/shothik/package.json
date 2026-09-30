@@ -109,7 +109,7 @@
     "@tiptap/extension-list-item": "^3.29.2",
     "@tiptap/extension-ordered-list": "^3.29.2",
     "@tiptap/extension-placeholder": "^3.29.2",
-    "@tiptap/extension-text": "^3.29.2",
+    "@tiptap/extension-text": "^3.30.6",
     "@tiptap/extension-text-align": "^3.29.2",
     "@tiptap/extension-typography": "^3.29.2",
     "@tiptap/extension-underline": "^3.29.2",
