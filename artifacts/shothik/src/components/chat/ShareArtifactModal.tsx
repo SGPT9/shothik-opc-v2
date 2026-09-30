@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Copy, Check, Share2, Globe, MessageSquare, Linkedin, X, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 interface ShareArtifactModalProps {
   open: boolean;
@@ -17,6 +18,8 @@ export function ShareArtifactModal({
   artifactType = "report",
   slug = "shared-session",
 }: ShareArtifactModalProps) {
+  useModalA11y({ isOpen: open, onClose: () => onOpenChange(false) });
+
   const [copied, setCopied] = useState(false);
   const shareUrl = typeof window !== "undefined"
     ? `${window.location.origin}/share/${slug}?t=${Date.now().toString(36)}`
@@ -41,7 +44,12 @@ export function ShareArtifactModal({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-150">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="share-artifact-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-150"
+    >
       <div className="w-full max-w-md rounded-3xl bg-popover/95 backdrop-blur-2xl border border-border/80 p-5 shadow-2xl space-y-4 animate-in zoom-in-95 duration-200">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -49,14 +57,15 @@ export function ShareArtifactModal({
               <Share2 className="h-4 w-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-foreground">Share Public Link</h3>
+              <h3 id="share-artifact-title" className="text-sm font-bold text-foreground">Share Public Link</h3>
               <p className="text-[11px] text-muted-foreground">Anyone with this link can view this artifact</p>
             </div>
           </div>
           <button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
+            aria-label="Close share public link dialog"
+            className="min-w-[36px] min-h-[36px] flex items-center justify-center p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition cursor-pointer"
           >
             <X className="h-4 w-4" />
           </button>
@@ -78,8 +87,9 @@ export function ShareArtifactModal({
             <button
               type="button"
               onClick={handleCopyLink}
+              aria-label="Copy public web link"
               className={cn(
-                "flex items-center gap-1 px-3 py-1 rounded-lg font-bold text-xs transition cursor-pointer shrink-0 shadow-xs",
+                "min-h-[36px] flex items-center gap-1 px-3 py-1 rounded-lg font-bold text-xs transition cursor-pointer shrink-0 shadow-xs",
                 copied
                   ? "bg-emerald-500 text-zinc-950 font-bold"
                   : "bg-brand hover:bg-brand/90 text-white"
@@ -109,7 +119,7 @@ export function ShareArtifactModal({
             <button
               type="button"
               onClick={handleWhatsAppShare}
-              className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold transition cursor-pointer"
+              className="min-h-[44px] flex items-center justify-center gap-2 p-2.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold transition cursor-pointer"
             >
               <MessageSquare className="h-4 w-4" />
               <span>WhatsApp</span>
@@ -117,7 +127,7 @@ export function ShareArtifactModal({
             <button
               type="button"
               onClick={handleLinkedInShare}
-              className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-semibold transition cursor-pointer"
+              className="min-h-[44px] flex items-center justify-center gap-2 p-2.5 rounded-xl border border-sky-500/30 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 text-xs font-semibold transition cursor-pointer"
             >
               <Linkedin className="h-4 w-4" />
               <span>LinkedIn</span>

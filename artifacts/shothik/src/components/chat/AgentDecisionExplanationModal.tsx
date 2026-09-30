@@ -6,6 +6,7 @@
 import React from 'react';
 import { HelpCircle, Brain, Cpu, ShieldCheck, ChevronRight, X, Sparkles, Terminal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useModalA11y } from '@/hooks/ui/useModalA11y';
 
 export interface AgentDecisionInfo {
   agentName: string;
@@ -29,10 +30,17 @@ export function AgentDecisionExplanationModal({
   onClose,
   decisionInfo,
 }: AgentDecisionExplanationModalProps) {
+  useModalA11y({ isOpen, onClose });
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center z-50 p-4">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="agent-decision-title"
+      className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center z-50 p-4"
+    >
       <div className="bg-neutral-900 border border-neutral-800 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl text-neutral-200">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-800 pb-4">
@@ -41,12 +49,19 @@ export function AgentDecisionExplanationModal({
               <HelpCircle className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-base text-white">Agent Decision Audit</h3>
+              <h3 id="agent-decision-title" className="font-semibold text-base text-white">Agent Decision Audit</h3>
               <p className="text-xs text-purple-400 font-mono">@{decisionInfo.agentHandle} ({decisionInfo.agentName})</p>
             </div>
           </div>
 
-          <Button type="button" variant="ghost" size="icon" onClick={onClose}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            aria-label="Close agent decision audit dialog"
+            className="min-w-[36px] min-h-[36px]"
+          >
             <X className="h-4 w-4" />
           </Button>
         </div>
@@ -106,6 +121,17 @@ export function AgentDecisionExplanationModal({
             </div>
           </div>
         ) : null}
+
+        {/* Footer Dismiss Button */}
+        <div className="pt-2 border-t border-neutral-800 flex justify-end">
+          <Button
+            type="button"
+            onClick={onClose}
+            className="min-h-[36px] px-4 text-xs font-semibold"
+          >
+            Done
+          </Button>
+        </div>
       </div>
     </div>
   );
