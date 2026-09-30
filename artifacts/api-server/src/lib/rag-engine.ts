@@ -2,6 +2,7 @@ import { randomUUID } from "crypto";
 import { logger } from "./logger.js";
 import { promises as fs } from "fs";
 import path from "path";
+import os from "os";
 
 export interface DocumentChunk {
   id: string;
@@ -49,7 +50,10 @@ export class RAGKnowledgeEngine {
   private embeddingCache = new Map<string, number[]>();
   private cacheHits = 0;
   private cacheMisses = 0;
-  private storagePath = path.resolve(process.cwd(), "data", "rag-store.json");
+  private storagePath =
+    process.env.NODE_ENV === "test" || process.env.VITEST
+      ? path.resolve(os.tmpdir(), "shothik-rag-store.json")
+      : path.resolve(process.cwd(), "data", "rag-store.json");
 
   private constructor() {
     this.loadFromDisk().catch((err) => {
@@ -436,7 +440,13 @@ export class RAGKnowledgeEngine {
 
   private async loadFromDisk(): Promise<void> {
     try {
-      const data = await fs.readFile(this.storagePath, "utf-8");
+      let data: string;
+      try {
+        data = await fs.readFile(this.storagePath, "utf-8");
+      } catch {
+        const seedPath = path.resolve(process.cwd(), "data", "rag-store.json");
+        data = await fs.readFile(seedPath, "utf-8");
+      }
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed.documents)) {
         for (const d of parsed.documents) this.documents.set(d.id, d);
