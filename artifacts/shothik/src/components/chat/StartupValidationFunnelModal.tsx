@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { StartupValidationFunnelService, type FullStartupValidationReport } from "@/lib/infrastructure/startup-validation-funnel-service";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface StartupValidationFunnelModalProps {
   isOpen: boolean;
@@ -14,15 +15,10 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
   const [report, setReport] = useState<FullStartupValidationReport | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  useModalA11y({
+    isOpen,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -35,21 +31,32 @@ export const StartupValidationFunnelModal: React.FC<StartupValidationFunnelModal
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="startup-validation-modal-title"
+      className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+      onClick={onClose}
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-6 text-slate-100 max-h-[90vh] overflow-y-auto relative">
+      <div
+        className="bg-slate-900 border border-slate-800 rounded-3xl max-w-4xl w-full p-6 shadow-2xl space-y-6 text-slate-100 max-h-[90vh] overflow-y-auto relative cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div>
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 id="startup-validation-modal-title" className="text-xl font-bold text-white flex items-center gap-2">
               <span>🚀</span> 3-Step Startup Validation Funnel Engine
             </h2>
             <p className="text-xs text-slate-400">Step 1: Cofounder TAM/SAM/SOM ➔ Step 2: Live Web Validation ➔ Step 3: ScenarioLab Stress-Test</p>
           </div>
-          <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center cursor-pointer select-none">✕</button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close Startup Validation Funnel modal"
+            className="min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition cursor-pointer select-none"
+          >
+            ✕
+          </button>
         </div>
 
         {/* Input Controls */}

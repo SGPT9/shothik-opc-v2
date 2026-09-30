@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { SwarmAdversarialDebateService, type SwarmDebateResult } from "@/lib/infrastructure/swarm-adversarial-debate-service";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import { CheckCircle2, ShieldAlert, Zap, Scale, Sparkles, X, ArrowRight, MessageSquare, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface SwarmAdversarialDebateModalProps {
   isOpen: boolean;
@@ -25,15 +26,10 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
 
   const [isDeliberating, setIsDeliberating] = useState(false);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    if (isOpen) {
-      window.addEventListener("keydown", handleKeyDown);
-    }
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
+  useModalA11y({
+    isOpen,
+    onClose,
+  });
 
   if (!isOpen) return null;
 
@@ -117,16 +113,20 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="swarm-debate-title"
+      className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
+      onClick={onClose}
     >
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-5xl w-full p-6 shadow-2xl space-y-6 text-slate-100 max-h-[90vh] overflow-y-auto relative">
+      <div
+        className="bg-slate-900 border border-slate-800 rounded-3xl max-w-5xl w-full p-6 shadow-2xl space-y-6 text-slate-100 max-h-[90vh] overflow-y-auto relative cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-4">
           <div className="space-y-0.5">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <h2 id="swarm-debate-title" className="text-xl font-bold text-white flex items-center gap-2">
               <span className="p-1.5 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/30">🐝</span>
               <span>Autonomous Multi-Agent Swarm Deliberation</span>
             </h2>
@@ -137,7 +137,8 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition cursor-pointer select-none"
+            aria-label="Close Swarm Deliberation modal"
+            className="min-w-[36px] min-h-[36px] sm:min-w-[40px] sm:min-h-[40px] rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition cursor-pointer select-none"
           >
             <X className="h-4 w-4" />
           </button>
@@ -184,7 +185,7 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             type="button"
             onClick={() => setActiveTab("perspectives")}
             className={cn(
-              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
+              "min-h-[36px] px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
               activeTab === "perspectives"
                 ? "bg-purple-600/20 text-purple-300 border border-purple-500/40"
                 : "text-slate-400 hover:text-slate-200"
@@ -197,7 +198,7 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             type="button"
             onClick={() => setActiveTab("timeline")}
             className={cn(
-              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
+              "min-h-[36px] px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
               activeTab === "timeline"
                 ? "bg-purple-600/20 text-purple-300 border border-purple-500/40"
                 : "text-slate-400 hover:text-slate-200"
@@ -210,7 +211,7 @@ export const SwarmAdversarialDebateModal: React.FC<SwarmAdversarialDebateModalPr
             type="button"
             onClick={() => setActiveTab("checklist")}
             className={cn(
-              "px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
+              "min-h-[36px] px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer select-none",
               activeTab === "checklist"
                 ? "bg-purple-600/20 text-purple-300 border border-purple-500/40"
                 : "text-slate-400 hover:text-slate-200"
