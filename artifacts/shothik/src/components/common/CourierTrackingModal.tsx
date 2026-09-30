@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { formatBanglaCurrency } from "@/utils/currencyUtils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface CourierTrackingModalProps {
   isOpen: boolean;
@@ -27,6 +28,11 @@ export function CourierTrackingModal({
   onClose,
   initialTrackingCode = "BD_ST_755448",
 }: CourierTrackingModalProps) {
+  useModalA11y({
+    isOpen,
+    onClose,
+  });
+
   const [trackingCode, setTrackingCode] = useState(initialTrackingCode);
   const [loading, setLoading] = useState(false);
   const [parcelData, setParcelData] = useState<any>(null);
