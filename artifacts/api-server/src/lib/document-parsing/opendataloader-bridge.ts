@@ -128,11 +128,11 @@ export class OpenDataLoaderBridge {
       deedMetadata.subRegistryOffice = registryMatch ? registryMatch[0].trim() : "ধানমন্ডি সাব-রেজিস্ট্রি অফিস, ঢাকা";
 
       // Khatian
-      const khatianMatch = normalizedText.match(/(?:সিএস|এসএ|আরএস|বিএস|সিটি)\s*(?:খতিয়ান|খতিয়ান)\s*(?:নং)?\s*[:.-]?\s*([\d০-৯\/\-]+)/i);
+      const khatianMatch = normalizedText.match(/(?:সিএস|এসএ|আরএস|বিএস|সিটি)\s*(?:খতিয়ান|খতিয়ান)\s*(?:নং)?\s*[:.-]?\s*([\d০-৯][\d০-৯a-zA-Z\u0980-\u09FF\/\-]*)/i);
       deedMetadata.khatian = khatianMatch ? khatianMatch[0] : "আরএস খতিয়ান নং ১২৮/খ";
 
       // Daag
-      const daagMatch = normalizedText.match(/(?:দাগ|দাগ নং)\s*[:.-]?\s*([\d০-৯\/\-]+)/i);
+      const daagMatch = normalizedText.match(/(?:দাগ\s*নং|দাগ)\s*[:.-]?\s*([\d০-৯][\d০-৯a-zA-Z\u0980-\u09FF\/\-]*)/i);
       deedMetadata.daagNumber = daagMatch ? daagMatch[0] : "দাগ নং ৯৮২";
 
       // Land Area
