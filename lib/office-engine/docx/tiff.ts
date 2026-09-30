@@ -1,7 +1,7 @@
 let UTIF: any = null;
 try {
   // @ts-ignore
-  UTIF = await import('utif2').then(m => m.default || m).catch(() => null);
+  UTIF = await import(/* @vite-ignore */ 'utif2').then(m => m.default || m).catch(() => null);
 } catch {}
 
 const TIFF_MIMES = new Set(['image/tiff', 'image/tif', 'image/x-tiff'])

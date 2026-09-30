@@ -6,6 +6,7 @@ import { steadfastClient } from "../lib/logistics/steadfast-client";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { NilkhetImpositionEngine } from "../lib/nilkhet-imposition-engine.js";
+import { NilkhetSpineCalculator, type PaperWeightGSM, type BindingStyle } from "@workspace/office-engine/spine-calculator";
 
 const router = Router();
 
@@ -69,30 +70,57 @@ router.post("/v1/publishing/estimate-cost", (req: Request, res: Response): void 
  * Calculates exact book spine thickness and 300 DPI cover dimensions
  */
 router.post("/v1/publishing/calculate-spine", (req: Request, res: Response): void => {
-  const { pageCount = 120, paperType = "70gsm_offset" } = req.body;
-  const pages = Number(pageCount);
+  try {
+    const {
+      pageCount = 120,
+      paperType = "70gsm_offset",
+      bindingStyle = "perfect_binding_softcover",
+      trimWidthMm = 140,
+      trimHeightMm = 215,
+      coverGSM = 300,
+      bleedMarginMm = 3,
+    } = req.body;
 
-  // Caliper per sheet (2 pages per sheet)
-  let sheetThicknessMm = 0.09; // 70gsm
-  if (paperType === "80gsm_cream") sheetThicknessMm = 0.11;
-  if (paperType === "100gsm_art") sheetThicknessMm = 0.13;
+    let paperGSM: PaperWeightGSM = 70;
+    const pStr = String(paperType);
+    if (pStr.includes("80")) paperGSM = 80;
+    else if (pStr.includes("100")) paperGSM = 100;
+    else if (pStr.includes("120")) paperGSM = 120;
+    else if (pStr.includes("150")) paperGSM = 150;
 
-  const sheets = Math.ceil(pages / 2);
-  const spineWidthMm = Math.round((sheets * sheetThicknessMm + 1.2) * 10) / 10;
+    const result = NilkhetSpineCalculator.calculate({
+      pageCount: Math.max(4, Number(pageCount)),
+      trimWidthMm: Number(trimWidthMm),
+      trimHeightMm: Number(trimHeightMm),
+      paperGSM,
+      coverGSM: Number(coverGSM),
+      bindingStyle: (bindingStyle || "perfect_binding_softcover") as BindingStyle,
+      bleedMarginMm: Number(bleedMarginMm),
+    });
 
-  res.status(200).json({
-    success: true,
-    pageCount: pages,
-    sheetCount: sheets,
-    spineWidthMm,
-    coverDimensions: {
-      standardSize: "6x9 Trade Book (Ekushey Boi Mela Standard)",
-      fullCoverWidthMm: Math.round(152.4 * 2 + spineWidthMm + 6), // with 3mm bleed
-      fullCoverHeightMm: 234.8, // 228.6 + 6.2mm bleed
-      dpi: 300,
-      colorSpace: "CMYK (FOGRA39 / Japan Color)",
-    },
-  });
+    res.status(200).json({
+      success: true,
+      pageCount: result.pageCount,
+      sheetCount: result.leafCount,
+      spineWidthMm: result.spineThicknessMm,
+      totalCoverWidthMm: result.totalCoverWidthMm,
+      totalCoverHeightMm: result.totalCoverHeightMm,
+      bleedMarginMm: result.bleedMarginMm,
+      estimatedWeightGrams: result.estimatedWeightGrams,
+      recommendedSteadfastDeliveryChargeBDT: result.recommendedSteadfastDeliveryChargeBDT,
+      coverDimensions: {
+        standardSize: "Ekushey Boi Mela Standard (140x215mm Demmy 1/8)",
+        fullCoverWidthMm: result.totalCoverWidthMm,
+        fullCoverHeightMm: result.totalCoverHeightMm,
+        dpi: result.pressReadyValidation.dpiRequirement,
+        colorSpace: result.pressReadyValidation.colorSpace,
+        recommendedFontFallback: result.pressReadyValidation.recommendedFontFallback,
+      },
+      pressReadyValidation: result.pressReadyValidation,
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
 });
 
 /**

@@ -3,10 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "test": "vitest run"
+  },
   "exports": {
     ".": "./index.ts",
     "./docx": "./docx/index.ts",
-    "./pptx": "./pptx/index.ts"
+    "./pptx": "./pptx/index.ts",
+    "./spine-calculator": "./spine-calculator.ts"
   },
   "dependencies": {
     "fast-xml-parser": "^5.3.4",
