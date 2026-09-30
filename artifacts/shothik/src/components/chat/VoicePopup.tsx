@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Mic, Square, X, Sparkles, Volume2, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 import { LiquidGlassCard, type LiquidGlassPalette } from "./LiquidGlassCard";
 import { AvatarOrb3D, type AvatarOrbRole } from "./AvatarOrb3D";
 
@@ -31,6 +32,11 @@ export function VoicePopup({
   const [transcript, setTranscript] = useState("");
   const [selectedRole, setSelectedRole] = useState<AvatarOrbRole>(initialRole);
 
+  useModalA11y({
+    isOpen,
+    onClose,
+  });
+
   const activeOption = ROLE_OPTIONS.find((r) => r.id === selectedRole) || ROLE_OPTIONS[0];
 
   useEffect(() => {
@@ -53,23 +59,20 @@ export function VoicePopup({
       4500
     );
 
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="voice-popup-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-xl animate-in fade-in duration-200 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -81,9 +84,11 @@ export function VoicePopup({
         className="relative flex flex-col items-center justify-center w-full max-w-lg p-8 shadow-2xl rounded-3xl text-slate-100"
       >
         <Button
+          type="button"
           variant="ghost"
           size="icon"
-          className="absolute top-4 right-4 rounded-full text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer"
+          aria-label="Close voice modal"
+          className="absolute top-4 right-4 rounded-full text-slate-400 hover:text-white hover:bg-white/10 cursor-pointer min-w-[36px] min-h-[36px] flex items-center justify-center"
           onClick={onClose}
         >
           <X className="w-5 h-5" />
@@ -107,7 +112,7 @@ export function VoicePopup({
 
         {/* Transcript Box */}
         <div className="w-full mb-6 text-center">
-          <h3 className="text-xs font-semibold tracking-wider text-slate-300 uppercase opacity-90 mb-2 flex items-center justify-center gap-1.5">
+          <h3 id="voice-popup-title" className="text-xs font-semibold tracking-wider text-slate-300 uppercase opacity-90 mb-2 flex items-center justify-center gap-1.5">
             <Volume2 className="w-3.5 h-3.5 text-indigo-400" />
             {isListening ? "Listening & Live Transcribing..." : "Connecting Voice Engine..."}
           </h3>
@@ -123,6 +128,7 @@ export function VoicePopup({
           <Button
             type="button"
             size="icon"
+            aria-label={isListening ? "Stop listening and send transcript" : "Close voice input"}
             className={cn(
               "w-14 h-14 rounded-full transition-all duration-300 shadow-xl cursor-pointer select-none",
               isListening

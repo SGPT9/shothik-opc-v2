@@ -480,7 +480,7 @@ Automated caliper & spine thickness calculator for softcover and casebound hardc
 - [x] Build it: `/develop nilkhet pod 300dpi spine cmyk press engine`
 - [x] Verify it: `/check verify nilkhet pod 300dpi spine cmyk press engine`
 - [x] Test it: `/test nilkhet pod 300dpi spine cmyk press engine`
-spec 0063 · code in `lib/office-engine/spine-calculator.ts`
+spec 0063 · code in `lib/office-engine/spine-calculator.ts` and `artifacts/api-server/src/routes/publishing.ts`
 
 ### 64. Zero-Latency Client-Side WebAssembly (Wasm) Engine · done
 Client-side in-browser fast engine for instant Banglish-to-Bengali phonetic transliteration, offline delivery zone & fee lookup, and compound tax incidence calculations with <5ms response times.

@@ -154,8 +154,10 @@ export function TrajectoryReceiptModal({
 
             <div className="flex items-center gap-2">
               <button
+                type="button"
                 onClick={handleCopyTrail}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
+                aria-label={copied ? "Copied audit receipt" : "Copy audit receipt"}
+                className="flex items-center gap-1.5 px-3 py-1.5 min-h-[36px] rounded-lg border border-border bg-card hover:bg-muted text-xs font-semibold text-foreground transition cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? "Copied Receipt" : "Copy Receipt"}</span>
@@ -165,7 +167,7 @@ export function TrajectoryReceiptModal({
         </DialogHeader>
 
         {/* Metric Summary Bar */}
-        <div className="grid grid-cols-4 border-b border-border/80 bg-muted/10 px-6 py-3 text-xs font-mono shrink-0">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-0 border-b border-border/80 bg-muted/10 px-6 py-3 text-xs font-mono shrink-0">
           <div>
             <p className="text-[10px] text-muted-foreground">MODEL ENGINE</p>
             <p className="font-bold text-indigo-400 truncate">{modelUsed}</p>
@@ -244,9 +246,11 @@ export function TrajectoryReceiptModal({
             <span>Off-Peak Nightshift Rate: 50% discount active (02:00 AM BST)</span>
           </div>
           <Button
+            type="button"
             size="sm"
             onClick={() => onOpenChange(false)}
-            className="h-7 text-xs bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer"
+            aria-label="Close trajectory view modal"
+            className="min-h-[36px] sm:h-8 px-4 text-xs bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer"
           >
             Done
           </Button>
