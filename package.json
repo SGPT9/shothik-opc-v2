@@ -63,7 +63,7 @@
     "eslint": "^9.39.5",
     "eslint-config-next": "16.2.3",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^16.5.0",
     "jsdom": "^27.4.0",
     "lightningcss-win32-x64-msvc": "1.32.0",
