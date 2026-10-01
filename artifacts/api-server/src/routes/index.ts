@@ -101,9 +101,11 @@ import { coldChainRouter } from "./cold-chain.js";
 import { landPortRouter } from "./land-port.js";
 import { rmgRouter } from "./rmg.js";
 import { energyRouter } from "./energy.js";
+import { waterwayRouter } from "./waterway.js";
 
 const router: IRouter = Router();
 
+router.use(waterwayRouter);
 router.use(energyRouter);
 router.use(rmgRouter);
 router.use(landPortRouter);

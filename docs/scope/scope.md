@@ -97,6 +97,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 84 | Autonomous Cross-Border Land Port Clearing, Port Health & Customs Electronic Cargo Tracking System (ECTS) | Slice 84 | done |
 | 85 | Autonomous RMG Merchandising, Tech Pack Generator, Fabric Consumption & Factory Subcontracting Escrow Engine | Slice 85 | done |
 | 86 | Autonomous Micro-Grid Solar Telemetry, Net-Metering Settlement & Rural Palli Bidyut Energy Tokenization Engine | Slice 86 | done |
+| 87 | Autonomous Inland Waterway Cargo & River Vessel Telemetry Engine (BIWTA River Corridors & Bulk Cargo Demurrage) | Slice 87 | done |
 
 ---
 
@@ -705,6 +706,18 @@ Smart microgrid solar telemetry ingestion across Bangladesh Rural Electrificatio
 - [x] Verify it: `/check verify microgrid solar telemetry netmetering engine`
 - [x] Test it: `/test microgrid solar telemetry netmetering engine`
 spec 0086 · code in `artifacts/api-server/src/lib/energy/solar-microgrid-engine.ts`, `artifacts/api-server/src/routes/energy.ts`, `artifacts/api-server/src/routes/__tests__/energy.test.ts`, and `artifacts/shothik/src/components/twin/SolarMicroGridModal.tsx`
+
+### 87. Autonomous Inland Waterway Cargo & River Vessel Telemetry Engine (BIWTA River Corridors & Bulk Cargo Demurrage) · done
+Inland waterway vessel navigation and cargo telemetry across key Bangladesh Inland Water Transport Authority (BIWTA) river corridors (Chittagong-Meghna-Dhaka Class-I, Mongla-Khulna-Barisal Class-I, Paturia-Daulatdia Padma Class-II, Narayanganj-Ashuganj Surma Class-II, Chattogram-Chandpur Estuary Class-I), real-time under-keel draft clearance calculation with automated shoal grounding hazard alerts (<0.3m critical risk), deterministic stevedoring laytime audit engine calculating free laytime, monsoon river storm warning signal 4+ weather exceptions, and demurrage vs despatch incentive settlement, statutory BIWTA river conservation tolls and port dues compiler with 5% VAT and SHA-256 seal verification, and responsive frontend AG-UI Studio modal (`WaterwayCargoModal.tsx`) with shortcut ⌘W and WAI-ARIA accessibility.
+- [x] Build it: `/develop waterway cargo vessel telemetry engine`
+   - [x] Live AIS telemetry ingestion & shoal hazard draft clearance calculator (AC-1)
+   - [x] Stevedoring laytime & weather-exception demurrage / despatch audit (AC-2)
+   - [x] Statutory BIWTA river conservation tolls & port dues compiler with SHA-256 seal (AC-3)
+   - [x] REST API endpoints under `/api/v1/logistics/waterway/` (AC-4)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘W, WAI-ARIA a11y, and 36px touch targets (AC-5)
+- [x] Verify it: `/check verify waterway cargo vessel telemetry engine`
+- [x] Test it: `/test waterway cargo vessel telemetry engine`
+spec 0087 · code in `artifacts/api-server/src/lib/logistics/waterway-cargo-engine.ts`, `artifacts/api-server/src/routes/waterway.ts`, `artifacts/api-server/src/routes/__tests__/waterway.test.ts`, and `artifacts/shothik/src/components/twin/WaterwayCargoModal.tsx`
 
 ---
 

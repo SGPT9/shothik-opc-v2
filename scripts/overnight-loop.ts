@@ -68,6 +68,8 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     { category: "extremeThermalTelemetry", payload: JSON.stringify({ temperatureCelsius: 9999, humidityPercent: -500 }) },
     // 7. Nilkhet POD boundary payload
     { category: "podSpineBoundary", payload: JSON.stringify({ pageCount: -100, paperWeightGsm: 0 }) },
+    // 8. Waterway AIS shoal / draft boundary payload
+    { category: "waterwayShoalBoundary", payload: JSON.stringify({ waterDepthMeters: -5, draftMeters: 50, speedKnots: 120 }) },
   ];
 
   const fuzzCategories = {
@@ -78,6 +80,7 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     corruptedFleetDispatch: false,
     extremeThermalTelemetry: false,
     podSpineBoundary: false,
+    waterwayShoalBoundary: false,
   };
 
   for (const probe of probes) {
@@ -194,6 +197,8 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/shothik/src/components/twin/__tests__/RmgMerchandisingModal.test.tsx",
       "artifacts/api-server/src/routes/__tests__/energy.test.ts",
       "artifacts/shothik/src/components/twin/__tests__/SolarMicroGridModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/waterway.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/WaterwayCargoModal.test.tsx",
     ];
 
     const vitestOutput = execSync(
