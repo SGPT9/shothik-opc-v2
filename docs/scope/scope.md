@@ -90,6 +90,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 77 | Autonomous Steadfast & Pathao RTO Prediction, Delivery Success Scoring & Fraud Blacklist Sync Engine | Slice 77 | done |
 | 78 | Multi-Channel Real-Time Inventory Matrix & Flash-Sale Reservation Lock Engine | Slice 78 | done |
 | 79 | Autonomous Bengali Land Record (Khatian/Porcha/দলিল) Verification, Chain-of-Ownership Title Search & Stamp Duty Valuation Engine | Slice 79 | done |
+| 80 | Nilkhet Commercial Print-on-Demand (POD) Press Network, Automated 300-DPI CMYK Preflight & Steadfast Press-to-Door Book Courier Fulfillment Engine | Slice 80 | in-progress |
 
 ---
 
@@ -610,6 +611,19 @@ Automated CS, SA, RS, BS, and City Survey Porcha/Khatian verification, chronolog
 - [x] Verify it: `/check verify bengali land record deed verification title search stamp duty engine`
 - [x] Test it: `/test bengali land record deed verification title search stamp duty engine`
 spec 0079 · code in `artifacts/api-server/src/lib/land-registry/deed-verification-engine.ts`, `artifacts/api-server/src/routes/land-registry.ts`, and `artifacts/shothik/src/components/twin/LandRegistryModal.tsx`
+
+### 80. Nilkhet Commercial Print-on-Demand (POD) Press Network, Automated 300-DPI CMYK Preflight & Steadfast Press-to-Door Book Courier Fulfillment Engine · in-progress
+Commercial and academic book print-on-demand platform connecting Bangladeshi authors and OPC publishers directly to verified Nilkhet and Katabon offset and digital press hubs (Bakushah, Katabon, Babupura), with automated spine caliper calculation across all paper stocks, pre-press CMYK 300-DPI bleed preflight checks, complex Bengali font embedding verification (SolaimanLipi, Kalpurush, Nikosh), and direct press-to-door bulk book dispatch with Steadfast Courier integration and gross parcel weight calculation.
+- [ ] Build it: `/develop nilkhet pod cmyk preflight courier fulfillment`
+   - [ ] Multi-hub Nilkhet & Katabon press network routing and machinery capability mapping (AC-3)
+   - [ ] Automated spine caliper bulk calculation and 300-DPI bleed dimensions (AC-1)
+   - [ ] Pre-press CMYK and Bengali Unicode font embedding preflight checker (AC-2)
+   - [ ] Press-to-door Steadfast & Pathao courier bulk dispatch with gross weight computation (AC-4)
+   - [ ] REST API endpoints under `/api/v1/publishing/nilkhet-pod/` (AC-5)
+   - [ ] Frontend AG-UI Twin Studio modal with shortcut ⌘B, WAI-ARIA a11y, and 36px touch targets (AC-6)
+- [ ] Verify it: `/check verify nilkhet pod cmyk preflight courier fulfillment`
+- [ ] Test it: `/test nilkhet pod cmyk preflight courier fulfillment`
+spec 0080 · code in `artifacts/api-server/src/routes/publishing.ts`, `lib/office-engine/spine-calculator.ts`, and `artifacts/shothik/src/components/twin/NilkhetPodModal.tsx`
 
 ---
 
