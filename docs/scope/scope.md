@@ -100,6 +100,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 87 | Autonomous Inland Waterway Cargo & River Vessel Telemetry Engine (BIWTA River Corridors & Bulk Cargo Demurrage) | Slice 87 | done |
 | 88 | Autonomous Cottage Artisan Handloom & Geographical Indication (GI) Export Certification Engine | Slice 88 | done |
 | 89 | Autonomous Coastal Aquaculture, Shrimp Gher Telemetry & Seafood Processing Escrow Engine | Slice 89 | done |
+| 90 | Autonomous Tea Estate Auction Bidding, Leaf Grade Quality Index & Chittagong/Sreemangal Tea Auction Clearing Engine | Slice 90 | done |
 
 ---
 
@@ -745,6 +746,20 @@ Automated coastal aquaculture water quality sensor monitoring across southern sa
 - [x] Verify it: `/check verify aquaculture gher telemetry engine`
 - [x] Test it: `/test aquaculture gher telemetry engine`
 spec 0089 · code in `artifacts/api-server/src/lib/agri/aquaculture-gher-engine.ts`, `artifacts/api-server/src/routes/aquaculture.ts`, `artifacts/api-server/src/routes/__tests__/aquaculture.test.ts`, and `artifacts/shothik/src/components/twin/AquacultureGherModal.tsx`
+
+### 90. Autonomous Tea Estate Auction Bidding, Leaf Grade Quality Index & Chittagong/Sreemangal Tea Auction Clearing Engine · done
+Automated tea estate cataloging across Bangladesh Tea Board (BTB) registered commercial estates (Finlay Sreemangal, Ispahani Mirzapore, Duncan Camellia, NTC Patrokhola, Kazi Panchagarh, Tetulia Smallholder Cooperative), sensory Tea Taster Quality Index (TTQI 0-100) appraisal evaluating leaf appearance, coppery infused aroma, liquor color/depth, and briskness/strength with automated quality tier classification and base reserve price computation, competitive real-time auction bidding with minimum increment validation (BDT 2.00/kg), statutory tea cess clearing (BTB Cess ৳1.50/kg, Broker Commission 1.25%, Chittagong/Sreemangal bonded warehouse handling ৳0.75/kg, and 1% Advance Income Tax AIT), cryptographic Delivery Order (DO) issuance with SHA-256 release tokens, northern smallholder flatland green leaf minimum support price formula protection (90% auction equivalent net payout safeguard), and responsive frontend AG-UI Studio modal (`TeaAuctionModal.tsx`) with shortcut ⌘T and WAI-ARIA accessibility.
+- [x] Build it: `/develop tea estate auction clearing engine`
+   - [x] BTB tea estate cataloging & CTC / orthodox grade classification (AC-1)
+   - [x] Sensory Tea Taster Quality Index (TTQI) appraisal & reserve price calculation (AC-2)
+   - [x] Competitive live auction bidding & minimum increment enforcement (AC-3)
+   - [x] Statutory BTB cess, broker commission, warehouse fee & DO clearance with SHA-256 token (AC-4)
+   - [x] Northern smallholder flatland green leaf fair support price formula (AC-5)
+   - [x] REST API endpoints under `/api/v1/agri/tea/` (AC-6)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘T, WAI-ARIA a11y, and 36px touch targets (AC-7)
+- [x] Verify it: `/check verify tea estate auction clearing engine`
+- [x] Test it: `/test tea estate auction clearing engine`
+spec 0090 · code in `artifacts/api-server/src/lib/agri/tea-auction-engine.ts`, `artifacts/api-server/src/routes/tea-auction.ts`, `artifacts/api-server/src/routes/__tests__/tea-auction.test.ts`, and `artifacts/shothik/src/components/twin/TeaAuctionModal.tsx`
 
 ---
 
