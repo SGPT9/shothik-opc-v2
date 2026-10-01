@@ -91,6 +91,10 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 78 | Multi-Channel Real-Time Inventory Matrix & Flash-Sale Reservation Lock Engine | Slice 78 | done |
 | 79 | Autonomous Bengali Land Record (Khatian/Porcha/দলিল) Verification, Chain-of-Ownership Title Search & Stamp Duty Valuation Engine | Slice 79 | done |
 | 80 | Nilkhet Commercial Print-on-Demand (POD) Press Network, Automated 300-DPI CMYK Preflight & Steadfast Press-to-Door Book Courier Fulfillment Engine | Slice 80 | done |
+| 81 | OpenMuse Agentic Compute, Persistent Browser Takeover & CAS Leased Task Orchestration Engine | Slice 81 | done |
+| 82 | Autonomous Hyperlocal Delivery Fleet Coordination & Drone/Bike Micro-Dispatch Engine | Slice 82 | done |
+| 83 | Decentralized Farm-to-Table Cold Chain Telemetry & Agro-Commodity Traceability Engine | Slice 83 | done |
+| 84 | Autonomous Cross-Border Land Port Clearing, Port Health & Customs Electronic Cargo Tracking System (ECTS) | Slice 84 | done |
 
 ---
 
@@ -660,6 +664,19 @@ Refrigerated Reefer transport monitoring for perishable agricultural produce (Ra
 - [x] Verify it: `/check verify cold chain agro traceability engine`
 - [x] Test it: `/test cold chain agro traceability engine`
 spec 0083 · code in `artifacts/api-server/src/lib/agri/cold-chain-engine.ts`, `artifacts/api-server/src/routes/cold-chain.ts`, `artifacts/api-server/src/routes/__tests__/cold-chain.test.ts`, and `artifacts/shothik/src/components/twin/ColdChainAgroModal.tsx`
+
+### 84. Autonomous Cross-Border Land Port Clearing, Port Health & Customs Electronic Cargo Tracking System (ECTS) · done
+Overland customs clearing across major Bangladesh Land Port Authority (BSLPA) stations (Benapole, Bhomra, Tamabil, Burimari, Akhaura), automated weighbridge gross vs tare weight discrepancy audit with 1.5% tolerance and overload tariff surcharges, Plant Quarantine Act 2011 biosecurity inspection and SHA-256 phytosanitary certificates, Electronic Cargo Tracking System (ECTS) GPS transit locks with tamper and corridor deviation alarms, BBIN Motor Vehicles Agreement cross-border temporary truck permits with demurrage fee calculation, and responsive frontend AG-UI Studio modal (`LandPortClearingModal.tsx`) with shortcut ⌘L and WAI-ARIA accessibility.
+- [x] Build it: `/develop land port clearing ects engine`
+   - [x] BSLPA weighbridge tare and gross audit with overload surcharges (AC-1)
+   - [x] Plant quarantine & port health biosecurity screening with SHA-256 seal (AC-2)
+   - [x] ECTS transit lock GPS telemetry with tamper & deviation alerts (AC-3)
+   - [x] BBIN-MVA temporary vehicle permit & demurrage escrow calculator (AC-4)
+   - [x] REST API endpoints under `/api/v1/trade/land-port/` (AC-5)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘L, WAI-ARIA a11y, and 36px touch targets (AC-6)
+- [x] Verify it: `/check verify land port clearing ects engine`
+- [x] Test it: `/test land port clearing ects engine`
+spec 0084 · code in `artifacts/api-server/src/lib/customs/land-port-clearing-engine.ts`, `artifacts/api-server/src/routes/land-port.ts`, `artifacts/api-server/src/routes/__tests__/land-port.test.ts`, and `artifacts/shothik/src/components/twin/LandPortClearingModal.tsx`
 
 ---
 
