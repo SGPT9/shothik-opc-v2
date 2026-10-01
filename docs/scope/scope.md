@@ -637,13 +637,35 @@ Durable task execution and orchestration with SQL compare-and-swap (CAS) atomic 
 - [x] Test it: `/test openmuse agentic compute browser takeover cas leased tasks`
 spec 0056 · code in `artifacts/api-server/src/routes/tasks.ts`, `artifacts/api-server/src/routes/action-proposals.ts`, `artifacts/api-server/src/routes/browser-takeover.ts`, `artifacts/api-server/src/routes/pdf-forms.ts`, `artifacts/api-server/src/routes/__tests__/openmuse-agentic-compute.test.ts`, and `artifacts/shothik/src/components/twin/AgentComputerModal.tsx`
 
+### 82. Autonomous Hyperlocal Delivery Fleet Coordination & Drone/Bike Micro-Dispatch Engine · done
+Hybrid urban fleet management across Dhaka and Chittagong micro-corridors (Gulshan, Banani, Dhanmondi, Uttara, Mirpur, Old Dhaka, and Chittagong GEC), automated parcel routing and dispatch scoring across VoltCargo electric cargo bikes and AeroExpress line-of-sight micro-drones, traffic congestion multiplier modeling (1.0x to 2.8x), automated 3rd-party courier overflow failover (Steadfast/Pathao), real-time battery state-of-charge (SOC %) safety monitoring with emergency Return-to-Base (RTB) fail-safe, and frontend AG-UI Fleet Studio modal with shortcut ⌘H and WAI-ARIA accessibility.
+- [x] Build it: `/develop hyperlocal delivery fleet drone bike dispatch engine`
+   - [x] Vehicle capacity and weight enforcement (sub-2kg drones, 25kg cargo bikes) (AC-1)
+   - [x] Dhaka peak traffic multiplier and travel time modeling (AC-2)
+   - [x] Battery low-charge protection (SOC < 20%) and automated RTB trigger (AC-3)
+   - [x] Automated 3rd-party courier overflow fallback to Steadfast/Pathao (AC-4)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘H, WAI-ARIA a11y, and 36px touch targets (AC-5)
+- [x] Verify it: `/check verify hyperlocal delivery fleet drone bike dispatch engine`
+- [x] Test it: `/test hyperlocal delivery fleet drone bike dispatch engine`
+spec 0082 · code in `artifacts/api-server/src/lib/logistics/hyperlocal-fleet-engine.ts`, `artifacts/api-server/src/routes/hyperlocal-fleet.ts`, `artifacts/api-server/src/routes/__tests__/hyperlocal-fleet.test.ts`, and `artifacts/shothik/src/components/twin/HyperlocalFleetModal.tsx`
+
+### 83. Decentralized Farm-to-Table Cold Chain Telemetry & Agro-Commodity Traceability Engine · done
+Refrigerated Reefer transport monitoring for perishable agricultural produce (Rajshahi mangoes, Bogra potatoes, Jessore tomatoes, Dinajpur strawberries, Chandpur hilsa), IoT/RFID periodic temperature and humidity telemetry ingestion, Arrhenius kinetic spoilage risk index (SRI) modeling ($Q_{10} = 2.2$), 30/70 smart milestone escrow disbursements (30% loading advance vs 70% mandi arrival settlement with quality penalty deductions), NBR statutory Mushak-6.3 Agricultural Exemption Certificate generator under Section 26 of VAT Act 2012, and frontend AG-UI Cold Chain Studio modal with shortcut ⌘A and WAI-ARIA accessibility.
+- [x] Build it: `/develop cold chain agro traceability engine`
+   - [x] Temperature and relative humidity telemetry logging for perishable produce (AC-1)
+   - [x] Arrhenius kinetic spoilage risk index (SRI) and quality grading (AC-1)
+   - [x] 30/70 milestone escrow settlement with bKash/Nagad disbursement calculations (AC-2)
+   - [x] NBR Section 26 0% VAT exemption certificate generator with SHA-256 seal (AC-3)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘A, WAI-ARIA a11y, and 36px touch targets (AC-4)
+- [x] Verify it: `/check verify cold chain agro traceability engine`
+- [x] Test it: `/test cold chain agro traceability engine`
+spec 0083 · code in `artifacts/api-server/src/lib/agri/cold-chain-engine.ts`, `artifacts/api-server/src/routes/cold-chain.ts`, `artifacts/api-server/src/routes/__tests__/cold-chain.test.ts`, and `artifacts/shothik/src/components/twin/ColdChainAgroModal.tsx`
+
 ---
 
 ## Deferred Features
 
-Out of scope for the current build pass, tracked for future releases:
-- **Autonomous Drone Fleet Dispatch**: Hyperlocal drone delivery coordination · deferred
-- **Decentralized Agro-Supply Chain**: Farm-to-table cold chain RFID tracking · deferred
+All core deferred features (Autonomous Drone Dispatch and Farm-to-Table Cold Chain Traceability) have been fully implemented, tested, and shipped in Slices 82 and 83. No outstanding deferred items.
 
 
 ---
