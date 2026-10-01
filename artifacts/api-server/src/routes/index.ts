@@ -96,9 +96,13 @@ import { kycOcrRouter } from "./kyc-ocr.js";
 import { rtoFraudRouter } from "./rto-fraud.js";
 import { flashInventoryRouter } from "./flash-inventory.js";
 import { landRegistryRouter } from "./land-registry.js";
+import { hyperlocalFleetRouter } from "./hyperlocal-fleet.js";
+import { coldChainRouter } from "./cold-chain.js";
 
 const router: IRouter = Router();
 
+router.use(hyperlocalFleetRouter);
+router.use(coldChainRouter);
 router.use(tasksRouter);
 router.use(actionProposalsRouter);
 router.use(browserTakeoverRouter);
