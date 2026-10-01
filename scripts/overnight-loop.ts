@@ -192,6 +192,8 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/shothik/src/components/twin/__tests__/LandPortClearingModal.test.tsx",
       "artifacts/api-server/src/routes/__tests__/rmg.test.ts",
       "artifacts/shothik/src/components/twin/__tests__/RmgMerchandisingModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/energy.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/SolarMicroGridModal.test.tsx",
     ];
 
     const vitestOutput = execSync(
