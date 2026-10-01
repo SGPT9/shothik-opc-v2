@@ -74,6 +74,8 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     { category: "artisanHandloomBoundary", payload: JSON.stringify({ warpYarnCount: -100, naturalFiberPercent: 500, loomType: "cyber_quantum_loom" }) },
     // 10. Coastal Aquaculture Gher hypoxia & salinity boundary payload
     { category: "aquacultureHypoxiaBoundary", payload: JSON.stringify({ dissolvedOxygenMgL: -10, salinityPpt: 999, phLevel: -2, unionizedAmmoniaMgL: 50 }) },
+    // 11. Tea Estate Auction TTQI & bid increment boundary payload
+    { category: "teaAuctionSensoryBoundary", payload: JSON.stringify({ appearanceScore: 999, brisknessScore: -50, newBidBdt: -200, cessLevy: "corrupted_vat" }) },
   ];
 
   const fuzzCategories = {
@@ -87,6 +89,7 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     waterwayShoalBoundary: false,
     artisanHandloomBoundary: false,
     aquacultureHypoxiaBoundary: false,
+    teaAuctionSensoryBoundary: false,
   };
 
   for (const probe of probes) {
@@ -209,6 +212,8 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/shothik/src/components/twin/__tests__/ArtisanGiCraftModal.test.tsx",
       "artifacts/api-server/src/routes/__tests__/aquaculture.test.ts",
       "artifacts/shothik/src/components/twin/__tests__/AquacultureGherModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/tea-auction.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/TeaAuctionModal.test.tsx",
     ];
 
     const vitestOutput = execSync(

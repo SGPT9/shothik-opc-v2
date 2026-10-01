@@ -104,9 +104,11 @@ import { energyRouter } from "./energy.js";
 import { waterwayRouter } from "./waterway.js";
 import { artisanGiRouter } from "./artisan-gi.js";
 import { aquacultureRouter } from "./aquaculture.js";
+import { teaAuctionRouter } from "./tea-auction.js";
 
 const router: IRouter = Router();
 
+router.use(teaAuctionRouter);
 router.use(aquacultureRouter);
 router.use(artisanGiRouter);
 router.use(waterwayRouter);
