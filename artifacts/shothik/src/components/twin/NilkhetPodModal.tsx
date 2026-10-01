@@ -211,15 +211,25 @@ export function NilkhetPodModal({
         codAmountBdt,
       };
 
-      const res = await fetch("/api/v1/publishing/nilkhet/dispatch-hub", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      let res: Response;
+      try {
+        res = await fetch("/api/v1/publishing/nilkhet-pod/dispatch", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      } catch {
+        res = await fetch("/api/v1/publishing/nilkhet/dispatch-hub", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      }
 
       const data = await res.json();
       if (data.success && data.data) {
-        setDispatchedTicket(data.data);
+        const ticket = data.data.jobTicket || data.data;
+        setDispatchedTicket(ticket);
       } else {
         // Mock fallback for offline / test harness
         setDispatchedTicket({
