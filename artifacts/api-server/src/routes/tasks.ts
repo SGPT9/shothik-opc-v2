@@ -85,7 +85,12 @@ tasksRouter.post(["/tasks", "/v1/tasks", "/api/v1/tasks"], async (req, res) => {
 tasksRouter.get(["/tasks/:id", "/v1/tasks/:id", "/api/v1/tasks/:id"], async (req, res) => {
   const owner = (req.query.owner as string) || "default-owner";
   const taskId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const task = await globalTaskStore.get<AgentTask>(owner, "tasks", taskId);
+  let task = await globalTaskStore.get<AgentTask>(owner, "tasks", taskId);
+  if (!task) {
+    const all = await globalTaskStore.scan<AgentTask>("tasks");
+    const found = all.find((r) => r.value.id === taskId);
+    if (found) task = found.value;
+  }
   if (!task) {
     res.status(404).json({ success: false, error: "Task not found" });
     return;
@@ -97,11 +102,20 @@ tasksRouter.post(["/tasks/:id/cancel", "/v1/tasks/:id/cancel", "/api/v1/tasks/:i
   const owner = (req.body?.owner as string) || (req.query.owner as string) || "default-owner";
   const taskId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   globalTaskWorker.abort(taskId);
-  const task = await globalTaskStore.get<AgentTask>(owner, "tasks", taskId);
+  let task = await globalTaskStore.get<AgentTask>(owner, "tasks", taskId);
+  let resolvedOwner = owner;
+  if (!task) {
+    const all = await globalTaskStore.scan<AgentTask>("tasks");
+    const found = all.find((r) => r.value.id === taskId);
+    if (found) {
+      task = found.value;
+      resolvedOwner = found.owner;
+    }
+  }
   if (task) {
     task.status = "cancelled";
     task.updatedAt = new Date().toISOString();
-    await globalTaskStore.put(owner, "tasks", task);
+    await globalTaskStore.put(resolvedOwner, "tasks", task);
   }
   res.json({ success: true, message: "Task cancellation requested", task });
 });

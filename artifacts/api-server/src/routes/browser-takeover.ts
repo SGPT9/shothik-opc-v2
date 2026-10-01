@@ -40,7 +40,7 @@ browserTakeoverRouter.post(["/browser/sessions/:id/action", "/v1/browser/session
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
     const result = globalBrowserEngine.executeAction(id, parsed.data);
-    res.json({ ...result });
+    res.json({ ...result, action: parsed.data });
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
   }
