@@ -190,6 +190,8 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/api-server/src/routes/__tests__/openmuse-agentic-compute.test.ts",
       "artifacts/api-server/src/routes/__tests__/land-port.test.ts",
       "artifacts/shothik/src/components/twin/__tests__/LandPortClearingModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/rmg.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/RmgMerchandisingModal.test.tsx",
     ];
 
     const vitestOutput = execSync(
