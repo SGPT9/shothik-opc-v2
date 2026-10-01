@@ -102,9 +102,11 @@ import { landPortRouter } from "./land-port.js";
 import { rmgRouter } from "./rmg.js";
 import { energyRouter } from "./energy.js";
 import { waterwayRouter } from "./waterway.js";
+import { artisanGiRouter } from "./artisan-gi.js";
 
 const router: IRouter = Router();
 
+router.use(artisanGiRouter);
 router.use(waterwayRouter);
 router.use(energyRouter);
 router.use(rmgRouter);

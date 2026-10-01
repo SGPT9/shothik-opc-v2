@@ -98,6 +98,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 85 | Autonomous RMG Merchandising, Tech Pack Generator, Fabric Consumption & Factory Subcontracting Escrow Engine | Slice 85 | done |
 | 86 | Autonomous Micro-Grid Solar Telemetry, Net-Metering Settlement & Rural Palli Bidyut Energy Tokenization Engine | Slice 86 | done |
 | 87 | Autonomous Inland Waterway Cargo & River Vessel Telemetry Engine (BIWTA River Corridors & Bulk Cargo Demurrage) | Slice 87 | done |
+| 88 | Autonomous Cottage Artisan Handloom & Geographical Indication (GI) Export Certification Engine | Slice 88 | done |
 
 ---
 
@@ -718,6 +719,18 @@ Inland waterway vessel navigation and cargo telemetry across key Bangladesh Inla
 - [x] Verify it: `/check verify waterway cargo vessel telemetry engine`
 - [x] Test it: `/test waterway cargo vessel telemetry engine`
 spec 0087 · code in `artifacts/api-server/src/lib/logistics/waterway-cargo-engine.ts`, `artifacts/api-server/src/routes/waterway.ts`, `artifacts/api-server/src/routes/__tests__/waterway.test.ts`, and `artifacts/shothik/src/components/twin/WaterwayCargoModal.tsx`
+
+### 88. Autonomous Cottage Artisan Handloom & Geographical Indication (GI) Export Certification Engine · done
+Authentic Bangladeshi Geographical Indication (GI) craft verification across Department of Patents, Designs and Trademarks (DPDT) & BSCIC registered craft categories (Dhakai Jamdani GI-1, Tangail Saree GI-27, Rajshahi Mulberry Silk GI-8, Rangpur Shatranji GI-3, Dhakai Muslin GI-4), automated technical warp/weft yarn count auditing, power-loom counterfeit machine detection, Fair-Trade living wage calculation with motif complexity multipliers (Standard Buti, Tercha Floral, Jalar, Panna Hazar) and 3-stage milestone escrow releases (30% yarn advance, 40% midway loom inspection, 30% quality audit pass), statutory Export Promotion Bureau (EPB) and BSCIC Certificate of Origin compiler with HS code classification, export duty drawback calculation, and SHA-256 seal verification, and responsive frontend AG-UI Studio modal (`ArtisanGiCraftModal.tsx`) with shortcut ⌘J and WAI-ARIA accessibility.
+- [x] Build it: `/develop artisan handloom gi certification engine`
+   - [x] GI technical yarn count & pit-loom authenticity audit (AC-1)
+   - [x] Fair-Trade weaver living wage 3-stage milestone escrow (AC-2)
+   - [x] EPB & BSCIC export Certificate of Origin compiler with SHA-256 seal (AC-3)
+   - [x] REST API endpoints under `/api/v1/trade/artisan-gi/` (AC-4)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘J, WAI-ARIA a11y, and 36px touch targets (AC-5)
+- [x] Verify it: `/check verify artisan handloom gi certification engine`
+- [x] Test it: `/test artisan handloom gi certification engine`
+spec 0088 · code in `artifacts/api-server/src/lib/artisan/artisan-gi-engine.ts`, `artifacts/api-server/src/routes/artisan-gi.ts`, `artifacts/api-server/src/routes/__tests__/artisan-gi.test.ts`, and `artifacts/shothik/src/components/twin/ArtisanGiCraftModal.tsx`
 
 ---
 

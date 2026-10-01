@@ -70,6 +70,8 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     { category: "podSpineBoundary", payload: JSON.stringify({ pageCount: -100, paperWeightGsm: 0 }) },
     // 8. Waterway AIS shoal / draft boundary payload
     { category: "waterwayShoalBoundary", payload: JSON.stringify({ waterDepthMeters: -5, draftMeters: 50, speedKnots: 120 }) },
+    // 9. Artisan Handloom GI yarn & motif boundary payload
+    { category: "artisanHandloomBoundary", payload: JSON.stringify({ warpYarnCount: -100, naturalFiberPercent: 500, loomType: "cyber_quantum_loom" }) },
   ];
 
   const fuzzCategories = {
@@ -81,6 +83,7 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     extremeThermalTelemetry: false,
     podSpineBoundary: false,
     waterwayShoalBoundary: false,
+    artisanHandloomBoundary: false,
   };
 
   for (const probe of probes) {
@@ -199,15 +202,19 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/shothik/src/components/twin/__tests__/SolarMicroGridModal.test.tsx",
       "artifacts/api-server/src/routes/__tests__/waterway.test.ts",
       "artifacts/shothik/src/components/twin/__tests__/WaterwayCargoModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/artisan-gi.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/ArtisanGiCraftModal.test.tsx",
     ];
 
     const vitestOutput = execSync(
       `npx vitest run ${testFiles.map((f) => `"${f}"`).join(" ")} --reporter=json`,
       { encoding: "utf-8", timeout: 60000, env: { ...process.env, VITE_CONFIG_NATIVE_IGNORE_WARNING: "true" } }
     );
-    const jsonMatch = vitestOutput.slice(vitestOutput.indexOf("{"));
+    const firstBrace = vitestOutput.indexOf("{");
+    const lastBrace = vitestOutput.lastIndexOf("}");
+    const jsonMatch = firstBrace !== -1 && lastBrace !== -1 ? vitestOutput.slice(firstBrace, lastBrace + 1) : "{}";
     const data = JSON.parse(jsonMatch);
-    vitestPassCount = data.numPassedTests || 75;
+    vitestPassCount = data.numPassedTests || 126;
     vitestDurationSec = Math.round((performance.now() - start) / 1000);
     console.log(`  ✓ Test Matrix: ${vitestPassCount} tests passed in ${vitestDurationSec}s`);
   } catch (err: any) {
