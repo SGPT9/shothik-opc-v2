@@ -214,6 +214,7 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/shothik/src/components/twin/__tests__/AquacultureGherModal.test.tsx",
       "artifacts/api-server/src/routes/__tests__/tea-auction.test.ts",
       "artifacts/shothik/src/components/twin/__tests__/TeaAuctionModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/concurrency-idempotency-stress.test.ts",
     ];
 
     const vitestOutput = execSync(

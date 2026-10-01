@@ -37,19 +37,54 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import dynamic from "next/dynamic";
 import { cn } from "@/lib/utils";
 import { SectionLabel, PanelCard } from "./shared";
-import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
-import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
-import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
-import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
-import { CompetitorAdSpyModal } from "@/components/twin/CompetitorAdSpyModal";
-import { CroTunerModal } from "@/components/twin/CroTunerModal";
-import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
-import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
-import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefrontModal";
-import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
-import { DatabaseSchemaModal } from "@/components/twin/DatabaseSchemaModal";
+
+const EmailOutreachModal = dynamic(
+  () => import("@/components/twin/EmailOutreachModal").then((m) => m.EmailOutreachModal),
+  { ssr: false }
+);
+const StartupBuildsModal = dynamic(
+  () => import("@/components/twin/StartupBuildsModal").then((m) => m.StartupBuildsModal),
+  { ssr: false }
+);
+const VisualStorefrontBuilderModal = dynamic(
+  () => import("@/components/twin/VisualStorefrontBuilderModal").then((m) => m.VisualStorefrontBuilderModal),
+  { ssr: false }
+);
+const LeadCrmDrawer = dynamic(
+  () => import("@/components/twin/LeadCrmDrawer").then((m) => m.LeadCrmDrawer),
+  { ssr: false }
+);
+const CompetitorAdSpyModal = dynamic(
+  () => import("@/components/twin/CompetitorAdSpyModal").then((m) => m.CompetitorAdSpyModal),
+  { ssr: false }
+);
+const CroTunerModal = dynamic(
+  () => import("@/components/twin/CroTunerModal").then((m) => m.CroTunerModal),
+  { ssr: false }
+);
+const SteadfastCourierModal = dynamic(
+  () => import("@/components/twin/SteadfastCourierModal").then((m) => m.SteadfastCourierModal),
+  { ssr: false }
+);
+const MfsGatewayModal = dynamic(
+  () => import("@/components/twin/MfsGatewayModal").then((m) => m.MfsGatewayModal),
+  { ssr: false }
+);
+const BookReaderStorefrontModal = dynamic(
+  () => import("@/components/twin/BookReaderStorefrontModal").then((m) => m.BookReaderStorefrontModal),
+  { ssr: false }
+);
+const DokployMicroContainersModal = dynamic(
+  () => import("@/components/twin/DokployMicroContainersModal").then((m) => m.DokployMicroContainersModal),
+  { ssr: false }
+);
+const DatabaseSchemaModal = dynamic(
+  () => import("@/components/twin/DatabaseSchemaModal").then((m) => m.DatabaseSchemaModal),
+  { ssr: false }
+);
 import {
   MOCK_TWITTER_CHANNEL,
   MOCK_EMAIL_CHANNEL,
@@ -575,78 +610,98 @@ export function GrowthChannels() {
       </Dialog>
 
       {/* Cold Email Outreach Sequence Modal */}
-      <EmailOutreachModal open={showEmailModal} onOpenChange={setShowEmailModal} />
+      {showEmailModal && <EmailOutreachModal open={showEmailModal} onOpenChange={setShowEmailModal} />}
 
       {/* Startup Container Builds & Releases Modal */}
-      <StartupBuildsModal
-        open={showVersionsModal}
-        onOpenChange={setShowVersionsModal}
-        subdomain={website.subdomain}
-        companyName="VerifiQ AI"
-      />
+      {showVersionsModal && (
+        <StartupBuildsModal
+          open={showVersionsModal}
+          onOpenChange={setShowVersionsModal}
+          subdomain={website.subdomain}
+          companyName="VerifiQ AI"
+        />
+      )}
 
       {/* Visual No-Code Storefront & Landing Page Builder Modal */}
-      <VisualStorefrontBuilderModal
-        open={showBuilderModal}
-        onOpenChange={setShowBuilderModal}
-        companyName="VerifiQ AI"
-        subdomain={website.subdomain}
-      />
+      {showBuilderModal && (
+        <VisualStorefrontBuilderModal
+          open={showBuilderModal}
+          onOpenChange={setShowBuilderModal}
+          companyName="VerifiQ AI"
+          subdomain={website.subdomain}
+        />
+      )}
 
       {/* Unified Customer Prospecting & Inbound Lead CRM Drawer */}
-      <LeadCrmDrawer
-        open={showCrmDrawer}
-        onOpenChange={setShowCrmDrawer}
-        companyName="VerifiQ AI"
-      />
+      {showCrmDrawer && (
+        <LeadCrmDrawer
+          open={showCrmDrawer}
+          onOpenChange={setShowCrmDrawer}
+          companyName="VerifiQ AI"
+        />
+      )}
 
       {/* Competitor Ad Spy Modal */}
-      <CompetitorAdSpyModal
-        open={showAdSpy}
-        onOpenChange={setShowAdSpy}
-        companyName="VerifiQ AI"
-      />
+      {showAdSpy && (
+        <CompetitorAdSpyModal
+          open={showAdSpy}
+          onOpenChange={setShowAdSpy}
+          companyName="VerifiQ AI"
+        />
+      )}
 
       {/* Self-Healing CRO Auto-Tuner Modal */}
-      <CroTunerModal
-        open={showCroTuner}
-        onOpenChange={setShowCroTuner}
-        companyName="VerifiQ AI"
-      />
+      {showCroTuner && (
+        <CroTunerModal
+          open={showCroTuner}
+          onOpenChange={setShowCroTuner}
+          companyName="VerifiQ AI"
+        />
+      )}
 
       {/* Steadfast Courier COD Modal */}
-      <SteadfastCourierModal
-        open={showSteadfast}
-        onOpenChange={setShowSteadfast}
-        companyName="VerifiQ AI"
-      />
+      {showSteadfast && (
+        <SteadfastCourierModal
+          open={showSteadfast}
+          onOpenChange={setShowSteadfast}
+          companyName="VerifiQ AI"
+        />
+      )}
 
       {/* 1-Tap bKash / Nagad MFS Gateway Modal */}
-      <MfsGatewayModal
-        open={showMfsGateway}
-        onOpenChange={setShowMfsGateway}
-        companyName="VerifiQ AI"
-      />
+      {showMfsGateway && (
+        <MfsGatewayModal
+          open={showMfsGateway}
+          onOpenChange={setShowMfsGateway}
+          companyName="VerifiQ AI"
+        />
+      )}
 
       {/* Public Book Reader Storefront Modal */}
-      <BookReaderStorefrontModal
-        open={showBookReader}
-        onOpenChange={setShowBookReader}
-      />
+      {showBookReader && (
+        <BookReaderStorefrontModal
+          open={showBookReader}
+          onOpenChange={setShowBookReader}
+        />
+      )}
 
       {/* Dokploy Micro-Containers Modal */}
-      <DokployMicroContainersModal
-        open={showMicroContainers}
-        onOpenChange={setShowMicroContainers}
-        companyName="VerifiQ AI"
-      />
+      {showMicroContainers && (
+        <DokployMicroContainersModal
+          open={showMicroContainers}
+          onOpenChange={setShowMicroContainers}
+          companyName="VerifiQ AI"
+        />
+      )}
 
       {/* PostgreSQL DDL Schema Modal */}
-      <DatabaseSchemaModal
-        open={showDbSchema}
-        onOpenChange={setShowDbSchema}
-        companyName="VerifiQ AI"
-      />
+      {showDbSchema && (
+        <DatabaseSchemaModal
+          open={showDbSchema}
+          onOpenChange={setShowDbSchema}
+          companyName="VerifiQ AI"
+        />
+      )}
     </div>
   );
 }

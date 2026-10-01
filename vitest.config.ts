@@ -1,5 +1,6 @@
 import { defineConfig } from 'vitest/config';
 import path from 'path';
+import os from 'os';
 
 export default defineConfig({
   test: {
@@ -7,6 +8,10 @@ export default defineConfig({
     globals: true,
     setupFiles: [path.resolve(__dirname, './test/setup.ts')],
     pool: 'forks', // Prevents React 19 hook issues across files in JSDOM
+    forks: {
+      maxForks: Math.min(8, Math.max(2, os.cpus().length - 1)),
+      minForks: 2,
+    },
     include: [
       '**/__tests__/**/*.{test,spec}.{ts,tsx,js,jsx}',
       '**/*.{test,spec}.{ts,tsx,js,jsx}',
