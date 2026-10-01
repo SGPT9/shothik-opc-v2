@@ -99,6 +99,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 86 | Autonomous Micro-Grid Solar Telemetry, Net-Metering Settlement & Rural Palli Bidyut Energy Tokenization Engine | Slice 86 | done |
 | 87 | Autonomous Inland Waterway Cargo & River Vessel Telemetry Engine (BIWTA River Corridors & Bulk Cargo Demurrage) | Slice 87 | done |
 | 88 | Autonomous Cottage Artisan Handloom & Geographical Indication (GI) Export Certification Engine | Slice 88 | done |
+| 89 | Autonomous Coastal Aquaculture, Shrimp Gher Telemetry & Seafood Processing Escrow Engine | Slice 89 | done |
 
 ---
 
@@ -731,6 +732,19 @@ Authentic Bangladeshi Geographical Indication (GI) craft verification across Dep
 - [x] Verify it: `/check verify artisan handloom gi certification engine`
 - [x] Test it: `/test artisan handloom gi certification engine`
 spec 0088 · code in `artifacts/api-server/src/lib/artisan/artisan-gi-engine.ts`, `artifacts/api-server/src/routes/artisan-gi.ts`, `artifacts/api-server/src/routes/__tests__/artisan-gi.test.ts`, and `artifacts/shothik/src/components/twin/ArtisanGiCraftModal.tsx`
+
+### 89. Autonomous Coastal Aquaculture, Shrimp Gher Telemetry & Seafood Processing Escrow Engine · done
+Automated coastal aquaculture water quality sensor monitoring across southern saline belt districts (Satkhira, Khulna, Bagerhat, Cox's Bazar), real-time Dissolved Oxygen (DO), salinity (ppt), pH, and unionized ammonia ingestion with automated hypoxia fish-kill hazard prevention (<3.5 mg/L critical trigger for paddlewheel aeration & oxygen peroxide tableting), shrimp harvest size grading across commercial count bands (U-10 Jumbo, 16/20 Premium, 21/25, 31/40, 41/50) with ice-slurry cold-chain compliance (≤4°C) and 15% temperature penalty enforcement, 3-stage seafood processing factory milestone escrow (30% gate delivery advance, 40% certified lab antibiotic screening pass for zero nitrofuran/chloramphenicol, 30% blast freeze acceptance), statutory Department of Fisheries (DoF) & EU export traceability passport compiler with SHA-256 seal verification, and responsive frontend AG-UI Studio modal (`AquacultureGherModal.tsx`) with shortcut ⌘Q and WAI-ARIA accessibility.
+- [x] Build it: `/develop aquaculture gher telemetry engine`
+   - [x] Real-time water sensor telemetry & hypoxia kill risk alerting (AC-1)
+   - [x] Harvest size count grading & cold-chain compliance valuation (AC-2)
+   - [x] 3-stage seafood processing factory milestone escrow (AC-3)
+   - [x] Department of Fisheries (DoF) & EU export traceability passport with SHA-256 seal (AC-4)
+   - [x] REST API endpoints under `/api/v1/agri/aquaculture/` (AC-5)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘Q, WAI-ARIA a11y, and 36px touch targets (AC-6)
+- [x] Verify it: `/check verify aquaculture gher telemetry engine`
+- [x] Test it: `/test aquaculture gher telemetry engine`
+spec 0089 · code in `artifacts/api-server/src/lib/agri/aquaculture-gher-engine.ts`, `artifacts/api-server/src/routes/aquaculture.ts`, `artifacts/api-server/src/routes/__tests__/aquaculture.test.ts`, and `artifacts/shothik/src/components/twin/AquacultureGherModal.tsx`
 
 ---
 
