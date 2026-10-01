@@ -7,6 +7,7 @@ import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { NilkhetImpositionEngine } from "../lib/nilkhet-imposition-engine.js";
 import { NilkhetSpineCalculator, type PaperWeightGSM, type BindingStyle } from "@workspace/office-engine/spine-calculator";
+import { NilkhetPodEngine } from "../lib/publishing/nilkhet-pod-engine.js";
 
 const router = Router();
 
@@ -975,6 +976,71 @@ router.get(["/v1/publishing/nilkhet/orders/:orderId/job-ticket", "/api/v1/publis
     res.status(200).json({
       success: true,
       data: ticket,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/publishing/nilkhet-pod/quote
+ * Generate itemized press production quote with caliper metrics and turnaround estimate (Slice 80)
+ */
+router.post(["/v1/publishing/nilkhet-pod/quote", "/api/v1/publishing/nilkhet-pod/quote"], (req: Request, res: Response): void => {
+  try {
+    const breakdown = NilkhetPodEngine.calculateQuote(req.body);
+    res.status(200).json({
+      success: true,
+      data: breakdown,
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/publishing/nilkhet-pod/preflight
+ * Analyze print PDF for CMYK compliance, 3mm bleed, 300 DPI, and Bengali font subset embedding (Slice 80)
+ */
+router.post(["/v1/publishing/nilkhet-pod/preflight", "/api/v1/publishing/nilkhet-pod/preflight"], (req: Request, res: Response): void => {
+  try {
+    const report = NilkhetPodEngine.runPreflightCheck(req.body);
+    res.status(200).json({
+      success: true,
+      data: report,
+    });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/publishing/nilkhet-pod/dispatch
+ * Book automated press-to-door courier consignment (Steadfast) with parcel weight calculation (Slice 80)
+ */
+router.post(["/v1/publishing/nilkhet-pod/dispatch", "/api/v1/publishing/nilkhet-pod/dispatch"], (req: Request, res: Response): void => {
+  try {
+    const result = NilkhetPodEngine.dispatchPodOrder(req.body);
+    res.status(201).json({
+      success: true,
+      data: result,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/publishing/nilkhet-pod/press-hubs
+ * List active Nilkhet and Katabon commercial print hubs with operational machinery (Slice 80)
+ */
+router.get(["/v1/publishing/nilkhet-pod/press-hubs", "/api/v1/publishing/nilkhet-pod/press-hubs"], (_req: Request, res: Response): void => {
+  try {
+    const hubs = NilkhetPodEngine.listPressHubs();
+    res.status(200).json({
+      success: true,
+      count: hubs.length,
+      data: hubs,
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
