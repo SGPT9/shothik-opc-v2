@@ -72,6 +72,8 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     { category: "waterwayShoalBoundary", payload: JSON.stringify({ waterDepthMeters: -5, draftMeters: 50, speedKnots: 120 }) },
     // 9. Artisan Handloom GI yarn & motif boundary payload
     { category: "artisanHandloomBoundary", payload: JSON.stringify({ warpYarnCount: -100, naturalFiberPercent: 500, loomType: "cyber_quantum_loom" }) },
+    // 10. Coastal Aquaculture Gher hypoxia & salinity boundary payload
+    { category: "aquacultureHypoxiaBoundary", payload: JSON.stringify({ dissolvedOxygenMgL: -10, salinityPpt: 999, phLevel: -2, unionizedAmmoniaMgL: 50 }) },
   ];
 
   const fuzzCategories = {
@@ -84,6 +86,7 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     podSpineBoundary: false,
     waterwayShoalBoundary: false,
     artisanHandloomBoundary: false,
+    aquacultureHypoxiaBoundary: false,
   };
 
   for (const probe of probes) {
@@ -204,6 +207,8 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/shothik/src/components/twin/__tests__/WaterwayCargoModal.test.tsx",
       "artifacts/api-server/src/routes/__tests__/artisan-gi.test.ts",
       "artifacts/shothik/src/components/twin/__tests__/ArtisanGiCraftModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/aquaculture.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/AquacultureGherModal.test.tsx",
     ];
 
     const vitestOutput = execSync(
