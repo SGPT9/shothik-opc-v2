@@ -96,6 +96,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 83 | Decentralized Farm-to-Table Cold Chain Telemetry & Agro-Commodity Traceability Engine | Slice 83 | done |
 | 84 | Autonomous Cross-Border Land Port Clearing, Port Health & Customs Electronic Cargo Tracking System (ECTS) | Slice 84 | done |
 | 85 | Autonomous RMG Merchandising, Tech Pack Generator, Fabric Consumption & Factory Subcontracting Escrow Engine | Slice 85 | done |
+| 86 | Autonomous Micro-Grid Solar Telemetry, Net-Metering Settlement & Rural Palli Bidyut Energy Tokenization Engine | Slice 86 | done |
 
 ---
 
@@ -691,6 +692,19 @@ Automated apparel technical sheet generation across standard Bangladeshi garment
 - [x] Verify it: `/check verify rmg tech pack fabric consumption engine`
 - [x] Test it: `/test rmg tech pack fabric consumption engine`
 spec 0085 · code in `artifacts/api-server/src/lib/apparel/rmg-merchandising-engine.ts`, `artifacts/api-server/src/routes/rmg.ts`, `artifacts/api-server/src/routes/__tests__/rmg.test.ts`, and `artifacts/shothik/src/components/twin/RmgMerchandisingModal.tsx`
+
+### 86. Autonomous Micro-Grid Solar Telemetry, Net-Metering Settlement & Rural Palli Bidyut Energy Tokenization Engine · done
+Smart microgrid solar telemetry ingestion across Bangladesh Rural Electrification Board (BREB / পল্লী বিদ্যুৎ) regional zones (Dhaka PBS-1, Gazipur, Narayanganj, Chittagong, Rajshahi), real-time bi-directional net-metering settlement under BERC & SREDA Net-Metering Guidelines 2018/2023 with statutory 5% VAT and surplus seasonal rollover unit banking, diesel genset vs. solar battery hybrid arbitrage optimization saving up to 78% in outage fuel expenses, SREDA statutory greenhouse gas carbon offset certificates (0.62 kg CO2/kWh grid factor) with SHA-256 seals, and responsive frontend AG-UI Studio modal (`SolarMicroGridModal.tsx`) with shortcut ⌘G and WAI-ARIA accessibility.
+- [x] Build it: `/develop microgrid solar telemetry netmetering engine`
+   - [x] Smart bi-directional net-meter & inverter thermal telemetry ingestion (AC-1)
+   - [x] BERC/BREB net-metering settlement & surplus rollover unit tokenization (AC-2)
+   - [x] Diesel genset vs. solar battery outage arbitrage optimizer (AC-3)
+   - [x] SREDA statutory carbon offset certificate generator with SHA-256 seal (AC-4)
+   - [x] REST API endpoints under `/api/v1/energy/solar-microgrid/` (AC-5)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘G, WAI-ARIA a11y, and 36px touch targets (AC-6)
+- [x] Verify it: `/check verify microgrid solar telemetry netmetering engine`
+- [x] Test it: `/test microgrid solar telemetry netmetering engine`
+spec 0086 · code in `artifacts/api-server/src/lib/energy/solar-microgrid-engine.ts`, `artifacts/api-server/src/routes/energy.ts`, `artifacts/api-server/src/routes/__tests__/energy.test.ts`, and `artifacts/shothik/src/components/twin/SolarMicroGridModal.tsx`
 
 ---
 
