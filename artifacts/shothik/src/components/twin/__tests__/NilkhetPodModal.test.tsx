@@ -7,6 +7,9 @@ describe("NilkhetPodModal Component (NilkhetPodModal.tsx)", () => {
     render(<NilkhetPodModal open={true} onOpenChange={() => {}} />);
 
     expect(screen.getByTestId("nilkhet-pod-modal")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("dialog")).toHaveAttribute("aria-modal", "true");
+    expect(document.body.style.overflow).toBe("hidden");
     expect(screen.getByText("Nilkhet POD Direct API & Imposition Hub")).toBeInTheDocument();
     expect(screen.getByText("FOGRA39 CMYK Direct Rail")).toBeInTheDocument();
 
@@ -15,6 +18,20 @@ describe("NilkhetPodModal Component (NilkhetPodModal.tsx)", () => {
     expect(screen.getByText("Full Cover Wrap")).toBeInTheDocument();
     expect(screen.getByText("300 DPI Canvas")).toBeInTheDocument();
     expect(screen.getByText("Interactive Cover Wrap Preview")).toBeInTheDocument();
+  });
+
+  it("locks document scroll while open, dismisses on Escape, and cleans up on unmount", () => {
+    const onOpenChange = vi.fn();
+    const { unmount } = render(<NilkhetPodModal open={true} onOpenChange={onOpenChange} />);
+
+    expect(document.body.style.overflow).toBe("hidden");
+
+    // Press Escape
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+
+    unmount();
+    expect(document.body.style.overflow).toBe("");
   });
 
   it("switches to Signatures & Plates tab and displays press imposition details", () => {

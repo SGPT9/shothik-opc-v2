@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   Building,
 } from "lucide-react";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface InventoryMatrixModalProps {
   isOpen: boolean;
@@ -22,6 +23,8 @@ export interface InventoryMatrixModalProps {
 }
 
 export const InventoryMatrixModal: React.FC<InventoryMatrixModalProps> = ({ isOpen, onClose }) => {
+  useModalA11y({ isOpen, onClose });
+
   const [activeTab, setActiveTab] = useState<"matrix" | "prediction" | "rebalance" | "po">("matrix");
   const [items, setItems] = useState<any[]>([]);
   const [selectedSku, setSelectedSku] = useState<string>("SHOTHIK-TSHIRT-BLK-M");
@@ -142,7 +145,12 @@ export const InventoryMatrixModal: React.FC<InventoryMatrixModalProps> = ({ isOp
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="Multi-Channel Inventory Matrix & Prediction"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+    >
       <div className="flex flex-col w-full max-w-5xl h-[88vh] bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden text-slate-100">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
@@ -164,34 +172,42 @@ export const InventoryMatrixModal: React.FC<InventoryMatrixModalProps> = ({ isOp
           </div>
 
           {/* Tab Navigation */}
-          <div className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs">
+          <div role="tablist" aria-label="Inventory Matrix Tabs" className="flex items-center gap-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-xs">
             <button
+              role="tab"
+              aria-selected={activeTab === "matrix"}
               onClick={() => setActiveTab("matrix")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
                 activeTab === "matrix" ? "bg-amber-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <Layers className="w-3.5 h-3.5" /> Channel Matrix
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === "prediction"}
               onClick={() => setActiveTab("prediction")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
                 activeTab === "prediction" ? "bg-amber-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <TrendingUp className="w-3.5 h-3.5" /> Stock-Out Radar
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === "rebalance"}
               onClick={() => setActiveTab("rebalance")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
                 activeTab === "rebalance" ? "bg-amber-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
               }`}
             >
               <Building className="w-3.5 h-3.5" /> Dark Hub Rebalance
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === "po"}
               onClick={() => setActiveTab("po")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
                 activeTab === "po" ? "bg-amber-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
               }`}
             >
@@ -199,7 +215,11 @@ export const InventoryMatrixModal: React.FC<InventoryMatrixModalProps> = ({ isOp
             </button>
           </div>
 
-          <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition">
+          <button
+            onClick={onClose}
+            aria-label="Close inventory matrix dialog"
+            className="min-h-[36px] min-w-[36px] flex items-center justify-center p-1.5 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>

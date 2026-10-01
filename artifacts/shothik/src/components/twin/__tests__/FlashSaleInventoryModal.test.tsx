@@ -73,4 +73,19 @@ describe("Frontend AG-UI Component: FlashSaleInventoryModal (Slice 78)", () => {
 
     expect(handleClose).toHaveBeenCalledTimes(1);
   });
+
+  it("locks body scroll while open, dismisses on Escape, and cleans up on unmount", () => {
+    const handleClose = vi.fn();
+    const { unmount } = render(<FlashSaleInventoryModal isOpen={true} onClose={handleClose} />);
+
+    expect(document.body.style.overflow).toBe("hidden");
+
+    // Press Escape
+    fireEvent.keyDown(window, { key: "Escape" });
+    expect(handleClose).toHaveBeenCalled();
+
+    unmount();
+    expect(document.body.style.overflow).toBe("");
+  });
 });
+

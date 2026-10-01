@@ -16,6 +16,7 @@ import {
   Play,
   Share2,
 } from "lucide-react";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface FlashSaleInventoryModalProps {
   isOpen: boolean;
@@ -26,6 +27,8 @@ export const FlashSaleInventoryModal: React.FC<FlashSaleInventoryModalProps> = (
   isOpen,
   onClose,
 }) => {
+  useModalA11y({ isOpen, onClose });
+
   const [activeTab, setActiveTab] = useState<"matrix" | "reservations" | "simulator">("matrix");
   const [selectedSku, setSelectedSku] = useState("EID-PANJABI-PREM-M");
   const [isPanicFrozen, setIsPanicFrozen] = useState(false);
@@ -211,7 +214,7 @@ export const FlashSaleInventoryModal: React.FC<FlashSaleInventoryModalProps> = (
             {/* Panic Freeze Switch */}
             <button
               onClick={handlePanicFreezeToggle}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
+              className={`min-h-[36px] flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
                 isPanicFrozen
                   ? "bg-red-500 text-white border-red-600 shadow-lg shadow-red-950/50 animate-pulse"
                   : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
@@ -224,7 +227,7 @@ export const FlashSaleInventoryModal: React.FC<FlashSaleInventoryModalProps> = (
             <button
               onClick={onClose}
               aria-label="Close modal"
-              className="p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+              className="min-h-[36px] min-w-[36px] flex items-center justify-center p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -232,10 +235,12 @@ export const FlashSaleInventoryModal: React.FC<FlashSaleInventoryModalProps> = (
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex items-center gap-2 px-6 pt-3 border-b border-slate-800 bg-slate-950/30">
+        <div role="tablist" aria-label="Flash Sale Inventory Tabs" className="flex items-center gap-2 px-6 pt-3 border-b border-slate-800 bg-slate-950/30">
           <button
+            role="tab"
+            aria-selected={activeTab === "matrix"}
             onClick={() => setActiveTab("matrix")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all ${
+            className={`min-h-[36px] flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-all ${
               activeTab === "matrix"
                 ? "border-amber-500 text-amber-400 bg-amber-500/5"
                 : "border-transparent text-slate-400 hover:text-slate-200"
@@ -245,8 +250,10 @@ export const FlashSaleInventoryModal: React.FC<FlashSaleInventoryModalProps> = (
             Real-Time Stock & Channels
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === "reservations"}
             onClick={() => setActiveTab("reservations")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all ${
+            className={`min-h-[36px] flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-all ${
               activeTab === "reservations"
                 ? "border-amber-500 text-amber-400 bg-amber-500/5"
                 : "border-transparent text-slate-400 hover:text-slate-200"
@@ -256,8 +263,10 @@ export const FlashSaleInventoryModal: React.FC<FlashSaleInventoryModalProps> = (
             Active Leased Locks ({reservations.filter((r) => r.status === "RESERVED").length})
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === "simulator"}
             onClick={() => setActiveTab("simulator")}
-            className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-all ${
+            className={`min-h-[36px] flex items-center gap-2 px-4 py-2 text-xs font-medium border-b-2 transition-all ${
               activeTab === "simulator"
                 ? "border-amber-500 text-amber-400 bg-amber-500/5"
                 : "border-transparent text-slate-400 hover:text-slate-200"

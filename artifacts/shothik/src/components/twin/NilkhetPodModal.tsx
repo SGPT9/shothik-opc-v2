@@ -29,6 +29,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { saveOfflineTask } from "@/lib/offline/offline-storage";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface NilkhetPodModalProps {
   open: boolean;
@@ -91,6 +92,11 @@ export function NilkhetPodModal({
   defaultBookTitle = "Deep-Tech Frontiers of Bengal",
   defaultAuthorName = "Shothik Research Lab",
 }: NilkhetPodModalProps) {
+  useModalA11y({
+    isOpen: open,
+    onClose: () => onOpenChange(false),
+  });
+
   // Configuration state
   const [bookTitle, setBookTitle] = useState(defaultBookTitle);
   const [authorName, setAuthorName] = useState(defaultAuthorName);
@@ -269,6 +275,9 @@ export function NilkhetPodModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-testid="nilkhet-pod-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Nilkhet POD Direct API & Imposition Hub"
         className="max-w-4xl bg-zinc-950 border border-zinc-800 text-zinc-100 p-0 overflow-hidden shadow-2xl rounded-2xl"
       >
         {/* Header */}
@@ -290,10 +299,12 @@ export function NilkhetPodModal({
             </div>
           </div>
 
-          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
+          <div role="tablist" aria-label="POD Studio Tabs" className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 p-1 rounded-lg">
             <button
+              role="tab"
+              aria-selected={activeTab === "geometry"}
               onClick={() => setActiveTab("geometry")}
-              className={`px-3 py-1.5 text-xs rounded-md transition font-medium ${
+              className={`min-h-[36px] px-3.5 py-1.5 text-xs rounded-md transition font-medium flex items-center justify-center ${
                 activeTab === "geometry"
                   ? "bg-emerald-500 text-zinc-950 font-bold"
                   : "text-zinc-400 hover:text-zinc-200"
@@ -302,8 +313,10 @@ export function NilkhetPodModal({
               Spine & Cover
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === "imposition"}
               onClick={() => setActiveTab("imposition")}
-              className={`px-3 py-1.5 text-xs rounded-md transition font-medium ${
+              className={`min-h-[36px] px-3.5 py-1.5 text-xs rounded-md transition font-medium flex items-center justify-center ${
                 activeTab === "imposition"
                   ? "bg-emerald-500 text-zinc-950 font-bold"
                   : "text-zinc-400 hover:text-zinc-200"
@@ -312,8 +325,10 @@ export function NilkhetPodModal({
               Signatures & Plates
             </button>
             <button
+              role="tab"
+              aria-selected={activeTab === "dispatch"}
               onClick={() => setActiveTab("dispatch")}
-              className={`px-3 py-1.5 text-xs rounded-md transition font-medium ${
+              className={`min-h-[36px] px-3.5 py-1.5 text-xs rounded-md transition font-medium flex items-center justify-center ${
                 activeTab === "dispatch"
                   ? "bg-emerald-500 text-zinc-950 font-bold"
                   : "text-zinc-400 hover:text-zinc-200"
