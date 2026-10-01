@@ -99,9 +99,11 @@ import { landRegistryRouter } from "./land-registry.js";
 import { hyperlocalFleetRouter } from "./hyperlocal-fleet.js";
 import { coldChainRouter } from "./cold-chain.js";
 import { landPortRouter } from "./land-port.js";
+import { rmgRouter } from "./rmg.js";
 
 const router: IRouter = Router();
 
+router.use(rmgRouter);
 router.use(landPortRouter);
 router.use(hyperlocalFleetRouter);
 router.use(coldChainRouter);

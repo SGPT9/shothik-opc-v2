@@ -95,6 +95,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 82 | Autonomous Hyperlocal Delivery Fleet Coordination & Drone/Bike Micro-Dispatch Engine | Slice 82 | done |
 | 83 | Decentralized Farm-to-Table Cold Chain Telemetry & Agro-Commodity Traceability Engine | Slice 83 | done |
 | 84 | Autonomous Cross-Border Land Port Clearing, Port Health & Customs Electronic Cargo Tracking System (ECTS) | Slice 84 | done |
+| 85 | Autonomous RMG Merchandising, Tech Pack Generator, Fabric Consumption & Factory Subcontracting Escrow Engine | Slice 85 | done |
 
 ---
 
@@ -677,6 +678,19 @@ Overland customs clearing across major Bangladesh Land Port Authority (BSLPA) st
 - [x] Verify it: `/check verify land port clearing ects engine`
 - [x] Test it: `/test land port clearing ects engine`
 spec 0084 · code in `artifacts/api-server/src/lib/customs/land-port-clearing-engine.ts`, `artifacts/api-server/src/routes/land-port.ts`, `artifacts/api-server/src/routes/__tests__/land-port.test.ts`, and `artifacts/shothik/src/components/twin/LandPortClearingModal.tsx`
+
+### 85. Autonomous RMG Merchandising, Tech Pack Generator, Fabric Consumption & Factory Subcontracting Escrow Engine · done
+Automated apparel technical sheet generation across standard Bangladeshi garments (basic t-shirt, polo shirt, hoodie, denim jeans, twill chino, woven shirt) with graded Points of Measure (XS to XXL), CAD fabric consumption yield calculations (kg/dozen) with marker efficiency and cutting/shrinkage wastage buffers, 4-tier Cost of Making (CM) subcontracting milestone escrow (25% cutting lay advance, 35% sewing line, 25% AQL 2.5 pass, 15% final dispatch), statutory NBR Mushak-4.3 Input-Output coefficient compiler for export duty rebates, and responsive frontend AG-UI Studio modal (`RmgMerchandisingModal.tsx`) with shortcut ⌘R and WAI-ARIA accessibility.
+- [x] Build it: `/develop rmg tech pack fabric consumption engine`
+   - [x] Graded apparel technical sheet and BOM with SHA-256 seal (AC-1)
+   - [x] Fabric consumption yield and knitted roll requirement calculator (AC-2)
+   - [x] 4-tier CM milestone subcontracting escrow state machine (AC-3)
+   - [x] Statutory NBR Mushak-4.3 input-output coefficient compiler (AC-4)
+   - [x] REST API endpoints under `/api/v1/apparel/rmg/` (AC-5)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘R, WAI-ARIA a11y, and 36px touch targets (AC-6)
+- [x] Verify it: `/check verify rmg tech pack fabric consumption engine`
+- [x] Test it: `/test rmg tech pack fabric consumption engine`
+spec 0085 · code in `artifacts/api-server/src/lib/apparel/rmg-merchandising-engine.ts`, `artifacts/api-server/src/routes/rmg.ts`, `artifacts/api-server/src/routes/__tests__/rmg.test.ts`, and `artifacts/shothik/src/components/twin/RmgMerchandisingModal.tsx`
 
 ---
 
