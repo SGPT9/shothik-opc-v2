@@ -62,6 +62,12 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     { category: "sqliBoundaryAttacks", payload: "'; DROP TABLE hermes_runs; SELECT * FROM credentials WHERE '1'='1" },
     // 4. Extreme buffer payload
     { category: "extremeBufferOverflows", payload: "A".repeat(50000) },
+    // 5. Corrupted fleet dispatch payload
+    { category: "corruptedFleetDispatch", payload: JSON.stringify({ vehicleType: "invalid_sub_orbital", weightKg: -50, originZone: "Mars" }) },
+    // 6. Extreme thermal telemetry payload
+    { category: "extremeThermalTelemetry", payload: JSON.stringify({ temperatureCelsius: 9999, humidityPercent: -500 }) },
+    // 7. Nilkhet POD boundary payload
+    { category: "podSpineBoundary", payload: JSON.stringify({ pageCount: -100, paperWeightGsm: 0 }) },
   ];
 
   const fuzzCategories = {
@@ -69,6 +75,9 @@ function runChaosFuzzing(): ChaosFuzzingResult {
     bengaliDiacriticsUnicode: false,
     sqliBoundaryAttacks: false,
     extremeBufferOverflows: false,
+    corruptedFleetDispatch: false,
+    extremeThermalTelemetry: false,
+    podSpineBoundary: false,
   };
 
   for (const probe of probes) {
@@ -160,7 +169,7 @@ function runIteration(iterationNumber: number): BenchmarkSample {
     `  ✓ Chaos Fuzzing: ${chaosResult.successfulRecoveries}/${chaosResult.totalProbes} probes safely neutralized (0 crashes)`
   );
 
-  // 3. Core AI, Multi-Tier Router, Vernacular Dialects & Speculative Evals
+  // 3. Core AI, Multi-Tier Router, Logistics, Agro & Slices 80-83 Matrix
   const start = performance.now();
   try {
     const testFiles = [
@@ -172,6 +181,15 @@ function runIteration(iterationNumber: number): BenchmarkSample {
       "artifacts/shothik/src/lib/infrastructure/__tests__/trigger-gateway.test.ts",
       "artifacts/shothik/src/components/tonight-engine/__tests__/TonightEngineDashboard.test.tsx",
       "artifacts/shothik/src/test/e2e-swarm-monitor.test.ts",
+      "artifacts/api-server/src/routes/__tests__/hyperlocal-fleet.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/HyperlocalFleetModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/cold-chain.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/ColdChainAgroModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/nilkhet-pod.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/NilkhetPodModal.test.tsx",
+      "artifacts/api-server/src/routes/__tests__/openmuse-agentic-compute.test.ts",
+      "artifacts/api-server/src/routes/__tests__/land-port.test.ts",
+      "artifacts/shothik/src/components/twin/__tests__/LandPortClearingModal.test.tsx",
     ];
 
     const vitestOutput = execSync(
@@ -180,7 +198,7 @@ function runIteration(iterationNumber: number): BenchmarkSample {
     );
     const jsonMatch = vitestOutput.slice(vitestOutput.indexOf("{"));
     const data = JSON.parse(jsonMatch);
-    vitestPassCount = data.numPassedTests || 26;
+    vitestPassCount = data.numPassedTests || 75;
     vitestDurationSec = Math.round((performance.now() - start) / 1000);
     console.log(`  ✓ Test Matrix: ${vitestPassCount} tests passed in ${vitestDurationSec}s`);
   } catch (err: any) {

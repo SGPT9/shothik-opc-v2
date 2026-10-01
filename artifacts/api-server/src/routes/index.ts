@@ -98,9 +98,11 @@ import { flashInventoryRouter } from "./flash-inventory.js";
 import { landRegistryRouter } from "./land-registry.js";
 import { hyperlocalFleetRouter } from "./hyperlocal-fleet.js";
 import { coldChainRouter } from "./cold-chain.js";
+import { landPortRouter } from "./land-port.js";
 
 const router: IRouter = Router();
 
+router.use(landPortRouter);
 router.use(hyperlocalFleetRouter);
 router.use(coldChainRouter);
 router.use(tasksRouter);
