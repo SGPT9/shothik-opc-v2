@@ -20,6 +20,7 @@ import {
   Plus,
 } from "lucide-react";
 import { ActionProposalCard } from "../chat/ActionProposalCard";
+import { useModalA11y } from "@/hooks/ui/useModalA11y";
 
 export interface AgentComputerModalProps {
   isOpen: boolean;
@@ -27,6 +28,7 @@ export interface AgentComputerModalProps {
 }
 
 export const AgentComputerModal: React.FC<AgentComputerModalProps> = ({ isOpen, onClose }) => {
+  useModalA11y({ isOpen, onClose });
   const [activeTab, setActiveTab] = useState<"browser" | "tasks" | "actions" | "pdf">("browser");
   
   // Browser state
@@ -241,7 +243,12 @@ export const AgentComputerModal: React.FC<AgentComputerModalProps> = ({ isOpen, 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="agent-computer-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md"
+    >
       <div className="flex flex-col w-full max-w-5xl h-[88vh] bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden text-slate-100">
         {/* Top Bar */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
@@ -251,7 +258,7 @@ export const AgentComputerModal: React.FC<AgentComputerModalProps> = ({ isOpen, 
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-base text-slate-100">OpenMuse Agentic Computer</h3>
+                <h3 id="agent-computer-modal-title" className="font-semibold text-base text-slate-100">OpenMuse Agentic Computer</h3>
                 <span className="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                   Live Harness
                 </span>
@@ -308,7 +315,8 @@ export const AgentComputerModal: React.FC<AgentComputerModalProps> = ({ isOpen, 
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition"
+            aria-label="Close modal"
+            className="p-1.5 min-h-[36px] min-w-[36px] flex items-center justify-center text-slate-400 hover:text-slate-100 rounded-lg hover:bg-slate-800 transition"
           >
             <X className="w-5 h-5" />
           </button>

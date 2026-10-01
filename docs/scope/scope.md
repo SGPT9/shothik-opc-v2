@@ -625,6 +625,18 @@ Commercial and academic book print-on-demand platform connecting Bangladeshi aut
 - [x] Test it: `/test nilkhet pod cmyk preflight courier fulfillment`
 spec 0080 · code in `artifacts/api-server/src/routes/publishing.ts`, `artifacts/api-server/src/lib/publishing/nilkhet-pod-engine.ts`, and `artifacts/shothik/src/components/twin/NilkhetPodModal.tsx`
 
+### 81. OpenMuse Agentic Compute, Persistent Browser Takeover & CAS Leased Task Orchestration Engine · done
+Durable task execution and orchestration with SQL compare-and-swap (CAS) atomic locking, heartbeats, and lease-loss protection in `lib/hermes/`, protected action proposal state machine (`ActionProposal`) with SHA-256 integrity seals for destructive or financial operations (bKash payout, courier dispatch, WhatsApp broadcast), egress-proxied Playwright browser worker with SSRF blocklist and coordinate-normalized visual clicks, Nilkhet interactive PDF form field extractor and cryptographic delivery receipts, and responsive frontend AG-UI Agent Computer Studio modal (`AgentComputerModal.tsx`) with keyboard shortcut ⌘U and WAI-ARIA modal accessibility.
+- [x] Build it: `/develop openmuse agentic compute browser takeover cas leased tasks`
+   - [x] CAS leased task worker with heartbeat renewals and abort on lost lease (AC-1)
+   - [x] Protected action proposal state machine with discriminated union payloads & review gates (AC-2)
+   - [x] SSRF-protected egress browser worker with (1280x800) normalized coordinates & visual takeover (AC-3)
+   - [x] Nilkhet interactive PDF form extraction, fill preview & SHA-256 delivery receipts (AC-4)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘U, WAI-ARIA a11y, and 36px touch targets (AC-5)
+- [x] Verify it: `/check verify openmuse agentic compute browser takeover cas leased tasks`
+- [x] Test it: `/test openmuse agentic compute browser takeover cas leased tasks`
+spec 0056 · code in `artifacts/api-server/src/routes/tasks.ts`, `artifacts/api-server/src/routes/action-proposals.ts`, `artifacts/api-server/src/routes/browser-takeover.ts`, `artifacts/api-server/src/routes/pdf-forms.ts`, `artifacts/api-server/src/routes/__tests__/openmuse-agentic-compute.test.ts`, and `artifacts/shothik/src/components/twin/AgentComputerModal.tsx`
+
 ---
 
 ## Deferred Features
