@@ -1,90 +1,94 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { AutoModeModal } from "@/components/twin/AutoModeModal";
-import { NightshiftModal } from "@/components/twin/NightshiftModal";
-import { AddCreditsModal } from "@/components/twin/AddCreditsModal";
-import { DocumentsListModal, DocumentItem } from "@/components/twin/DocumentsListModal";
-import { CompanyLimitModal } from "@/components/twin/CompanyLimitModal";
-import { CompanySettingsModal } from "@/components/twin/CompanySettingsModal";
-import { ManageDomainsModal } from "@/components/twin/ManageDomainsModal";
-import { VersionsModal, VersionCommit } from "@/components/twin/VersionsModal";
-import { WebsiteHubModal } from "@/components/twin/WebsiteHubModal";
-import { AppSecretsModal } from "@/components/twin/AppSecretsModal";
-import { RedeployModal } from "@/components/twin/RedeployModal";
-import { AutoColdOutreachModal } from "@/components/twin/AutoColdOutreachModal";
+import dynamic from "next/dynamic";
+import type { DocumentItem } from "@/components/twin/DocumentsListModal";
+import type { VersionCommit } from "@/components/twin/VersionsModal";
 import { LiveTerminalTicker } from "@/components/twin/LiveTerminalTicker";
-import { DailyDigestModal } from "@/components/twin/DailyDigestModal";
-import { ConnectExistingCompanyModal } from "@/components/twin/ConnectExistingCompanyModal";
-import { MfsGatewayModal } from "@/components/twin/MfsGatewayModal";
-import { VoiceCommanderModal } from "@/components/twin/VoiceCommanderModal";
-import { DokployMicroContainersModal } from "@/components/twin/DokployMicroContainersModal";
-import { SecondMeMemoryModal } from "@/components/twin/SecondMeMemoryModal";
-import { TwinVideoStudioModal } from "@/components/twin/TwinVideoStudioModal";
-import { SpecializedTwinsModal } from "@/components/twin/SpecializedTwinsModal";
 import { TwinFloatingCapsuleOverlay } from "@/components/twin/TwinFloatingCapsuleOverlay";
 import { TwinCommandPalette } from "@/components/twin/TwinCommandPalette";
-import { EmailOutreachModal } from "@/components/twin/EmailOutreachModal";
-import { LeadCrmDrawer } from "@/components/twin/LeadCrmDrawer";
-import { CompetitorAdSpyModal } from "@/components/twin/CompetitorAdSpyModal";
-import { CroTunerModal } from "@/components/twin/CroTunerModal";
-import { VisualStorefrontBuilderModal } from "@/components/twin/VisualStorefrontBuilderModal";
-import { BookReaderStorefrontModal } from "@/components/twin/BookReaderStorefrontModal";
-import { SteadfastCourierModal } from "@/components/twin/SteadfastCourierModal";
-import { StartupBuildsModal } from "@/components/twin/StartupBuildsModal";
-import { NilkhetPodModal } from "@/components/twin/NilkhetPodModal";
-import { MultiDialectVoiceTwinModal } from "@/components/twin/MultiDialectVoiceTwinModal";
-import { SwarmGraphStudioModal } from "@/components/twin/SwarmGraphStudioModal";
-import { VastSpotGpuModal } from "@/components/twin/VastSpotGpuModal";
-import { EdgeMeshStudioModal } from "@/components/twin/EdgeMeshStudioModal";
-import { CanaryTrafficDirectorModal } from "@/components/twin/CanaryTrafficDirectorModal";
-import { VulnerabilityImmunityModal } from "@/components/twin/VulnerabilityImmunityModal";
-import { MultiModelParetoModal } from "@/components/twin/MultiModelParetoModal";
-import { EpistemicConsensusModal } from "@/components/twin/EpistemicConsensusModal";
-import { WebGpuEmbeddingModal } from "@/components/twin/WebGpuEmbeddingModal";
-import { ZkSnarkProverModal } from "@/components/twin/ZkSnarkProverModal";
-import { WasmVectorIndexModal } from "@/components/twin/WasmVectorIndexModal";
-import { DeveloperTwinModal } from "@/components/twin/DeveloperTwinModal";
-import { PlatformServicesModal } from "@/components/twin/PlatformServicesModal";
-import { WhatsAppCommerceModal } from "@/components/twin/WhatsAppCommerceModal";
-import { MushakTaxStudioModal } from "@/components/twin/MushakTaxStudioModal";
-import { OutboundCallVerificationModal } from "@/components/twin/OutboundCallVerificationModal";
-import { CrossBorderCustomsModal } from "@/components/twin/CrossBorderCustomsModal";
-import { PlatformElevatorsViralModal } from "@/components/twin/PlatformElevatorsViralModal";
-import { FranchiseMultiBranchModal } from "@/components/twin/FranchiseMultiBranchModal";
-import { LiveSellingStudioModal } from "@/components/twin/LiveSellingStudioModal";
-import { AuditLedgerStudioModal } from "@/components/twin/AuditLedgerStudioModal";
-import { CourierArbitrageModal } from "@/components/twin/CourierArbitrageModal";
-import { FreelancerRemittanceModal } from "@/components/twin/FreelancerRemittanceModal";
-import { DarkHubFulfillmentModal } from "@/components/twin/DarkHubFulfillmentModal";
-import { MultiChannelCashflowModal } from "@/components/twin/MultiChannelCashflowModal";
-import { WholesaleRfqEscrowModal } from "@/components/twin/WholesaleRfqEscrowModal";
-import { AgriMandiRadarModal } from "@/components/twin/AgriMandiRadarModal";
-import { FieldAgentPosModal } from "@/components/twin/FieldAgentPosModal";
-import { Mushak43DeclarationModal } from "@/components/twin/Mushak43DeclarationModal";
-import { MultiCarrierWebhookModal } from "@/components/twin/MultiCarrierWebhookModal";
-import { ExportComplianceModal } from "@/components/twin/ExportComplianceModal";
-import { FxHedgingModal } from "@/components/twin/FxHedgingModal";
-import { PayrollTaxModal } from "@/components/twin/PayrollTaxModal";
-import { CorporateTaxModal } from "@/components/twin/CorporateTaxModal";
-import { InvoiceFactoringModal } from "@/components/twin/InvoiceFactoringModal";
-import { DebtRecoveryModal } from "@/components/twin/DebtRecoveryModal";
-import { VoiceCommerceModal } from "@/components/twin/VoiceCommerceModal";
-import { LegalContractsModal } from "@/components/twin/LegalContractsModal";
-import { DutyDrawbackModal } from "@/components/twin/DutyDrawbackModal";
-import { HalalGovernanceModal } from "@/components/twin/HalalGovernanceModal";
-import { CollectiveBuyingModal } from "@/components/twin/CollectiveBuyingModal";
-import { TenderBidModal } from "@/components/twin/TenderBidModal";
-import { AgentComputerModal } from "@/components/twin/AgentComputerModal";
-import { CustomsTariffModal } from "@/components/twin/CustomsTariffModal";
-import { InventoryMatrixModal } from "@/components/twin/InventoryMatrixModal";
-import { CodIvrModal } from "@/components/twin/CodIvrModal";
-import { EarlyLiquidityModal } from "@/components/twin/EarlyLiquidityModal";
-import { MetaCapiModal } from "@/components/twin/MetaCapiModal";
-import { KycOcrModal } from "@/components/twin/KycOcrModal";
-import { RtoFraudShieldModal } from "@/components/twin/RtoFraudShieldModal";
-import { FlashSaleInventoryModal } from "@/components/twin/FlashSaleInventoryModal";
-import { LandRegistryModal } from "@/components/twin/LandRegistryModal";
-import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
+
+const AutoModeModal = dynamic(() => import("@/components/twin/AutoModeModal").then((m) => m.AutoModeModal), { ssr: false });
+const NightshiftModal = dynamic(() => import("@/components/twin/NightshiftModal").then((m) => m.NightshiftModal), { ssr: false });
+const AddCreditsModal = dynamic(() => import("@/components/twin/AddCreditsModal").then((m) => m.AddCreditsModal), { ssr: false });
+const DocumentsListModal = dynamic(() => import("@/components/twin/DocumentsListModal").then((m) => m.DocumentsListModal), { ssr: false });
+const CompanyLimitModal = dynamic(() => import("@/components/twin/CompanyLimitModal").then((m) => m.CompanyLimitModal), { ssr: false });
+const CompanySettingsModal = dynamic(() => import("@/components/twin/CompanySettingsModal").then((m) => m.CompanySettingsModal), { ssr: false });
+const ManageDomainsModal = dynamic(() => import("@/components/twin/ManageDomainsModal").then((m) => m.ManageDomainsModal), { ssr: false });
+const VersionsModal = dynamic(() => import("@/components/twin/VersionsModal").then((m) => m.VersionsModal), { ssr: false });
+const WebsiteHubModal = dynamic(() => import("@/components/twin/WebsiteHubModal").then((m) => m.WebsiteHubModal), { ssr: false });
+const AppSecretsModal = dynamic(() => import("@/components/twin/AppSecretsModal").then((m) => m.AppSecretsModal), { ssr: false });
+const RedeployModal = dynamic(() => import("@/components/twin/RedeployModal").then((m) => m.RedeployModal), { ssr: false });
+const AutoColdOutreachModal = dynamic(() => import("@/components/twin/AutoColdOutreachModal").then((m) => m.AutoColdOutreachModal), { ssr: false });
+const DailyDigestModal = dynamic(() => import("@/components/twin/DailyDigestModal").then((m) => m.DailyDigestModal), { ssr: false });
+const ConnectExistingCompanyModal = dynamic(() => import("@/components/twin/ConnectExistingCompanyModal").then((m) => m.ConnectExistingCompanyModal), { ssr: false });
+const MfsGatewayModal = dynamic(() => import("@/components/twin/MfsGatewayModal").then((m) => m.MfsGatewayModal), { ssr: false });
+const VoiceCommanderModal = dynamic(() => import("@/components/twin/VoiceCommanderModal").then((m) => m.VoiceCommanderModal), { ssr: false });
+const DokployMicroContainersModal = dynamic(() => import("@/components/twin/DokployMicroContainersModal").then((m) => m.DokployMicroContainersModal), { ssr: false });
+const SecondMeMemoryModal = dynamic(() => import("@/components/twin/SecondMeMemoryModal").then((m) => m.SecondMeMemoryModal), { ssr: false });
+const TwinVideoStudioModal = dynamic(() => import("@/components/twin/TwinVideoStudioModal").then((m) => m.TwinVideoStudioModal), { ssr: false });
+const SpecializedTwinsModal = dynamic(() => import("@/components/twin/SpecializedTwinsModal").then((m) => m.SpecializedTwinsModal), { ssr: false });
+const EmailOutreachModal = dynamic(() => import("@/components/twin/EmailOutreachModal").then((m) => m.EmailOutreachModal), { ssr: false });
+const LeadCrmDrawer = dynamic(() => import("@/components/twin/LeadCrmDrawer").then((m) => m.LeadCrmDrawer), { ssr: false });
+const CompetitorAdSpyModal = dynamic(() => import("@/components/twin/CompetitorAdSpyModal").then((m) => m.CompetitorAdSpyModal), { ssr: false });
+const CroTunerModal = dynamic(() => import("@/components/twin/CroTunerModal").then((m) => m.CroTunerModal), { ssr: false });
+const VisualStorefrontBuilderModal = dynamic(() => import("@/components/twin/VisualStorefrontBuilderModal").then((m) => m.VisualStorefrontBuilderModal), { ssr: false });
+const BookReaderStorefrontModal = dynamic(() => import("@/components/twin/BookReaderStorefrontModal").then((m) => m.BookReaderStorefrontModal), { ssr: false });
+const SteadfastCourierModal = dynamic(() => import("@/components/twin/SteadfastCourierModal").then((m) => m.SteadfastCourierModal), { ssr: false });
+const StartupBuildsModal = dynamic(() => import("@/components/twin/StartupBuildsModal").then((m) => m.StartupBuildsModal), { ssr: false });
+const NilkhetPodModal = dynamic(() => import("@/components/twin/NilkhetPodModal").then((m) => m.NilkhetPodModal), { ssr: false });
+const MultiDialectVoiceTwinModal = dynamic(() => import("@/components/twin/MultiDialectVoiceTwinModal").then((m) => m.MultiDialectVoiceTwinModal), { ssr: false });
+const SwarmGraphStudioModal = dynamic(() => import("@/components/twin/SwarmGraphStudioModal").then((m) => m.SwarmGraphStudioModal), { ssr: false });
+const VastSpotGpuModal = dynamic(() => import("@/components/twin/VastSpotGpuModal").then((m) => m.VastSpotGpuModal), { ssr: false });
+const EdgeMeshStudioModal = dynamic(() => import("@/components/twin/EdgeMeshStudioModal").then((m) => m.EdgeMeshStudioModal), { ssr: false });
+const CanaryTrafficDirectorModal = dynamic(() => import("@/components/twin/CanaryTrafficDirectorModal").then((m) => m.CanaryTrafficDirectorModal), { ssr: false });
+const VulnerabilityImmunityModal = dynamic(() => import("@/components/twin/VulnerabilityImmunityModal").then((m) => m.VulnerabilityImmunityModal), { ssr: false });
+const MultiModelParetoModal = dynamic(() => import("@/components/twin/MultiModelParetoModal").then((m) => m.MultiModelParetoModal), { ssr: false });
+const EpistemicConsensusModal = dynamic(() => import("@/components/twin/EpistemicConsensusModal").then((m) => m.EpistemicConsensusModal), { ssr: false });
+const WebGpuEmbeddingModal = dynamic(() => import("@/components/twin/WebGpuEmbeddingModal").then((m) => m.WebGpuEmbeddingModal), { ssr: false });
+const ZkSnarkProverModal = dynamic(() => import("@/components/twin/ZkSnarkProverModal").then((m) => m.ZkSnarkProverModal), { ssr: false });
+const WasmVectorIndexModal = dynamic(() => import("@/components/twin/WasmVectorIndexModal").then((m) => m.WasmVectorIndexModal), { ssr: false });
+const DeveloperTwinModal = dynamic(() => import("@/components/twin/DeveloperTwinModal").then((m) => m.DeveloperTwinModal), { ssr: false });
+const PlatformServicesModal = dynamic(() => import("@/components/twin/PlatformServicesModal").then((m) => m.PlatformServicesModal), { ssr: false });
+const WhatsAppCommerceModal = dynamic(() => import("@/components/twin/WhatsAppCommerceModal").then((m) => m.WhatsAppCommerceModal), { ssr: false });
+const MushakTaxStudioModal = dynamic(() => import("@/components/twin/MushakTaxStudioModal").then((m) => m.MushakTaxStudioModal), { ssr: false });
+const OutboundCallVerificationModal = dynamic(() => import("@/components/twin/OutboundCallVerificationModal").then((m) => m.OutboundCallVerificationModal), { ssr: false });
+const CrossBorderCustomsModal = dynamic(() => import("@/components/twin/CrossBorderCustomsModal").then((m) => m.CrossBorderCustomsModal), { ssr: false });
+const PlatformElevatorsViralModal = dynamic(() => import("@/components/twin/PlatformElevatorsViralModal").then((m) => m.PlatformElevatorsViralModal), { ssr: false });
+const FranchiseMultiBranchModal = dynamic(() => import("@/components/twin/FranchiseMultiBranchModal").then((m) => m.FranchiseMultiBranchModal), { ssr: false });
+const LiveSellingStudioModal = dynamic(() => import("@/components/twin/LiveSellingStudioModal").then((m) => m.LiveSellingStudioModal), { ssr: false });
+const AuditLedgerStudioModal = dynamic(() => import("@/components/twin/AuditLedgerStudioModal").then((m) => m.AuditLedgerStudioModal), { ssr: false });
+const CourierArbitrageModal = dynamic(() => import("@/components/twin/CourierArbitrageModal").then((m) => m.CourierArbitrageModal), { ssr: false });
+const FreelancerRemittanceModal = dynamic(() => import("@/components/twin/FreelancerRemittanceModal").then((m) => m.FreelancerRemittanceModal), { ssr: false });
+const DarkHubFulfillmentModal = dynamic(() => import("@/components/twin/DarkHubFulfillmentModal").then((m) => m.DarkHubFulfillmentModal), { ssr: false });
+const MultiChannelCashflowModal = dynamic(() => import("@/components/twin/MultiChannelCashflowModal").then((m) => m.MultiChannelCashflowModal), { ssr: false });
+const WholesaleRfqEscrowModal = dynamic(() => import("@/components/twin/WholesaleRfqEscrowModal").then((m) => m.WholesaleRfqEscrowModal), { ssr: false });
+const AgriMandiRadarModal = dynamic(() => import("@/components/twin/AgriMandiRadarModal").then((m) => m.AgriMandiRadarModal), { ssr: false });
+const FieldAgentPosModal = dynamic(() => import("@/components/twin/FieldAgentPosModal").then((m) => m.FieldAgentPosModal), { ssr: false });
+const Mushak43DeclarationModal = dynamic(() => import("@/components/twin/Mushak43DeclarationModal").then((m) => m.Mushak43DeclarationModal), { ssr: false });
+const MultiCarrierWebhookModal = dynamic(() => import("@/components/twin/MultiCarrierWebhookModal").then((m) => m.MultiCarrierWebhookModal), { ssr: false });
+const ExportComplianceModal = dynamic(() => import("@/components/twin/ExportComplianceModal").then((m) => m.ExportComplianceModal), { ssr: false });
+const FxHedgingModal = dynamic(() => import("@/components/twin/FxHedgingModal").then((m) => m.FxHedgingModal), { ssr: false });
+const PayrollTaxModal = dynamic(() => import("@/components/twin/PayrollTaxModal").then((m) => m.PayrollTaxModal), { ssr: false });
+const CorporateTaxModal = dynamic(() => import("@/components/twin/CorporateTaxModal").then((m) => m.CorporateTaxModal), { ssr: false });
+const InvoiceFactoringModal = dynamic(() => import("@/components/twin/InvoiceFactoringModal").then((m) => m.InvoiceFactoringModal), { ssr: false });
+const DebtRecoveryModal = dynamic(() => import("@/components/twin/DebtRecoveryModal").then((m) => m.DebtRecoveryModal), { ssr: false });
+const VoiceCommerceModal = dynamic(() => import("@/components/twin/VoiceCommerceModal").then((m) => m.VoiceCommerceModal), { ssr: false });
+const LegalContractsModal = dynamic(() => import("@/components/twin/LegalContractsModal").then((m) => m.LegalContractsModal), { ssr: false });
+const DutyDrawbackModal = dynamic(() => import("@/components/twin/DutyDrawbackModal").then((m) => m.DutyDrawbackModal), { ssr: false });
+const HalalGovernanceModal = dynamic(() => import("@/components/twin/HalalGovernanceModal").then((m) => m.HalalGovernanceModal), { ssr: false });
+const CollectiveBuyingModal = dynamic(() => import("@/components/twin/CollectiveBuyingModal").then((m) => m.CollectiveBuyingModal), { ssr: false });
+const TenderBidModal = dynamic(() => import("@/components/twin/TenderBidModal").then((m) => m.TenderBidModal), { ssr: false });
+const AgentComputerModal = dynamic(() => import("@/components/twin/AgentComputerModal").then((m) => m.AgentComputerModal), { ssr: false });
+const CustomsTariffModal = dynamic(() => import("@/components/twin/CustomsTariffModal").then((m) => m.CustomsTariffModal), { ssr: false });
+const InventoryMatrixModal = dynamic(() => import("@/components/twin/InventoryMatrixModal").then((m) => m.InventoryMatrixModal), { ssr: false });
+const CodIvrModal = dynamic(() => import("@/components/twin/CodIvrModal").then((m) => m.CodIvrModal), { ssr: false });
+const EarlyLiquidityModal = dynamic(() => import("@/components/twin/EarlyLiquidityModal").then((m) => m.EarlyLiquidityModal), { ssr: false });
+const MetaCapiModal = dynamic(() => import("@/components/twin/MetaCapiModal").then((m) => m.MetaCapiModal), { ssr: false });
+const KycOcrModal = dynamic(() => import("@/components/twin/KycOcrModal").then((m) => m.KycOcrModal), { ssr: false });
+const RtoFraudShieldModal = dynamic(() => import("@/components/twin/RtoFraudShieldModal").then((m) => m.RtoFraudShieldModal), { ssr: false });
+const FlashSaleInventoryModal = dynamic(() => import("@/components/twin/FlashSaleInventoryModal").then((m) => m.FlashSaleInventoryModal), { ssr: false });
+const LandRegistryModal = dynamic(() => import("@/components/twin/LandRegistryModal").then((m) => m.LandRegistryModal), { ssr: false });
+const CreatorCashoutModal = dynamic(() => import("@/components/credits/CreatorCashoutModal"), { ssr: false });
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -1708,244 +1712,268 @@ export default function TwinPage() {
       )}
 
       {/* ── Modals ── */}
-      <AutoModeModal
-        open={autoModeOpen}
-        onOpenChange={setAutoModeOpen}
-        onStartAutoMode={handleStartAutoMode}
-      />
+      {autoModeOpen && (
+        <AutoModeModal
+          open={autoModeOpen}
+          onOpenChange={setAutoModeOpen}
+          onStartAutoMode={handleStartAutoMode}
+        />
+      )}
 
-      <NightshiftModal
-        open={nightshiftOpen}
-        onOpenChange={setNightshiftOpen}
-        onSave={(mode) => setNightshiftMode(mode)}
-      />
+      {nightshiftOpen && (
+        <NightshiftModal
+          open={nightshiftOpen}
+          onOpenChange={setNightshiftOpen}
+          onSave={(mode) => setNightshiftMode(mode)}
+        />
+      )}
 
-      <AddCreditsModal
-        open={addCreditsOpen}
-        onOpenChange={setAddCreditsOpen}
-        onSuccess={(plan, price, creditsAdded) => {
-          const amount = creditsAdded || 15;
-          fetch("/api/v1/subscriptions/topup-credits", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount, paymentMethod: "card" }),
-          })
-            .then((r) => (r.ok ? r.json() : null))
-            .then((data) => {
-              if (data && typeof data.creditsBalance === "number") {
-                setCredits(data.creditsBalance);
-              } else {
-                setCredits((c) => c + amount);
-              }
+      {addCreditsOpen && (
+        <AddCreditsModal
+          open={addCreditsOpen}
+          onOpenChange={setAddCreditsOpen}
+          onSuccess={(plan, price, creditsAdded) => {
+            const amount = creditsAdded || 15;
+            fetch("/api/v1/subscriptions/topup-credits", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ amount, paymentMethod: "card" }),
             })
-            .catch(() => {
-              setCredits((c) => c + amount);
+              .then((r) => (r.ok ? r.json() : null))
+              .then((data) => {
+                if (data && typeof data.creditsBalance === "number") {
+                  setCredits(data.creditsBalance);
+                } else {
+                  setCredits((c) => c + amount);
+                }
+              })
+              .catch(() => {
+                setCredits((c) => c + amount);
+              });
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `cred-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: `💳 Successfully added ${amount} task credits (${plan}). Workspace credit balance updated.`,
+              },
+            ]);
+          }}
+        />
+      )}
+
+      {docsListOpen && (
+        <DocumentsListModal
+          open={docsListOpen}
+          onOpenChange={setDocsListOpen}
+          docs={docs.map((d) => ({
+            id: d.id,
+            title: d.title,
+            timeAgo: d.timeAgo,
+            type: d.kind.toLowerCase().includes("report") ? "report" : "document",
+            content: d.content,
+          }))}
+          onSelectDoc={(doc) => {
+            setActiveDoc({
+              id: doc.id,
+              title: doc.title,
+              timeAgo: doc.timeAgo,
+              kind: doc.type === "report" ? "CEO Report" : "Document",
+              content: doc.content,
             });
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `cred-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: `💳 Successfully added ${amount} task credits (${plan}). Workspace credit balance updated.`,
-            },
-          ]);
-        }}
-      />
+          }}
+        />
+      )}
 
-      <DocumentsListModal
-        open={docsListOpen}
-        onOpenChange={setDocsListOpen}
-        docs={docs.map((d) => ({
-          id: d.id,
-          title: d.title,
-          timeAgo: d.timeAgo,
-          type: d.kind.toLowerCase().includes("report") ? "report" : "document",
-          content: d.content,
-        }))}
-        onSelectDoc={(doc) => {
-          setActiveDoc({
-            id: doc.id,
-            title: doc.title,
-            timeAgo: doc.timeAgo,
-            kind: doc.type === "report" ? "CEO Report" : "Document",
-            content: doc.content,
-          });
-        }}
-      />
+      {companyLimitOpen && (
+        <CompanyLimitModal
+          open={companyLimitOpen}
+          onOpenChange={setCompanyLimitOpen}
+          onAddSlot={() => {
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `slot-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: `🏢 New Company Slot provisioned (+ $20/mo). You can now launch an additional autonomous company from your account.`,
+              },
+            ]);
+          }}
+        />
+      )}
 
-      <CompanyLimitModal
-        open={companyLimitOpen}
-        onOpenChange={setCompanyLimitOpen}
-        onAddSlot={() => {
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `slot-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: `🏢 New Company Slot provisioned (+ $20/mo). You can now launch an additional autonomous company from your account.`,
-            },
-          ]);
-        }}
-      />
+      {companySettingsOpen && (
+        <CompanySettingsModal
+          open={companySettingsOpen}
+          onOpenChange={setCompanySettingsOpen}
+          companyName={companyName}
+          isPaused={isCompanyPaused}
+          onSaveCompanyName={(newName) => {
+            setCompanyName(newName);
+            fetch(`/api/v1/twin/companies/${companySlug}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: newName }),
+            }).catch(() => {});
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `rename-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: `📝 Company renamed to "${newName}". Workspace and domain metadata synchronized.`,
+              },
+            ]);
+          }}
+          onTogglePause={(paused) => {
+            setIsCompanyPaused(paused);
+            fetch(`/api/v1/twin/companies/${companySlug}`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ isPaused: paused }),
+            }).catch(() => {});
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `pause-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: paused
+                  ? `⏸️ ${companyName} daily work paused temporarily. Autonomous queue suspended.`
+                  : `▶️ ${companyName} daily work resumed. Autonomous tasks restored.`,
+              },
+            ]);
+          }}
+          onDeleteCompany={() => {
+            fetch(`/api/v1/twin/companies/${companySlug}`, {
+              method: "DELETE",
+            }).catch(() => {});
+            deleteCompanyProfile(companySlug);
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `del-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: `⚠️ ${companyName} deletion requested. Purging containers and workspace records.`,
+              },
+            ]);
+            const remaining = getCompaniesList().filter((c) => c.slug !== companySlug);
+            if (remaining.length > 0) {
+              handleSelectCompany(remaining[0]);
+            }
+          }}
+        />
+      )}
 
-      <CompanySettingsModal
-        open={companySettingsOpen}
-        onOpenChange={setCompanySettingsOpen}
-        companyName={companyName}
-        isPaused={isCompanyPaused}
-        onSaveCompanyName={(newName) => {
-          setCompanyName(newName);
-          fetch(`/api/v1/twin/companies/${companySlug}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: newName }),
-          }).catch(() => {});
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `rename-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: `📝 Company renamed to "${newName}". Workspace and domain metadata synchronized.`,
-            },
-          ]);
-        }}
-        onTogglePause={(paused) => {
-          setIsCompanyPaused(paused);
-          fetch(`/api/v1/twin/companies/${companySlug}`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ isPaused: paused }),
-          }).catch(() => {});
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `pause-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: paused
-                ? `⏸️ ${companyName} daily work paused temporarily. Autonomous queue suspended.`
-                : `▶️ ${companyName} daily work resumed. Autonomous tasks restored.`,
-            },
-          ]);
-        }}
-        onDeleteCompany={() => {
-          fetch(`/api/v1/twin/companies/${companySlug}`, {
-            method: "DELETE",
-          }).catch(() => {});
-          deleteCompanyProfile(companySlug);
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `del-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: `⚠️ ${companyName} deletion requested. Purging containers and workspace records.`,
-            },
-          ]);
-          const remaining = getCompaniesList().filter((c) => c.slug !== companySlug);
-          if (remaining.length > 0) {
-            handleSelectCompany(remaining[0]);
-          }
-        }}
-      />
+      {manageDomainsOpen && (
+        <ManageDomainsModal
+          open={manageDomainsOpen}
+          onOpenChange={setManageDomainsOpen}
+          polsiaUrl="https://verifiq-3.shothikgpt.com"
+          customDomain="shothikaddress.com"
+          onReleaseDomain={() => {
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `rel-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: "🌐 Custom domain released. SSL certificate detached and DNS bindings purged.",
+              },
+            ]);
+          }}
+          onConnectDomain={(domain) => {
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `dom-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: `🌐 Custom domain "${domain}" attached. Generating AWS ACM SSL certificate validation CNAME records.`,
+              },
+            ]);
+          }}
+        />
+      )}
 
-      <ManageDomainsModal
-        open={manageDomainsOpen}
-        onOpenChange={setManageDomainsOpen}
-        polsiaUrl="https://verifiq-3.shothikgpt.com"
-        customDomain="shothikaddress.com"
-        onReleaseDomain={() => {
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `rel-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: "🌐 Custom domain released. SSL certificate detached and DNS bindings purged.",
-            },
-          ]);
-        }}
-        onConnectDomain={(domain) => {
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `dom-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: `🌐 Custom domain "${domain}" attached. Generating AWS ACM SSL certificate validation CNAME records.`,
-            },
-          ]);
-        }}
-      />
+      {versionsOpen && (
+        <VersionsModal
+          open={versionsOpen}
+          onOpenChange={setVersionsOpen}
+          onRevertCommit={handleRevertCommit}
+        />
+      )}
 
-      <VersionsModal
-        open={versionsOpen}
-        onOpenChange={setVersionsOpen}
-        onRevertCommit={handleRevertCommit}
-      />
+      {websiteHubOpen && (
+        <WebsiteHubModal
+          open={websiteHubOpen}
+          onOpenChange={setWebsiteHubOpen}
+          onOpenManageDomains={() => setManageDomainsOpen(true)}
+          onOpenVersions={() => setVersionsOpen(true)}
+          onOpenSecrets={() => setSecretsOpen(true)}
+          onOpenRedeploy={() => setRedeployOpen(true)}
+        />
+      )}
 
-      <WebsiteHubModal
-        open={websiteHubOpen}
-        onOpenChange={setWebsiteHubOpen}
-        onOpenManageDomains={() => setManageDomainsOpen(true)}
-        onOpenVersions={() => setVersionsOpen(true)}
-        onOpenSecrets={() => setSecretsOpen(true)}
-        onOpenRedeploy={() => setRedeployOpen(true)}
-      />
+      {secretsOpen && (
+        <AppSecretsModal
+          open={secretsOpen}
+          onOpenChange={setSecretsOpen}
+          onSecretChange={() => {
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `sec-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: "🔒 App Secrets updated. Trigger a redeployment for new environment variables to take effect.",
+              },
+            ]);
+          }}
+        />
+      )}
 
-      <AppSecretsModal
-        open={secretsOpen}
-        onOpenChange={setSecretsOpen}
-        onSecretChange={() => {
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `sec-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: "🔒 App Secrets updated. Trigger a redeployment for new environment variables to take effect.",
-            },
-          ]);
-        }}
-      />
+      {redeployOpen && (
+        <RedeployModal
+          open={redeployOpen}
+          onOpenChange={setRedeployOpen}
+          onStartRedeploy={() => {
+            setTerminalLogs([
+              "> Initializing zero-downtime container rebuild...",
+              "> Injecting updated runtime environment variables...",
+              "> Building Vite/PostgREST production bundle...",
+              "> Dokploy VPS container rolled over: https://shothikaddress.com [HTTP 200 OK]",
+            ]);
+            setFeed((prev) => [
+              ...prev,
+              {
+                id: `redep-${Date.now()}`,
+                time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
+                text: "🚀 Site successfully rebuilt and redeployed from latest commit. All environment variable changes are live.",
+              },
+            ]);
+          }}
+        />
+      )}
 
-      <RedeployModal
-        open={redeployOpen}
-        onOpenChange={setRedeployOpen}
-        onStartRedeploy={() => {
-          setTerminalLogs([
-            "> Initializing zero-downtime container rebuild...",
-            "> Injecting updated runtime environment variables...",
-            "> Building Vite/PostgREST production bundle...",
-            "> Dokploy VPS container rolled over: https://shothikaddress.com [HTTP 200 OK]",
-          ]);
-          setFeed((prev) => [
-            ...prev,
-            {
-              id: `redep-${Date.now()}`,
-              time: new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }),
-              text: "🚀 Site successfully rebuilt and redeployed from latest commit. All environment variable changes are live.",
-            },
-          ]);
-        }}
-      />
-
-      <AutoColdOutreachModal
-        open={autoColdOutreachOpen}
-        onOpenChange={setAutoColdOutreachOpen}
-        onStartOutreach={async (freq) => {
-          const logs = [
-            "> Provisioning Shothik outbound SMTP proxy (verifiq-3@shothikgpt.com)...",
-            "> Domain DNS DKIM/SPF auto-validated via Cloudflare Turnstile...",
-            "> Auto-Cold Outreach pipeline is active and queued for dispatch.",
-          ];
-          for (const log of logs) {
-            await new Promise((r) => setTimeout(r, 600));
-            setTerminalLogs((prev) => [...prev.slice(-6), log]);
-          }
-          const outreachMsg: StandupMessage = {
-            id: `msg-${Date.now()}`,
-            time: "JUST NOW",
-            text: `✉️ Auto Cold Outreach activated (${freq.toUpperCase()}). Shothik will send tailored pitches to target CTOs from verifiq-3@shothikgpt.com.`,
-          };
-          setFeed((prev) => [...prev, outreachMsg]);
-        }}
-      />
+      {autoColdOutreachOpen && (
+        <AutoColdOutreachModal
+          open={autoColdOutreachOpen}
+          onOpenChange={setAutoColdOutreachOpen}
+          onStartOutreach={async (freq) => {
+            const logs = [
+              "> Provisioning Shothik outbound SMTP proxy (verifiq-3@shothikgpt.com)...",
+              "> Domain DNS DKIM/SPF auto-validated via Cloudflare Turnstile...",
+              "> Auto-Cold Outreach pipeline is active and queued for dispatch.",
+            ];
+            for (const log of logs) {
+              await new Promise((r) => setTimeout(r, 600));
+              setTerminalLogs((prev) => [...prev.slice(-6), log]);
+            }
+            const outreachMsg: StandupMessage = {
+              id: `msg-${Date.now()}`,
+              time: "JUST NOW",
+              text: `✉️ Auto Cold Outreach activated (${freq.toUpperCase()}). Shothik will send tailored pitches to target CTOs from verifiq-3@shothikgpt.com.`,
+            };
+            setFeed((prev) => [...prev, outreachMsg]);
+          }}
+        />
+      )}
 
       {/* Manage Tasks Modal */}
       <Dialog open={manageTasksOpen} onOpenChange={setManageTasksOpen}>
@@ -2214,31 +2242,49 @@ export default function TwinPage() {
       </Dialog>
 
       {/* Additional Supporting Modals */}
-      <SecondMeMemoryModal isOpen={secondMeMemoryOpen} onClose={() => setSecondMeMemoryOpen(false)} twinName={companyName} />
-      <MfsGatewayModal open={mfsGatewayOpen} onOpenChange={setMfsGatewayOpen} initialTab={mfsGatewayTab} />
-      <CreatorCashoutModal
-        open={creatorCashoutOpen}
-        onOpenChange={setCreatorCashoutOpen}
-        availableEarningsBdt={revenueBdt}
-        onSuccess={(remaining) => setRevenueBdt(remaining)}
-      />
-      <ConnectExistingCompanyModal open={connectCompanyOpen} onOpenChange={setConnectCompanyOpen} />
-      <VoiceCommanderModal open={voiceCommanderOpen} onOpenChange={setVoiceCommanderOpen} />
-      <DailyDigestModal open={dailyDigestOpen} onOpenChange={setDailyDigestOpen} />
-      <DokployMicroContainersModal open={dokployOpen} onOpenChange={setDokployOpen} />
-      <TwinVideoStudioModal open={videoStudioOpen} onOpenChange={setVideoStudioOpen} companyName={companyName} />
-      <SpecializedTwinsModal
-        open={specializedTwinsOpen}
-        onOpenChange={setSpecializedTwinsOpen}
-        companySlug={companySlug}
-        companyName={companyName}
-        onDispatchTwin={(twinName, action, log) => {
-          setTerminalLogs((prev) => [...prev.slice(-20), `> [${twinName}] Dispatched: ${action}`, `> ${log}`]);
-          setCapsuleTwin(twinName);
-          setCapsuleStatus(`Dispatched: ${action}`);
-          setCapsuleActive(true);
-        }}
-      />
+      {secondMeMemoryOpen && (
+        <SecondMeMemoryModal isOpen={secondMeMemoryOpen} onClose={() => setSecondMeMemoryOpen(false)} twinName={companyName} />
+      )}
+      {mfsGatewayOpen && (
+        <MfsGatewayModal open={mfsGatewayOpen} onOpenChange={setMfsGatewayOpen} initialTab={mfsGatewayTab} />
+      )}
+      {creatorCashoutOpen && (
+        <CreatorCashoutModal
+          open={creatorCashoutOpen}
+          onOpenChange={setCreatorCashoutOpen}
+          availableEarningsBdt={revenueBdt}
+          onSuccess={(remaining) => setRevenueBdt(remaining)}
+        />
+      )}
+      {connectCompanyOpen && (
+        <ConnectExistingCompanyModal open={connectCompanyOpen} onOpenChange={setConnectCompanyOpen} />
+      )}
+      {voiceCommanderOpen && (
+        <VoiceCommanderModal open={voiceCommanderOpen} onOpenChange={setVoiceCommanderOpen} />
+      )}
+      {dailyDigestOpen && (
+        <DailyDigestModal open={dailyDigestOpen} onOpenChange={setDailyDigestOpen} />
+      )}
+      {dokployOpen && (
+        <DokployMicroContainersModal open={dokployOpen} onOpenChange={setDokployOpen} />
+      )}
+      {videoStudioOpen && (
+        <TwinVideoStudioModal open={videoStudioOpen} onOpenChange={setVideoStudioOpen} companyName={companyName} />
+      )}
+      {specializedTwinsOpen && (
+        <SpecializedTwinsModal
+          open={specializedTwinsOpen}
+          onOpenChange={setSpecializedTwinsOpen}
+          companySlug={companySlug}
+          companyName={companyName}
+          onDispatchTwin={(twinName, action, log) => {
+            setTerminalLogs((prev) => [...prev.slice(-20), `> [${twinName}] Dispatched: ${action}`, `> ${log}`]);
+            setCapsuleTwin(twinName);
+            setCapsuleStatus(`Dispatched: ${action}`);
+            setCapsuleActive(true);
+          }}
+        />
+      )}
 
       {/* Unified ⌘K Command Center & Operational Palette */}
       <TwinCommandPalette
@@ -2332,67 +2378,67 @@ export default function TwinPage() {
       />
 
       {/* Operational Modals Mounted via Command Center */}
-      <EmailOutreachModal open={emailOutreachOpen} onOpenChange={setEmailOutreachOpen} />
-      <LeadCrmDrawer open={leadCrmOpen} onOpenChange={setLeadCrmOpen} companyName={companyName} />
-      <CompetitorAdSpyModal open={competitorAdSpyOpen} onOpenChange={setCompetitorAdSpyOpen} companyName={companyName} />
-      <CroTunerModal open={croTunerOpen} onOpenChange={setCroTunerOpen} companyName={companyName} />
-      <VisualStorefrontBuilderModal open={visualStorefrontOpen} onOpenChange={setVisualStorefrontOpen} companyName={companyName} subdomain={companySlug} />
-      <BookReaderStorefrontModal open={bookReaderOpen} onOpenChange={setBookReaderOpen} />
-      <SteadfastCourierModal open={steadfastCourierOpen} onOpenChange={setSteadfastCourierOpen} companyName={companyName} />
-      <StartupBuildsModal open={startupBuildsOpen} onOpenChange={setStartupBuildsOpen} subdomain={companySlug} companyName={companyName} />
-      <NilkhetPodModal open={nilkhetPodOpen} onOpenChange={setNilkhetPodOpen} defaultBookTitle={companyName ? `${companyName} Blueprint` : undefined} />
-      <MultiDialectVoiceTwinModal open={multiDialectVoiceOpen} onOpenChange={setMultiDialectVoiceOpen} companyName={companyName} />
-      <SwarmGraphStudioModal isOpen={swarmGraphOpen} onClose={() => setSwarmGraphOpen(false)} />
-      <VastSpotGpuModal open={vastSpotGpuOpen} onOpenChange={setVastSpotGpuOpen} />
-      <EdgeMeshStudioModal open={edgeMeshOpen} onOpenChange={setEdgeMeshOpen} />
-      <CanaryTrafficDirectorModal open={canaryDirectorOpen} onOpenChange={setCanaryDirectorOpen} />
-      <VulnerabilityImmunityModal open={vulnerabilityImmunityOpen} onOpenChange={setVulnerabilityImmunityOpen} />
-      <MultiModelParetoModal open={multiModelParetoOpen} onOpenChange={setMultiModelParetoOpen} />
-      <EpistemicConsensusModal open={epistemicConsensusOpen} onOpenChange={setEpistemicConsensusOpen} />
-      <WebGpuEmbeddingModal open={webGpuEmbeddingOpen} onOpenChange={setWebGpuEmbeddingOpen} />
-      <ZkSnarkProverModal open={zkSnarkProverOpen} onOpenChange={setZkSnarkProverOpen} />
-      <WasmVectorIndexModal open={wasmVectorIndexOpen} onOpenChange={setWasmVectorIndexOpen} />
-      <DeveloperTwinModal open={developerTwinOpen} onOpenChange={setDeveloperTwinOpen} companyName={companyName} />
-      <PlatformServicesModal open={platformServicesOpen} onOpenChange={setPlatformServicesOpen} />
-      <WhatsAppCommerceModal open={whatsAppCommerceOpen} onOpenChange={setWhatsAppCommerceOpen} />
-      <MushakTaxStudioModal open={mushakTaxStudioOpen} onOpenChange={setMushakTaxStudioOpen} />
-      <OutboundCallVerificationModal open={outboundCallingOpen} onOpenChange={setOutboundCallingOpen} companyName={companyName} />
-      <CrossBorderCustomsModal isOpen={crossBorderCustomsOpen} onClose={() => setCrossBorderCustomsOpen(false)} />
-      <PlatformElevatorsViralModal isOpen={platformElevatorsOpen} onClose={() => setPlatformElevatorsOpen(false)} />
-      <FranchiseMultiBranchModal isOpen={franchiseMultiBranchOpen} onClose={() => setFranchiseMultiBranchOpen(false)} />
-      <LiveSellingStudioModal isOpen={liveSellingOpen} onClose={() => setLiveSellingOpen(false)} />
-      <AuditLedgerStudioModal isOpen={auditLedgerOpen} onClose={() => setAuditLedgerOpen(false)} />
-      <CourierArbitrageModal isOpen={courierArbitrageOpen} onClose={() => setCourierArbitrageOpen(false)} />
-      <FreelancerRemittanceModal isOpen={freelancerRemittanceOpen} onClose={() => setFreelancerRemittanceOpen(false)} />
-      <DarkHubFulfillmentModal isOpen={darkHubFulfillmentOpen} onClose={() => setDarkHubFulfillmentOpen(false)} />
-      <MultiChannelCashflowModal isOpen={multiChannelCashflowOpen} onClose={() => setMultiChannelCashflowOpen(false)} />
-      <WholesaleRfqEscrowModal isOpen={wholesaleRfqEscrowOpen} onClose={() => setWholesaleRfqEscrowOpen(false)} />
-      <AgriMandiRadarModal isOpen={agriMandiRadarOpen} onClose={() => setAgriMandiRadarOpen(false)} />
-      <FieldAgentPosModal isOpen={fieldAgentPosOpen} onClose={() => setFieldAgentPosOpen(false)} />
-      <Mushak43DeclarationModal isOpen={mushak43DeclarationOpen} onClose={() => setMushak43DeclarationOpen(false)} />
-      <MultiCarrierWebhookModal isOpen={multiCarrierWebhookOpen} onClose={() => setMultiCarrierWebhookOpen(false)} />
-      <ExportComplianceModal isOpen={exportComplianceOpen} onClose={() => setExportComplianceOpen(false)} />
-      <FxHedgingModal isOpen={fxHedgingOpen} onClose={() => setFxHedgingOpen(false)} />
-      <PayrollTaxModal isOpen={payrollTaxOpen} onClose={() => setPayrollTaxOpen(false)} />
-      <CorporateTaxModal isOpen={corporateTaxOpen} onClose={() => setCorporateTaxOpen(false)} />
-      <InvoiceFactoringModal isOpen={invoiceFactoringOpen} onClose={() => setInvoiceFactoringOpen(false)} />
-      <DebtRecoveryModal isOpen={debtRecoveryOpen} onClose={() => setDebtRecoveryOpen(false)} />
-      <VoiceCommerceModal isOpen={voiceCommerceOpen} onClose={() => setVoiceCommerceOpen(false)} />
-      <LegalContractsModal isOpen={legalContractsOpen} onClose={() => setLegalContractsOpen(false)} />
-      <DutyDrawbackModal isOpen={dutyDrawbackOpen} onClose={() => setDutyDrawbackOpen(false)} />
-      <HalalGovernanceModal isOpen={halalGovernanceOpen} onClose={() => setHalalGovernanceOpen(false)} />
-      <CollectiveBuyingModal isOpen={collectiveBuyingOpen} onClose={() => setCollectiveBuyingOpen(false)} />
-      <TenderBidModal isOpen={tenderBidOpen} onClose={() => setTenderBidOpen(false)} />
-      <AgentComputerModal isOpen={agentComputerOpen} onClose={() => setAgentComputerOpen(false)} />
-      <CustomsTariffModal isOpen={customsTariffOpen} onClose={() => setCustomsTariffOpen(false)} />
-      <InventoryMatrixModal isOpen={inventoryMatrixOpen} onClose={() => setInventoryMatrixOpen(false)} />
-      <CodIvrModal isOpen={codIvrOpen} onClose={() => setCodIvrOpen(false)} />
-      <EarlyLiquidityModal isOpen={earlyLiquidityOpen} onClose={() => setEarlyLiquidityOpen(false)} />
-      <MetaCapiModal isOpen={metaCapiOpen} onClose={() => setMetaCapiOpen(false)} />
-      <KycOcrModal isOpen={kycOcrOpen} onClose={() => setKycOcrOpen(false)} />
-      <RtoFraudShieldModal isOpen={rtoFraudShieldOpen} onClose={() => setRtoFraudShieldOpen(false)} />
-      <FlashSaleInventoryModal isOpen={flashInventoryOpen} onClose={() => setFlashInventoryOpen(false)} />
-      <LandRegistryModal isOpen={landRegistryOpen} onClose={() => setLandRegistryOpen(false)} />
+      {emailOutreachOpen && <EmailOutreachModal open={emailOutreachOpen} onOpenChange={setEmailOutreachOpen} />}
+      {leadCrmOpen && <LeadCrmDrawer open={leadCrmOpen} onOpenChange={setLeadCrmOpen} companyName={companyName} />}
+      {competitorAdSpyOpen && <CompetitorAdSpyModal open={competitorAdSpyOpen} onOpenChange={setCompetitorAdSpyOpen} companyName={companyName} />}
+      {croTunerOpen && <CroTunerModal open={croTunerOpen} onOpenChange={setCroTunerOpen} companyName={companyName} />}
+      {visualStorefrontOpen && <VisualStorefrontBuilderModal open={visualStorefrontOpen} onOpenChange={setVisualStorefrontOpen} companyName={companyName} subdomain={companySlug} />}
+      {bookReaderOpen && <BookReaderStorefrontModal open={bookReaderOpen} onOpenChange={setBookReaderOpen} />}
+      {steadfastCourierOpen && <SteadfastCourierModal open={steadfastCourierOpen} onOpenChange={setSteadfastCourierOpen} companyName={companyName} />}
+      {startupBuildsOpen && <StartupBuildsModal open={startupBuildsOpen} onOpenChange={setStartupBuildsOpen} subdomain={companySlug} companyName={companyName} />}
+      {nilkhetPodOpen && <NilkhetPodModal open={nilkhetPodOpen} onOpenChange={setNilkhetPodOpen} defaultBookTitle={companyName ? `${companyName} Blueprint` : undefined} />}
+      {multiDialectVoiceOpen && <MultiDialectVoiceTwinModal open={multiDialectVoiceOpen} onOpenChange={setMultiDialectVoiceOpen} companyName={companyName} />}
+      {swarmGraphOpen && <SwarmGraphStudioModal isOpen={swarmGraphOpen} onClose={() => setSwarmGraphOpen(false)} />}
+      {vastSpotGpuOpen && <VastSpotGpuModal open={vastSpotGpuOpen} onOpenChange={setVastSpotGpuOpen} />}
+      {edgeMeshOpen && <EdgeMeshStudioModal open={edgeMeshOpen} onOpenChange={setEdgeMeshOpen} />}
+      {canaryDirectorOpen && <CanaryTrafficDirectorModal open={canaryDirectorOpen} onOpenChange={setCanaryDirectorOpen} />}
+      {vulnerabilityImmunityOpen && <VulnerabilityImmunityModal open={vulnerabilityImmunityOpen} onOpenChange={setVulnerabilityImmunityOpen} />}
+      {multiModelParetoOpen && <MultiModelParetoModal open={multiModelParetoOpen} onOpenChange={setMultiModelParetoOpen} />}
+      {epistemicConsensusOpen && <EpistemicConsensusModal open={epistemicConsensusOpen} onOpenChange={setEpistemicConsensusOpen} />}
+      {webGpuEmbeddingOpen && <WebGpuEmbeddingModal open={webGpuEmbeddingOpen} onOpenChange={setWebGpuEmbeddingOpen} />}
+      {zkSnarkProverOpen && <ZkSnarkProverModal open={zkSnarkProverOpen} onOpenChange={setZkSnarkProverOpen} />}
+      {wasmVectorIndexOpen && <WasmVectorIndexModal open={wasmVectorIndexOpen} onOpenChange={setWasmVectorIndexOpen} />}
+      {developerTwinOpen && <DeveloperTwinModal open={developerTwinOpen} onOpenChange={setDeveloperTwinOpen} companyName={companyName} />}
+      {platformServicesOpen && <PlatformServicesModal open={platformServicesOpen} onOpenChange={setPlatformServicesOpen} />}
+      {whatsAppCommerceOpen && <WhatsAppCommerceModal open={whatsAppCommerceOpen} onOpenChange={setWhatsAppCommerceOpen} />}
+      {mushakTaxStudioOpen && <MushakTaxStudioModal open={mushakTaxStudioOpen} onOpenChange={setMushakTaxStudioOpen} />}
+      {outboundCallingOpen && <OutboundCallVerificationModal open={outboundCallingOpen} onOpenChange={setOutboundCallingOpen} companyName={companyName} />}
+      {crossBorderCustomsOpen && <CrossBorderCustomsModal isOpen={crossBorderCustomsOpen} onClose={() => setCrossBorderCustomsOpen(false)} />}
+      {platformElevatorsOpen && <PlatformElevatorsViralModal isOpen={platformElevatorsOpen} onClose={() => setPlatformElevatorsOpen(false)} />}
+      {franchiseMultiBranchOpen && <FranchiseMultiBranchModal isOpen={franchiseMultiBranchOpen} onClose={() => setFranchiseMultiBranchOpen(false)} />}
+      {liveSellingOpen && <LiveSellingStudioModal isOpen={liveSellingOpen} onClose={() => setLiveSellingOpen(false)} />}
+      {auditLedgerOpen && <AuditLedgerStudioModal isOpen={auditLedgerOpen} onClose={() => setAuditLedgerOpen(false)} />}
+      {courierArbitrageOpen && <CourierArbitrageModal isOpen={courierArbitrageOpen} onClose={() => setCourierArbitrageOpen(false)} />}
+      {freelancerRemittanceOpen && <FreelancerRemittanceModal isOpen={freelancerRemittanceOpen} onClose={() => setFreelancerRemittanceOpen(false)} />}
+      {darkHubFulfillmentOpen && <DarkHubFulfillmentModal isOpen={darkHubFulfillmentOpen} onClose={() => setDarkHubFulfillmentOpen(false)} />}
+      {multiChannelCashflowOpen && <MultiChannelCashflowModal isOpen={multiChannelCashflowOpen} onClose={() => setMultiChannelCashflowOpen(false)} />}
+      {wholesaleRfqEscrowOpen && <WholesaleRfqEscrowModal isOpen={wholesaleRfqEscrowOpen} onClose={() => setWholesaleRfqEscrowOpen(false)} />}
+      {agriMandiRadarOpen && <AgriMandiRadarModal isOpen={agriMandiRadarOpen} onClose={() => setAgriMandiRadarOpen(false)} />}
+      {fieldAgentPosOpen && <FieldAgentPosModal isOpen={fieldAgentPosOpen} onClose={() => setFieldAgentPosOpen(false)} />}
+      {mushak43DeclarationOpen && <Mushak43DeclarationModal isOpen={mushak43DeclarationOpen} onClose={() => setMushak43DeclarationOpen(false)} />}
+      {multiCarrierWebhookOpen && <MultiCarrierWebhookModal isOpen={multiCarrierWebhookOpen} onClose={() => setMultiCarrierWebhookOpen(false)} />}
+      {exportComplianceOpen && <ExportComplianceModal isOpen={exportComplianceOpen} onClose={() => setExportComplianceOpen(false)} />}
+      {fxHedgingOpen && <FxHedgingModal isOpen={fxHedgingOpen} onClose={() => setFxHedgingOpen(false)} />}
+      {payrollTaxOpen && <PayrollTaxModal isOpen={payrollTaxOpen} onClose={() => setPayrollTaxOpen(false)} />}
+      {corporateTaxOpen && <CorporateTaxModal isOpen={corporateTaxOpen} onClose={() => setCorporateTaxOpen(false)} />}
+      {invoiceFactoringOpen && <InvoiceFactoringModal isOpen={invoiceFactoringOpen} onClose={() => setInvoiceFactoringOpen(false)} />}
+      {debtRecoveryOpen && <DebtRecoveryModal isOpen={debtRecoveryOpen} onClose={() => setDebtRecoveryOpen(false)} />}
+      {voiceCommerceOpen && <VoiceCommerceModal isOpen={voiceCommerceOpen} onClose={() => setVoiceCommerceOpen(false)} />}
+      {legalContractsOpen && <LegalContractsModal isOpen={legalContractsOpen} onClose={() => setLegalContractsOpen(false)} />}
+      {dutyDrawbackOpen && <DutyDrawbackModal isOpen={dutyDrawbackOpen} onClose={() => setDutyDrawbackOpen(false)} />}
+      {halalGovernanceOpen && <HalalGovernanceModal isOpen={halalGovernanceOpen} onClose={() => setHalalGovernanceOpen(false)} />}
+      {collectiveBuyingOpen && <CollectiveBuyingModal isOpen={collectiveBuyingOpen} onClose={() => setCollectiveBuyingOpen(false)} />}
+      {tenderBidOpen && <TenderBidModal isOpen={tenderBidOpen} onClose={() => setTenderBidOpen(false)} />}
+      {agentComputerOpen && <AgentComputerModal isOpen={agentComputerOpen} onClose={() => setAgentComputerOpen(false)} />}
+      {customsTariffOpen && <CustomsTariffModal isOpen={customsTariffOpen} onClose={() => setCustomsTariffOpen(false)} />}
+      {inventoryMatrixOpen && <InventoryMatrixModal isOpen={inventoryMatrixOpen} onClose={() => setInventoryMatrixOpen(false)} />}
+      {codIvrOpen && <CodIvrModal isOpen={codIvrOpen} onClose={() => setCodIvrOpen(false)} />}
+      {earlyLiquidityOpen && <EarlyLiquidityModal isOpen={earlyLiquidityOpen} onClose={() => setEarlyLiquidityOpen(false)} />}
+      {metaCapiOpen && <MetaCapiModal isOpen={metaCapiOpen} onClose={() => setMetaCapiOpen(false)} />}
+      {kycOcrOpen && <KycOcrModal isOpen={kycOcrOpen} onClose={() => setKycOcrOpen(false)} />}
+      {rtoFraudShieldOpen && <RtoFraudShieldModal isOpen={rtoFraudShieldOpen} onClose={() => setRtoFraudShieldOpen(false)} />}
+      {flashInventoryOpen && <FlashSaleInventoryModal isOpen={flashInventoryOpen} onClose={() => setFlashInventoryOpen(false)} />}
+      {landRegistryOpen && <LandRegistryModal isOpen={landRegistryOpen} onClose={() => setLandRegistryOpen(false)} />}
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
