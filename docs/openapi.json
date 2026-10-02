@@ -1,0 +1,663 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Shothik Unified AI Platform API",
+    "version": "2.2.0",
+    "description": "Authoritative OpenAPI 3.1 Specification for Shothik One-Person Company (OPC) AI Platform.",
+    "contact": {
+      "name": "Shothik Platform Engineering",
+      "url": "https://shothikgpt.com",
+      "email": "support@shothikgpt.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8080",
+      "description": "Local Development Server"
+    },
+    {
+      "url": "https://shothikgpt.com",
+      "description": "Production Gateway"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health & Telemetry",
+      "description": "Kubernetes/Dokploy liveness, readiness, and deep diagnostics"
+    },
+    {
+      "name": "Agri-Commodity & Tea Auction",
+      "description": "Chittagong/Sreemangal Tea Auction clearing and sensory index"
+    },
+    {
+      "name": "MFS Payments & Idempotency",
+      "description": "bKash and Nagad payment verification with replay immunity"
+    },
+    {
+      "name": "Logistics & Couriers",
+      "description": "Steadfast, RedX, and Paperfly delivery gateways"
+    },
+    {
+      "name": "Tax & Compliance",
+      "description": "NBR Mushak VAT declarations and customs tariff calculations"
+    },
+    {
+      "name": "Academic & NLP",
+      "description": "Plagiarism scanning, paraphrasing, and Bangla-English NLP"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Health & Telemetry"
+        ],
+        "summary": "Lightweight HTTP 200 ping",
+        "description": "Ultra-fast availability ping for load balancer heartbeat checks.",
+        "responses": {
+          "200": {
+            "description": "System responsive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthCheckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/liveness": {
+      "get": {
+        "tags": [
+          "Health & Telemetry"
+        ],
+        "summary": "Kubernetes / Dokploy Liveness Probe",
+        "description": "Reports process uptime and process ID.",
+        "responses": {
+          "200": {
+            "description": "Process active",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LivenessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/readiness": {
+      "get": {
+        "tags": [
+          "Health & Telemetry"
+        ],
+        "summary": "Kubernetes / Dokploy Readiness Probe",
+        "description": "Returns 200 if server is ready to accept traffic, or 503 if draining or memory exceeded.",
+        "responses": {
+          "200": {
+            "description": "Ready for traffic"
+          },
+          "503": {
+            "description": "Server draining or memory threshold reached"
+          }
+        }
+      }
+    },
+    "/health/deep": {
+      "get": {
+        "tags": [
+          "Health & Telemetry"
+        ],
+        "summary": "Deep System Diagnostics",
+        "description": "Returns detailed memory metrics and operational subsystem status.",
+        "responses": {
+          "200": {
+            "description": "Detailed system telemetry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeepHealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agri/tea/estates": {
+      "get": {
+        "tags": [
+          "Agri-Commodity & Tea Auction"
+        ],
+        "summary": "List registered Bangladesh Tea Estates",
+        "description": "Returns pre-seeded tea gardens across Sylhet, Chittagong, and Panchagarh.",
+        "responses": {
+          "200": {
+            "description": "List of tea estate profiles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "count": {
+                      "type": "number"
+                    },
+                    "estates": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/TeaEstateProfile"
+                      }
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "count",
+                    "estates"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/agri/tea/auction/bid": {
+      "post": {
+        "tags": [
+          "Agri-Commodity & Tea Auction"
+        ],
+        "summary": "Submit competitive auction bid on tea lot",
+        "description": "Validates minimum bid increments, bidder licensing, and computes clearing price.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TeaAuctionBidRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bid processed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeaAuctionBidResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation error or bid below minimum increment"
+          }
+        }
+      }
+    },
+    "/api/v1/mfs/verify-trx": {
+      "post": {
+        "tags": [
+          "MFS Payments & Idempotency"
+        ],
+        "summary": "Verify bKash / Nagad TrxID with Idempotency",
+        "description": "Validates South Asian MFS transaction codes and prevents double-crediting.",
+        "security": [
+          {
+            "IdempotencyKey": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MfsVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Payment verified and credited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfsVerificationResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed payload or invalid TrxID format"
+          },
+          "409": {
+            "description": "Concurrent request in-flight for this Idempotency-Key"
+          }
+        }
+      }
+    },
+    "/api/v1/logistics/steadfast/book": {
+      "post": {
+        "tags": [
+          "Logistics & Couriers"
+        ],
+        "summary": "Book parcel delivery with Steadfast Courier",
+        "description": "Dispatches cash-on-delivery order and returns consignment ID and tracking URL.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SteadfastBookingRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Consignment created successfully"
+          }
+        }
+      }
+    },
+    "/api/academic/plagiarism/scan": {
+      "post": {
+        "tags": [
+          "Academic & NLP"
+        ],
+        "summary": "Scan text for plagiarism and AI similarity",
+        "description": "Analyzes N-gram similarity against South Asian academic corpuses.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 10
+                  },
+                  "threshold": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                  }
+                },
+                "required": [
+                  "text"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Plagiarism report generated"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Standard JWT Bearer authorization token."
+      },
+      "IdempotencyKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Idempotency-Key",
+        "description": "Unique UUIDv4 idempotency key preventing duplicate side effects."
+      },
+      "TraceContext": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-Trace-Id",
+        "description": "Distributed trace identifier for Zero-PII request tracking."
+      }
+    },
+    "schemas": {
+      "HealthCheckResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok"
+          },
+          "uptime": {
+            "type": "number",
+            "example": 120.5
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "LivenessResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "UP"
+          },
+          "uptimeSeconds": {
+            "type": "number",
+            "example": 3600
+          },
+          "pid": {
+            "type": "number",
+            "example": 12345
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "status",
+          "uptimeSeconds",
+          "pid",
+          "timestamp"
+        ]
+      },
+      "DeepHealthResponse": {
+        "type": "object",
+        "properties": {
+          "platform": {
+            "type": "string",
+            "example": "Shothik Unified AI Platform"
+          },
+          "status": {
+            "type": "string",
+            "example": "HEALTHY"
+          },
+          "version": {
+            "type": "string",
+            "example": "2.2.0"
+          },
+          "uptimeSeconds": {
+            "type": "number"
+          },
+          "memory": {
+            "type": "object",
+            "properties": {
+              "heapUsedMb": {
+                "type": "number"
+              },
+              "heapTotalMb": {
+                "type": "number"
+              },
+              "rssMb": {
+                "type": "number"
+              }
+            }
+          },
+          "subsystems": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "platform",
+          "status",
+          "version",
+          "uptimeSeconds",
+          "memory",
+          "subsystems",
+          "timestamp"
+        ]
+      },
+      "TeaEstateProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "sylhet_finlay"
+          },
+          "name": {
+            "type": "string",
+            "example": "James Finlay Tea Estate"
+          },
+          "region": {
+            "type": "string",
+            "example": "Sylhet"
+          },
+          "elevationMeters": {
+            "type": "number",
+            "example": 450
+          },
+          "annualProductionMetricTons": {
+            "type": "number",
+            "example": 2800
+          },
+          "primaryGrades": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "region",
+          "elevationMeters",
+          "annualProductionMetricTons",
+          "primaryGrades"
+        ]
+      },
+      "TeaAuctionBidRequest": {
+        "type": "object",
+        "properties": {
+          "lotId": {
+            "type": "string",
+            "example": "LOT-FIN-01"
+          },
+          "estateId": {
+            "type": "string",
+            "example": "sylhet_finlay"
+          },
+          "leafGrade": {
+            "type": "string",
+            "example": "BOP"
+          },
+          "totalWeightKg": {
+            "type": "number",
+            "example": 1200
+          },
+          "currentHighBidBdtPerKg": {
+            "type": "number",
+            "example": 320
+          },
+          "newBidBdtPerKg": {
+            "type": "number",
+            "example": 360
+          },
+          "bidderName": {
+            "type": "string",
+            "example": "Ispahani Tea Clearing Agent"
+          },
+          "bidderBtbLicense": {
+            "type": "string",
+            "example": "BTB-BROKER-CTG-889"
+          }
+        },
+        "required": [
+          "lotId",
+          "estateId",
+          "leafGrade",
+          "totalWeightKg",
+          "currentHighBidBdtPerKg",
+          "newBidBdtPerKg",
+          "bidderName",
+          "bidderBtbLicense"
+        ]
+      },
+      "TeaAuctionBidResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "bid": {
+            "type": "object",
+            "properties": {
+              "lotId": {
+                "type": "string"
+              },
+              "bidAmountBdtPerKg": {
+                "type": "number"
+              },
+              "clearingPriceBdtPerKg": {
+                "type": "number"
+              },
+              "bidderName": {
+                "type": "string"
+              },
+              "timestamp": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": [
+          "success",
+          "bid"
+        ]
+      },
+      "MfsVerificationRequest": {
+        "type": "object",
+        "properties": {
+          "trxId": {
+            "type": "string",
+            "example": "BK89201948",
+            "pattern": "^[A-Za-z0-9]{8,12}$"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "bkash",
+              "nagad",
+              "rocket",
+              "upay"
+            ],
+            "example": "bkash"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "micro_100_bdt",
+              "student_350_bdt",
+              "pro_750_bdt",
+              "merchant_1500_bdt"
+            ],
+            "example": "merchant_1500_bdt"
+          },
+          "amountBdt": {
+            "type": "number",
+            "example": 1500
+          },
+          "userId": {
+            "type": "string",
+            "example": "usr_shothik_founder_01"
+          },
+          "senderMobileNumber": {
+            "type": "string",
+            "example": "01711223344"
+          }
+        },
+        "required": [
+          "trxId",
+          "provider",
+          "tier",
+          "amountBdt",
+          "userId",
+          "senderMobileNumber"
+        ]
+      },
+      "MfsVerificationResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          },
+          "trxId": {
+            "type": "string",
+            "example": "BK89201948"
+          },
+          "provider": {
+            "type": "string",
+            "example": "bkash"
+          },
+          "status": {
+            "type": "string",
+            "example": "verified"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "trxId",
+          "provider",
+          "status"
+        ]
+      },
+      "SteadfastBookingRequest": {
+        "type": "object",
+        "properties": {
+          "invoice": {
+            "type": "string",
+            "example": "INV-9921"
+          },
+          "recipientName": {
+            "type": "string",
+            "example": "Tanvir Ahmed"
+          },
+          "recipientPhone": {
+            "type": "string",
+            "example": "01812345678"
+          },
+          "recipientAddress": {
+            "type": "string",
+            "example": "House 10, Road 4, Dhanmondi, Dhaka"
+          },
+          "codAmount": {
+            "type": "number",
+            "example": 1250
+          },
+          "note": {
+            "type": "string",
+            "example": "Nilkhet Hardcover Blueprint"
+          }
+        },
+        "required": [
+          "invoice",
+          "recipientName",
+          "recipientPhone",
+          "recipientAddress",
+          "codAmount"
+        ]
+      }
+    }
+  }
+}
