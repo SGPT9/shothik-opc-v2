@@ -15,16 +15,18 @@ export interface LogEntry {
   timestamp: string;
 }
 
+import { redactPiiText, redactPiiObject } from "./security/pii-redactor";
+
 export class StructuredLogger {
   /**
-   * Output structured JSON log line
+   * Output structured JSON log line with Zero-PII gasket protection
    */
   public log(level: LogEntry["level"], message: string, traceId: string = "trc_root", meta?: Record<string, any>): LogEntry {
     const entry: LogEntry = {
       level,
-      message,
+      message: redactPiiText(message),
       traceId,
-      meta,
+      meta: meta ? redactPiiObject(meta) : undefined,
       timestamp: new Date().toISOString(),
     };
     return entry;
