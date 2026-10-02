@@ -51,6 +51,21 @@ describe("Health, Liveness, Readiness & Diagnostic Probes", () => {
     expect(body.checks.memoryRssMb).toBeGreaterThan(0);
   });
 
+  it("GET /health/readiness returns 503 DOWN when graceful shutdown is draining", async () => {
+    const { gracefulShutdownSupervisor } = await import("../../lib/lifecycle/graceful-shutdown.js");
+    // Simulate drain initiation
+    await gracefulShutdownSupervisor.shutdown(undefined, 100);
+
+    const res = await fetch(`${baseUrl}/health/readiness`);
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.status).toBe("DOWN");
+    expect(body.reason).toBe("SERVER_DRAINING");
+
+    // Reset for subsequent tests
+    gracefulShutdownSupervisor.resetForTesting();
+  });
+
   it("GET /health/deep returns full operational subsystem inventory", async () => {
     const res = await fetch(`${baseUrl}/health/deep`);
     expect(res.status).toBe(200);
