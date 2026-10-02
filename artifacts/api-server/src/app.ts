@@ -25,13 +25,16 @@ app.use(
     },
   }),
 );
+import { gracefulShutdownSupervisor } from "./lib/lifecycle/graceful-shutdown";
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(gracefulShutdownSupervisor.trackRequestMiddleware());
 
-app.get(["/health", "/healthz"], (_req, res) => {
-  res.status(200).json({ status: "OK", uptime: process.uptime(), timestamp: new Date().toISOString() });
-});
+import healthRouter from "./routes/health";
+
+app.use(healthRouter);
 
 app.use("/api", router);
 

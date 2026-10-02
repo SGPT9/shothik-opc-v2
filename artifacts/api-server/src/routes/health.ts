@@ -6,9 +6,13 @@ const router: IRouter = Router();
 /**
  * Standard HTTP 200 ping endpoint
  */
-router.get(["/health", "/healthz"], (_req: Request, res: Response) => {
+router.get("/health", (_req: Request, res: Response) => {
   const data = HealthCheckResponse.parse({ status: "ok" });
-  res.json(data);
+  res.json({ ...data, uptime: process.uptime() });
+});
+
+router.get("/healthz", (_req: Request, res: Response) => {
+  res.status(200).json({ status: "OK", uptime: process.uptime(), timestamp: new Date().toISOString() });
 });
 
 /**
@@ -23,10 +27,21 @@ router.get(["/health/liveness", "/healthz/liveness"], (_req: Request, res: Respo
   });
 });
 
+import { gracefulShutdownSupervisor } from "../lib/lifecycle/graceful-shutdown";
+
 /**
  * Kubernetes / Dokploy Readiness Probe
  */
 router.get(["/health/readiness", "/healthz/readiness"], (_req: Request, res: Response) => {
+  if (gracefulShutdownSupervisor.isShuttingDown()) {
+    return res.status(503).json({
+      status: "DOWN",
+      reason: "SERVER_DRAINING",
+      activeRequests: gracefulShutdownSupervisor.getActiveRequests(),
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   const mem = process.memoryUsage();
   const heapUsedMb = Number((mem.heapUsed / 1024 / 1024).toFixed(2));
   const rssMb = Number((mem.rss / 1024 / 1024).toFixed(2));
