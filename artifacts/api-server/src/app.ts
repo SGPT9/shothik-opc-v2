@@ -33,8 +33,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(gracefulShutdownSupervisor.trackRequestMiddleware());
 
 import healthRouter from "./routes/health";
+import docsRouter from "./routes/docs";
 
 app.use(healthRouter);
+app.use(docsRouter);
 
 app.use("/api", router);
 
