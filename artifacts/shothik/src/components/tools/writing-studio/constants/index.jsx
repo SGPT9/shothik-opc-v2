@@ -57,6 +57,67 @@ export const PARAPHRASE_MODES = [
 
 export const WRITING_TEMPLATES = [
   {
+    id: "book-manuscript",
+    name: "Book Manuscript",
+    icon: BookOpen,
+    description: "Full trade book (6x9), novel, non-fiction or textbook with chapters",
+    content: `<h1>Book Title: Subtitle Here</h1>
+<p style="text-align: center;"><strong>By [Author Name]</strong></p>
+<p style="text-align: center; font-style: italic;">[Publisher / Nilkhet Press & Edition: First Edition, 2026]</p>
+<hr/>
+<h2>Dedication</h2>
+<p>[Dedication or epigraph text here...]</p>
+<h2>Table of Contents</h2>
+<ul>
+  <li>Chapter 1: The Foundation & Genesis</li>
+  <li>Chapter 2: The Rising Dynamics</li>
+  <li>Chapter 3: Turning Points & Climaxes</li>
+  <li>Chapter 4: Synthesis & Revelations</li>
+  <li>Epilogue & Acknowledgments</li>
+</ul>
+<hr/>
+<h2>Chapter 1: The Foundation & Genesis</h2>
+<p>[Start chapter narrative or non-fiction exposition here with rich descriptions, engaging hooks, and clear thematic structure.]</p>
+<h2>Chapter 2: The Rising Dynamics</h2>
+<p>[Develop core characters, thematic tensions, and intellectual arguments.]</p>
+<h2>Chapter 3: Turning Points & Climaxes</h2>
+<p>[Explore the central challenges, discoveries, and breakthroughs.]</p>
+<h2>Chapter 4: Synthesis & Revelations</h2>
+<p>[Synthesize lessons, resolve key narrative arcs, and present profound insights.]</p>
+<h2>Epilogue & Author's Note</h2>
+<p>[Closing reflections, bibliography, and contact information.]</p>`,
+  },
+  {
+    id: "assignment",
+    name: "University Assignment",
+    icon: GraduationCap,
+    description: "Standard university course assignment with title page and rubric adherence",
+    content: `<h1>Assignment Title: [Topic]</h1>
+<div style="text-align: center; margin-bottom: 2rem;">
+  <p><strong>Student Name:</strong> [Your Name] | <strong>Student ID:</strong> [ID Number]</p>
+  <p><strong>Course:</strong> [Course Code - Course Name]</p>
+  <p><strong>Instructor:</strong> [Instructor / Professor Name]</p>
+  <p><strong>Institution:</strong> [University / Department]</p>
+  <p><strong>Date:</strong> [Submission Date]</p>
+</div>
+<hr/>
+<h2>1. Introduction & Objectives</h2>
+<p>[State the purpose of this assignment, key questions addressed, and primary objectives.]</p>
+<h2>2. Problem Statement & Theoretical Context</h2>
+<p>[Explain the background concepts and analytical framework applied in this assignment.]</p>
+<h2>3. Detailed Analysis & Problem Solutions</h2>
+<h3>3.1 Task 1: Conceptual Analysis</h3>
+<p>[Provide thorough analysis, computations, and clear reasoning.]</p>
+<h3>3.2 Task 2: Critical Evaluation</h3>
+<p>[Discuss findings, compare alternative perspectives, and validate outcomes.]</p>
+<h2>4. Discussion & Practical Implications</h2>
+<p>[Summarize key insights and real-world implications.]</p>
+<h2>5. Conclusion</h2>
+<p>[Concluding summary of assignment findings and lessons learned.]</p>
+<h2>References</h2>
+<p>[List all cited references in APA 7th / IEEE format.]</p>`,
+  },
+  {
     id: "research-paper",
     name: "Research Paper",
     icon: FlaskConical,

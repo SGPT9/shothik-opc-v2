@@ -106,7 +106,8 @@ router.get("/v1/subscriptions/usage", async (req: Request, res: Response) => {
     const rows = await db
       .select()
       .from(toolUsageTable)
-      .where(eq(toolUsageTable.userId, userId));
+      .where(eq(toolUsageTable.userId, userId))
+      .catch(() => []);
 
     const usageMap: Record<string, number> = {};
     for (const r of rows) {
@@ -140,7 +141,8 @@ router.post("/v1/subscriptions/check-limit", async (req: Request, res: Response)
       const [sub] = await db
         .select()
         .from(userSubscriptionsTable)
-        .where(eq(userSubscriptionsTable.userId, userId));
+        .where(eq(userSubscriptionsTable.userId, userId))
+        .catch(() => []);
       if (sub) tier = sub.tier;
     }
 
@@ -162,7 +164,8 @@ router.post("/v1/subscriptions/check-limit", async (req: Request, res: Response)
     const [row] = await db
       .select()
       .from(toolUsageTable)
-      .where(and(eq(toolUsageTable.userId, userId), eq(toolUsageTable.tool, tool)));
+      .where(and(eq(toolUsageTable.userId, userId), eq(toolUsageTable.tool, tool)))
+      .catch(() => []);
 
     const used = row ? row.count : 0;
     const allowed = used < limit;

@@ -31,6 +31,16 @@ const springTransition = { type: "spring", stiffness: 300, damping: 30 };
 
 const DOCUMENT_TYPES = [
   {
+    id: "book",
+    name: "Book Manuscript",
+    icon: BookOpen,
+    description: "Full trade book (6x9), novel, non-fiction or textbook with chapters",
+    color: "text-amber-500",
+    bgColor: "bg-amber-500/10",
+    fields: ["studentName", "courseName", "instructor", "university", "date"],
+    formats: ["generic", "apa"],
+  },
+  {
     id: "assignment",
     name: "Assignment",
     icon: ClipboardList,
@@ -272,6 +282,35 @@ ${format === "apa" ? "<p><strong>Keywords:</strong> [keyword 1, keyword 2, keywo
 <p>[Restate thesis in new words. Summarize main points. End with a call to action or thought-provoking statement.]</p>
 <h2>References</h2>
 <p>[List all cited sources.]</p>`;
+
+    case "book":
+      return `<div style="text-align: center; padding: 4rem 0 2rem;">
+<h1>[Book Title: Subtitle Here]</h1>
+<p style="margin-top: 1.5rem; font-size: 1.25rem;"><strong>By ${name}</strong></p>
+<p style="color: #888; font-style: italic;">[Publisher / Nilkhet Press & Edition: First Edition, ${new Date().getFullYear()}]</p>
+</div>
+<hr/>
+<h2>Dedication</h2>
+<p>[Dedication or epigraph text here...]</p>
+<h2>Table of Contents</h2>
+<ul>
+  <li>Chapter 1: The Foundation & Genesis</li>
+  <li>Chapter 2: The Rising Dynamics</li>
+  <li>Chapter 3: Turning Points & Climaxes</li>
+  <li>Chapter 4: Synthesis & Revelations</li>
+  <li>Epilogue & Acknowledgments</li>
+</ul>
+<hr/>
+<h2>Chapter 1: The Foundation & Genesis</h2>
+<p>[Start chapter narrative or non-fiction exposition here with rich descriptions, engaging hooks, and clear thematic structure.]</p>
+<h2>Chapter 2: The Rising Dynamics</h2>
+<p>[Develop core characters, thematic tensions, and intellectual arguments.]</p>
+<h2>Chapter 3: Turning Points & Climaxes</h2>
+<p>[Explore the central challenges, discoveries, and breakthroughs.]</p>
+<h2>Chapter 4: Synthesis & Revelations</h2>
+<p>[Synthesize lessons, resolve key narrative arcs, and present profound insights.]</p>
+<h2>Epilogue & Author's Note</h2>
+<p>[Closing reflections, bibliography, and contact information.]</p>`;
 
     default:
       return "";
