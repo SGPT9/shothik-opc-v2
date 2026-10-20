@@ -23,6 +23,9 @@ import {
   Share2,
   ThumbsDown,
   ThumbsUp,
+  ExternalLink,
+  Code2,
+  Loader2,
 } from "lucide-react";
 import { useState } from "react";
 import ShareAgentModal from "../../share/ShareAgentModal";
@@ -32,8 +35,61 @@ const CombinedActions = ({ content, sources, title, onFeedback, agentId }) => {
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncingOverleaf, setIsSyncingOverleaf] = useState(false);
   const [shareModalOpen, setShareModalOpen] = useState(false);
   const [shareModalDefaultTab, setShareModalDefaultTab] = useState(0);
+
+  const handleOpenInOverleaf = async () => {
+    setIsSyncingOverleaf(true);
+    try {
+      const paperPayload = {
+        title: title || "Academic Research Synthesis",
+        sections: [
+          {
+            title: "Research Synthesis",
+            content: content || "No content provided.",
+          },
+        ],
+        format: "IEEE",
+        abstract: content ? content.slice(0, 300) : "Abstract synthesis.",
+        keywords: ["Artificial Intelligence", "Autonomous Systems", "Academic Research"],
+      };
+
+      const res = await fetch("/api/v1/research/paper/latex", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(paperPayload),
+      });
+
+      const result = await res.json();
+      if (result.success && result.data?.latex) {
+        const latexCode = result.data.latex;
+
+        // Create and submit standard Overleaf snippet form
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "https://www.overleaf.com/docs";
+        form.target = "_blank";
+
+        const snipInput = document.createElement("input");
+        snipInput.type = "hidden";
+        snipInput.name = "snip";
+        snipInput.value = latexCode;
+        form.appendChild(snipInput);
+
+        document.body.appendChild(form);
+        form.submit();
+        document.body.removeChild(form);
+      } else {
+        throw new Error(result.error?.message || "LaTeX generation failed");
+      }
+    } catch (err) {
+      console.error("Failed to sync with Overleaf:", err);
+    } finally {
+      setIsSyncingOverleaf(false);
+      setExportMenuOpen(false);
+    }
+  };
 
   const handleCopyLink = async () => {
     try {
@@ -739,8 +795,40 @@ const CombinedActions = ({ content, sources, title, onFeedback, agentId }) => {
                 <FileText className="mr-2 h-4 w-4" />
                 Export as PDF
               </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handleOpenInOverleaf}
+                disabled={isSyncingOverleaf}
+              >
+                {isSyncingOverleaf ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Code2 className="mr-2 h-4 w-4 text-emerald-600" />
+                )}
+                Open in Overleaf (LaTeX)
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {/* Dedicated Direct Overleaf / LaTeX Sync Button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleOpenInOverleaf}
+                disabled={isSyncingOverleaf}
+                className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 dark:hover:bg-emerald-950/30 h-8 w-8"
+                aria-label="Open paper directly in Overleaf via LaTeX"
+              >
+                {isSyncingOverleaf ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ExternalLink className="h-4 w-4" />
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Open in Overleaf (LaTeX)</TooltipContent>
+          </Tooltip>
 
           <Tooltip>
             <TooltipTrigger asChild>

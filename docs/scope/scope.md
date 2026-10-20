@@ -101,6 +101,7 @@ _These are recommendations to keep your build orderly, not requirements. You dec
 | 88 | Autonomous Cottage Artisan Handloom & Geographical Indication (GI) Export Certification Engine | Slice 88 | done |
 | 89 | Autonomous Coastal Aquaculture, Shrimp Gher Telemetry & Seafood Processing Escrow Engine | Slice 89 | done |
 | 90 | Autonomous Tea Estate Auction Bidding, Leaf Grade Quality Index & Chittagong/Sreemangal Tea Auction Clearing Engine | Slice 90 | done |
+| 91 | Autonomous Golden Fiber (Raw Jute & Diversified Jute Goods) Sourcing, Baling Press Grading, EPB 12% Export Cash Subsidy & NBR Bonded Warehouse Compliance Engine | Slice 91 | done |
 
 ---
 
@@ -760,6 +761,19 @@ Automated tea estate cataloging across Bangladesh Tea Board (BTB) registered com
 - [x] Verify it: `/check verify tea estate auction clearing engine`
 - [x] Test it: `/test tea estate auction clearing engine`
 spec 0090 · code in `artifacts/api-server/src/lib/agri/tea-auction-engine.ts`, `artifacts/api-server/src/routes/tea-auction.ts`, `artifacts/api-server/src/routes/__tests__/tea-auction.test.ts`, and `artifacts/shothik/src/components/twin/TeaAuctionModal.tsx`
+
+### 91. Autonomous Golden Fiber (Raw Jute & Diversified Jute Goods) Sourcing, Baling Press Quality Grading, EPB 12% Export Cash Subsidy & NBR Bonded Warehouse Compliance Engine · done
+Automated raw jute lot grading across standard BJMC/BJMA classifications (Bangla Tossa BT Special/A/B/C/D and Bangla White BW Special/A/B/C) with moisture equilibrium auditing (≤14% safe storage, 1.25x excess penalty, >20% reject risk) and root cutting deduction calculations, hydraulic pucca export bale packaging (180 kg / 400 lbs) vs kutcha arat bales (135 kg), Diversified Jute Goods (DJG) manufacturing yield and conversion costing (Hessian, Sacking B.Twill, CBC, shopping bags, geo-textiles, espadrilles) with spinning/weaving wastage buffers, statutory Bangladesh Bank FE Circular export cash subsidies (12% for DJG, 7% for yarn/twine, 10% for traditional goods with mandatory PRC and EPB validation), NBR Customs Bonded Warehouse inventory tracking with zero domestic leakage validation, and responsive frontend AG-UI Studio modal (`JuteExportModal.tsx`) with shortcut ⌘J and WAI-ARIA accessibility.
+- [x] Build it: `/develop golden fiber jute export compliance engine`
+   - [x] BJMC raw jute grading, moisture penalty & pucca bale yield calculator (AC-1)
+   - [x] DJG manufacturing yield & unit production costing (AC-2)
+   - [x] Bangladesh Bank 12% export cash subsidy & EPB compliance auditor (AC-3)
+   - [x] NBR Customs Bonded Warehouse register & cryptographic SHA-256 seal (AC-4)
+   - [x] REST API endpoints under `/api/v1/trade/jute/` (AC-5)
+   - [x] Frontend AG-UI Twin Studio modal with shortcut ⌘J, WAI-ARIA a11y, and 36px touch targets (AC-6)
+- [x] Verify it: `/check verify golden fiber jute export compliance engine`
+- [x] Test it: `/test golden fiber jute export compliance engine`
+spec 0091 · code in `artifacts/api-server/src/lib/jute/jute-export-engine.ts`, `artifacts/api-server/src/routes/jute.ts`, `artifacts/api-server/src/routes/__tests__/jute.test.ts`, and `artifacts/shothik/src/components/twin/JuteExportModal.tsx`
 
 ---
 

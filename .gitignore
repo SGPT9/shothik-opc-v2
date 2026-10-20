@@ -95,6 +95,7 @@ openworker/
 shothik-opc-v2/
 shothik-soup/
 github_spec_kit/
+AutoResearchClaw/
 system_prompts_leaks/
 *.tar.gz
 .temp/

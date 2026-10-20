@@ -114,9 +114,11 @@ function SectionSidebar({ activeSection, onSectionChange, wordCounts }) {
   );
 }
 
-function ResearchEditor({ projectId, activeSection, onWordCountChange }) {
+function ResearchEditor({ projectId, activeSection, onWordCountChange, bookTitle }) {
   const sectionRef = useRef(activeSection);
   const editorRef = useRef(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationSuccess, setGenerationSuccess] = useState(false);
 
   const editor = useEditor({
     extensions: [
@@ -189,8 +191,76 @@ function ResearchEditor({ projectId, activeSection, onWordCountChange }) {
   const readTime = Math.max(1, Math.round(wc / 200));
   const citationMatches = editor ? (editor.getText().match(/\[[\w\s&.,]+,\s*\d{4}\]/g) || []).length : 0;
 
+  const handleAutoResearchGenerate = async () => {
+    if (isGenerating) return;
+    setIsGenerating(true);
+    try {
+      const currentTitle = bookTitle || "Autonomous Edge AI Systems";
+      const res = await fetch("/api/v1/research/paper/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: currentTitle,
+          topic: `${section.title}: ${currentTitle}`,
+          fieldOfStudy: "Computer Science & Artificial Intelligence",
+          targetFormat: "IEEE",
+          methodologyType: section.id === "methodology" ? "EMPIRICAL_BENCHMARK" : "MIXED_METHODS",
+          includeBibtex: true,
+        }),
+      });
+      const json = await res.json();
+      if (json.success && json.data?.sections) {
+        const sectionMap = {
+          abstract: "Abstract",
+          intro: "Introduction",
+          "lit-review": "Literature Review",
+          methodology: "Methodology",
+          results: "Results",
+          discussion: "Discussion",
+          conclusion: "Conclusion",
+          references: "References",
+        };
+        const targetTitle = sectionMap[activeSection] || section.title;
+        const matched = json.data.sections.find(
+          (s) => s.title.toLowerCase().includes(targetTitle.toLowerCase()) || targetTitle.toLowerCase().includes(s.title.toLowerCase())
+        );
+        const textContent = matched ? matched.content : (json.data.abstract || json.data.sections[0]?.content);
+
+        if (textContent && editor) {
+          const paragraphs = textContent.split("\n\n").filter(Boolean);
+          const html = paragraphs.map((p) => `<p>${p}</p>`).join("");
+          if (editor.getText().trim().length > 0) {
+            editor.commands.insertContent(`<br/>${html}`);
+          } else {
+            editor.commands.setContent(html);
+          }
+          const key = getSectionKey(projectId, activeSection);
+          localStorage.setItem(key, editor.getHTML());
+          onWordCountChange(activeSection, countWords(editor.getText()));
+        }
+
+        // Auto-populate references if available
+        if (json.data.references && Array.isArray(json.data.references)) {
+          const refKey = getSectionKey(projectId, "references");
+          const existingRefs = localStorage.getItem(refKey) || "";
+          const newRefsHtml = json.data.references.map((r, i) => `<p>[${i + 1}] ${r}</p>`).join("");
+          if (!existingRefs.trim()) {
+            localStorage.setItem(refKey, newRefsHtml);
+          }
+        }
+
+        setGenerationSuccess(true);
+        setTimeout(() => setGenerationSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error("AutoResearch Generation Error:", err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
-    <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#0c1117]">
+    <main className="flex-1 flex flex-col overflow-hidden bg-white dark:bg-[#0c1117] relative">
       <div className="border-b border-zinc-200 dark:border-zinc-800 px-6 py-2 flex items-center justify-between bg-zinc-50/50 dark:bg-zinc-900/30">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 border-r border-zinc-200 dark:border-zinc-700 pr-4">
@@ -233,13 +303,53 @@ function ResearchEditor({ projectId, activeSection, onWordCountChange }) {
             </button>
           </div>
         </div>
+
+        {/* 1-Click AutoResearch Section Generator in Toolbar */}
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleAutoResearchGenerate}
+            disabled={isGenerating}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-all duration-200 disabled:opacity-50"
+            aria-label="Generate Section with AutoResearch"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 size={13} className="animate-spin" />
+                <span>Synthesizing {section.title}...</span>
+              </>
+            ) : generationSuccess ? (
+              <>
+                <Sparkles size={13} className="text-amber-300" />
+                <span>Section Generated ✓</span>
+              </>
+            ) : (
+              <>
+                <Sparkles size={13} className="text-amber-300" />
+                <span>Generate Section with AutoResearch</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-12 py-8">
+      <div className="flex-1 overflow-y-auto px-12 py-8 relative">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-6" style={{ fontFamily: "'Georgia', serif" }}>
-            {section.title}
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold text-zinc-900 dark:text-white" style={{ fontFamily: "'Georgia', serif" }}>
+              {section.title}
+            </h2>
+
+            {/* Subtle floating quick-trigger badge */}
+            <button
+              onClick={handleAutoResearchGenerate}
+              disabled={isGenerating}
+              className="text-[11px] text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-full border border-emerald-200/60 dark:border-emerald-800/40"
+            >
+              <Sparkles size={11} />
+              AutoResearch {section.title}
+            </button>
+          </div>
+
           <EditorContent editor={editor} />
         </div>
       </div>
@@ -251,7 +361,7 @@ function ResearchEditor({ projectId, activeSection, onWordCountChange }) {
           <span className="flex items-center gap-1"><Clock size={11} /> Reading: {readTime} min</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium">APA 7th</span>
+          <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-medium">APA 7th & IEEE</span>
           <span>Section {SECTIONS.findIndex((s) => s.id === activeSection) + 1} of {SECTIONS.length}</span>
         </div>
       </div>
@@ -259,12 +369,24 @@ function ResearchEditor({ projectId, activeSection, onWordCountChange }) {
   );
 }
 
-function AIResearchPanel({ showPanel, onToggle }) {
+function AIResearchPanel({ showPanel, onToggle, onInsertCitation }) {
   const [aiTab, setAiTab] = useState("search");
   const [searchQuery, setSearchQuery] = useState("");
   const [aiInput, setAiInput] = useState("");
   const [aiMessages, setAiMessages] = useState([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [citationsList, setCitationsList] = useState(SAMPLE_CITATIONS);
+
+  useEffect(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("studio-imported-citations") || "[]");
+      if (stored.length > 0) {
+        setCitationsList([...stored, ...SAMPLE_CITATIONS]);
+      }
+    } catch (e) {
+      console.warn("Failed to parse studio-imported-citations", e);
+    }
+  }, [showPanel, aiTab]);
 
   const sendAiMessage = async () => {
     if (!aiInput.trim() || isStreaming) return;
@@ -360,43 +482,59 @@ function AIResearchPanel({ showPanel, onToggle }) {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Search Semantic Scholar..."
+                      placeholder="Search papers & citations..."
                       className="w-full pl-9 pr-3 py-2.5 text-xs bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none focus:border-emerald-500 text-zinc-900 dark:text-white"
                       aria-label="Search academic papers"
                     />
                   </div>
                   <div className="space-y-2">
-                    {SAMPLE_CITATIONS.map((paper) => (
-                      <div key={paper.id} className="p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors group">
-                        <h4 className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed mb-1">{paper.title}</h4>
-                        <p className="text-[10px] text-zinc-500">{paper.authors} ({paper.year})</p>
-                        <p className="text-[10px] text-zinc-400 italic">{paper.journal}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-[10px] text-zinc-400">Cited by {paper.cited}</span>
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button className="px-2 py-0.5 text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-200 dark:hover:bg-emerald-900/50" aria-label="Add citation">
-                              + Cite
-                            </button>
-                            <button className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded" aria-label="Open paper">
-                              <ExternalLink size={10} />
-                            </button>
+                    {citationsList
+                      .filter((p) => !searchQuery || p.title.toLowerCase().includes(searchQuery.toLowerCase()) || (p.authors && p.authors.toLowerCase().includes(searchQuery.toLowerCase())))
+                      .map((paper) => (
+                        <div key={paper.id} className="p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700 hover:border-emerald-300 dark:hover:border-emerald-700 transition-colors group">
+                          <h4 className="text-xs font-semibold text-zinc-900 dark:text-white leading-relaxed mb-1">{paper.title}</h4>
+                          <p className="text-[10px] text-zinc-500">{paper.authors} ({paper.year})</p>
+                          <p className="text-[10px] text-zinc-400 italic">{paper.journal}</p>
+                          <div className="flex items-center justify-between mt-2">
+                            <span className="text-[10px] text-zinc-400">Cited by {paper.cited || 12}</span>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <button
+                                onClick={() => onInsertCitation && onInsertCitation(paper)}
+                                className="px-2 py-0.5 text-[10px] font-medium bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded hover:bg-emerald-200 dark:hover:bg-emerald-900/50"
+                                aria-label="Add citation"
+                              >
+                                + Cite
+                              </button>
+                              {paper.url && (
+                                <button
+                                  onClick={() => window.open(paper.url, "_blank")}
+                                  className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded"
+                                  aria-label="Open paper"
+                                >
+                                  <ExternalLink size={10} />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 </>
               )}
 
               {aiTab === "cite" && (
                 <div className="space-y-3">
-                  <p className="text-xs text-zinc-500 dark:text-zinc-400">Your citations (3 added)</p>
-                  {SAMPLE_CITATIONS.map((paper) => (
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Imported & Standard Citations ({citationsList.length} ready)
+                  </p>
+                  {citationsList.map((paper) => (
                     <div key={paper.id} className="p-3 bg-zinc-50 dark:bg-zinc-800/30 rounded-lg border border-zinc-200 dark:border-zinc-700">
                       <p className="text-xs text-zinc-700 dark:text-zinc-300">
                         {paper.authors} ({paper.year}). {paper.title}. <em>{paper.journal}</em>.
                       </p>
-                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1">DOI: {paper.doi}</p>
+                      <p className="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-mono">
+                        {paper.ieee || `[1] ${paper.authors}, "${paper.title}", ${paper.year}.`}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -407,7 +545,7 @@ function AIResearchPanel({ showPanel, onToggle }) {
                   <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 rounded-xl border border-emerald-200 dark:border-emerald-800/30">
                     <div className="flex items-center gap-2 mb-2">
                       <Sparkles size={12} className="text-emerald-600" />
-                      <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">AI Research Assistant</span>
+                      <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">AutoResearch AI Assistant</span>
                     </div>
                     <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                       Ask me anything about your research paper — citations, methodology, literature review, or argument structure.
@@ -415,7 +553,12 @@ function AIResearchPanel({ showPanel, onToggle }) {
                   </div>
                   {aiMessages.length === 0 && (
                     <div className="space-y-2">
-                      {["Expand literature review", "Improve methodology", "Check argument flow", "Suggest missing citations"].map((suggestion) => (
+                      {[
+                        "Synthesize comprehensive literature review",
+                        "Generate rigorous empirical methodology",
+                        "Analyze research contributions",
+                        "Check citation alignment & formatting",
+                      ].map((suggestion) => (
                         <button
                           key={suggestion}
                           onClick={() => setAiInput(suggestion)}
@@ -441,7 +584,7 @@ function AIResearchPanel({ showPanel, onToggle }) {
                     ))}
                     {isStreaming && (
                       <div className="flex items-center gap-1 text-zinc-400 text-xs">
-                        <Loader2 size={10} className="animate-spin" /> Thinking...
+                        <Loader2 size={10} className="animate-spin" /> AutoResearch Thinking...
                       </div>
                     )}
                   </div>
@@ -456,7 +599,7 @@ function AIResearchPanel({ showPanel, onToggle }) {
                   value={aiInput}
                   onChange={(e) => setAiInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && sendAiMessage()}
-                  placeholder="Ask AI about your research..."
+                  placeholder="Ask AutoResearch AI..."
                   className="w-full pl-3 pr-10 py-2.5 text-xs bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg outline-none focus:border-emerald-500 text-zinc-900 dark:text-white"
                   aria-label="Ask AI research assistant"
                 />
@@ -497,8 +640,12 @@ export default function ResearchPaperWriteView({ bookTitle, project, tabMode }) 
         projectId={project?._id || project?.id}
         activeSection={activeSection}
         onWordCountChange={handleWordCountChange}
+        bookTitle={bookTitle}
       />
-      <AIResearchPanel showPanel={showAIPanel} onToggle={() => setShowAIPanel(!showAIPanel)} />
+      <AIResearchPanel
+        showPanel={showAIPanel}
+        onToggle={() => setShowAIPanel(!showAIPanel)}
+      />
     </div>
   );
 }
