@@ -28,6 +28,8 @@ import {
   BookOpen,
   Landmark,
   Store,
+  FlaskConical,
+  Mic,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import {
@@ -40,6 +42,8 @@ import {
 } from "@/lib/chat-sessions-store";
 import CreateProjectModal from "@/components/tools/writing-studio/dashboard/CreateProjectModal";
 import NotificationBell from "@/components/forum/NotificationBell";
+import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
+import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 import { cn } from "@/lib/utils";
 
 export default function IconNavSidebar() {
@@ -70,6 +74,8 @@ export default function IconNavSidebar() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
   const [isSessionsOpen, setIsSessionsOpen] = useState(true);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
+  const [isScenarioLabOpen, setIsScenarioLabOpen] = useState(false);
+  const [isVoiceStudioOpen, setIsVoiceStudioOpen] = useState(false);
   const [sessionSearch, setSessionSearch] = useState("");
 
   useEffect(() => {
@@ -329,6 +335,56 @@ export default function IconNavSidebar() {
               <Store className="h-5 w-5 shrink-0 text-amber-500 dark:text-amber-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
               {!effectiveCollapsed && <span>Emporium</span>}
             </Link>
+
+            {/* 7. Community Swarm & Discussions */}
+            <Link
+              href="/community"
+              title="Community — Developer Forums, Bounties & Agent Dispatches"
+              className={cn(
+                "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                isActive('/community')
+                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+              )}
+            >
+              <Users className="h-5 w-5 shrink-0 text-sky-500 dark:text-sky-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+              {!effectiveCollapsed && <span>Community</span>}
+            </Link>
+
+            {/* 8. Scenario Lab (Chaos Simulation & Unit Economics) */}
+            <button
+              type="button"
+              onClick={() => setIsScenarioLabOpen(true)}
+              title="Scenario Lab — 30-Scenario Stress Simulation & Unit Economics"
+              className={cn(
+                "w-full flex items-center rounded-xl text-sm font-semibold transition-colors cursor-pointer group text-left",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                isScenarioLabOpen
+                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+              )}
+            >
+              <FlaskConical className="h-5 w-5 shrink-0 text-purple-500 dark:text-purple-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+              {!effectiveCollapsed && <span>Scenario Lab</span>}
+            </button>
+
+            {/* 9. Unified 3D Voice Studio */}
+            <button
+              type="button"
+              onClick={() => setIsVoiceStudioOpen(true)}
+              title="Voice Studio — 3D Particle Orb & Vernacular Speech Duplex"
+              className={cn(
+                "w-full flex items-center rounded-xl text-sm font-semibold transition-colors cursor-pointer group text-left",
+                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
+                isVoiceStudioOpen
+                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+              )}
+            >
+              <Mic className="h-5 w-5 shrink-0 text-emerald-500 dark:text-emerald-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
+              {!effectiveCollapsed && <span>Voice Studio</span>}
+            </button>
           </div>
 
           {/* ── Projects Section (with Create Project Modal) ── */}
@@ -620,6 +676,22 @@ export default function IconNavSidebar() {
             setIsCreateProjectOpen(false);
             router.push('/');
           }}
+        />
+      )}
+
+      {/* ── ScenarioLab Modal ── */}
+      {isScenarioLabOpen && (
+        <ScenarioLabModal
+          isOpen={isScenarioLabOpen}
+          onClose={() => setIsScenarioLabOpen(false)}
+        />
+      )}
+
+      {/* ── Unified 3D Voice Studio Modal ── */}
+      {isVoiceStudioOpen && (
+        <UnifiedVoiceStudioModal
+          isOpen={isVoiceStudioOpen}
+          onClose={() => setIsVoiceStudioOpen(false)}
         />
       )}
     </>

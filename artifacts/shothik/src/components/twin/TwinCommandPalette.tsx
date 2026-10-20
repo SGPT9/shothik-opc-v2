@@ -9,6 +9,7 @@ import {
   Sun,
   Settings,
   Mic,
+  FlaskConical,
   CreditCard,
   Mail,
   Send,
@@ -147,6 +148,11 @@ export interface TwinCommandPaletteProps {
   onOpenRtoFraudShield?: () => void;
   onOpenFlashInventory?: () => void;
   onOpenLandRegistry?: () => void;
+  onOpenScenarioLab?: () => void;
+  onOpenUnifiedVoice?: () => void;
+  onOpenEmporium?: () => void;
+  onOpenCommunity?: () => void;
+  onOpenJuteExport?: () => void;
 }
 
 export function TwinCommandPalette({
@@ -232,6 +238,11 @@ export function TwinCommandPalette({
   onOpenRtoFraudShield,
   onOpenFlashInventory,
   onOpenLandRegistry,
+  onOpenScenarioLab,
+  onOpenUnifiedVoice,
+  onOpenEmporium,
+  onOpenCommunity,
+  onOpenJuteExport,
 }: TwinCommandPaletteProps) {
   const handleSelect = (callback?: () => void) => {
     onOpenChange(false);
@@ -1667,6 +1678,99 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥D</CommandShortcut>
+          </CommandItem>
+          <CommandItem
+            value="jute export golden fiber raw jute grading baling press epb cash subsidy 12% nbr customs bonded warehouse djg hessian sacking cbc"
+            onSelect={() => handleSelect(onOpenJuteExport)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-600/10 text-amber-600 border border-amber-600/20">
+                <Wheat className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Golden Fiber Jute & DJG Export Studio</span>
+                <span className="text-[11px] text-zinc-500">BJMC grading, moisture penalty, 12% cash subsidy & NBR bonded ledger</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘J</CommandShortcut>
+          </CommandItem>
+        </CommandGroup>
+
+        {/* ── Category 6: Labs, Voice Duplex & Ecosystem Hub ── */}
+        <CommandGroup
+          heading={
+            <div className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wider text-purple-500 dark:text-purple-400 font-bold py-1">
+              <span>🚀 6. Labs, Voice Duplex & Ecosystem Hub</span>
+            </div>
+          }
+        >
+          <CommandItem
+            value="scenario lab chaos engineering stress simulation reliability test unit economics financial tam sam som runway failure modes monte carlo"
+            onSelect={() => handleSelect(onOpenScenarioLab)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                <FlaskConical className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Scenario Lab (Chaos & Stress Simulation)</span>
+                <span className="text-[11px] text-zinc-500">30-scenario fault injection, SRE reliability & unit economics modeling</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥S</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="unified voice studio orb avatar 3d speech duplex mic conversational audio assistant regional banglish dialects"
+            onSelect={() => handleSelect(onOpenUnifiedVoice)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                <Mic className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Unified 3D Voice Studio & Neural Orb</span>
+                <span className="text-[11px] text-zinc-500">Full-duplex audio assistant with 4 dialect personas & 3D particle orb</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥V</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="emporium marketplace skill providers agent store agentic books publishing creations templates plugins"
+            onSelect={() => handleSelect(onOpenEmporium)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Store className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Skill Provider Emporium & Marketplace</span>
+                <span className="text-[11px] text-zinc-500">Curated agent skills, verified plugins & agentic book creations</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥E</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            value="community swarm forums developer discussions reviewer fund astryx personas bounties"
+            onSelect={() => handleSelect(onOpenCommunity)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                <Users className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Developer Community & Agent Swarm</span>
+                <span className="text-[11px] text-zinc-500">Developer channels, reviewer fund bounties & agent persona dispatches</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥C</CommandShortcut>
           </CommandItem>
         </CommandGroup>
       </CommandList>
