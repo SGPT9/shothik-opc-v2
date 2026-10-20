@@ -25,6 +25,7 @@ import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
 import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
+import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
 import { KeyboardShortcutsModal } from "@/components/chat/KeyboardShortcutsModal";
 import { CommandPaletteModal } from "@/components/chat/CommandPaletteModal";
@@ -1231,7 +1232,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   onSend={handleSendMessage}
                   isStreaming={streamState.isStreaming}
                   onStop={handleCancelActiveRun}
-                  onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                  onVoiceClick={() => setIsVoiceOrbOpen(true)}
                   onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                   persona={persona}
                   onPersonaChange={handlePersonaChange}
@@ -1277,7 +1278,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   onSend={handleSendMessage}
                   isStreaming={streamState.isStreaming}
                   onStop={handleCancelActiveRun}
-                  onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                  onVoiceClick={() => setIsVoiceOrbOpen(true)}
                   onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                   persona={persona}
                   onPersonaChange={handlePersonaChange}
@@ -1339,7 +1340,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     onSend={handleSendMessage}
                     isStreaming={streamState.isStreaming}
                     onStop={handleCancelActiveRun}
-                    onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                    onVoiceClick={() => setIsVoiceOrbOpen(true)}
                     onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                     persona={persona}
                     onPersonaChange={handlePersonaChange}
@@ -1385,7 +1386,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   onSend={handleSendMessage}
                   isStreaming={streamState.isStreaming}
                   onStop={handleCancelActiveRun}
-                  onVoiceClick={() => setVoiceActive((prev) => !prev)}
+                  onVoiceClick={() => setIsVoiceOrbOpen(true)}
                   onVoiceOrbClick={() => setIsVoiceOrbOpen(true)}
                   persona={persona}
                   onPersonaChange={handlePersonaChange}
@@ -1562,6 +1563,21 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             time: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           }))}
         />
+
+        {isVoiceOrbOpen && (
+          <UnifiedVoiceStudioModal
+            isOpen={isVoiceOrbOpen}
+            onClose={() => setIsVoiceOrbOpen(false)}
+          />
+        )}
+
+        {isSwarmDebateOpen && (
+          <SwarmAdversarialDebateModal
+            isOpen={isSwarmDebateOpen}
+            onClose={() => setIsSwarmDebateOpen(false)}
+            onOpenSource={handleOpenSource}
+          />
+        )}
 
         <PwaInstallBanner />
       </div>

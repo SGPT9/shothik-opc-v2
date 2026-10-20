@@ -34,6 +34,7 @@ import {
   PenTool,
   ShoppingBag,
   CreditCard,
+  FlaskConical,
 } from "lucide-react";
 import {
   forwardRef,
@@ -53,6 +54,8 @@ import { AgentMentionOverlay, type AgentOption } from "./AgentMentionOverlay";
 import { SlashCommandOverlay, type SlashCommandOption } from "./SlashCommandOverlay";
 import { ContextUsageIndicator } from "./ContextUsageIndicator";
 import { ConversationIntelligencePanel, type FollowUpSuggestion } from "./ConversationIntelligencePanel";
+import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
+import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -128,6 +131,8 @@ export interface ComposerProps {
   onOpenVoice?: () => void;
   /** Opens specialized tools */
   onOpenTool?: (tool: "research" | "swarm" | "slides" | "sheet" | "code" | "synthesizer" | "browser" | "voice") => void;
+  /** Opens Scenario Lab Resilience Stress Testing Modal */
+  onOpenScenarioLab?: () => void;
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -177,6 +182,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
       onOpenArtifact,
       onVoiceOrbClick,
       onOpenTool,
+      onOpenScenarioLab,
     },
     ref,
   ) {
@@ -216,6 +222,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [focusMenuOpen, setFocusMenuOpen] = useState(false);
     const [isVaultOpen, setIsVaultOpen] = useState(false);
     const [isTrackingOpen, setIsTrackingOpen] = useState(false);
+    const [isScenarioLabOpen, setIsScenarioLabOpen] = useState(false);
+    const [isVoiceStudioOpen, setIsVoiceStudioOpen] = useState(false);
     const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const lastPromptRef = useRef<string>("");
@@ -840,7 +848,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     ))}
 
                     <div className="px-2.5 pt-2 pb-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider border-t border-border/50 mt-1">
-                      Canvas Workspaces
+                      Canvas Workspaces & Labs
                     </div>
                     {[
                       { Icon: Presentation, label: "Presentation Slides (16:9)", action: () => dispatchArtifact("slides"), color: "text-indigo-400" },
@@ -848,6 +856,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       { Icon: Search, label: "Deep Research", action: () => dispatchArtifact("research"), color: "text-violet-400" },
                       { Icon: Code2, label: "Code Assistant", action: () => dispatchArtifact("code"), color: "text-emerald-400" },
                       { Icon: BookOpen, label: "বই ও প্রকাশনা (BoiMela)", action: () => dispatchArtifact("boimela"), color: "text-rose-400" },
+                      { Icon: FlaskConical, label: "Scenario Lab (30 Resilience Vectors)", action: () => { if (onOpenScenarioLab) onOpenScenarioLab(); else setIsScenarioLabOpen(true); }, color: "text-amber-400" },
+                      { Icon: Phone, label: "Unified 3D Voice Studio", action: () => { if (onVoiceOrbClick) onVoiceOrbClick(); else setIsVoiceStudioOpen(true); }, color: "text-cyan-400" },
                       { Icon: Database, label: "RAG Knowledge Vault", action: () => setIsVaultOpen(true), color: "text-cyan-400" },
                       { Icon: Truck, label: "Steadfast Parcel Tracker", action: () => setIsTrackingOpen(true), color: "text-amber-400" },
                     ].map(({ Icon, label, action, color }) => (
@@ -1108,6 +1118,18 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           isOpen={isTrackingOpen}
           onClose={() => setIsTrackingOpen(false)}
         />
+        {isScenarioLabOpen && (
+          <ScenarioLabModal
+            isOpen={isScenarioLabOpen}
+            onClose={() => setIsScenarioLabOpen(false)}
+          />
+        )}
+        {isVoiceStudioOpen && (
+          <UnifiedVoiceStudioModal
+            isOpen={isVoiceStudioOpen}
+            onClose={() => setIsVoiceStudioOpen(false)}
+          />
+        )}
       </div>
     );
   }

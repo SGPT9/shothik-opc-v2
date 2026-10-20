@@ -89,6 +89,10 @@ const RtoFraudShieldModal = dynamic(() => import("@/components/twin/RtoFraudShie
 const FlashSaleInventoryModal = dynamic(() => import("@/components/twin/FlashSaleInventoryModal").then((m) => m.FlashSaleInventoryModal), { ssr: false });
 const LandRegistryModal = dynamic(() => import("@/components/twin/LandRegistryModal").then((m) => m.LandRegistryModal), { ssr: false });
 const CreatorCashoutModal = dynamic(() => import("@/components/credits/CreatorCashoutModal"), { ssr: false });
+const ScenarioLabModal = dynamic(() => import("@/components/scenariolab/ScenarioLabModal").then((m) => m.ScenarioLabModal), { ssr: false });
+const UnifiedVoiceStudioModal = dynamic(() => import("@/components/voice/UnifiedVoiceStudioModal").then((m) => m.UnifiedVoiceStudioModal), { ssr: false });
+const AgentMarketplaceModal = dynamic(() => import("@/components/marketplace/AgentMarketplaceModal").then((m) => m.AgentMarketplaceModal), { ssr: false });
+const JuteExportModal = dynamic(() => import("@/components/twin/JuteExportModal").then((m) => m.JuteExportModal), { ssr: false });
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -428,6 +432,10 @@ export default function TwinPage() {
   const [rtoFraudShieldOpen, setRtoFraudShieldOpen] = useState(false);
   const [flashInventoryOpen, setFlashInventoryOpen] = useState(false);
   const [landRegistryOpen, setLandRegistryOpen] = useState(false);
+  const [scenarioLabOpen, setScenarioLabOpen] = useState(false);
+  const [voiceStudioOpen, setVoiceStudioOpen] = useState(false);
+  const [emporiumOpen, setEmporiumOpen] = useState(false);
+  const [juteExportOpen, setJuteExportOpen] = useState(false);
 
   // Global ⌘K / Ctrl+K, ⌘W, ⌘X, ⌘O, ⌘U, ⌘F, ⌘L, ⌘D, ⌘R and multi-tool keyboard shortcut listeners
   useEffect(() => {
@@ -527,6 +535,21 @@ export default function TwinPage() {
       } else if (e.altKey && e.key.toLowerCase() === "d") {
         e.preventDefault();
         setLandRegistryOpen((prev) => !prev);
+      } else if (e.altKey && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        setScenarioLabOpen((prev) => !prev);
+      } else if (e.altKey && e.key.toLowerCase() === "v") {
+        e.preventDefault();
+        setVoiceStudioOpen((prev) => !prev);
+      } else if (e.altKey && e.key.toLowerCase() === "e") {
+        e.preventDefault();
+        setEmporiumOpen((prev) => !prev);
+      } else if (e.altKey && e.key.toLowerCase() === "c") {
+        e.preventDefault();
+        if (typeof window !== "undefined") window.location.href = "/community";
+      } else if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "j") {
+        e.preventDefault();
+        setJuteExportOpen((prev) => !prev);
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -2375,6 +2398,13 @@ export default function TwinPage() {
         onOpenRtoFraudShield={() => setRtoFraudShieldOpen(true)}
         onOpenFlashInventory={() => setFlashInventoryOpen(true)}
         onOpenLandRegistry={() => setLandRegistryOpen(true)}
+        onOpenScenarioLab={() => setScenarioLabOpen(true)}
+        onOpenUnifiedVoice={() => setVoiceStudioOpen(true)}
+        onOpenEmporium={() => setEmporiumOpen(true)}
+        onOpenCommunity={() => {
+          if (typeof window !== "undefined") window.location.href = "/community";
+        }}
+        onOpenJuteExport={() => setJuteExportOpen(true)}
       />
 
       {/* Operational Modals Mounted via Command Center */}
@@ -2439,6 +2469,10 @@ export default function TwinPage() {
       {rtoFraudShieldOpen && <RtoFraudShieldModal isOpen={rtoFraudShieldOpen} onClose={() => setRtoFraudShieldOpen(false)} />}
       {flashInventoryOpen && <FlashSaleInventoryModal isOpen={flashInventoryOpen} onClose={() => setFlashInventoryOpen(false)} />}
       {landRegistryOpen && <LandRegistryModal isOpen={landRegistryOpen} onClose={() => setLandRegistryOpen(false)} />}
+      {scenarioLabOpen && <ScenarioLabModal isOpen={scenarioLabOpen} onClose={() => setScenarioLabOpen(false)} />}
+      {voiceStudioOpen && <UnifiedVoiceStudioModal isOpen={voiceStudioOpen} onClose={() => setVoiceStudioOpen(false)} />}
+      {emporiumOpen && <AgentMarketplaceModal isOpen={emporiumOpen} onClose={() => setEmporiumOpen(false)} />}
+      {juteExportOpen && <JuteExportModal isOpen={juteExportOpen} onClose={() => setJuteExportOpen(false)} />}
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay
