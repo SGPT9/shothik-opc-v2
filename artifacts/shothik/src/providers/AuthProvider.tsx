@@ -85,10 +85,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
 
 
       try {
+        const token = localStorage.getItem("jwt_token") || localStorage.getItem("accessToken");
+        const headers: Record<string, string> = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const sessionResponse = await withTimeout(
           fetch("/api/auth/session", {
             credentials: "same-origin",
             cache: "no-store",
+            headers,
           }).catch(() => null),
           AUTH_PROBE_TIMEOUT_MS,
         );
@@ -100,7 +107,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           ) ?? normalizeLegacyUser(sessionPayload?.user ?? null);
 
           if (!cancelled && sessionUser?._id) {
-            localStorage.removeItem("jwt_token");
             setUser(sessionUser);
             setIsAuthenticated(true);
             setIsLoading(false);
@@ -110,15 +116,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         }
 
         if (typeof window !== "undefined") {
+          const isAuthPage = window.location.pathname.startsWith("/auth/");
           const storedGuestMode = localStorage.getItem("guest_mode_enabled");
-          // If in local dev or vercel preview or no explicit token, allow instant relaxed access
-          if (
-            window.location.hostname.includes("localhost") ||
-            window.location.hostname.includes("127.0.0.1") ||
-            window.location.hostname.includes("vercel.app") ||
-            storedGuestMode === "true" ||
-            !localStorage.getItem("jwt_token")
-          ) {
+          
+          // Don't auto-authenticate as guest if user is deliberately on an auth screen (/auth/login, /auth/register)
+          if (!isAuthPage && (storedGuestMode === "true" || !token)) {
             if (!cancelled) {
               setUser(DEFAULT_GUEST_USER);
               setIsAuthenticated(true);
@@ -258,7 +260,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         throw new Error(payload?.message || "Unable to sign in.");
       }
 
-      localStorage.removeItem("jwt_token");
+      if (payload.token) {
+        localStorage.setItem("jwt_token", payload.token);
+        localStorage.setItem("accessToken", payload.token);
+      }
+      localStorage.setItem("shothik_user", JSON.stringify(payload.user));
+      localStorage.removeItem("guest_mode_enabled");
       setUser(payload.user);
       setIsAuthenticated(true);
     } catch (error) {
@@ -270,6 +277,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const logout = (): void => {
     void fetch("/api/auth/sign-out", { method: "POST" }).catch(() => undefined);
     localStorage.removeItem("jwt_token");
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("shothik_user");
+    localStorage.removeItem("guest_mode_enabled");
     setUser(null);
     setIsAuthenticated(false);
   };
@@ -298,6 +308,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       if (!response.ok) {
         throw new Error(payload?.message || "Unable to create account.");
       }
+
+      if (payload.token) {
+        localStorage.setItem("jwt_token", payload.token);
+        localStorage.setItem("accessToken", payload.token);
+      }
+      if (payload.user) {
+        localStorage.setItem("shothik_user", JSON.stringify(payload.user));
+        setUser(payload.user);
+        setIsAuthenticated(true);
+      }
+      localStorage.removeItem("guest_mode_enabled");
 
       return {
         requiresEmailVerification: Boolean(payload?.requiresEmailVerification),
