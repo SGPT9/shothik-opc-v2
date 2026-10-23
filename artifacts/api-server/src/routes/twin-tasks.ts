@@ -5,6 +5,9 @@ import { TwinOrchestrator } from "../lib/twin/twin-orchestrator.js";
 import { nightshiftEngine } from "../lib/nightshift-engine.js";
 import { tokenCostTracker } from "../lib/token-cost-tracker.js";
 import { developerTwinEngine } from "../lib/twin/developer-twin-engine.js";
+import { twinTaskWall } from "../lib/twin/twin-task-wall.js";
+import { twinMemoryV2 } from "../lib/twin/twin-memory-v2.js";
+import { twinMeetingEngine, type MeetingFramework } from "../lib/twin/twin-meetings.js";
 
 const router = Router();
 
@@ -813,5 +816,145 @@ router.post(
     }
   },
 );
+
+// ============================================================================
+// 🏛️ Advanced Twin OS: Task Wall, Memory v2 & Structured Meetings
+// ============================================================================
+
+/**
+ * GET /api/v1/twin/task-wall
+ * Retrieve live Task Wall DAG with dependency locks and status
+ */
+router.get(["/v1/twin/task-wall", "/api/v1/twin/task-wall"], (req: Request, res: Response) => {
+  const companySlug = (req.query.company as string) || "default";
+  const tasks = twinTaskWall.getTasks(companySlug);
+  return res.json({
+    success: true,
+    companySlug,
+    tasks,
+    metrics: {
+      total: tasks.length,
+      pending: tasks.filter((t) => t.status === "pending").length,
+      blocked: tasks.filter((t) => t.status === "blocked").length,
+      completed: tasks.filter((t) => t.status === "completed").length,
+    },
+  });
+});
+
+/**
+ * POST /api/v1/twin/task-wall
+ * Create a new task with parent/child DAG dependencies
+ */
+router.post(["/v1/twin/task-wall", "/api/v1/twin/task-wall"], (req: Request, res: Response) => {
+  try {
+    const { companySlug = "default", title, description, category, dependsOn, assignedTwin, costCredits } = req.body;
+    if (!title) {
+      return res.status(400).json({ success: false, error: "title is required" });
+    }
+    const task = twinTaskWall.createTask({
+      companySlug,
+      title,
+      description,
+      category,
+      dependsOn,
+      assignedTwin,
+      costCredits,
+    });
+    return res.status(201).json({ success: true, task });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to create task on wall");
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/twin/task-wall/:id/execute
+ * Execute a task on the wall. Enforces that blocked tasks cannot run until dependencies complete.
+ */
+router.post(["/v1/twin/task-wall/:id/execute", "/api/v1/twin/task-wall/:id/execute"], async (req: Request, res: Response) => {
+  try {
+    const taskId = String(req.params.id);
+    const result = await twinTaskWall.executeTask(taskId);
+    if (!result.success) {
+      return res.status(400).json({ success: false, error: result.error });
+    }
+    return res.json({ success: true, task: result.task });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to execute wall task");
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/twin/memory/memos
+ * Recall episodic task memos via zero-LLM BM25 search
+ */
+router.get(["/v1/twin/memory/memos", "/api/v1/twin/memory/memos"], (req: Request, res: Response) => {
+  const query = (req.query.q as string) || "";
+  const companySlug = (req.query.company as string) || undefined;
+  if (!query) {
+    const memos = companySlug ? twinMemoryV2.getMemosByCompany(companySlug) : [];
+    return res.json({ success: true, memos });
+  }
+  const results = twinMemoryV2.searchMemos(query, companySlug);
+  return res.json({ success: true, query, results });
+});
+
+/**
+ * GET /api/v1/twin/memory/directions
+ * Retrieve active Direction rules and policies
+ */
+router.get(["/v1/twin/memory/directions", "/api/v1/twin/memory/directions"], (req: Request, res: Response) => {
+  const companySlug = (req.query.company as string) || undefined;
+  const directions = twinMemoryV2.getActiveDirections(companySlug);
+  return res.json({ success: true, directions });
+});
+
+/**
+ * POST /api/v1/twin/memory/directions
+ * Add a new user preference or operational rule with auditable superseding
+ */
+router.post(["/v1/twin/memory/directions", "/api/v1/twin/memory/directions"], (req: Request, res: Response) => {
+  try {
+    const { userId = "user", companySlug = "default", kind = "operational_rule", content, supersedesId } = req.body;
+    if (!content) {
+      return res.status(400).json({ success: false, error: "content is required" });
+    }
+    const entry = twinMemoryV2.addDirection({
+      userId,
+      companySlug,
+      kind,
+      content,
+      supersedesId,
+    });
+    return res.status(201).json({ success: true, direction: entry });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to record memory direction");
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/twin/meetings/convene
+ * Convene a structured multi-agent meeting (SIX_THINKING_HATS, DACI, DESIGN_SPRINT, DEBATE)
+ */
+router.post(["/v1/twin/meetings/convene", "/api/v1/twin/meetings/convene"], async (req: Request, res: Response) => {
+  try {
+    const { companySlug = "default", topic, framework = "SIX_THINKING_HATS", participants = [] } = req.body;
+    if (!topic) {
+      return res.status(400).json({ success: false, error: "topic is required" });
+    }
+    const outcome = await twinMeetingEngine.conductMeeting({
+      companySlug,
+      topic,
+      framework: framework as MeetingFramework,
+      participants,
+    });
+    return res.status(200).json({ success: true, outcome });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to convene structured meeting");
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 export default router;
