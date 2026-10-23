@@ -22,9 +22,12 @@ import {
   Eye,
   CheckCircle2,
   ShieldAlert,
+  Activity,
+  FlaskConical,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useModalA11y } from "@/hooks/ui/useModalA11y";
+import { ScenarioLabEngine } from "@/lib/infrastructure/scenario-lab-engine";
 
 export interface UnifiedVoiceStudioModalProps {
   isOpen: boolean;
@@ -49,6 +52,14 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
     "📄 bKash TrxID #9J8K22",
     "🇧🇩 Dhaka Hub Routing",
   ]);
+
+  // Background Scenario Lab — top 3 risk scenarios surfaced as session context
+  const [topScenarios] = useState(() => {
+    const results = ScenarioLabEngine.run30ScenarioStressTest();
+    return results
+      .sort((a, b) => b.unmitigatedFailureRate - a.unmitigatedFailureRate)
+      .slice(0, 3);
+  });
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -176,6 +187,9 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
             className="appearance-none bg-zinc-900/90 border border-zinc-800 hover:border-zinc-700 text-zinc-200 text-xs font-medium rounded-full px-3.5 py-1.5 pr-7 outline-none cursor-pointer transition-colors backdrop-blur-md"
           >
             <option value="bn-BD">🇧🇩 বাংলা (ঢাকা)</option>
+            <option value="bn-BD-ctg">🇧🇩 চট্টগ্রামি</option>
+            <option value="bn-BD-syl">🇧🇩 সিলেটি</option>
+            <option value="bn-BD-rng">🇧🇩 রংপুরি</option>
             <option value="bn-BD-banglish">🇧🇩 Banglish</option>
             <option value="en-US">🇺🇸 English (US)</option>
             <option value="en-GB">🇬🇧 English (UK)</option>
@@ -277,6 +291,26 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
             {subtitleText}
           </p>
         </div>
+
+        {/* ── Background Scenario Lab HUD — live risk intelligence during voice session ── */}
+        <div className="w-full max-w-lg mt-4 px-4">
+          <div className="flex items-center gap-1.5 mb-2 opacity-60">
+            <FlaskConical className="w-3 h-3 text-purple-400" />
+            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest">Scenario Lab · Live Risk Context</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {topScenarios.map((s) => (
+              <div
+                key={s.scenarioId}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-zinc-900/60 border border-zinc-800/60 backdrop-blur-sm"
+              >
+                <Activity className="w-2.5 h-2.5 text-rose-400 shrink-0" />
+                <span className="text-[10px] text-zinc-400 font-medium truncate max-w-[140px]">{s.name}</span>
+                <span className="text-[10px] font-mono text-emerald-400 shrink-0">{s.mitigatedFailureRate.toFixed(3)}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── Bottom Control Dock (ChatGPT Exact Icon Layout: Camera, Mute, End Call, Sparkles) ── */}
@@ -324,28 +358,51 @@ export const UnifiedVoiceStudioModal: React.FC<UnifiedVoiceStudioModalProps> = (
           <X className="w-6 h-6" />
         </button>
 
-        {/* 4. Interrupt / AI Action Trigger */}
-        <button
-          type="button"
-          onClick={() => {
-            if (speechState === "speaking") {
-              setSpeechState("listening");
-              setSubtitleText("Listening…");
-            } else {
-              triggerVoiceAction("steadfast_book_courier");
-            }
-          }}
-          className={cn(
-            "flex items-center justify-center w-13 h-13 rounded-full border transition-all duration-150 cursor-pointer active:scale-90 shadow-lg",
-            speechState === "speaking"
-              ? "bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse"
-              : "bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
-          )}
-          title={speechState === "speaking" ? "Interrupt AI" : "Tap to Speak"}
-          aria-label={speechState === "speaking" ? "Interrupt AI" : "Tap to Speak"}
-        >
-          {speechState === "speaking" ? <Square className="w-4 h-4 fill-current" /> : <Sparkles className="w-5 h-5 text-zinc-400" />}
-        </button>
+        {/* 4. Quick Voice Action Selector */}
+        <div className="relative group">
+          <button
+            type="button"
+            onClick={() => {
+              if (speechState === "speaking") {
+                setSpeechState("listening");
+                setSubtitleText("Listening…");
+              } else {
+                triggerVoiceAction("steadfast_book_courier");
+              }
+            }}
+            className={cn(
+              "flex items-center justify-center w-13 h-13 rounded-full border transition-all duration-150 cursor-pointer active:scale-90 shadow-lg",
+              speechState === "speaking"
+                ? "bg-amber-500/20 text-amber-400 border-amber-500/40 animate-pulse"
+                : "bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 border-zinc-800"
+            )}
+            title={speechState === "speaking" ? "Interrupt AI" : "Quick Actions"}
+            aria-label={speechState === "speaking" ? "Interrupt AI" : "Quick Actions"}
+          >
+            {speechState === "speaking" ? <Square className="w-4 h-4 fill-current" /> : <Sparkles className="w-5 h-5 text-zinc-400" />}
+          </button>
+          {/* Quick Action Flyout */}
+          <div className="absolute bottom-16 right-0 hidden group-hover:flex flex-col gap-1.5 p-2 rounded-2xl bg-zinc-900/95 border border-zinc-800 backdrop-blur-xl shadow-2xl min-w-[200px] animate-in fade-in slide-in-from-bottom-2 duration-200">
+            {[
+              { label: "bKash Verify", action: "bkash_verify_payment" as const, emoji: "💳" },
+              { label: "Steadfast Courier", action: "steadfast_book_courier" as const, emoji: "📦" },
+              { label: "Nagad Send", action: "nagad_send_money" as const, emoji: "💸" },
+              { label: "Pathao Ride", action: "pathao_hail_ride" as const, emoji: "🏍️" },
+              { label: "WhatsApp Catalog", action: "whatsapp_business_catalog" as const, emoji: "💬" },
+              { label: "NBR Tax Form", action: "nbr_tax_clearance_form11ga" as const, emoji: "🏦" },
+            ].map((item) => (
+              <button
+                key={item.action}
+                type="button"
+                onClick={(e) => { e.stopPropagation(); triggerVoiceAction(item.action); }}
+                className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-zinc-200 hover:bg-zinc-800 hover:text-white transition-colors text-left"
+              >
+                <span className="text-base">{item.emoji}</span>
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );

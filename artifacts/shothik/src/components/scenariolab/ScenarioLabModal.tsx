@@ -46,7 +46,7 @@ interface ScenarioLabModalProps {
 }
 
 const CATEGORY_CHIPS: { label: string; value: ScenarioCategoryFilter; icon: React.ElementType }[] = [
-  { label: "All 30 Scenarios", value: "ALL", icon: Sparkles },
+  { label: "All 40 Scenarios", value: "ALL", icon: Sparkles },
   { label: "SRE & Infra", value: "SRE & Infra", icon: Server },
   { label: "Client Memory", value: "Client Memory", icon: Cpu },
   { label: "Security & RLS", value: "Security & RLS", icon: Lock },
@@ -57,6 +57,7 @@ const CATEGORY_CHIPS: { label: string; value: ScenarioCategoryFilter; icon: Reac
   { label: "Audio Speech", value: "Audio Speech", icon: Volume2 },
   { label: "IDE & Code Graph", value: "IDE & Code Graph", icon: Code },
   { label: "Community Swarm", value: "Community Swarm", icon: Users },
+  { label: "Payment Checkout", value: "Payment Checkout", icon: CreditCard },
 ];
 
 export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }: ScenarioLabModalProps) {
@@ -118,11 +119,11 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
                 ScenarioLab™ Stress-Test & Financial Engine
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                   <ShieldCheck className="h-3.5 w-3.5" />
-                  900 Monte Carlo Runs Locked
+                  1200 Monte Carlo Runs Locked
                 </span>
               </DialogTitle>
               <DialogDescription className="text-xs text-slate-400 mt-0.5">
-                Stochastic reliability modeling across 30 failure modes & TAM/SAM/SOM CAC payback engine.
+                Stochastic reliability modeling across 40 failure modes & TAM/SAM/SOM CAC payback engine.
               </DialogDescription>
             </div>
           </div>
@@ -134,7 +135,7 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
             className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl px-4 shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition"
           >
             <RotateCw className={cn("h-4 w-4", isSimulating && "animate-spin")} />
-            {isSimulating ? "Simulating 900 Runs..." : "Re-Run 900 Monte Carlo Simulations"}
+            {isSimulating ? "Simulating 1200 Runs..." : "Re-Run 1200 Monte Carlo Simulations"}
           </Button>
         </DialogHeader>
 
@@ -147,7 +148,7 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
               className="rounded-lg text-xs font-semibold py-2.5 data-[state=active]:bg-indigo-600 data-[state=active]:text-white transition"
             >
               <ShieldCheck className="h-4 w-4 mr-2" />
-              30-Scenario System Reliability (900-Run Monte Carlo)
+              40-Scenario System Reliability (1200-Run Monte Carlo)
             </TabsTrigger>
             <TabsTrigger
               value="financial"
@@ -500,7 +501,7 @@ export function ScenarioLabModal({ isOpen, onClose, initialTab = "reliability" }
             {/* ── 1-Click Handoff to Sheet Canvas ── */}
             <div className="flex items-center justify-between pt-2 border-t border-slate-800">
               <span className="text-xs text-slate-400 font-mono">
-                Monte Carlo Simulation: 900 Runs Completed
+                Monte Carlo Simulation: 1200 Runs Completed
               </span>
               <div className="flex items-center gap-2">
                 <Button

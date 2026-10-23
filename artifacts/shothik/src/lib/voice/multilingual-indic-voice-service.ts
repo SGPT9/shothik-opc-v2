@@ -2,6 +2,9 @@ import logger from "@/lib/logger";
 
 export type IndicLanguageCode =
   | "bn-BD"           // Bangladeshi Bangla (Dhaka Standard: "পানি", "দাওয়াত", "টাকা")
+  | "bn-BD-ctg"       // Chittagong Bangla (চট্টগ্রামি: "পানি", "হত", "গম")
+  | "bn-BD-syl"       // Sylheti Bangla (সিলেটি: "পানি", "ফুয়া", "লগে")
+  | "bn-BD-rng"       // Rangpur Bangla (রংপুরি: "পানি", "মোক", "তুই")
   | "bn-IN"           // Indian Bangla (West Bengal Kolkata: "জল", "নিমন্ত্রণ")
   | "bn-BD-banglish"  // Bangladeshi Banglish Code-Mixed ("Ami bKash e টাকা pathalam")
   | "hi-IN"           // Hindi (India)
@@ -43,6 +46,36 @@ export const INDIC_VOICE_PROFILES: IndicVoiceProfile[] = [
       translation: "Your bKash payment has been successfully verified.",
     },
     defaultPitchHz: 210,
+  },
+  {
+    code: "bn-BD-ctg",
+    name: "Chittagong Bangla (চট্টগ্রামি)",
+    dialectRegion: "Chittagong Division, Cox's Bazar, Bandarban (Bangladesh)",
+    samplePhrases: {
+      native: "তুঁয়ার bKash ত টেকা আইছে। পার্সেল রেডি অইছে, ভাই।",
+      translation: "Your bKash money has arrived. The parcel is ready, bro.",
+    },
+    defaultPitchHz: 225,
+  },
+  {
+    code: "bn-BD-syl",
+    name: "Sylheti Bangla (সিলেটি)",
+    dialectRegion: "Sylhet Division, Moulvibazar, Habiganj (Bangladesh)",
+    samplePhrases: {
+      native: "তুমার পেমেন্ট হুম ভেরিফাই করি দিছি। লন্ডনী ভায়ের লগে কথা কইতাম।",
+      translation: "I've verified your payment. I'll talk with the London brother.",
+    },
+    defaultPitchHz: 218,
+  },
+  {
+    code: "bn-BD-rng",
+    name: "Rangpur Bangla (রংপুরি)",
+    dialectRegion: "Rangpur Division, Dinajpur, Kurigram (Bangladesh)",
+    samplePhrases: {
+      native: "মোর bKash ত টাকা আইছে, ভাইডি। Steadfast কুরিয়ার বুক করো।",
+      translation: "Money came to my bKash, buddy. Book a Steadfast courier.",
+    },
+    defaultPitchHz: 208,
   },
   {
     code: "bn-IN",

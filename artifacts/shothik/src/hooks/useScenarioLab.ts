@@ -17,7 +17,8 @@ export type ScenarioCategoryFilter =
   | "Web Search"
   | "Audio Speech"
   | "IDE & Code Graph"
-  | "Community Swarm";
+  | "Community Swarm"
+  | "Payment Checkout";
 
 export function useScenarioLab(initialParams?: Partial<ScenarioInputParams>) {
   const [params, setParams] = useState<ScenarioInputParams>({
