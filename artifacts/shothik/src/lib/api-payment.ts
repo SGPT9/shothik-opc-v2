@@ -6,10 +6,8 @@ const getAccessToken = (): string | null => {
 };
 
 const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_PAYMENT_SYSTEM_URL ||
-    "https://payment-qa-svc.shothik.ai",
-  timeout: 5000,
+  baseURL: process.env.NEXT_PUBLIC_PAYMENT_SYSTEM_URL || "",
+  timeout: 8000,
 });
 
 api.interceptors.request.use((config: InternalAxiosRequestConfig) => {

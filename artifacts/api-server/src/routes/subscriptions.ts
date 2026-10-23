@@ -548,4 +548,200 @@ router.post(
   }
 );
 
+// =========================================================================
+// Public Plans, Packages & MFS Checkout Endpoints (for Pricing Page & Checkout)
+// =========================================================================
+
+const PUBLIC_PLANS = [
+  { _id: "monthly", name: "Monthly", duration: 30, is_active: true },
+  { _id: "yearly", name: "Yearly (Save 20%)", duration: 365, is_active: true },
+];
+
+const PUBLIC_PACKAGES = [
+  {
+    _id: "starter-pass",
+    name: "Starter Student Micro-Pass",
+    description: "Ideal for university assignments, thesis Turnitin checks, and single slide deck creation.",
+    package_for: "User",
+    is_popular: false,
+    is_active: true,
+    price: { USD: 0.85, BDT: 100 },
+    plans: [
+      {
+        _id: "plan_starter_monthly",
+        plan: { _id: "monthly", name: "Monthly", duration: 30 },
+        price: { USD: 0.85, BDT: 100 },
+        token: 50,
+        is_initial: true,
+        is_active: true,
+      },
+    ],
+    features: [
+      { _id: "f1", name: "50 Instant Task Credits" },
+      { _id: "f2", name: "Academic Plagiarism & Turnitin Check" },
+      { _id: "f3", name: "1 Full Presentation Generation" },
+      { _id: "f4", name: "Bangla & English Spell Checking" },
+    ],
+  },
+  {
+    _id: "pro-operator",
+    name: "Pro Operator Pack",
+    description: "Most popular for solo entrepreneurs, developers, and agency copywriters.",
+    package_for: "User",
+    is_popular: true,
+    is_active: true,
+    price: { USD: 8.50, BDT: 990 },
+    plans: [
+      {
+        _id: "plan_pro_monthly",
+        plan: { _id: "monthly", name: "Monthly", duration: 30 },
+        price: { USD: 8.50, BDT: 990 },
+        token: 550,
+        is_initial: true,
+        is_active: true,
+      },
+    ],
+    features: [
+      { _id: "f5", name: "550 Workspace Credits" },
+      { _id: "f6", name: "Unlimited Pro Search & Deep Research" },
+      { _id: "f7", name: "5-Step Slide Studio with 16:9 Canvas" },
+      { _id: "f8", name: "40-Scenario Financial Stress Lab" },
+      { _id: "f9", name: "Interactive Voice Dictation & Presenter" },
+    ],
+  },
+  {
+    _id: "venture-twin",
+    name: "Venture Twin & OPC",
+    description: "For active startups and digital businesses automating sales, marketing, and logistics.",
+    package_for: "User",
+    is_popular: false,
+    is_active: true,
+    price: { USD: 19.99, BDT: 2400 },
+    plans: [
+      {
+        _id: "plan_venture_monthly",
+        plan: { _id: "monthly", name: "Monthly", duration: 30 },
+        price: { USD: 19.99, BDT: 2400 },
+        token: 1500,
+        is_initial: true,
+        is_active: true,
+      },
+    ],
+    features: [
+      { _id: "f10", name: "1,500 Monthly Credits" },
+      { _id: "f11", name: "1 Autonomous Company Slot" },
+      { _id: "f12", name: "Tonight Engine Overnight Background Worker" },
+      { _id: "f13", name: "Steadfast & Pathao Courier Auto-Dispatch" },
+      { _id: "f14", name: "bKash & Nagad Merchant Reconciliation" },
+    ],
+  },
+];
+
+const PUBLIC_PAYMENT_METHODS = [
+  {
+    _id: "bkash",
+    name: "bKash MFS",
+    type: "mobile_banking",
+    currency: "BDT",
+    is_active: true,
+  },
+  {
+    _id: "nagad",
+    name: "Nagad MFS",
+    type: "mobile_banking",
+    currency: "BDT",
+    is_active: true,
+  },
+  {
+    _id: "card",
+    name: "Visa / Mastercard",
+    type: "card",
+    currency: "USD",
+    is_active: true,
+  },
+];
+
+router.get(["/plans/public", "/v1/plans/public"], (_req: Request, res: Response) => {
+  res.status(200).json({ success: true, data: PUBLIC_PLANS });
+});
+
+router.get(["/packages/public", "/v1/packages/public"], (_req: Request, res: Response) => {
+  res.status(200).json({ success: true, data: PUBLIC_PACKAGES });
+});
+
+router.get(["/packages/public/:id", "/v1/packages/public/:id"], (req: Request, res: Response) => {
+  const pkg = PUBLIC_PACKAGES.find((p) => p._id === req.params.id) || PUBLIC_PACKAGES[0];
+  res.status(200).json({ success: true, data: pkg });
+});
+
+router.get(["/payment-methods/public", "/v1/payment-methods/public"], (_req: Request, res: Response) => {
+  res.status(200).json({ success: true, data: PUBLIC_PAYMENT_METHODS });
+});
+
+router.get(["/payment-methods/:id/public", "/v1/payment-methods/:id/public"], (req: Request, res: Response) => {
+  const method = PUBLIC_PAYMENT_METHODS.find((m) => m._id === req.params.id) || PUBLIC_PAYMENT_METHODS[0];
+  res.status(200).json({ success: true, data: method });
+});
+
+router.post(["/payment-transactions/initiate", "/v1/payment-transactions/initiate"], (req: Request, res: Response) => {
+  const { package: pkgId, plan: planId, payment_method = "bkash", customer_email } = req.body || {};
+  const selectedPkg = PUBLIC_PACKAGES.find((p) => p._id === pkgId) || PUBLIC_PACKAGES[0];
+  const transactionId = `TRX_INIT_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  
+  // Credits to allocate upon verification
+  const credits = selectedPkg._id === "starter-pass" ? 50 : (selectedPkg._id === "pro-operator" ? 550 : 1500);
+
+  // Return success redirect path with transaction metadata
+  const successUrl = `/pricing/checkout/success?trx_id=${transactionId}&package_id=${selectedPkg._id}&credits=${credits}`;
+
+  res.status(200).json({
+    success: true,
+    data: {
+      payment_transaction: {
+        _id: transactionId,
+        package: selectedPkg._id,
+        plan: planId || "monthly",
+        payment_method,
+        amount: selectedPkg.price.BDT,
+        currency: "BDT",
+        status: "pending",
+        customer_email: customer_email || "tester@shothik.ai",
+      },
+      redirect_url: successUrl,
+      payment_url: successUrl,
+    },
+  });
+});
+
+router.post(["/payment-transactions/:id/verify", "/v1/payment-transactions/:id/verify"], (req: Request, res: Response) => {
+  const trxId = req.params.id;
+  const userId = (req.headers["x-user-id"] as string) || "usr_default";
+
+  // Credit 500 or appropriate credits
+  const currentCredits = userCreditLedger.get(userId) ?? 500;
+  userCreditLedger.set(userId, currentCredits + 550);
+
+  res.status(200).json({
+    success: true,
+    message: "Transaction verified and credits credited successfully.",
+    data: {
+      _id: trxId,
+      status: "completed",
+      verified: true,
+    },
+  });
+});
+
+router.get(["/payment-transactions/:id/status", "/v1/payment-transactions/:id/status"], (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      _id: req.params.id,
+      status: "completed",
+      is_paid: true,
+    },
+  });
+});
+
 export default router;
+

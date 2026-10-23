@@ -55,20 +55,7 @@ function localDevApiPlugin(): Plugin {
           return;
         }
 
-        // 3. GET /api/auth/session
-        if (req.method === 'GET' && url === '/api/auth/session') {
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({
-            user: {
-              id: 'dev_user_local',
-              name: 'Developer',
-              email: 'dev@shothik.local',
-              image: null
-            },
-            expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          }));
-          return;
-        }
+        // 3. GET /api/auth/session is proxied to the real Express backend for token verification
 
         // 4. POST /api/auth/refresh
         if (req.method === 'POST' && url === '/api/auth/refresh') {

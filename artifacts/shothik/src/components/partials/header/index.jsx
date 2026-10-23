@@ -47,6 +47,7 @@ import MobileMenu from "./MobileMenu";
 import ThemeToggle from "./ThemeToggle";
 import { useTranslation } from "@/i18n";
 import { OfflineSyncStatusBadge } from "@/components/sync/OfflineSyncStatusBadge";
+import { useAuth } from "@/providers/AuthProvider";
 
 
 const NotificationBell = lazy(() => import("@/components/forum/NotificationBell"));
@@ -84,7 +85,10 @@ const featuresMenuKeys = {
 };
 
 export default function Header({ className, layout }) {
-  const { accessToken, user } = useSelector((state) => state.auth);
+  const { accessToken, user: reduxUser } = useSelector((state) => state.auth);
+  const { user: authUser } = useAuth();
+  const user = reduxUser || authUser;
+  const userCredits = authUser?.credits ?? reduxUser?.credits ?? 550;
   const { theme } = useSelector((state) => state.settings);
   const [mounted, setMounted] = useState(false);
   const { t } = useTranslation();
@@ -153,7 +157,7 @@ export default function Header({ className, layout }) {
                 title="Workspace Credit Balance (Click to top-up)"
               >
                 <span className="text-amber-500">⚡</span>
-                <span>550 Credits</span>
+                <span>{userCredits} Credits</span>
               </Link>
 
               <LanguageSwitcher className="hidden sm:inline-flex" />

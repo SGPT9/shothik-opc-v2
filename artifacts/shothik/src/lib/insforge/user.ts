@@ -6,7 +6,10 @@ export interface AuthenticatedUser {
   avatar?: string;
   role?: string;
   accountType?: string;
-  authProvider: "insforge" | "legacy" | "guest";
+  authProvider: "insforge" | "legacy" | "guest" | string;
+  credits?: number;
+  tier?: string;
+  country?: string;
   [key: string]: unknown;
 }
 
@@ -29,6 +32,9 @@ export function normalizeInsforgeUser(user: any): AuthenticatedUser | null {
     accountType: metadata.account_type || metadata.accountType || user.accountType,
     authProvider: "insforge",
     avatar: metadata.avatar || metadata.avatar_url || user.avatar,
+    credits: user.credits ?? metadata.credits,
+    tier: user.tier || metadata.tier,
+    country: user.country || metadata.country,
   };
 }
 
@@ -45,5 +51,8 @@ export function normalizeLegacyUser(user: any): AuthenticatedUser | null {
     accountType: user.accountType || user.account_type,
     authProvider: "legacy",
     avatar: user.avatar,
+    credits: user.credits,
+    tier: user.tier,
+    country: user.country,
   };
 }

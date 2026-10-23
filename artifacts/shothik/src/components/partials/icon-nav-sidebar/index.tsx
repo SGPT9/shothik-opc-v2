@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useEffect } from "react";
 import { Link, usePathname, useRouter } from "@/lib/navigation";
@@ -41,11 +41,14 @@ import {
 import CreateProjectModal from "@/components/tools/writing-studio/dashboard/CreateProjectModal";
 import NotificationBell from "@/components/forum/NotificationBell";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/providers/AuthProvider";
 
 export default function IconNavSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const user = useSelector((state: any) => state.auth?.user);
+  const { user: authUser } = useAuth();
+  const userCredits = authUser?.credits ?? (user as any)?.credits ?? 550;
   const masterId = user?._id || user?.email || "";
 
   const isWritingRoute = pathname.includes('/writing-studio') ||
@@ -552,7 +555,7 @@ export default function IconNavSidebar() {
                 <Zap className="w-3.5 h-3.5 fill-amber-500/30" />
               </div>
               <div className="flex flex-col">
-                <span className="text-[13px] font-bold text-zinc-950 dark:text-zinc-100 font-mono leading-tight">550 Credits</span>
+                <span className="text-[13px] font-bold text-zinc-950 dark:text-zinc-100 font-mono leading-tight">{userCredits} Credits</span>
                 <span className="text-[11px] text-zinc-500 dark:text-zinc-400 font-medium">Micro-Pass Active</span>
               </div>
             </div>
@@ -566,7 +569,7 @@ export default function IconNavSidebar() {
         ) : (
           <Link
             href="/pricing"
-            title="Wallet: 550 Credits (+ Top Up)"
+          title={`Wallet: ${userCredits} Credits (+ Top Up)`}
             className="mx-auto mb-2 w-9 h-9 rounded-lg bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] flex items-center justify-center text-amber-500 dark:text-amber-400 hover:bg-zinc-200 dark:hover:bg-white/[0.08] transition"
           >
             <Zap className="w-4 h-4 fill-amber-500/30" />
