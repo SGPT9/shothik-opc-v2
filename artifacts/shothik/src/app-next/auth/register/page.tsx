@@ -99,7 +99,7 @@ const RegisterPage = () => {
       }
 
       setSuccess(t('auth.messages.registrationSuccessRedirect'));
-      router.push(`/auth/login?intent=${data.intent}`);
+      router.push(`/auth/post-login?intent=${data.intent}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('auth.messages.registrationFailed'));
       setIsSubmitting(false);
