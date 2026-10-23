@@ -4,7 +4,10 @@ import { type IndicLanguageCode } from "./multilingual-indic-voice-service";
 export type VoiceExecutionActionType =
   | "bkash_verify_payment"
   | "steadfast_book_courier"
-  | "nbr_tax_clearance_form11ga";
+  | "nbr_tax_clearance_form11ga"
+  | "nagad_send_money"
+  | "pathao_hail_ride"
+  | "whatsapp_business_catalog";
 
 export interface VoiceActionResponse {
   executionId: string;
@@ -55,6 +58,37 @@ export class ChatGptVoiceAgentService {
         formType: "Form 11GA (Individual)",
         rebateClaimedBdt: "45000",
         receiptNo: "NBR-2026-88741",
+      };
+    } else if (actionType === "nagad_send_money") {
+      actionTitle = "Nagad Send Money";
+      spokenTranscript = "নগদ থেকে ০১৭১২-XXXXXX নম্বরে ৳৫,০০০ পাঠানো হয়েছে। ট্রানজেকশন আইডি: #NGD-44821।";
+      metadata = {
+        provider: "Nagad MFS",
+        recipientMobile: "01712-XXXXXX",
+        amountBdt: "5000",
+        trxId: "NGD-44821",
+        status: "SENT_SUCCESS",
+      };
+    } else if (actionType === "pathao_hail_ride") {
+      actionTitle = "Pathao Ride Hail";
+      spokenTranscript = "পাঠাও বাইক রাইড বুক হয়েছে। ড্রাইভার আসিফ ৪ মিনিটে আসছেন। গুলশান-১ থেকে বনানী।";
+      metadata = {
+        provider: "Pathao",
+        vehicleType: "Bike",
+        driverName: "Asif",
+        etaMinutes: "4",
+        route: "Gulshan-1 → Banani",
+        fareEstimateBdt: "65",
+      };
+    } else if (actionType === "whatsapp_business_catalog") {
+      actionTitle = "WhatsApp Business Catalog Share";
+      spokenTranscript = "আপনার WhatsApp Business ক্যাটালগ থেকে ৩টি প্রোডাক্ট শেয়ার করা হয়েছে। কাস্টমার রেসপন্স ট্র্যাক করা হচ্ছে।";
+      metadata = {
+        provider: "WhatsApp Business API",
+        productsShared: "3",
+        catalogId: "WAB-CAT-7712",
+        recipientCount: "1",
+        status: "DELIVERED",
       };
     }
 

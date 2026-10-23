@@ -98,7 +98,7 @@ export class ScenarioLabEngine {
   }
 
   /**
-   * Runs 30 stochastic simulation passes per scenario (900+ total runs) across all 30 failure modes.
+   * Runs 40 stochastic simulation passes per scenario (1200+ total runs) across all 40 failure modes.
    */
   static run30ScenarioStressTest(): FailureScenarioStressResult[] {
     const scenarios = [
@@ -132,6 +132,17 @@ export class ScenarioLabEngine {
       { id: 28, name: "Sub-Agent Forum Infinite Loop", category: "Community Swarm", baseFailure: 13.6, mttr: 300 },
       { id: 29, name: "1-Click Share URL Parameter Truncation", category: "Community Swarm", baseFailure: 26.5, mttr: 250 },
       { id: 30, name: "Hybrid Reaction Counter Race Condition", category: "Community Swarm", baseFailure: 20.2, mttr: 500 },
+      // ── Payment Checkout & South Asian Commerce (IDs 31-40) ──
+      { id: 31, name: "Nagad Send-Money API Timeout (Peak Eid)", category: "Payment Checkout", baseFailure: 28.5, mttr: 600 },
+      { id: 32, name: "bKash Refund Webhook Replay Attack", category: "Payment Checkout", baseFailure: 16.7, mttr: 2400 },
+      { id: 33, name: "SSLCommerz 3DS Redirect Loop (Mobile Chrome)", category: "Payment Checkout", baseFailure: 22.3, mttr: 450 },
+      { id: 34, name: "COD Reconciliation Mismatch (Steadfast↔bKash)", category: "Payment Checkout", baseFailure: 31.2, mttr: 1800 },
+      { id: 35, name: "Pathao COD Collection Settlement Delay", category: "Payment Checkout", baseFailure: 19.8, mttr: 3600 },
+      { id: 36, name: "WhatsApp Business Order Webhook Dedup Failure", category: "Payment Checkout", baseFailure: 24.1, mttr: 350 },
+      { id: 37, name: "Cross-Border hundi/Remittance FX Slippage", category: "Payment Checkout", baseFailure: 14.6, mttr: 900 },
+      { id: 38, name: "Subscription Renewal bKash OTP Expiry", category: "Payment Checkout", baseFailure: 33.0, mttr: 200 },
+      { id: 39, name: "Multi-Gateway Failover (Nagad→bKash→Card)", category: "Payment Checkout", baseFailure: 17.9, mttr: 400 },
+      { id: 40, name: "Inventory Ghost-Lock on Concurrent Checkout", category: "Payment Checkout", baseFailure: 26.4, mttr: 750 },
     ];
 
     return scenarios.map((s) => {

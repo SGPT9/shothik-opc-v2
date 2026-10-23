@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { Link, usePathname, useRouter } from "@/lib/navigation";
@@ -28,8 +28,6 @@ import {
   BookOpen,
   Landmark,
   Store,
-  FlaskConical,
-  Mic,
 } from "lucide-react";
 import { useSelector } from "react-redux";
 import {
@@ -42,8 +40,6 @@ import {
 } from "@/lib/chat-sessions-store";
 import CreateProjectModal from "@/components/tools/writing-studio/dashboard/CreateProjectModal";
 import NotificationBell from "@/components/forum/NotificationBell";
-import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
-import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 import { cn } from "@/lib/utils";
 
 export default function IconNavSidebar() {
@@ -74,8 +70,6 @@ export default function IconNavSidebar() {
   const [isProjectsOpen, setIsProjectsOpen] = useState(true);
   const [isSessionsOpen, setIsSessionsOpen] = useState(true);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
-  const [isScenarioLabOpen, setIsScenarioLabOpen] = useState(false);
-  const [isVoiceStudioOpen, setIsVoiceStudioOpen] = useState(false);
   const [sessionSearch, setSessionSearch] = useState("");
 
   useEffect(() => {
@@ -151,7 +145,7 @@ export default function IconNavSidebar() {
         (isCollapsed && isHovering) ? "absolute left-0 top-0 shadow-2xl w-[264px]" : 
         effectiveCollapsed ? "w-16 relative" : "w-[264px] relative"
       )}>
-        {/* ── Top Header: Logo + Collapse Toggle ── */}
+        {/* â”€â”€ Top Header: Logo + Collapse Toggle â”€â”€ */}
         <div className={cn("flex items-center h-14 pt-3 pb-2 flex-shrink-0", effectiveCollapsed ? "justify-center px-2" : "justify-between px-4")}>
           {!effectiveCollapsed && (
             <Link href="/" className="flex items-center gap-2.5 no-underline">
@@ -176,7 +170,7 @@ export default function IconNavSidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-3.5 custom-scrollbar">
-          {/* ── Primary Action: + New Chat ── */}
+          {/* â”€â”€ Primary Action: + New Chat â”€â”€ */}
           <button
             type="button"
             onClick={startNewChat}
@@ -190,7 +184,7 @@ export default function IconNavSidebar() {
             {!effectiveCollapsed && <span>New Chat</span>}
           </button>
 
-          {/* ── Core Navigation: Twin, Writing Suite, Connectors, Files, Saved Reports ── */}
+          {/* â”€â”€ Core Navigation: Twin, Writing Suite, Connectors, Files, Saved Reports â”€â”€ */}
           <div className="space-y-1">
             {/* 1. Twin AI Cofounder */}
             <Link
@@ -323,7 +317,7 @@ export default function IconNavSidebar() {
             {/* 6. Emporium (Agentic Books, Standards & Creations) */}
             <Link
               href="/marketplace"
-              title="Emporium — Agentic Books, Standards & Creations"
+              title="Emporium â€” Agentic Books, Standards & Creations"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
                 effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
@@ -339,7 +333,7 @@ export default function IconNavSidebar() {
             {/* 7. Community Swarm & Discussions */}
             <Link
               href="/community"
-              title="Community — Developer Forums, Bounties & Agent Dispatches"
+              title="Community â€” Developer Forums, Bounties & Agent Dispatches"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
                 effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
@@ -352,42 +346,9 @@ export default function IconNavSidebar() {
               {!effectiveCollapsed && <span>Community</span>}
             </Link>
 
-            {/* 8. Scenario Lab (Chaos Simulation & Unit Economics) */}
-            <button
-              type="button"
-              onClick={() => setIsScenarioLabOpen(true)}
-              title="Scenario Lab — 30-Scenario Stress Simulation & Unit Economics"
-              className={cn(
-                "w-full flex items-center rounded-xl text-sm font-semibold transition-colors cursor-pointer group text-left",
-                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
-                isScenarioLabOpen
-                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-              )}
-            >
-              <FlaskConical className="h-5 w-5 shrink-0 text-purple-500 dark:text-purple-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              {!effectiveCollapsed && <span>Scenario Lab</span>}
-            </button>
-
-            {/* 9. Unified 3D Voice Studio */}
-            <button
-              type="button"
-              onClick={() => setIsVoiceStudioOpen(true)}
-              title="Voice Studio — 3D Particle Orb & Vernacular Speech Duplex"
-              className={cn(
-                "w-full flex items-center rounded-xl text-sm font-semibold transition-colors cursor-pointer group text-left",
-                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
-                isVoiceStudioOpen
-                  ? "bg-zinc-200/90 dark:bg-white/[0.08] text-zinc-950 dark:text-white font-bold border border-zinc-300 dark:border-white/[0.12] shadow-xs"
-                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
-              )}
-            >
-              <Mic className="h-5 w-5 shrink-0 text-emerald-500 dark:text-emerald-400 group-hover:text-zinc-900 dark:group-hover:text-white transition-colors" />
-              {!effectiveCollapsed && <span>Voice Studio</span>}
-            </button>
           </div>
 
-          {/* ── Projects Section (with Create Project Modal) ── */}
+          {/* â”€â”€ Projects Section (with Create Project Modal) â”€â”€ */}
           {!effectiveCollapsed && (
             <div className="space-y-2 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
               <button
@@ -414,7 +375,7 @@ export default function IconNavSidebar() {
             </div>
           )}
 
-          {/* ── Sessions Section ── */}
+          {/* â”€â”€ Sessions Section â”€â”€ */}
           {!effectiveCollapsed && (
             <div className="space-y-1.5 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
               <button
@@ -549,7 +510,7 @@ export default function IconNavSidebar() {
             </div>
           )}
 
-          {/* ── Community & Settings ── */}
+          {/* â”€â”€ Community & Settings â”€â”€ */}
           <div className="space-y-1 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
             <Link
               href="/community"
@@ -583,7 +544,7 @@ export default function IconNavSidebar() {
           </div>
         </div>
 
-        {/* ── Credit Wallet & Micro-Pass ── */}
+        {/* â”€â”€ Credit Wallet & Micro-Pass â”€â”€ */}
         {!isCollapsed ? (
           <div className="mx-3.5 mb-2.5 p-3 rounded-xl bg-zinc-100/90 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5">
@@ -612,7 +573,7 @@ export default function IconNavSidebar() {
           </Link>
         )}
 
-        {/* ── Bottom Profile Section ── */}
+        {/* â”€â”€ Bottom Profile Section â”€â”€ */}
         <div className={cn("border-t border-zinc-300 dark:border-white/[0.08] mt-auto", isCollapsed ? "p-2 flex flex-col items-center gap-2" : "p-3.5 space-y-2.5")}>
           <div className={cn("flex items-center w-full", effectiveCollapsed ? "justify-center" : "justify-between")}>
             <Link href="/account" title={user?.name || "Account Profile"} className={cn("flex items-center min-w-0 no-underline group cursor-pointer", effectiveCollapsed ? "justify-center" : "gap-3 flex-1")}>
@@ -661,7 +622,7 @@ export default function IconNavSidebar() {
         </div>
       </aside>
 
-      {/* ── Create Project Modal ── */}
+      {/* â”€â”€ Create Project Modal â”€â”€ */}
       {isCreateProjectOpen && (
         <CreateProjectModal
           onClose={() => setIsCreateProjectOpen(false)}
@@ -678,22 +639,7 @@ export default function IconNavSidebar() {
           }}
         />
       )}
-
-      {/* ── ScenarioLab Modal ── */}
-      {isScenarioLabOpen && (
-        <ScenarioLabModal
-          isOpen={isScenarioLabOpen}
-          onClose={() => setIsScenarioLabOpen(false)}
-        />
-      )}
-
-      {/* ── Unified 3D Voice Studio Modal ── */}
-      {isVoiceStudioOpen && (
-        <UnifiedVoiceStudioModal
-          isOpen={isVoiceStudioOpen}
-          onClose={() => setIsVoiceStudioOpen(false)}
-        />
-      )}
+      {/* Voice Studio: access via Call button in chat */}
     </>
   );
 }

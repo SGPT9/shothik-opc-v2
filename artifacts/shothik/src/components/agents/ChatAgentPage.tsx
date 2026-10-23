@@ -1100,6 +1100,24 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </button>
             )}
 
+            {/* 📞 Call / Voice Studio Button — opens the 3D Voice Orb + background Scenario Lab */}
+            <button
+              type="button"
+              onClick={() => setIsVoiceOrbOpen(true)}
+              id="chat-call-button"
+              className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
+                isVoiceOrbOpen
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  : "bg-secondary/40 hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 border-border/30 hover:border-emerald-500/30"
+              )}
+              title="Start Voice Session (Voice Studio + Scenario Analytics)"
+              aria-label="Start Voice Session"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Call</span>
+            </button>
+
             {/* New Thread (+) */}
             <button
               type="button"
