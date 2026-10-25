@@ -110,6 +110,7 @@ import { researchPaperRouter } from "./research-paper.js";
 import { sagaRouter } from "./saga";
 import { capabilityLeashRouter } from "./capability-leash";
 import { actorSupervisorRouter } from "./actor-supervisor";
+import { speculativeRouter } from "./speculative-router";
 
 const router: IRouter = Router();
 
@@ -224,6 +225,7 @@ router.use(crdtRouter);
 router.use(sagaRouter);
 router.use(capabilityLeashRouter);
 router.use(actorSupervisorRouter);
+router.use(speculativeRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.
