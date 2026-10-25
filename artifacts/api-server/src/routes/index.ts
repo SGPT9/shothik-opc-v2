@@ -107,6 +107,7 @@ import { aquacultureRouter } from "./aquaculture.js";
 import { teaAuctionRouter } from "./tea-auction.js";
 import { juteRouter } from "./jute.js";
 import { researchPaperRouter } from "./research-paper.js";
+import { sagaRouter } from "./saga";
 
 const router: IRouter = Router();
 
@@ -218,6 +219,7 @@ router.use(jobsRouter);
 router.use(writingToolsRouter);
 router.use(aiToolsExtendedRouter);
 router.use(crdtRouter);
+router.use(sagaRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.
