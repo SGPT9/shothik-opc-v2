@@ -39,8 +39,42 @@ browserTakeoverRouter.post(["/browser/sessions/:id/action", "/v1/browser/session
 
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-    const result = globalBrowserEngine.executeAction(id, parsed.data);
+    const actor = (req.body.actor as "agent" | "human") || "agent";
+    const result = globalBrowserEngine.executeAction(id, parsed.data, actor);
     res.json({ ...result, action: parsed.data });
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+browserTakeoverRouter.post(["/browser/sessions/:id/help-request", "/v1/browser/sessions/:id/help-request", "/api/v1/browser/sessions/:id/help-request"], (req, res) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const reason = (req.body.reason as string) || "Automated agent encountered an OTP / verification challenge.";
+    const result = globalBrowserEngine.requestHelp(id, reason);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+browserTakeoverRouter.post(["/browser/sessions/:id/take-wheel", "/v1/browser/sessions/:id/take-wheel", "/api/v1/browser/sessions/:id/take-wheel"], (req, res) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const actor = (req.body.actor as string) || "Merchant";
+    const result = globalBrowserEngine.takeWheel(id, actor);
+    res.json(result);
+  } catch (err: any) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+browserTakeoverRouter.post(["/browser/sessions/:id/release-control", "/v1/browser/sessions/:id/release-control", "/api/v1/browser/sessions/:id/release-control"], (req, res) => {
+  try {
+    const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const actor = (req.body.actor as string) || "Merchant";
+    const result = globalBrowserEngine.releaseControl(id, actor);
+    res.json(result);
   } catch (err: any) {
     res.status(400).json({ success: false, error: err.message });
   }
