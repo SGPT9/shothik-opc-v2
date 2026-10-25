@@ -2620,6 +2620,13 @@ export default function TwinPage() {
                     <strong className="text-amber-500">2,410 tok (৳0.04)</strong>
                   </div>
                 </div>
+                <div className="flex items-center justify-between pt-1.5 border-t border-indigo-500/10 text-[10px] text-zinc-500">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-indigo-400">🛡️ Fatigue Circuit Breaker:</span>
+                    <span className="text-emerald-500 font-semibold">10-Fail Threshold Armed (≥15m Floor)</span>
+                  </div>
+                  <span className="text-zinc-400 font-mono">Silent Backlog Drain Active</span>
+                </div>
               </div>
 
               {/* 5 Swimlane Tracks */}
