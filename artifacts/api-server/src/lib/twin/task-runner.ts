@@ -1,4 +1,5 @@
 import { logger } from "../logger";
+import { twinMemoryV2 } from "./twin-memory-v2";
 
 export interface TaskExecutionRequest {
   companySlug: string;
@@ -20,6 +21,12 @@ export interface TaskExecutionResult {
   executionSteps: string[];
   standupLog: string;
   creditsDeducted: number;
+  receipt?: {
+    commitHash: string;
+    completedAt: string;
+    durationMs: number;
+    summary: string;
+  };
   outputArtifacts?: Array<{
     type: "code" | "document" | "telemetry" | "config";
     path: string;
@@ -57,6 +64,26 @@ export async function executeWayfinderTask(req: TaskExecutionRequest): Promise<T
   }
 
   const durationMs = Date.now() - startTime + Math.floor(Math.random() * 80) + 120;
+  const completedAt = new Date().toISOString();
+
+  // Record episodic task memo for zero-LLM BM25 retrieval
+  try {
+    twinMemoryV2.recordTaskMemo({
+      taskId: req.taskId,
+      companySlug: req.companySlug,
+      userId: "founder",
+      title: req.title,
+      scopePath: `${category}/${req.taskId}`,
+      summary: standupLog,
+      executionSteps,
+      outputArtifacts: [
+        { type: "code", path: `src/integrations/${req.taskId}.ts` },
+      ],
+      qualityScore: 1.0,
+    });
+  } catch (err) {
+    logger.warn({ err, taskId: req.taskId }, "Failed to record task memo in memory store");
+  }
 
   return {
     taskId: req.taskId,
@@ -67,12 +94,18 @@ export async function executeWayfinderTask(req: TaskExecutionRequest): Promise<T
     executionSteps,
     standupLog,
     creditsDeducted: req.costCredits || 1,
+    receipt: {
+      commitHash,
+      completedAt,
+      durationMs,
+      summary: standupLog,
+    },
     outputArtifacts: [
       {
         type: "code",
         path: `src/integrations/${req.taskId}.ts`,
         content: `// Auto-generated implementation by Shothik Autonomous Swarm\n// Task: ${req.title}\n// Hash: ${commitHash}\nexport const isReady = true;\n`,
-      }
-    ]
+      },
+    ],
   };
 }

@@ -3,10 +3,17 @@ export interface CockpitTask {
   title: string;
   description: string;
   tags: string[];
-  status: "todo" | "completed" | "in_progress" | "done";
+  status: "todo" | "completed" | "in_progress" | "done" | "blocked";
   category?: "Code" | "Design" | "Marketing" | "Research" | "Finance" | "Ops";
   urgency?: "P0" | "P1" | "P2";
   costCredits?: number;
+  dependsOn?: string[];
+  resultReceipt?: {
+    commitHash: string;
+    completedAt: string;
+    durationMs: number;
+    summary: string;
+  };
 }
 
 export interface CockpitDoc {
@@ -82,6 +89,7 @@ export function generateDynamicTasks(companyName: string, industry: string, busi
         category: "Ops",
         urgency: "P0",
         costCredits: 1,
+        dependsOn: [],
       },
       {
         id: "task-2",
@@ -92,26 +100,29 @@ export function generateDynamicTasks(companyName: string, industry: string, busi
         category: "Finance",
         urgency: "P0",
         costCredits: 1,
+        dependsOn: [],
       },
       {
         id: "task-3",
         title: `Deploy Banglish NLP automated customer support bot on WhatsApp`,
         description: `Deploy autonomous conversational AI supporting natural phonetic Bengali and English mixed queries with real-time inventory queries.`,
         tags: ["AI", "2 CREDITS"],
-        status: "todo",
+        status: "blocked",
         category: "Code",
         urgency: "P1",
         costCredits: 2,
+        dependsOn: ["task-2"],
       },
       {
         id: "task-4",
         title: `Launch automated Meta Ads copy & audience retargeting engine`,
         description: `Set up automated A/B product visual generation and high-conversion Bengali copywriting tailored to Dhaka Metro and divisional hubs.`,
         tags: ["GROWTH", "1 CREDIT"],
-        status: "todo",
+        status: "blocked",
         category: "Marketing",
         urgency: "P1",
         costCredits: 1,
+        dependsOn: ["task-1", "task-2"],
       },
       {
         id: "task-5",
@@ -122,7 +133,8 @@ export function generateDynamicTasks(companyName: string, industry: string, busi
         category: "Research",
         urgency: "P2",
         costCredits: 1,
-      }
+        dependsOn: [],
+      },
     ];
   }
 
@@ -424,7 +436,23 @@ export function getActiveCompanyProfile(requestedSlugOrName?: string): CompanyPr
 
   if (activeSlug) {
     const found = list.find((c) => c.slug === slugify(activeSlug) || c.name.toLowerCase() === activeSlug.toLowerCase());
-    if (found) return found;
+    if (found) {
+      found.tasks = found.tasks.map((t) => {
+        if (!t.dependsOn) {
+          if (t.id === "task-3") {
+            const isDone = t.status === "completed" || t.status === "done";
+            return { ...t, dependsOn: ["task-2"], status: isDone ? "completed" : "blocked" };
+          }
+          if (t.id === "task-4") {
+            const isDone = t.status === "completed" || t.status === "done";
+            return { ...t, dependsOn: ["task-1", "task-2"], status: isDone ? "completed" : "blocked" };
+          }
+          return { ...t, dependsOn: [] };
+        }
+        return t;
+      });
+      return found;
+    }
 
     // If slug requested but not found in list, dynamically instantiate it
     const newComp = createCompanyProfile(activeSlug);
@@ -486,7 +514,18 @@ export async function executeWayfinderTaskOnBackend(params: {
   category?: string;
   urgency?: string;
   costCredits?: number;
-}): Promise<{ success: boolean; standupLog?: string; commitHash?: string }> {
+}): Promise<{
+  success: boolean;
+  standupLog?: string;
+  commitHash?: string;
+  receipt?: {
+    commitHash: string;
+    completedAt: string;
+    durationMs: number;
+    summary: string;
+  };
+  error?: string;
+}> {
   try {
     const res = await fetch("/api/v1/twin/tasks/execute", {
       method: "POST",
@@ -499,10 +538,12 @@ export async function executeWayfinderTaskOnBackend(params: {
         success: true,
         standupLog: data.data?.standupLog,
         commitHash: data.data?.commitHash,
+        receipt: data.data?.receipt,
       };
     }
-    return { success: false };
-  } catch {
-    return { success: false };
+    const errData = await res.json().catch(() => ({}));
+    return { success: false, error: errData.error || "Task execution failed" };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Network error" };
   }
 }
