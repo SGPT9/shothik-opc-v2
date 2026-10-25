@@ -3,6 +3,8 @@
  * Based on block/buzz append-only immutable event log architecture.
  */
 
+export type InitiatorKind = "person" | "routine" | "responsibility" | "handoff" | "meeting";
+
 export interface AuditLogEvent {
   id: string;
   sessionId: string;
@@ -12,6 +14,7 @@ export interface AuditLogEvent {
   payload: Record<string, any>;
   timestamp: number;
   hash: string;
+  initiatorKind?: InitiatorKind;
 }
 
 export interface AuditTrailSummary {
@@ -19,6 +22,7 @@ export interface AuditTrailSummary {
   totalEvents: number;
   humanEvents: number;
   agentEvents: number;
+  nobodyWatchingEvents: number;
   events: AuditLogEvent[];
 }
 
@@ -30,10 +34,11 @@ export function createAuditLogEvent(
   actorType: "human" | "agent",
   actorId: string,
   action: string,
-  payload: Record<string, any> = {}
+  payload: Record<string, any> = {},
+  initiatorKind: InitiatorKind = actorType === "human" ? "person" : "routine"
 ): AuditLogEvent {
   const timestamp = Date.now();
-  const rawData = `${sessionId}:${actorType}:${actorId}:${action}:${timestamp}:${JSON.stringify(payload)}`;
+  const rawData = `${sessionId}:${actorType}:${actorId}:${action}:${initiatorKind}:${timestamp}:${JSON.stringify(payload)}`;
   
   // Simple deterministic hash simulation for provenance tracking
   let hashVal = 0;
@@ -52,7 +57,15 @@ export function createAuditLogEvent(
     payload,
     timestamp,
     hash,
+    initiatorKind,
   };
+}
+
+/**
+ * Filters audit events where nobody was watching (autonomous agent actions).
+ */
+export function filterNobodyWatching(events: AuditLogEvent[]): AuditLogEvent[] {
+  return events.filter((e) => (e.initiatorKind || "person") !== "person");
 }
 
 /**
@@ -67,12 +80,14 @@ export async function getSessionAuditTrail(sessionId: string): Promise<AuditTrai
 
   const humanEvents = events.filter(e => e.actorType === "human").length;
   const agentEvents = events.filter(e => e.actorType === "agent").length;
+  const nobodyWatchingEvents = events.filter(e => (e.initiatorKind || "person") !== "person").length;
 
   return {
     sessionId,
     totalEvents: events.length,
     humanEvents,
     agentEvents,
+    nobodyWatchingEvents,
     events,
   };
 }

@@ -2,23 +2,27 @@ import { Router, type Request, type Response } from "express";
 
 const router = Router();
 
+export type TelemetryInitiatorKind = "person" | "routine" | "responsibility" | "handoff" | "meeting";
+
 interface TelemetryEvent {
   event: string;
   timestamp: string;
   properties?: Record<string, unknown>;
   userId?: string;
   sessionId?: string;
+  initiatorKind?: TelemetryInitiatorKind;
+  initiatorId?: string;
 }
 
 const memoryTelemetryStore: TelemetryEvent[] = [];
 
 /**
  * POST /api/telemetry
- * Ingests telemetry metrics, trace spans, and TTFT events
+ * Ingests telemetry metrics, trace spans, and TTFT events with initiator attribution
  */
 router.post("/", async (req: Request, res: Response) => {
   try {
-    const { event, properties, userId, sessionId } = req.body;
+    const { event, properties, userId, sessionId, initiatorKind, initiatorId } = req.body;
 
     const record: TelemetryEvent = {
       event: event || "generic_metric",
@@ -26,6 +30,8 @@ router.post("/", async (req: Request, res: Response) => {
       properties: properties || {},
       userId,
       sessionId,
+      initiatorKind: initiatorKind || "person",
+      initiatorId,
     };
 
     memoryTelemetryStore.push(record);
@@ -36,6 +42,7 @@ router.post("/", async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       recordedAt: record.timestamp,
+      initiatorKind: record.initiatorKind,
     });
   } catch (err: any) {
     return res.status(500).json({
@@ -48,13 +55,26 @@ router.post("/", async (req: Request, res: Response) => {
 
 /**
  * GET /api/telemetry
- * Retrieves recent telemetry spans
+ * Retrieves recent telemetry spans, optionally filtered by ?nobodyWatching=true
  */
-router.get("/", async (_req: Request, res: Response) => {
+router.get("/", async (req: Request, res: Response) => {
+  const nobodyWatching = req.query.nobodyWatching === "true" || req.query.nobodyWatching === "1";
+  const initiatorKind = req.query.initiatorKind as string | undefined;
+
+  let filtered = memoryTelemetryStore;
+  if (nobodyWatching) {
+    filtered = filtered.filter((e) => (e.initiatorKind || "person") !== "person");
+  }
+  if (initiatorKind) {
+    filtered = filtered.filter((e) => (e.initiatorKind || "person") === initiatorKind);
+  }
+
   return res.status(200).json({
     success: true,
-    count: memoryTelemetryStore.length,
-    events: memoryTelemetryStore.slice(-50),
+    count: filtered.length,
+    nobodyWatching,
+    initiatorKind: initiatorKind || null,
+    events: filtered.slice(-50),
   });
 });
 

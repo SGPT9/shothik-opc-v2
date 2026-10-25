@@ -77,4 +77,62 @@ describe("AuditLedgerEngine (Slice 34: NBR Statutory Audit Dossier & Double-Entr
     expect(dossier.financialSummary.grossRevenueBdt).toBeGreaterThan(0);
     expect(dossier.verificationSeal.signature).toHaveLength(64);
   });
+
+  it("attributes initiator_kind and filters journals using the Nobody Watching audit view", () => {
+    // 1. Post human-initiated transaction
+    AuditLedgerEngine.postJournalEntry({
+      transactionRef: "INV-FOUNDER-01",
+      transactionType: "sale_bkash",
+      memo: "Founder manual transaction entry",
+      initiatorKind: "person",
+      initiatorId: "usr_founder_01",
+      lines: [
+        { accountCode: "1020", debitBdt: 1000, creditBdt: 0 },
+        { accountCode: "4010", debitBdt: 0, creditBdt: 1000 },
+      ],
+    });
+
+    // 2. Post autonomous scheduled routine transaction
+    AuditLedgerEngine.postJournalEntry({
+      transactionRef: "ROUTINE-COURIER-RECON",
+      transactionType: "courier_payout",
+      memo: "Automated 15-minute Steadfast courier realization routine",
+      initiatorKind: "routine",
+      initiatorId: "twin_logistics_routine_01",
+      lines: [
+        { accountCode: "1030", debitBdt: 2500, creditBdt: 0 },
+        { accountCode: "4010", debitBdt: 0, creditBdt: 2500 },
+      ],
+    });
+
+    // 3. Post autonomous standing responsibility transaction
+    AuditLedgerEngine.postJournalEntry({
+      transactionRef: "RESP-VAT-SETTLE",
+      transactionType: "vat_mushak_6_3",
+      memo: "Standing VatAuditTwin statutory tax accrual",
+      initiatorKind: "responsibility",
+      initiatorId: "twin_finance_vat_01",
+      lines: [
+        { accountCode: "2010", debitBdt: 375, creditBdt: 0 },
+        { accountCode: "1010", debitBdt: 0, creditBdt: 375 },
+      ],
+    });
+
+    // Total journals = 3
+    const allJournals = AuditLedgerEngine.listJournals();
+    expect(allJournals.length).toBe(3);
+
+    // Nobody Watching filter: only routine + responsibility (2 entries, excludes person)
+    const autonomousJournals = AuditLedgerEngine.listJournals({ nobodyWatching: true });
+    expect(autonomousJournals.length).toBe(2);
+    expect(autonomousJournals.every((j) => j.initiatorKind !== "person")).toBe(true);
+    expect(autonomousJournals.map((j) => j.initiatorKind)).toContain("routine");
+    expect(autonomousJournals.map((j) => j.initiatorKind)).toContain("responsibility");
+
+    // Exact initiatorKind filter: responsibility only (1 entry)
+    const respJournals = AuditLedgerEngine.listJournals({ initiatorKind: "responsibility" });
+    expect(respJournals.length).toBe(1);
+    expect(respJournals[0].initiatorKind).toBe("responsibility");
+    expect(respJournals[0].transactionRef).toBe("RESP-VAT-SETTLE");
+  });
 });

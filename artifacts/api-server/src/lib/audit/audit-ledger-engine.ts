@@ -24,6 +24,8 @@ export interface JournalEntryLine {
   description: string;
 }
 
+export type InitiatorKind = "person" | "routine" | "responsibility" | "handoff" | "meeting";
+
 export interface JournalEntry {
   entryId: string;
   transactionRef: string;
@@ -42,6 +44,8 @@ export interface JournalEntry {
   totalCreditBdt: number;
   isBalanced: boolean;
   auditHash: string;
+  initiatorKind?: InitiatorKind;
+  initiatorId?: string;
 }
 
 export interface NbrAuditDossier {
@@ -126,8 +130,29 @@ export class AuditLedgerEngine {
       totalCreditBdt: 10000,
       isBalanced: true,
       auditHash: "8f4a1e9b2c3d5e7f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
+      initiatorKind: "person",
+      initiatorId: "usr_founder_01",
     };
     this.journals.set(entry1.entryId, entry1);
+
+    const entry2: JournalEntry = {
+      entryId: "JRN_2026_002",
+      transactionRef: "AUTO-VAT-SETTLE-04",
+      transactionType: "vat_mushak_6_3",
+      postedAt: new Date(Date.now() - 43200000).toISOString(),
+      memo: "Autonomous VatAuditTwin standing reconciliation (Nobody Watching)",
+      lines: [
+        { accountCode: "2010", accountName: "NBR Statutory Mushak-6.3 VAT Output Payable", debitBdt: 1304, creditBdt: 0, description: "Monthly statutory settlement" },
+        { accountCode: "1010", accountName: "Cash at Bank (BRAC / City Bank)", debitBdt: 0, creditBdt: 1304, description: "Direct treasury tax transfer" },
+      ],
+      totalDebitBdt: 1304,
+      totalCreditBdt: 1304,
+      isBalanced: true,
+      auditHash: "3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b",
+      initiatorKind: "responsibility",
+      initiatorId: "twin_finance_vat_01",
+    };
+    this.journals.set(entry2.entryId, entry2);
   }
 
   /**
@@ -137,6 +162,8 @@ export class AuditLedgerEngine {
     transactionRef: string;
     transactionType: JournalEntry["transactionType"];
     memo: string;
+    initiatorKind?: InitiatorKind;
+    initiatorId?: string;
     lines: {
       accountCode: string;
       debitBdt: number;
@@ -200,6 +227,8 @@ export class AuditLedgerEngine {
       totalCreditBdt: Math.round(totalCredit * 100) / 100,
       isBalanced: true,
       auditHash,
+      initiatorKind: params.initiatorKind || "person",
+      initiatorId: params.initiatorId,
     };
 
     this.journals.set(entry.entryId, entry);
@@ -314,10 +343,17 @@ export class AuditLedgerEngine {
   }
 
   /**
-   * List all Journal Entries
+   * List all Journal Entries with optional Nobody Watching and initiatorKind filtering
    */
-  static listJournals(): JournalEntry[] {
-    return Array.from(this.journals.values()).reverse();
+  static listJournals(filter?: { nobodyWatching?: boolean; initiatorKind?: InitiatorKind }): JournalEntry[] {
+    let list = Array.from(this.journals.values()).reverse();
+    if (filter?.nobodyWatching) {
+      list = list.filter((j) => (j.initiatorKind || "person") !== "person");
+    }
+    if (filter?.initiatorKind) {
+      list = list.filter((j) => (j.initiatorKind || "person") === filter.initiatorKind);
+    }
+    return list;
   }
 
   /**
