@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
-import { X, Sparkles, CheckCircle2, Play, Loader2 } from "lucide-react";
+import { X, Sparkles, CheckCircle2, Play, Loader2, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+
+export interface StandingResponsibility {
+  id: string;
+  twinId: string;
+  name: string;
+  cadence: string;
+  description: string;
+  enabled: boolean;
+  lastExecutedAt?: string;
+  lastStatus: "healthy" | "failing" | "paused";
+  consecutiveFailures: number;
+}
 
 export interface SpecializedTwinCard {
   id: string;
@@ -14,6 +26,7 @@ export interface SpecializedTwinCard {
   tasksCompleted: number;
   lastAction: string;
   capabilities: string[];
+  standingResponsibilities?: StandingResponsibility[];
 }
 
 interface SpecializedTwinsModalProps {
@@ -36,6 +49,33 @@ export function SpecializedTwinsModal({
   const [dispatchingId, setDispatchingId] = useState<string | null>(null);
   const [selectedTwin, setSelectedTwin] = useState<SpecializedTwinCard | null>(null);
   const [customDirective, setCustomDirective] = useState("");
+
+  const handleToggleResponsibility = async (respId: string) => {
+    try {
+      const res = await fetch(`/api/v1/twin/responsibilities/${respId}/toggle`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        setTwins((prev) =>
+          prev.map((t) => ({
+            ...t,
+            standingResponsibilities: t.standingResponsibilities?.map((r) =>
+              r.id === respId ? data.data : r
+            ),
+          }))
+        );
+      }
+    } catch {
+      // offline fallback
+      setTwins((prev) =>
+        prev.map((t) => ({
+          ...t,
+          standingResponsibilities: t.standingResponsibilities?.map((r) =>
+            r.id === respId ? { ...r, enabled: !r.enabled } : r
+          ),
+        }))
+      );
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -175,6 +215,52 @@ export function SpecializedTwinsModal({
                       </span>
                     ))}
                   </div>
+
+                  {/* Standing Responsibilities Section */}
+                  {twin.standingResponsibilities && twin.standingResponsibilities.length > 0 && (
+                    <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60 space-y-1.5">
+                      <div className="flex items-center justify-between text-[9px] font-mono font-bold text-zinc-500 uppercase tracking-wider">
+                        <span className="flex items-center gap-1">
+                          <ShieldCheck className="w-3 h-3 text-blue-500" />
+                          Standing Responsibilities
+                        </span>
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                          {twin.standingResponsibilities.filter((r) => r.enabled).length} ACTIVE
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {twin.standingResponsibilities.map((resp) => (
+                          <div
+                            key={resp.id}
+                            className="p-1.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-[10px] flex items-center justify-between gap-1.5"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1">
+                                <span className="px-1 py-0.2 rounded text-[8px] font-mono bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                                  {resp.cadence}
+                                </span>
+                                <span className="font-medium text-zinc-800 dark:text-zinc-200 truncate" title={resp.name}>
+                                  {resp.name}
+                                </span>
+                              </div>
+                              <p className="text-[9px] text-zinc-500 truncate mt-0.5">{resp.description}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleToggleResponsibility(resp.id)}
+                              className={`px-1.5 py-0.5 text-[9px] font-mono font-bold uppercase transition rounded cursor-pointer ${
+                                resp.enabled
+                                  ? "bg-emerald-500/15 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/25"
+                                  : "bg-zinc-200 dark:bg-zinc-800 text-zinc-400 hover:text-zinc-600"
+                              }`}
+                            >
+                              {resp.enabled ? "ACTIVE" : "PAUSED"}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800/80 flex items-center justify-between">

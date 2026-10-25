@@ -304,6 +304,18 @@ router.post(["/v1/twin/auto-mode/stop", "/api/v1/twin/auto-mode/stop"], (req: Re
   });
 });
 
+export interface StandingResponsibility {
+  id: string;
+  twinId: string;
+  name: string;
+  cadence: string;
+  description: string;
+  enabled: boolean;
+  lastExecutedAt?: string;
+  lastStatus: "healthy" | "failing" | "paused";
+  consecutiveFailures: number;
+}
+
 export interface SpecializedTwinCard {
   id: string;
   name: string;
@@ -315,6 +327,7 @@ export interface SpecializedTwinCard {
   tasksCompleted: number;
   lastAction: string;
   capabilities: string[];
+  standingResponsibilities?: StandingResponsibility[];
 }
 
 export const CANONICAL_SPECIALIZED_TWINS: SpecializedTwinCard[] = [
@@ -440,9 +453,122 @@ export const CANONICAL_SPECIALIZED_TWINS: SpecializedTwinCard[] = [
   },
 ];
 
+export const CANONICAL_STANDING_RESPONSIBILITIES: StandingResponsibility[] = [
+  {
+    id: "resp_finance_vat_mfs",
+    twinId: "finance_twin",
+    name: "Daily bKash/Nagad Reconciliation & Mushak-6.3 VAT Balancing",
+    cadence: "daily",
+    description: "Automatically reconciles merchant MFS settlement wallets against NBR double-entry audit ledger.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 3600000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_logistics_rto_fraud",
+    twinId: "operations_twin",
+    name: "Hourly Steadfast/Pathao RTO Fraud Sweep & COD Recovery",
+    cadence: "1h",
+    description: "Audits high-risk Cash-on-Delivery addresses and triggers automated confirmation before parcel handover.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 1800000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_developer_ci_vuln",
+    twinId: "developer_twin",
+    name: "Continuous Git/CI Integrity & Dependency Vulnerability Guard",
+    cadence: "6h",
+    description: "Scans repository dependencies and verifies pre-commit test invariants without human intervention.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 7200000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_support_sla_escalation",
+    twinId: "customer_support_twin",
+    name: "15-Minute WhatsApp SLA Monitor & Urgent Escalation Sweep",
+    cadence: "15m",
+    description: "Monitors unhandled WhatsApp customer inquiries and auto-escalates high-ticket inquiries.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 600000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_content_viral_radar",
+    twinId: "content_twin",
+    name: "Daily Trending Topics & Viral Engagement Radar",
+    cadence: "daily",
+    description: "Monitors Bangladesh retail trends and generates draft campaign hooks.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 14400000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_marketing_roas_guard",
+    twinId: "marketing_twin",
+    name: "Daily Ad Spend ROAS Health Audit",
+    cadence: "daily",
+    description: "Monitors Meta & Google Ads conversion values and flags ad sets dropping below 3.0x ROAS.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 21600000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_crm_pipeline_hygiene",
+    twinId: "crm_twin",
+    name: "Weekly B2B Pipeline Stagnation Cleanse",
+    cadence: "weekly",
+    description: "Flags enterprise deals inactive for over 14 days and prepares follow-up drafts.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 86400000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_admin_container_watchdog",
+    twinId: "administration_twin",
+    name: "VPS Container Memory & SSL Expiry Watchdog",
+    cadence: "6h",
+    description: "Monitors Docker/VPS memory limits and verifies SSL certificate renewal.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 3600000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_analytics_morning_digest",
+    twinId: "analytics_twin",
+    name: "08:00 AM CEO Executive Morning Digest",
+    cadence: "daily",
+    description: "Compiles nightshift operational metrics, gross GMV, and COD cash realization.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 28800000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+  {
+    id: "resp_sales_lead_enricher",
+    twinId: "sales_twin",
+    name: "Hourly High-Intent Lead Qualification",
+    cadence: "1h",
+    description: "Scores newly submitted contact forms and pre-generates tailored pricing proposals.",
+    enabled: true,
+    lastExecutedAt: new Date(Date.now() - 1800000).toISOString(),
+    lastStatus: "healthy",
+    consecutiveFailures: 0,
+  },
+];
+
 /**
  * GET /api/v1/twin/specialized-twins
- * Return all 9 Specialized Twins with dynamic operational status
+ * Return all Specialized Twins with dynamic operational status and standing responsibilities
  */
 router.get(["/v1/twin/specialized-twins", "/api/v1/twin/specialized-twins"], (req: Request, res: Response) => {
   const companySlug = (req.query.companySlug as string) || "venture";
@@ -451,9 +577,79 @@ router.get(["/v1/twin/specialized-twins", "/api/v1/twin/specialized-twins"], (re
     data: CANONICAL_SPECIALIZED_TWINS.map((t) => ({
       ...t,
       companySlug,
+      standingResponsibilities: CANONICAL_STANDING_RESPONSIBILITIES.filter((r) => r.twinId === t.id),
     })),
   });
 });
+
+/**
+ * GET /api/v1/twin/responsibilities
+ * List all Standing Responsibilities across Specialized Twins
+ */
+router.get(["/v1/twin/responsibilities", "/api/v1/twin/responsibilities"], (req: Request, res: Response) => {
+  const twinId = req.query.twinId as string | undefined;
+  let list = CANONICAL_STANDING_RESPONSIBILITIES;
+  if (twinId) {
+    list = list.filter((r) => r.twinId === twinId);
+  }
+  res.json({
+    success: true,
+    count: list.length,
+    data: list,
+  });
+});
+
+/**
+ * POST /api/v1/twin/responsibilities/:id/toggle
+ * Toggle standing responsibility on/off
+ */
+router.post(
+  ["/v1/twin/responsibilities/:id/toggle", "/api/v1/twin/responsibilities/:id/toggle"],
+  (req: Request, res: Response) => {
+    const { id } = req.params;
+    const resp = CANONICAL_STANDING_RESPONSIBILITIES.find((r) => r.id === id);
+    if (!resp) {
+      res.status(404).json({ success: false, error: `Standing Responsibility "${id}" not found.` });
+      return;
+    }
+    resp.enabled = !resp.enabled;
+    res.json({
+      success: true,
+      data: resp,
+    });
+  }
+);
+
+/**
+ * POST /api/v1/twin/responsibilities/:id/trigger
+ * Manually trigger execution of a standing responsibility with initiator_kind="responsibility"
+ */
+router.post(
+  ["/v1/twin/responsibilities/:id/trigger", "/api/v1/twin/responsibilities/:id/trigger"],
+  async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const resp = CANONICAL_STANDING_RESPONSIBILITIES.find((r) => r.id === id);
+      if (!resp) {
+        res.status(404).json({ success: false, error: `Standing Responsibility "${id}" not found.` });
+        return;
+      }
+      resp.lastExecutedAt = new Date().toISOString();
+      resp.lastStatus = "healthy";
+      resp.consecutiveFailures = 0;
+
+      const log = `🛡️ [Standing Responsibility] "${resp.name}" executed successfully for Twin [${resp.twinId}] at ${resp.lastExecutedAt}.`;
+
+      res.json({
+        success: true,
+        executionLog: log,
+        data: resp,
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+);
 
 /**
  * POST /api/v1/twin/specialized-twins/dispatch

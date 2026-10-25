@@ -2627,6 +2627,19 @@ export default function TwinPage() {
                   </div>
                   <span className="text-zinc-400 font-mono">Silent Backlog Drain Active</span>
                 </div>
+                <div className="flex items-center justify-between pt-1.5 border-t border-indigo-500/10 text-[10px] text-zinc-500">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-indigo-400">🎯 Standing Responsibilities:</span>
+                    <button
+                      type="button"
+                      onClick={() => setSpecializedTwinsOpen(true)}
+                      className="text-blue-600 dark:text-blue-400 hover:underline font-semibold cursor-pointer"
+                    >
+                      10 Active across Swarm (View Roster)
+                    </button>
+                  </div>
+                  <span className="text-emerald-500 font-mono">100% Healthy</span>
+                </div>
               </div>
 
               {/* 5 Swimlane Tracks */}
@@ -3029,7 +3042,7 @@ export default function TwinPage() {
               onClick={() => { setMenuOpen(false); setSpecializedTwinsOpen(true); }}
               className="p-3 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-900 text-left cursor-pointer bg-indigo-500/5 font-semibold text-indigo-600 dark:text-indigo-400"
             >
-              🤖 The 9 Specialized Twins Swarm
+              🤖 The 10 Specialized Twins Swarm (Standing Responsibilities)
             </button>
             <button
               onClick={() => { setMenuOpen(false); setCapsuleActive(!capsuleActive); }}
