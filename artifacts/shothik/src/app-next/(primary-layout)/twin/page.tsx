@@ -2613,7 +2613,7 @@ export default function TwinPage() {
                   </div>
                   <div>
                     <span className="block text-[10px] text-zinc-500 uppercase">Memory Footprint</span>
-                    <strong className="text-zinc-900 dark:text-zinc-200">34.2MB / &lt;88MB</strong>
+                    <strong className="text-zinc-900 dark:text-zinc-200">34.2MB / 256MB (6GB Tier)</strong>
                   </div>
                   <div>
                     <span className="block text-[10px] text-zinc-500 uppercase">Token Burn Rate</span>

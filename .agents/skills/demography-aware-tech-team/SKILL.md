@@ -1,21 +1,22 @@
 ---
 name: demography-aware-tech-team
-description: Autonomous multi-agent software engineering team specialized in building, optimizing, and deploying web apps tailored for South Asian & Emerging Market demographics (bKash/Nagad payments, Banglish NLP, Steadfast couriers, 2GB RAM device optimization).
+description: Autonomous multi-agent software engineering team specialized in building, optimizing, and deploying web apps tailored for South Asian & Emerging Market demographics (bKash/Nagad payments, Banglish NLP, Steadfast couriers, 6GB RAM smartphone optimization).
 globs: "*.ts, *.tsx, *.jsx, *.md"
 alwaysApply: false
 ---
 
 # 🇧🇩 Demography-Aware Autonomous Tech Team Skill
 
-An autonomous agent skill that configures a specialized engineering team (Frontend Architect, MFS Payment Engineer, Logistics Integration Specialist, Low-RAM Performance Auditor) to build software optimized for South Asian and Emerging Market demographics.
+An autonomous agent skill that configures a specialized engineering team (Frontend Architect, MFS Payment Engineer, Logistics Integration Specialist, Hardware Performance Auditor) to build software optimized for South Asian and Emerging Market demographics.
 
 ---
 
 ## 🛠️ Core Engineering Directives
 
-### 1. Mobile-First & Low-RAM Hardware Optimization
-- **Hardware Target**: Low-spec 2GB RAM Android smartphones on 3G/4G cellular networks.
-- **CSS Engine**: Enforce StyleX compile-time CSS (Meta Astryx) to eliminate DOM recalculation overhead.
+### 1. Mobile-First & 6GB RAM Hardware Optimization
+- **Hardware Target**: Real-world mid-range 6GB RAM Android smartphones (MediaTek G99, Snapdragon 680/685) on 4G/5G cellular networks, with smooth degradation down to lower tiers.
+- **Client Heap Allocation**: Up to 256MB–384MB client-side JS heap for in-memory CRDT graphs, local IndexedDB transaction caches, and WASM vector indices.
+- **CSS Engine**: Compile-time zero-runtime CSS (StyleX / Vanilla CSS) to eliminate DOM recalculation overhead and sustain 60fps animations.
 - **Bundle Target**: Next.js standalone Docker containers <88MB with gzipped JS assets <120KB.
 
 ### 2. South Asian MFS Payment Integration
@@ -35,7 +36,7 @@ An autonomous agent skill that configures a specialized engineering team (Fronte
 
 ## 📋 Implementation Checklist
 
-- [ ] Verify low-RAM DOM virtualization on 2GB RAM Android devices.
+- [ ] Verify 60fps DOM virtualization and memory allocation on 6GB RAM Android smartphones.
 - [ ] Test 1-Tap bKash deep-linking URL schemes inside mobile browsers and WhatsApp.
 - [ ] Audit Banglish speech dictation transcription accuracy.
 - [ ] Confirm Steadfast / Pathao courier parcel booking API responses.

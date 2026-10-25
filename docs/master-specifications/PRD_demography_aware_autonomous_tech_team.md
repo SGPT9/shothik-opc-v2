@@ -14,7 +14,7 @@
 Most modern Web / AI frameworks (Next.js 15, Tailwind, OpenAI APIs) are engineered for Western demographics equipped with high-speed 5G broadband, high-end Apple/Intel hardware ($1,200+ laptops), and credit card payment infrastructure (Stripe).
 
 In South Asia (Bangladesh, India, Pakistan) and emerging markets:
-1. **Hardware Constraints**: Over 78% of users access applications on **2GB RAM Android smartphones** on 3G/4G cellular networks with frequent latency spikes.
+1. **Hardware Profile**: Over 85% of target users access applications on **6GB RAM Android smartphones** (Redmi Note, Realme, Samsung Galaxy A-series) on 4G/5G cellular networks, requiring responsive client-side caching and smooth 60fps rendering without excessive memory consumption.
 2. **Payment Infrastructure**: Credit cards represent <4% of transactions. Over 96% of payments occur via **Mobile Financial Services (MFS)** like bKash, Nagad, Rocket, and Cash-on-Delivery (COD).
 3. **Linguistic Reality**: Users communicate in **Banglish / Code-Mixed Speech** (*"আজকের bKash sales report দেখাও"*), which standard Western LLM prompts fail to transcribe accurately.
 4. **Logistics Bottlenecks**: F-Commerce merchants rely on local courier APIs (Steadfast, Pathao, RedX) for parcel delivery and cash collection.
@@ -40,10 +40,11 @@ The **Demography-Aware Autonomous Tech Team** is an integrated AI agent system t
 
 ## 3. Functional Specifications
 
-### 🎯 Feature 1: Mobile-First Low-RAM Performance Engine
-- **Requirement**: Zero DOM thrashing or UI freezing on 2GB RAM budget Android devices.
+### 🎯 Feature 1: Mobile-First 6GB RAM Performance Engine
+- **Requirement**: Sustained 60fps responsiveness, instant IndexedDB state hydration, and zero UI freezing on 6GB RAM Android smartphones with graceful fallback for lower memory tiers.
 - **Implementation**:
-  - StyleX compile-time CSS engine (Meta Astryx) with 0ms runtime CSS calculation.
+  - StyleX / Vanilla compile-time CSS engine with 0ms runtime recalculation overhead.
+  - Client-side WebAssembly linear memory vector buffer and IndexedDB offline cache.
   - Virtualized lists for long chat histories (`Transcript.tsx`).
   - Next.js standalone Docker container builds <88MB.
 
