@@ -124,6 +124,7 @@ import {
   ChevronUp,
   Trash2,
   Filter,
+  Lock,
   Check,
   Settings,
   Search,
@@ -861,6 +862,24 @@ export default function TwinPage() {
 
   const handleExecuteTask = async (task: CockpitTask) => {
     if (executingTaskId || task.status === "completed" || task.status === "done") return;
+
+    // Check DAG dependency constraints
+    if (task.dependsOn && task.dependsOn.length > 0) {
+      const unmet = task.dependsOn
+        .map((id) => tasks.find((t) => t.id === id))
+        .filter((t) => !t || (t.status !== "completed" && t.status !== "done"));
+
+      if (unmet.length > 0) {
+        const unmetTitles = unmet.map((u) => u?.title || "Prerequisite Task").join(", ");
+        setTerminalLogs((prev) => [
+          ...prev,
+          `> 🔒 Execution blocked: "${task.title}" requires prerequisites: [${unmetTitles}].`,
+          `> Please complete predecessor tasks first.`,
+        ]);
+        return;
+      }
+    }
+
     setExecutingTaskId(task.id);
 
     setTerminalLogs([
@@ -882,21 +901,63 @@ export default function TwinPage() {
 
     setExecutingTaskId(null);
 
-    // Mark task as completed
-    setTasks((prev) =>
-      prev.map((t) => (t.id === task.id ? { ...t, status: "completed" } : t))
-    );
+    if (!res.success) {
+      setTerminalLogs((prev) => [
+        ...prev,
+        `> ❌ Task execution halted: ${res.error || "Execution failed"}`,
+      ]);
+      return;
+    }
+
+    // Mark task as completed with commit receipt & auto-unlock downstream tasks
+    let newlyUnblockedTitles: string[] = [];
+    setTasks((prev) => {
+      const completedList = prev.map((t) =>
+        t.id === task.id
+          ? {
+              ...t,
+              status: "completed" as const,
+              resultReceipt: res.receipt,
+            }
+          : t
+      );
+
+      const unblocked = completedList.map((t) => {
+        if (t.status === "blocked" && t.dependsOn && t.dependsOn.length > 0) {
+          const allSatisfied = t.dependsOn.every((depId) => {
+            const dep = completedList.find((d) => d.id === depId);
+            return dep && (dep.status === "completed" || dep.status === "done");
+          });
+          if (allSatisfied) {
+            newlyUnblockedTitles.push(t.title);
+            return { ...t, status: "todo" as const };
+          }
+        }
+        return t;
+      });
+
+      try {
+        localStorage.setItem("shothik_twin_tasks", JSON.stringify(unblocked));
+      } catch {}
+      return unblocked;
+    });
 
     // Deduct credits
     setCredits((prev) => Math.max(0, prev - (task.costCredits || 1)));
 
     // Update terminal & standup feed
     const commitText = res.commitHash ? ` [${res.commitHash}]` : "";
-    setTerminalLogs((prev) => [
-      ...prev,
-      `> ✅ Task completed successfully${commitText}!`,
-      `> Deployed live to https://${companySlug}.shothikgpt.com`,
-    ]);
+    setTerminalLogs((prev) => {
+      const logs = [
+        ...prev,
+        `> ✅ Task completed successfully${commitText}!`,
+        `> Deployed live to https://${companySlug}.shothikgpt.com`,
+      ];
+      for (const title of newlyUnblockedTitles) {
+        logs.push(`> 🔓 DAG Dependency resolved: "${title}" is now UNBLOCKED and ready to execute.`);
+      }
+      return logs;
+    });
 
     setFeed((prev) => [
       ...prev,
@@ -1412,6 +1473,10 @@ export default function TwinPage() {
                 const isShipped = task.status === "completed" || task.status === "done";
                 const isRunning = executingTaskId === task.id;
                 const isExpanded = expandedTaskId === task.id;
+                const unmetDeps = (task.dependsOn || [])
+                  .map((depId) => tasks.find((d) => d.id === depId))
+                  .filter((d) => !d || (d.status !== "completed" && d.status !== "done"));
+                const isBlocked = !isShipped && (task.status === "blocked" || unmetDeps.length > 0);
 
                 return (
                   <div
@@ -1421,6 +1486,8 @@ export default function TwinPage() {
                         ? "border-emerald-500/40 bg-emerald-950/20 dark:bg-emerald-950/30"
                         : isRunning
                         ? "border-amber-500/70 bg-amber-950/20 dark:bg-amber-950/30"
+                        : isBlocked
+                        ? "border-zinc-300/60 dark:border-zinc-800/60 bg-zinc-100/50 dark:bg-[#101112] opacity-85"
                         : "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#121315] hover:border-zinc-400 dark:hover:border-zinc-700"
                     }`}
                   >
@@ -1430,7 +1497,7 @@ export default function TwinPage() {
                         onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
                       >
                         <div className="flex items-center gap-2">
-                          <h4 className="font-serif text-sm font-bold text-zinc-950 dark:text-zinc-50 leading-snug">
+                          <h4 className={`font-serif text-sm font-bold leading-snug ${isBlocked ? "text-zinc-600 dark:text-zinc-400" : "text-zinc-950 dark:text-zinc-50"}`}>
                             {task.title}
                           </h4>
                           {task.urgency && (
@@ -1444,6 +1511,12 @@ export default function TwinPage() {
                               {task.urgency}
                             </span>
                           )}
+                          {isBlocked && (
+                            <span className="px-1.5 py-0.2 font-mono text-[9px] font-bold rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-500 border border-zinc-300 dark:border-zinc-700 flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" />
+                              <span>DAG LOCKED</span>
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -1455,6 +1528,16 @@ export default function TwinPage() {
                           title="Click to toggle status"
                         >
                           ✓ SHIPPED
+                        </button>
+                      ) : isBlocked ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="shrink-0 px-2.5 py-1 font-mono text-[10px] font-bold text-zinc-500 border border-zinc-700/60 bg-zinc-900/40 rounded flex items-center gap-1 cursor-not-allowed"
+                          title={`Locked by prerequisites: ${unmetDeps.map((u) => u?.title || "Prerequisite").join(", ")}`}
+                        >
+                          <Lock className="w-3 h-3 text-zinc-500" />
+                          <span>LOCKED</span>
                         </button>
                       ) : (
                         <button
@@ -1481,7 +1564,7 @@ export default function TwinPage() {
                       </div>
                     )}
 
-                    <p className="font-serif text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                    <p className={`font-serif text-xs leading-relaxed ${isBlocked ? "text-zinc-500 dark:text-zinc-500" : "text-zinc-700 dark:text-zinc-300"}`}>
                       {task.description}
                     </p>
 
@@ -1530,9 +1613,22 @@ export default function TwinPage() {
                           <span>Assigned: <strong className="text-zinc-900 dark:text-zinc-200">Swarm Agent</strong></span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span>Dependencies: <strong className="text-emerald-600 dark:text-emerald-400">None (Ready to Run)</strong></span>
+                          <span>
+                            Prerequisites:{" "}
+                            <strong className={isBlocked ? "text-amber-500" : "text-emerald-500"}>
+                              {isBlocked
+                                ? `Requires: ${unmetDeps.map((u) => u?.category || "Prerequisite").join(", ")}`
+                                : "None (Ready to Run)"}
+                            </strong>
+                          </span>
                           <span>Cost: <strong className="text-amber-600 dark:text-amber-400">{task.costCredits || 1} Credit</strong></span>
                         </div>
+                        {task.resultReceipt && (
+                          <div className="pt-1.5 border-t border-zinc-200 dark:border-zinc-800 text-[10px] text-emerald-500 dark:text-emerald-400 flex items-center justify-between">
+                            <span>Receipt: <strong className="font-mono">{task.resultReceipt.commitHash}</strong> ({task.resultReceipt.durationMs}ms)</span>
+                            <span>✓ Deployed live</span>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -2294,6 +2390,11 @@ export default function TwinPage() {
               .map((t) => {
                 const isShipped = t.status === "completed" || t.status === "done";
                 const isRunning = executingTaskId === t.id;
+                const unmetDeps = (t.dependsOn || [])
+                  .map((depId) => tasks.find((d) => d.id === depId))
+                  .filter((d) => !d || (d.status !== "completed" && d.status !== "done"));
+                const isBlocked = !isShipped && (t.status === "blocked" || unmetDeps.length > 0);
+
                 return (
                   <div
                     key={t.id}
@@ -2302,13 +2403,15 @@ export default function TwinPage() {
                         ? "border-emerald-500/30 bg-emerald-950/10 dark:bg-emerald-950/20"
                         : isRunning
                         ? "border-amber-500/50 bg-amber-950/20"
+                        : isBlocked
+                        ? "border-zinc-200/70 dark:border-zinc-800/70 bg-zinc-100/40 dark:bg-zinc-950/50 opacity-85"
                         : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="space-y-1">
                         <div className="flex items-center gap-2">
-                          <h4 className="font-serif font-bold text-sm text-black dark:text-white">{t.title}</h4>
+                          <h4 className={`font-serif font-bold text-sm ${isBlocked ? "text-zinc-600 dark:text-zinc-400" : "text-black dark:text-white"}`}>{t.title}</h4>
                           {t.urgency && (
                             <span
                               className={`px-1.5 py-0.2 font-mono text-[9px] font-bold rounded ${
@@ -2320,8 +2423,14 @@ export default function TwinPage() {
                               {t.urgency}
                             </span>
                           )}
+                          {isBlocked && (
+                            <span className="px-1.5 py-0.2 font-mono text-[9px] font-bold rounded bg-zinc-200 dark:bg-zinc-800 text-zinc-500 border border-zinc-300 dark:border-zinc-700 flex items-center gap-0.5">
+                              <Lock className="w-2.5 h-2.5" />
+                              <span>LOCKED</span>
+                            </span>
+                          )}
                         </div>
-                        <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400">{t.description}</p>
+                        <p className={`font-serif text-xs ${isBlocked ? "text-zinc-500 dark:text-zinc-500" : "text-zinc-600 dark:text-zinc-400"}`}>{t.description}</p>
                       </div>
 
                       <div className="flex items-center gap-1.5 shrink-0">
@@ -2332,6 +2441,16 @@ export default function TwinPage() {
                             className="px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400 border border-emerald-500/40 bg-emerald-950/60 rounded hover:bg-emerald-900/60 transition-colors cursor-pointer"
                           >
                             ✓ SHIPPED
+                          </button>
+                        ) : isBlocked ? (
+                          <button
+                            type="button"
+                            disabled
+                            className="px-2 py-1 font-mono text-[10px] font-bold text-zinc-500 border border-zinc-700/60 bg-zinc-900/40 rounded flex items-center gap-1 cursor-not-allowed"
+                            title={`Locked by: ${unmetDeps.map((u) => u?.title || "Prerequisite").join(", ")}`}
+                          >
+                            <Lock className="w-2.5 h-2.5 text-zinc-500" />
+                            <span>LOCKED</span>
                           </button>
                         ) : (
                           <button
@@ -2361,8 +2480,16 @@ export default function TwinPage() {
                         <span>Category: <strong className="text-zinc-800 dark:text-zinc-200">{t.category || "General"}</strong></span>
                         <span>•</span>
                         <span>Cost: <strong className="text-zinc-800 dark:text-zinc-200">{t.costCredits || 1} Credit</strong></span>
+                        {t.resultReceipt && (
+                          <>
+                            <span>•</span>
+                            <span className="text-emerald-500 font-mono">Receipt: {t.resultReceipt.commitHash}</span>
+                          </>
+                        )}
                       </div>
-                      <span className="text-emerald-500 font-semibold">Ready to dispatch</span>
+                      <span className={isBlocked ? "text-amber-500 font-semibold" : "text-emerald-500 font-semibold"}>
+                        {isBlocked ? `Waiting on ${unmetDeps.length} prerequisite${unmetDeps.length > 1 ? "s" : ""}` : "Ready to dispatch"}
+                      </span>
                     </div>
                   </div>
                 );

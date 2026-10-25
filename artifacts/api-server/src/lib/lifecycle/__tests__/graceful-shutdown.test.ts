@@ -18,13 +18,18 @@ describe("Production Graceful Shutdown & Drain Supervisor", () => {
     const app = express();
     app.use(supervisor.trackRequestMiddleware());
 
+    let requestEnteredPromiseResolve: () => void = () => {};
+    const requestEnteredPromise = new Promise<void>((r) => {
+      requestEnteredPromiseResolve = r;
+    });
+
     let resolveHandler: () => void = () => {};
     const holdPromise = new Promise<void>((r) => {
       resolveHandler = r;
     });
 
     app.get("/test-endpoint", async (_req, res) => {
-      expect(supervisor.getActiveRequests()).toBe(1);
+      requestEnteredPromiseResolve();
       await holdPromise;
       res.json({ ok: true });
     });
@@ -33,7 +38,7 @@ describe("Production Graceful Shutdown & Drain Supervisor", () => {
     const port = (server.address() as any).port;
 
     const fetchPromise = fetch(`http://127.0.0.1:${port}/test-endpoint`);
-    await new Promise((r) => setTimeout(r, 50));
+    await requestEnteredPromise;
 
     expect(supervisor.getActiveRequests()).toBe(1);
 
