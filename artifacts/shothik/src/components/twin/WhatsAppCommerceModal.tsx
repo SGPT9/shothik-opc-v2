@@ -262,6 +262,9 @@ export function WhatsAppCommerceModal({
                 </div>
               </div>
               <div className="flex items-center gap-2 text-xs text-slate-400 font-mono">
+                <Badge variant="outline" className="text-[9px] border-emerald-500/40 text-emerald-400 font-mono bg-emerald-950/30">
+                  🛡️ &lt;untrusted-content&gt; Armored
+                </Badge>
                 <PhoneCall className="w-3.5 h-3.5" />
                 +880 1711-223344
               </div>
@@ -284,6 +287,11 @@ export function WhatsAppCommerceModal({
                       }`}
                     >
                       <div className="leading-relaxed whitespace-pre-wrap">{m.text}</div>
+                      {!isBot && (
+                        <div className="text-[9px] font-mono text-emerald-200/70 mt-1 flex items-center gap-1 border-t border-emerald-400/20 pt-1">
+                          <span>🔒 &lt;untrusted-content source="whatsapp"&gt;</span>
+                        </div>
+                      )}
 
                       {/* In-Bubble bKash Dynamic QR Invoice */}
                       {m.invoice && (

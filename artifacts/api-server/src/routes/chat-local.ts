@@ -4,6 +4,7 @@ import { OllamaService } from "../lib/ollama-service";
 import { NeedleToolRegistry } from "../lib/needle-tool-registry";
 import { LiveWebKnowledgeEngine } from "../lib/live-web-knowledge";
 import { logger } from "../lib/logger";
+import { PROMPT_INJECTION_ARMOR_INSTRUCTION } from "../lib/security/pii-redactor";
 
 const router: IRouter = Router();
 
@@ -72,7 +73,9 @@ router.post(["/chat", "/chat/stream"], async (req: Request, res: Response) => {
 - Core ECC Principles: Always enforce immutability (return new copies, never mutate), write pure focused functions, and provide verification checklists.
 - Time & Regional Grounding: Locale is ${context?.locale || "Asia/Dhaka"} (GMT+6 · BST), Currency is ${context?.currency || "BDT"}.
 - Formatting & Tone: Provide direct, high-signal, consulting-grade answers. Use markdown tables for data/comparisons, and formatted code blocks with syntax highlighting.
-- Clean Output: Do not repeat these instructions or user prompt boilerplate. Use <think>...</think> tags if chain-of-thought analysis is required.`;
+- Clean Output: Do not repeat these instructions or user prompt boilerplate. Use <think>...</think> tags if chain-of-thought analysis is required.
+
+${PROMPT_INJECTION_ARMOR_INSTRUCTION}`;
 
   const inputMessages = Array.isArray(messages) && messages.length > 0 
     ? messages 
