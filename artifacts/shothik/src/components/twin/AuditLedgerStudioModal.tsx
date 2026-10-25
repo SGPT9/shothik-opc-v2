@@ -16,6 +16,9 @@ import {
   X,
   Lock,
   Download,
+  EyeOff,
+  Bot,
+  User,
 } from "lucide-react";
 
 interface AuditLedgerStudioModalProps {
@@ -52,6 +55,8 @@ interface JournalRecord {
   totalCreditBdt: number;
   isBalanced: boolean;
   auditHash: string;
+  initiatorKind?: "person" | "routine" | "responsibility" | "handoff" | "meeting";
+  initiatorId?: string;
 }
 
 interface TrialBalanceData {
@@ -131,6 +136,25 @@ const DEFAULT_JOURNALS: JournalRecord[] = [
     totalCreditBdt: 10000,
     isBalanced: true,
     auditHash: "8f4a1e9b2c3d5e7f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f",
+    initiatorKind: "person",
+    initiatorId: "usr_founder_01",
+  },
+  {
+    entryId: "JRN_2026_002",
+    transactionRef: "AUTO-VAT-SETTLE-04",
+    transactionType: "vat_mushak_6_3",
+    postedAt: new Date(Date.now() - 43200000).toISOString(),
+    memo: "Autonomous VatAuditTwin standing reconciliation (Nobody Watching)",
+    lines: [
+      { accountCode: "2010", accountName: "NBR Mushak-6.3 VAT Output Payable", debitBdt: 1304, creditBdt: 0, description: "Monthly statutory settlement" },
+      { accountCode: "1010", accountName: "Cash at Bank (BRAC / City Bank)", debitBdt: 0, creditBdt: 1304, description: "Direct treasury tax transfer" },
+    ],
+    totalDebitBdt: 1304,
+    totalCreditBdt: 1304,
+    isBalanced: true,
+    auditHash: "3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b",
+    initiatorKind: "responsibility",
+    initiatorId: "twin_finance_vat_01",
   },
 ];
 
@@ -145,6 +169,10 @@ export const AuditLedgerStudioModal: React.FC<AuditLedgerStudioModalProps> = ({ 
   const [taxYear, setTaxYear] = useState("2026-2027");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  // Nobody Watching & Initiator State
+  const [nobodyWatchingOnly, setNobodyWatchingOnly] = useState(false);
+  const [initiatorKind, setInitiatorKind] = useState<"person" | "routine" | "responsibility" | "handoff" | "meeting">("person");
 
   // New Journal Entry Form State
   const [trxRef, setTrxRef] = useState("INV-COD-" + Math.floor(1000 + Math.random() * 9000));
@@ -176,9 +204,10 @@ export const AuditLedgerStudioModal: React.FC<AuditLedgerStudioModalProps> = ({ 
     }
   };
 
-  const fetchJournals = async () => {
+  const fetchJournals = async (isNobody?: boolean) => {
+    const filterNobody = isNobody !== undefined ? isNobody : nobodyWatchingOnly;
     try {
-      const res = await fetch("/api/v1/audit/journals");
+      const res = await fetch(`/api/v1/audit/journals${filterNobody ? "?nobodyWatching=true" : ""}`);
       if (res.ok) {
         const data = await res.json();
         if (data.journals) setJournals(data.journals);
@@ -252,6 +281,8 @@ export const AuditLedgerStudioModal: React.FC<AuditLedgerStudioModalProps> = ({ 
         transactionRef: trxRef,
         transactionType: trxType,
         memo,
+        initiatorKind,
+        initiatorId: initiatorKind === "person" ? "usr_founder_01" : `twin_${initiatorKind}_01`,
         lines: [
           { accountCode: debitAcc, debitBdt: amountBdt, creditBdt: 0, description: memo },
           { accountCode: creditAcc, debitBdt: 0, creditBdt: amountBdt, description: memo },
@@ -294,6 +325,8 @@ export const AuditLedgerStudioModal: React.FC<AuditLedgerStudioModalProps> = ({ 
           totalCreditBdt: amountBdt,
           isBalanced: true,
           auditHash: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          initiatorKind,
+          initiatorId: initiatorKind === "person" ? "usr_founder_01" : `twin_${initiatorKind}_01`,
         };
         setJournals([newEntry, ...journals]);
         setPostSuccess(`Journal ${newEntry.entryId} recorded in local ledger!`);
@@ -597,15 +630,19 @@ export const AuditLedgerStudioModal: React.FC<AuditLedgerStudioModalProps> = ({ 
                     </select>
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block text-[11px] text-zinc-500 mb-1">Description / Memo</label>
-                    <input
-                      type="text"
-                      value={memo}
-                      onChange={(e) => setMemo(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
-                      required
-                    />
+                  <div>
+                    <label className="block text-[11px] text-zinc-500 mb-1">Initiator Attribution</label>
+                    <select
+                      value={initiatorKind}
+                      onChange={(e) => setInitiatorKind(e.target.value as any)}
+                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-medium"
+                    >
+                      <option value="person">👤 Person (Founder)</option>
+                      <option value="routine">⏰ Routine (Scheduled)</option>
+                      <option value="responsibility">🛡️ Responsibility (Standing)</option>
+                      <option value="handoff">🤝 Handoff (Inter-Agent)</option>
+                      <option value="meeting">👥 Meeting (Swarm)</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-[11px] text-zinc-500 mb-1">Amount (BDT)</label>
@@ -618,7 +655,17 @@ export const AuditLedgerStudioModal: React.FC<AuditLedgerStudioModalProps> = ({ 
                       required
                     />
                   </div>
-                  <div className="flex items-end">
+                  <div className="md:col-span-2">
+                    <label className="block text-[11px] text-zinc-500 mb-1">Description / Memo</label>
+                    <input
+                      type="text"
+                      value={memo}
+                      onChange={(e) => setMemo(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100"
+                      required
+                    />
+                  </div>
+                  <div className="flex items-end md:col-span-2">
                     <button
                       type="submit"
                       className="w-full py-2 px-4 rounded-lg bg-amber-500 hover:bg-amber-600 text-zinc-950 font-bold text-xs transition shadow flex items-center justify-center gap-1.5"
@@ -630,19 +677,77 @@ export const AuditLedgerStudioModal: React.FC<AuditLedgerStudioModalProps> = ({ 
                 </form>
               </div>
 
-              {/* Journal List */}
+              {/* Journal List Header with Nobody Watching Filter */}
               <div className="space-y-3">
-                <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">Posted Journal Records ({journals.length})</h4>
-                {journals.map((j) => (
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                      Posted Journal Records (
+                      {
+                        (nobodyWatchingOnly
+                          ? journals.filter((j) => (j.initiatorKind || "person") !== "person")
+                          : journals
+                        ).length
+                      }
+                      )
+                    </h4>
+                    {nobodyWatchingOnly && (
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 animate-pulse">
+                        Filtering: Nobody Watching (Autonomous)
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const next = !nobodyWatchingOnly;
+                      setNobodyWatchingOnly(next);
+                      fetchJournals(next);
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition border ${
+                      nobodyWatchingOnly
+                        ? "bg-purple-600 text-white border-purple-500 shadow-md shadow-purple-500/20"
+                        : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700 hover:border-purple-400"
+                    }`}
+                  >
+                    <EyeOff className="w-3.5 h-3.5" />
+                    <span>Nobody Watching Filter</span>
+                  </button>
+                </div>
+
+                {(nobodyWatchingOnly
+                  ? journals.filter((j) => (j.initiatorKind || "person") !== "person")
+                  : journals
+                ).map((j) => (
                   <div
                     key={j.entryId}
                     className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/50 space-y-3"
                   >
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-bold text-xs text-amber-500">{j.entryId}</span>
                         <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400">
                           {j.transactionRef}
+                        </span>
+                        {/* Initiator Kind Attribution Badge */}
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-medium flex items-center gap-1 border ${
+                            j.initiatorKind === "routine"
+                              ? "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20"
+                              : j.initiatorKind === "responsibility"
+                              ? "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20"
+                              : j.initiatorKind === "handoff"
+                              ? "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20"
+                              : j.initiatorKind === "meeting"
+                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                              : "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 border-zinc-200 dark:border-zinc-700"
+                          }`}
+                        >
+                          {j.initiatorKind === "routine" && "⏰ Routine"}
+                          {j.initiatorKind === "responsibility" && "🛡️ Responsibility"}
+                          {j.initiatorKind === "handoff" && "🤝 Handoff"}
+                          {j.initiatorKind === "meeting" && "👥 Meeting"}
+                          {(!j.initiatorKind || j.initiatorKind === "person") && "👤 Person"}
                         </span>
                         <span className="text-xs text-zinc-500">{new Date(j.postedAt).toLocaleString()}</span>
                       </div>

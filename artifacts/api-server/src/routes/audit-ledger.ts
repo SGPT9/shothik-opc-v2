@@ -16,6 +16,11 @@ const postJournalSchema = z.object({
     "courier_payout",
   ]),
   memo: z.string().min(1, "memo is required"),
+  initiatorKind: z
+    .enum(["person", "routine", "responsibility", "handoff", "meeting"])
+    .optional()
+    .default("person"),
+  initiatorId: z.string().optional(),
   lines: z
     .array(
       z.object({
@@ -56,13 +61,18 @@ auditLedgerRouter.get(["/v1/audit/chart-of-accounts", "/v1/audit/accounts"], (_r
 
 /**
  * GET /v1/audit/journal-entries and /v1/audit/journals
+ * Supports ?nobodyWatching=true and ?initiatorKind=routine|responsibility|...
  */
-auditLedgerRouter.get(["/v1/audit/journal-entries", "/v1/audit/journals"], (_req: Request, res: Response) => {
+auditLedgerRouter.get(["/v1/audit/journal-entries", "/v1/audit/journals"], (req: Request, res: Response) => {
   try {
-    const entries = AuditLedgerEngine.listJournals();
+    const nobodyWatching = req.query.nobodyWatching === "true" || req.query.nobodyWatching === "1";
+    const initiatorKind = req.query.initiatorKind as any;
+    const entries = AuditLedgerEngine.listJournals({ nobodyWatching, initiatorKind });
     return res.status(200).json({
       success: true,
       count: entries.length,
+      nobodyWatching,
+      initiatorKind: initiatorKind || null,
       journals: entries,
       entries,
     });
