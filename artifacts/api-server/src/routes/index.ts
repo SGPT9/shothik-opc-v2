@@ -108,6 +108,7 @@ import { teaAuctionRouter } from "./tea-auction.js";
 import { juteRouter } from "./jute.js";
 import { researchPaperRouter } from "./research-paper.js";
 import { sagaRouter } from "./saga";
+import { capabilityLeashRouter } from "./capability-leash";
 
 const router: IRouter = Router();
 
@@ -220,6 +221,7 @@ router.use(writingToolsRouter);
 router.use(aiToolsExtendedRouter);
 router.use(crdtRouter);
 router.use(sagaRouter);
+router.use(capabilityLeashRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.
