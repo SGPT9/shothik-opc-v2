@@ -27,12 +27,23 @@ export const browserActionInputSchema = z.discriminatedUnion("type", [
 
 export type BrowserActionInput = z.infer<typeof browserActionInputSchema>;
 
+export interface HandoverEvent {
+  event: "computer.help_requested" | "computer.control_taken" | "computer.control_released";
+  timestamp: string;
+  actor: string;
+  details?: string;
+}
+
 export interface BrowserSessionRecord {
   id: string;
   owner: string;
   url: string;
   title: string;
   status: "idle" | "active" | "closed" | "error";
+  controlHolder: "agent" | "human";
+  helpRequested: boolean;
+  helpReason?: string;
+  handoverLog: HandoverEvent[];
   viewport: { width: number; height: number };
   createdAt: string;
   updatedAt: string;
@@ -78,6 +89,9 @@ export class BrowserTakeoverEngine {
       url: validated.href,
       title: `Session on ${validated.hostname}`,
       status: "active",
+      controlHolder: "agent",
+      helpRequested: false,
+      handoverLog: [],
       viewport: { width: 1280, height: 800 },
       createdAt: now,
       updatedAt: now,
@@ -104,10 +118,85 @@ export class BrowserTakeoverEngine {
     return list;
   }
 
-  executeAction(sessionId: string, action: BrowserActionInput): { success: boolean; session: BrowserSessionRecord; message: string } {
+  requestHelp(sessionId: string, reason: string): { success: boolean; session: BrowserSessionRecord; message: string } {
+    const session = this.getSession(sessionId);
+    if (!session) throw new Error("Browser session not found");
+    session.helpRequested = true;
+    session.helpReason = reason;
+    session.updatedAt = new Date().toISOString();
+    session.handoverLog.unshift({
+      event: "computer.help_requested",
+      timestamp: session.updatedAt,
+      actor: "Agent Twin",
+      details: reason,
+    });
+    this.sessions.set(sessionId, session);
+    return {
+      success: true,
+      session,
+      message: `Help requested: ${reason}. Awaiting human takeover.`,
+    };
+  }
+
+  takeWheel(sessionId: string, humanActor = "Merchant"): { success: boolean; session: BrowserSessionRecord; message: string } {
+    const session = this.getSession(sessionId);
+    if (!session) throw new Error("Browser session not found");
+    session.controlHolder = "human";
+    session.helpRequested = false;
+    session.updatedAt = new Date().toISOString();
+    session.handoverLog.unshift({
+      event: "computer.control_taken",
+      timestamp: session.updatedAt,
+      actor: humanActor,
+      details: "Merchant took direct control of browser canvas. Autonomous agent commands will be refused.",
+    });
+    this.sessions.set(sessionId, session);
+    return {
+      success: true,
+      session,
+      message: "Human operator has taken the wheel. Agent execution locked.",
+    };
+  }
+
+  releaseControl(sessionId: string, humanActor = "Merchant"): { success: boolean; session: BrowserSessionRecord; message: string } {
+    const session = this.getSession(sessionId);
+    if (!session) throw new Error("Browser session not found");
+    session.controlHolder = "agent";
+    session.helpRequested = false;
+    session.helpReason = undefined;
+    session.updatedAt = new Date().toISOString();
+    session.handoverLog.unshift({
+      event: "computer.control_released",
+      timestamp: session.updatedAt,
+      actor: humanActor,
+      details: "Control released back to Agent Twin. Autonomous execution safely resumed.",
+    });
+    this.sessions.set(sessionId, session);
+    return {
+      success: true,
+      session,
+      message: "Control returned to Agent Twin. Autonomous execution safely resumed.",
+    };
+  }
+
+  executeAction(
+    sessionId: string,
+    action: BrowserActionInput,
+    actor: "agent" | "human" = "agent"
+  ): { success: boolean; session: BrowserSessionRecord; message: string; refused?: boolean } {
     const session = this.getSession(sessionId);
     if (!session) throw new Error("Browser session not found");
     if (session.status === "closed") throw new Error("Browser session is closed");
+
+    // HITL Refusal Gate (OpenBot Refusal Rule): If human has taken the wheel, refuse bot commands
+    if (actor === "agent" && session.controlHolder === "human") {
+      return {
+        success: false,
+        refused: true,
+        session,
+        message: "Action refused: human operator is driving ('Take the wheel' active). Agent commands locked.",
+      };
+    }
 
     session.updatedAt = new Date().toISOString();
     let message = "";

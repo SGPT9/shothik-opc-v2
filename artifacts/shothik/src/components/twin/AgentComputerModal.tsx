@@ -38,6 +38,9 @@ export const AgentComputerModal: React.FC<AgentComputerModalProps> = ({ isOpen, 
   const [textInput, setTextInput] = useState("");
   const [browserLoading, setBrowserLoading] = useState(false);
   const [actionLog, setActionLog] = useState<string[]>([]);
+  const [controlHolder, setControlHolder] = useState<"agent" | "human">("agent");
+  const [helpRequested, setHelpRequested] = useState(false);
+  const [helpReason, setHelpReason] = useState<string | null>(null);
 
   // Tasks state
   const [tasks, setTasks] = useState<any[]>([]);
@@ -167,23 +170,88 @@ export const AgentComputerModal: React.FC<AgentComputerModalProps> = ({ isOpen, 
     }
   };
 
-  const handleBrowserAction = async (action: any) => {
+  const handleBrowserAction = async (action: any, explicitActor?: "agent" | "human") => {
     if (!sessionId) return;
     setBrowserLoading(true);
     try {
+      const actor = explicitActor || controlHolder;
       const res = await fetch(`/api/browser/sessions/${sessionId}/action`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(action),
+        body: JSON.stringify({ ...action, actor }),
       });
       const data = await res.json();
-      if (data.message) {
-        setActionLog((prev) => [data.message, ...prev.slice(0, 15)]);
+      if (data.refused) {
+        setActionLog((prev) => [`🚫 ${data.message}`, ...prev.slice(0, 15)]);
+      } else if (data.message) {
+        setActionLog((prev) => [`${actor === "human" ? "👤 Human" : "🤖 Twin"}: ${data.message}`, ...prev.slice(0, 15)]);
       }
     } catch {
       setActionLog((prev) => [`Simulated action: ${action.type}`, ...prev.slice(0, 15)]);
     } finally {
       setBrowserLoading(false);
+    }
+  };
+
+  const handleTakeWheel = async () => {
+    if (!sessionId) return;
+    try {
+      const res = await fetch(`/api/browser/sessions/${sessionId}/take-wheel`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actor: "Merchant (Human Operator)" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setControlHolder("human");
+        setHelpRequested(false);
+        setActionLog((prev) => ["👤 Control Taken: You are now driving the browser. Autonomous agent actions are locked.", ...prev.slice(0, 15)]);
+      }
+    } catch {
+      setControlHolder("human");
+      setHelpRequested(false);
+    }
+  };
+
+  const handleReleaseControl = async () => {
+    if (!sessionId) return;
+    try {
+      const res = await fetch(`/api/browser/sessions/${sessionId}/release-control`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ actor: "Merchant (Human Operator)" }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setControlHolder("agent");
+        setHelpRequested(false);
+        setHelpReason(null);
+        setActionLog((prev) => ["🤖 Control Released: Returned control to Agent Twin. Autonomous execution safely resumed.", ...prev.slice(0, 15)]);
+      }
+    } catch {
+      setControlHolder("agent");
+      setHelpRequested(false);
+      setHelpReason(null);
+    }
+  };
+
+  const handleSimulateHelpRequest = async (reason = "bKash SMS OTP & PIN Verification Challenge Detected") => {
+    if (!sessionId) return;
+    try {
+      const res = await fetch(`/api/browser/sessions/${sessionId}/help-request`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setHelpRequested(true);
+        setHelpReason(reason);
+        setActionLog((prev) => [`⚠️ ${reason} — Autonomous loop halted. Human takeover requested.`, ...prev.slice(0, 15)]);
+      }
+    } catch {
+      setHelpRequested(true);
+      setHelpReason(reason);
     }
   };
 
@@ -349,6 +417,58 @@ export const AgentComputerModal: React.FC<AgentComputerModalProps> = ({ isOpen, 
                     Go
                   </button>
                 </div>
+
+                {/* HITL "Take the Wheel" Handover Latch Banner */}
+                {helpRequested ? (
+                  <div className="flex items-center justify-between px-3 py-2 bg-amber-500/15 border-b border-amber-500/30 text-amber-300 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                      <span className="font-semibold">⚠️ 2FA / CAPTCHA Latch:</span>
+                      <span className="text-[11px] text-amber-200">{helpReason || "Challenge detected. Awaiting human takeover."}</span>
+                    </div>
+                    <button
+                      onClick={handleTakeWheel}
+                      className="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs transition flex items-center gap-1 shadow"
+                    >
+                      Take the Wheel 🎯
+                    </button>
+                  </div>
+                ) : controlHolder === "human" ? (
+                  <div className="flex items-center justify-between px-3 py-2 bg-indigo-500/20 border-b border-indigo-500/30 text-indigo-200 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" />
+                      <span className="font-semibold">👤 Human Driving (&apos;Take the Wheel&apos; Active):</span>
+                      <span className="text-[11px] text-indigo-300">Autonomous agent commands are locked. Click below once solved.</span>
+                    </div>
+                    <button
+                      onClick={handleReleaseControl}
+                      className="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1 shadow"
+                    >
+                      Release Control to Twin ✓
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between px-3 py-1.5 bg-slate-900/90 border-b border-slate-800 text-xs text-slate-400">
+                    <div className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span className="text-[11px]">🤖 Twin Autonomous Mode · Zero human intervention</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handleSimulateHelpRequest("bKash 2FA SMS Verification Challenge")}
+                        className="text-[10px] text-slate-400 hover:text-amber-400 transition"
+                      >
+                        Simulate 2FA Challenge
+                      </button>
+                      <button
+                        onClick={handleTakeWheel}
+                        className="px-2 py-0.5 rounded bg-slate-800 hover:bg-indigo-600 text-slate-300 hover:text-white text-[11px] font-medium border border-slate-700 transition"
+                      >
+                        Take the Wheel
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Screenshot Interactive Surface */}
                 <div
