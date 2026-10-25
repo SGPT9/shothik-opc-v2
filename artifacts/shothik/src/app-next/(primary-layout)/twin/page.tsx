@@ -121,6 +121,9 @@ import {
   MessageSquare,
   Building2,
   ChevronDown,
+  ChevronUp,
+  Trash2,
+  Filter,
   Check,
   Settings,
   Search,
@@ -347,6 +350,14 @@ export default function TwinPage() {
 
   const [newTaskOpen, setNewTaskOpen] = useState(false);
   const [manageTasksOpen, setManageTasksOpen] = useState(false);
+  const [expandedTaskId, setExpandedTaskId] = useState<string | null>(null);
+  const [taskFilter, setTaskFilter] = useState<"all" | "todo" | "completed">("all");
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newCategory, setNewCategory] = useState<"Code" | "Design" | "Marketing" | "Research" | "Finance" | "Ops">("Code");
+  const [newUrgency, setNewUrgency] = useState<"P0" | "P1" | "P2">("P1");
+  const [newCredits, setNewCredits] = useState<number>(1);
   const [inviteModalOpen, setInviteModalOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "editor" | "viewer">("editor");
@@ -897,6 +908,63 @@ export default function TwinPage() {
     ]);
   };
 
+  const toggleTaskStatus = (taskId: string) => {
+    setTasks((prev) => {
+      const updated = prev.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              status: (t.status === "completed" || t.status === "done" ? "todo" : "completed") as "todo" | "completed",
+            }
+          : t
+      );
+      try {
+        localStorage.setItem("shothik_twin_tasks", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const deleteTask = (taskId: string) => {
+    setTasks((prev) => {
+      const updated = prev.filter((t) => t.id !== taskId);
+      try {
+        localStorage.setItem("shothik_twin_tasks", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleCreateManualTask = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTitle.trim()) return;
+    const created: CockpitTask = {
+      id: `task-m-${Date.now()}`,
+      title: newTitle.trim(),
+      description: newDesc.trim() || "Manual operational task created by founder.",
+      tags: [newCategory.toUpperCase(), `${newCredits} CREDIT`],
+      status: "todo",
+      category: newCategory,
+      urgency: newUrgency,
+      costCredits: newCredits,
+    };
+    setTasks((prev) => {
+      const updated = [created, ...prev];
+      try {
+        localStorage.setItem("shothik_twin_tasks", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+    setTerminalLogs((prev) => [
+      ...prev,
+      `> 📌 Added founder directive task: "${created.title}"`,
+      `> Priority: ${created.urgency || "P1"} • Category: ${created.category || "General"}`,
+    ]);
+    setNewTitle("");
+    setNewDesc("");
+    setIsAddingTask(false);
+  };
+
   const handleSendMessage = () => {
     const text = chatInput.trim();
     if (!text) return;
@@ -1327,63 +1395,149 @@ export default function TwinPage() {
         <section className={`p-6 space-y-8 bg-zinc-50/50 dark:bg-[#0c0d0e] ${chatSidebarOpen ? "md:col-span-5 lg:col-span-4.5" : "md:col-span-5 lg:col-span-5.5"}`}>
           {/* Tasks Section */}
           <div className="space-y-4">
-            <h2 className="font-serif text-lg font-bold tracking-tight text-zinc-950 dark:text-white">
-              Tasks
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="font-serif text-lg font-bold tracking-tight text-zinc-950 dark:text-white flex items-center gap-2">
+                <span>Tasks</span>
+                <span className="font-mono text-xs font-semibold text-zinc-500 bg-zinc-200 dark:bg-zinc-800 px-2 py-0.5 rounded-full">
+                  {tasks.filter((t) => t.status === "completed" || t.status === "done").length}/{tasks.length} Shipped
+                </span>
+              </h2>
+              <span className="font-mono text-[11px] text-zinc-400">
+                {tasks.filter((t) => t.status !== "completed" && t.status !== "done").length} Unblocked
+              </span>
+            </div>
 
             <div className="space-y-3">
-              {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`p-4 border transition-all space-y-2.5 shadow-xs rounded-lg ${
-                    task.status === "completed" || task.status === "done"
-                      ? "border-emerald-500/40 bg-emerald-950/20 dark:bg-emerald-950/30"
-                      : "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#121315] hover:border-zinc-400 dark:hover:border-zinc-700"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <h4 className="font-serif text-sm font-bold text-zinc-950 dark:text-zinc-50 leading-snug">
-                      {task.title}
-                    </h4>
-                    {task.status === "completed" || task.status === "done" ? (
-                      <span className="shrink-0 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400 border border-emerald-500/40 bg-emerald-950/60 rounded">
-                        ✓ SHIPPED
-                      </span>
-                    ) : (
+              {tasks.map((task) => {
+                const isShipped = task.status === "completed" || task.status === "done";
+                const isRunning = executingTaskId === task.id;
+                const isExpanded = expandedTaskId === task.id;
+
+                return (
+                  <div
+                    key={task.id}
+                    className={`p-4 border transition-all space-y-2.5 shadow-xs rounded-lg ${
+                      isShipped
+                        ? "border-emerald-500/40 bg-emerald-950/20 dark:bg-emerald-950/30"
+                        : isRunning
+                        ? "border-amber-500/70 bg-amber-950/20 dark:bg-amber-950/30"
+                        : "border-zinc-300 dark:border-zinc-800 bg-white dark:bg-[#121315] hover:border-zinc-400 dark:hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div
+                        className="cursor-pointer flex-1"
+                        onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                      >
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-serif text-sm font-bold text-zinc-950 dark:text-zinc-50 leading-snug">
+                            {task.title}
+                          </h4>
+                          {task.urgency && (
+                            <span
+                              className={`px-1.5 py-0.2 font-mono text-[9px] font-bold rounded ${
+                                task.urgency === "P0"
+                                  ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                                  : "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                              }`}
+                            >
+                              {task.urgency}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {isShipped ? (
+                        <button
+                          type="button"
+                          onClick={() => toggleTaskStatus(task.id)}
+                          className="shrink-0 px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400 border border-emerald-500/40 bg-emerald-950/60 rounded hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                          title="Click to toggle status"
+                        >
+                          ✓ SHIPPED
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleExecuteTask(task)}
+                          disabled={executingTaskId !== null}
+                          className="shrink-0 px-2.5 py-1 font-mono text-[10px] font-bold text-amber-300 hover:text-amber-200 border border-amber-500/50 hover:border-amber-400 bg-amber-950/40 hover:bg-amber-950/70 rounded transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Zap className={`w-3 h-3 text-amber-400 ${isRunning ? "animate-spin" : "animate-pulse"}`} />
+                          <span>{isRunning ? "RUNNING..." : "⚡ RUN"}</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Running Progress Bar */}
+                    {isRunning && (
+                      <div className="space-y-1">
+                        <div className="w-full bg-zinc-200 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                          <div className="bg-amber-400 h-full w-2/3 animate-pulse rounded-full" />
+                        </div>
+                        <p className="font-mono text-[10px] text-amber-400 animate-pulse">
+                          &gt; Autonomous Swarm agent dispatching sandbox execution...
+                        </p>
+                      </div>
+                    )}
+
+                    <p className="font-serif text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                      {task.description}
+                    </p>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <div className="flex items-center gap-2 font-mono text-[11px] flex-wrap">
+                        {task.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className={`px-2 py-0.5 border font-bold tracking-wider rounded ${
+                              tag === "TONIGHT"
+                                ? "border-amber-500/50 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200"
+                                : tag === "1 CREDIT" || tag.includes("CREDIT")
+                                ? "border-blue-500/40 bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200"
+                                : "border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
+                            }`}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
                       <button
                         type="button"
-                        onClick={() => handleExecuteTask(task)}
-                        disabled={executingTaskId !== null}
-                        className="shrink-0 px-2.5 py-1 font-mono text-[10px] font-bold text-amber-300 hover:text-amber-200 border border-amber-500/50 hover:border-amber-400 bg-amber-950/40 hover:bg-amber-950/70 rounded transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        onClick={() => setExpandedTaskId(isExpanded ? null : task.id)}
+                        className="font-mono text-[10px] text-zinc-600 hover:text-zinc-950 dark:text-zinc-400 dark:hover:text-zinc-200 flex items-center gap-1 cursor-pointer"
                       >
-                        <Zap className="w-3 h-3 text-amber-400 animate-pulse" />
-                        <span>{executingTaskId === task.id ? "RUNNING..." : "⚡ RUN"}</span>
+                        {isExpanded ? (
+                          <>
+                            <span>LESS</span>
+                            <ChevronUp className="w-3 h-3" />
+                          </>
+                        ) : (
+                          <>
+                            <span>DETAILS</span>
+                            <ChevronDown className="w-3 h-3" />
+                          </>
+                        )}
                       </button>
+                    </div>
+
+                    {/* Expanded Task Details */}
+                    {isExpanded && (
+                      <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800/80 font-mono text-[11px] space-y-1.5 text-zinc-600 dark:text-zinc-400 bg-zinc-100/50 dark:bg-zinc-900/50 p-2.5 rounded">
+                        <div className="flex items-center justify-between">
+                          <span>Category: <strong className="text-zinc-900 dark:text-zinc-200">{task.category || "General"}</strong></span>
+                          <span>Assigned: <strong className="text-zinc-900 dark:text-zinc-200">Swarm Agent</strong></span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span>Dependencies: <strong className="text-emerald-600 dark:text-emerald-400">None (Ready to Run)</strong></span>
+                          <span>Cost: <strong className="text-amber-600 dark:text-amber-400">{task.costCredits || 1} Credit</strong></span>
+                        </div>
+                      </div>
                     )}
                   </div>
-
-                  <p className="font-serif text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed">
-                    {task.description}
-                  </p>
-
-                  <div className="flex items-center gap-2 pt-1 font-mono text-[11px]">
-                    {task.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className={`px-2 py-0.5 border font-bold tracking-wider rounded ${
-                          tag === "TONIGHT"
-                            ? "border-amber-500/50 bg-amber-100 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200"
-                            : tag === "1 CREDIT"
-                            ? "border-blue-500/40 bg-blue-100 dark:bg-blue-950/60 text-blue-900 dark:text-blue-200"
-                            : "border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200"
-                        }`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="flex items-center gap-2 pt-2 font-mono text-xs">
@@ -2000,36 +2154,219 @@ export default function TwinPage() {
 
       {/* Manage Tasks Modal */}
       <Dialog open={manageTasksOpen} onOpenChange={setManageTasksOpen}>
-        <DialogContent className="sm:max-w-2xl bg-white text-slate-900 border border-slate-300 p-6 rounded-none shadow-2xl font-serif dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800 max-h-[80vh] overflow-y-auto">
-          <div className="flex items-center justify-between pb-2">
-            <DialogTitle className="text-xl font-bold font-serif text-black dark:text-white">
-              Task Lifecycle Manager
-            </DialogTitle>
+        <DialogContent className="sm:max-w-2xl bg-white text-slate-900 border border-slate-300 p-6 rounded-none shadow-2xl font-serif dark:bg-zinc-950 dark:text-zinc-100 dark:border-zinc-800 max-h-[85vh] overflow-y-auto">
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
+            <div>
+              <DialogTitle className="text-xl font-bold font-serif text-black dark:text-white flex items-center gap-2">
+                <LayoutGrid className="w-5 h-5 text-amber-500" />
+                <span>Task Lifecycle Manager</span>
+              </DialogTitle>
+              <DialogDescription className="text-xs text-zinc-500 font-sans mt-0.5">
+                Review, filter, promote, execute, or add custom founder tasks.
+              </DialogDescription>
+            </div>
             <DialogClose asChild>
-              <button type="button" className="p-1 text-slate-500 hover:text-slate-900 cursor-pointer">
+              <button type="button" className="p-1 text-slate-500 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </DialogClose>
           </div>
-          <DialogDescription className="text-xs text-zinc-500 font-sans">
-            Review, promote, or execute queued founder tasks.
-          </DialogDescription>
 
-          <div className="space-y-3 mt-4">
-            {tasks.map((t) => (
-              <div
-                key={t.id}
-                className="p-3.5 border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <h4 className="font-serif font-bold text-sm text-black dark:text-white">{t.title}</h4>
-                  <Badge variant="outline" className="font-mono text-[10px]">
-                    {t.status.toUpperCase()}
-                  </Badge>
+          {/* Quick Metrics Bar */}
+          <div className="grid grid-cols-3 gap-2 py-3 border-b border-zinc-200 dark:border-zinc-800 text-center font-mono">
+            <div className="bg-zinc-100 dark:bg-zinc-900 p-2 rounded">
+              <span className="text-[10px] text-zinc-500 block uppercase">TOTAL TASKS</span>
+              <span className="text-base font-bold text-zinc-900 dark:text-zinc-100">{tasks.length}</span>
+            </div>
+            <div className="bg-emerald-50 dark:bg-emerald-950/30 p-2 rounded border border-emerald-500/20">
+              <span className="text-[10px] text-emerald-600 dark:text-emerald-400 block uppercase">SHIPPED</span>
+              <span className="text-base font-bold text-emerald-700 dark:text-emerald-300">
+                {tasks.filter((t) => t.status === "completed" || t.status === "done").length}
+              </span>
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-950/30 p-2 rounded border border-amber-500/20">
+              <span className="text-[10px] text-amber-600 dark:text-amber-400 block uppercase">IN BACKLOG</span>
+              <span className="text-base font-bold text-amber-700 dark:text-amber-300">
+                {tasks.filter((t) => t.status !== "completed" && t.status !== "done").length}
+              </span>
+            </div>
+          </div>
+
+          {/* Filter Tabs & Add Task Toggle */}
+          <div className="flex items-center justify-between gap-2 pt-3">
+            <div className="flex items-center gap-1 font-mono text-xs">
+              {(["all", "todo", "completed"] as const).map((filter) => {
+                const count =
+                  filter === "all"
+                    ? tasks.length
+                    : filter === "todo"
+                    ? tasks.filter((t) => t.status !== "completed" && t.status !== "done").length
+                    : tasks.filter((t) => t.status === "completed" || t.status === "done").length;
+                return (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setTaskFilter(filter)}
+                    className={`px-3 py-1 font-bold rounded-xs uppercase tracking-wider transition-all cursor-pointer ${
+                      taskFilter === filter
+                        ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-950"
+                        : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                    }`}
+                  >
+                    {filter === "all" ? "ALL" : filter === "todo" ? "QUEUED" : "SHIPPED"} ({count})
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setIsAddingTask(!isAddingTask)}
+              className="px-2.5 py-1 font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 rounded flex items-center gap-1 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>{isAddingTask ? "CANCEL" : "+ ADD TASK"}</span>
+            </button>
+          </div>
+
+          {/* Inline Add Task Form */}
+          {isAddingTask && (
+            <form onSubmit={handleCreateManualTask} className="p-3 border border-emerald-500/40 bg-emerald-950/10 dark:bg-emerald-950/20 rounded space-y-2.5 my-2">
+              <h5 className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                Create Founder Directive Task
+              </h5>
+              <input
+                type="text"
+                placeholder="Task title (e.g., Integrate Steadfast COD Webhook API)..."
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                className="w-full p-2 text-xs border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 font-serif rounded outline-none"
+                required
+              />
+              <textarea
+                placeholder="Detailed task instructions & acceptance criteria..."
+                value={newDesc}
+                onChange={(e) => setNewDesc(e.target.value)}
+                rows={2}
+                className="w-full p-2 text-xs border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 font-serif rounded outline-none"
+              />
+              <div className="flex items-center justify-between gap-2 font-mono text-[11px]">
+                <div className="flex items-center gap-2">
+                  <select
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value as any)}
+                    className="p-1 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded"
+                  >
+                    <option value="Code">Code</option>
+                    <option value="Design">Design</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Ops">Ops</option>
+                  </select>
+                  <select
+                    value={newUrgency}
+                    onChange={(e) => setNewUrgency(e.target.value as any)}
+                    className="p-1 border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 rounded"
+                  >
+                    <option value="P0">P0 (Urgent)</option>
+                    <option value="P1">P1 (Standard)</option>
+                    <option value="P2">P2 (Backlog)</option>
+                  </select>
                 </div>
-                <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400">{t.description}</p>
+                <button
+                  type="submit"
+                  className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded cursor-pointer transition-all"
+                >
+                  SAVE TASK
+                </button>
               </div>
-            ))}
+            </form>
+          )}
+
+          {/* Filtered Tasks List */}
+          <div className="space-y-3 mt-3">
+            {tasks
+              .filter((t) => {
+                if (taskFilter === "todo") return t.status !== "completed" && t.status !== "done";
+                if (taskFilter === "completed") return t.status === "completed" || t.status === "done";
+                return true;
+              })
+              .map((t) => {
+                const isShipped = t.status === "completed" || t.status === "done";
+                const isRunning = executingTaskId === t.id;
+                return (
+                  <div
+                    key={t.id}
+                    className={`p-3.5 border transition-all space-y-2 rounded ${
+                      isShipped
+                        ? "border-emerald-500/30 bg-emerald-950/10 dark:bg-emerald-950/20"
+                        : isRunning
+                        ? "border-amber-500/50 bg-amber-950/20"
+                        : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/70 hover:border-zinc-300 dark:hover:border-zinc-700"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-serif font-bold text-sm text-black dark:text-white">{t.title}</h4>
+                          {t.urgency && (
+                            <span
+                              className={`px-1.5 py-0.2 font-mono text-[9px] font-bold rounded ${
+                                t.urgency === "P0"
+                                  ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                                  : "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                              }`}
+                            >
+                              {t.urgency}
+                            </span>
+                          )}
+                        </div>
+                        <p className="font-serif text-xs text-zinc-600 dark:text-zinc-400">{t.description}</p>
+                      </div>
+
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {isShipped ? (
+                          <button
+                            type="button"
+                            onClick={() => toggleTaskStatus(t.id)}
+                            className="px-2 py-0.5 font-mono text-[10px] font-bold text-emerald-400 border border-emerald-500/40 bg-emerald-950/60 rounded hover:bg-emerald-900/60 transition-colors cursor-pointer"
+                          >
+                            ✓ SHIPPED
+                          </button>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleExecuteTask(t)}
+                            disabled={executingTaskId !== null}
+                            className="px-2.5 py-1 font-mono text-[10px] font-bold text-amber-300 hover:text-amber-200 border border-amber-500/50 hover:border-amber-400 bg-amber-950/40 hover:bg-amber-950/70 rounded transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Zap className={`w-3 h-3 text-amber-400 ${isRunning ? "animate-spin" : "animate-pulse"}`} />
+                            <span>{isRunning ? "RUNNING..." : "⚡ RUN"}</span>
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => deleteTask(t.id)}
+                          className="p-1 text-zinc-400 hover:text-rose-500 transition-colors cursor-pointer"
+                          title="Delete task"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between font-mono text-[10px] text-zinc-500 dark:text-zinc-400 pt-1 border-t border-zinc-200/60 dark:border-zinc-800/60">
+                      <div className="flex items-center gap-2">
+                        <span>Category: <strong className="text-zinc-800 dark:text-zinc-200">{t.category || "General"}</strong></span>
+                        <span>•</span>
+                        <span>Cost: <strong className="text-zinc-800 dark:text-zinc-200">{t.costCredits || 1} Credit</strong></span>
+                      </div>
+                      <span className="text-emerald-500 font-semibold">Ready to dispatch</span>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
         </DialogContent>
       </Dialog>
