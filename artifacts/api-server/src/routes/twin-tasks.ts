@@ -8,6 +8,7 @@ import { developerTwinEngine } from "../lib/twin/developer-twin-engine.js";
 import { twinTaskWall } from "../lib/twin/twin-task-wall.js";
 import { twinMemoryV2 } from "../lib/twin/twin-memory-v2.js";
 import { twinMeetingEngine, type MeetingFramework } from "../lib/twin/twin-meetings.js";
+import { routineFatigueGuard, RoutineFatigueGuard } from "../lib/circuit-breaker.js";
 
 const router = Router();
 
@@ -955,6 +956,132 @@ router.post(["/v1/twin/meetings/convene", "/api/v1/twin/meetings/convene"], asyn
     logger.error({ err }, "Failed to convene structured meeting");
     return res.status(500).json({ success: false, error: err.message });
   }
+});
+
+// ============================================================================
+// ⚡ Capability 2: 10-Fail Fatigue Circuit Breaker & 15-Minute Floor Endpoints
+// ============================================================================
+
+/**
+ * GET /api/v1/twin/routines
+ * List all recurring routines with their fatigue states, intervals, and alerts
+ */
+router.get(["/v1/twin/routines", "/api/v1/twin/routines"], (_req: Request, res: Response) => {
+  res.json({
+    success: true,
+    data: {
+      minIntervalFloorSeconds: RoutineFatigueGuard.MIN_INTERVAL_SECONDS,
+      maxConsecutiveFailuresThreshold: RoutineFatigueGuard.MAX_CONSECUTIVE_FAILURES,
+      routines: routineFatigueGuard.listRoutines(),
+      alerts: routineFatigueGuard.getAlerts(),
+    },
+  });
+});
+
+/**
+ * POST /api/v1/twin/routines/register
+ * Register or update a routine schedule with the 15-minute floor enforced
+ */
+router.post(["/v1/twin/routines/register", "/api/v1/twin/routines/register"], (req: Request, res: Response) => {
+  try {
+    const { id, name, category, intervalSeconds } = req.body;
+    if (!id || !name || typeof intervalSeconds !== "number") {
+      res.status(400).json({ success: false, error: "id, name, and intervalSeconds (number) are required" });
+      return;
+    }
+
+    const routine = routineFatigueGuard.registerOrUpdate({
+      id,
+      name,
+      category,
+      intervalSeconds,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: {
+        routine,
+        enforced15MinFloor: intervalSeconds < RoutineFatigueGuard.MIN_INTERVAL_SECONDS,
+      },
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/twin/routines/:id/trigger
+ * Execute a routine cycle through the 10-Fail Fatigue Guard
+ */
+router.post(["/v1/twin/routines/:id/trigger", "/api/v1/twin/routines/:id/trigger"], async (req: Request, res: Response) => {
+  const routineId = String(req.params.id);
+  const { forceFailure, errorMessage } = req.body || {};
+
+  const check = routineFatigueGuard.canExecute(routineId);
+  if (!check.allowed) {
+    res.status(429).json({
+      success: false,
+      error: check.reason,
+      status: check.routine?.status,
+      consecutiveFailures: check.routine?.consecutiveFailures,
+    });
+    return;
+  }
+
+  // If forceFailure is supplied (used for testing or synthetic failure injection)
+  if (forceFailure) {
+    const errorStr = errorMessage || "Synthetic API rate limit / gateway timeout";
+    const failResult = routineFatigueGuard.recordFailure(routineId, errorStr);
+    res.status(500).json({
+      success: false,
+      error: errorStr,
+      data: failResult,
+    });
+    return;
+  }
+
+  // Otherwise simulate or run success
+  const updated = routineFatigueGuard.recordSuccess(routineId);
+  res.json({
+    success: true,
+    data: {
+      routine: updated,
+      message: `Routine "${updated?.name}" executed successfully. Fatigue circuit breaker reset to 0 failures.`,
+    },
+  });
+});
+
+/**
+ * POST /api/v1/twin/routines/:id/reset
+ * Manual merchant reset for a FATIGUE_PAUSED routine
+ */
+router.post(["/v1/twin/routines/:id/reset", "/api/v1/twin/routines/:id/reset"], (req: Request, res: Response) => {
+  const routineId = String(req.params.id);
+  const result = routineFatigueGuard.resetRoutine(routineId);
+  if (!result.success) {
+    res.status(404).json({ success: false, error: `Routine "${routineId}" not found` });
+    return;
+  }
+
+  res.json({
+    success: true,
+    data: {
+      routine: result.routine,
+      message: `Routine "${result.routine?.name}" reset successfully. Status returned to ACTIVE.`,
+    },
+  });
+});
+
+/**
+ * POST /api/v1/twin/routines/drain-backlog
+ * Trigger silent backlog drain to prevent restart storms
+ */
+router.post(["/v1/twin/routines/drain-backlog", "/api/v1/twin/routines/drain-backlog"], (_req: Request, res: Response) => {
+  const drainResult = routineFatigueGuard.drainOverdueBacklog();
+  res.json({
+    success: true,
+    data: drainResult,
+  });
 });
 
 export default router;
