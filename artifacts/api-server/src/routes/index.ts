@@ -109,6 +109,7 @@ import { juteRouter } from "./jute.js";
 import { researchPaperRouter } from "./research-paper.js";
 import { sagaRouter } from "./saga";
 import { capabilityLeashRouter } from "./capability-leash";
+import { actorSupervisorRouter } from "./actor-supervisor";
 
 const router: IRouter = Router();
 
@@ -222,6 +223,7 @@ router.use(aiToolsExtendedRouter);
 router.use(crdtRouter);
 router.use(sagaRouter);
 router.use(capabilityLeashRouter);
+router.use(actorSupervisorRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.
