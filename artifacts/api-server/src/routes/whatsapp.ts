@@ -9,6 +9,11 @@ import {
   type ExtractedCartResult,
   type SessionSlots,
 } from "../lib/commerce/whatsapp-cart-engine.js";
+import {
+  envelopeUntrustedContent,
+  unwrapUntrustedContent,
+  PROMPT_INJECTION_ARMOR_INSTRUCTION,
+} from "../lib/security/pii-redactor.js";
 
 const router = Router();
 
@@ -21,6 +26,7 @@ interface ManagedSession {
   customerPhone: string;
   customerName?: string;
   lastMessageText: string;
+  envelopedLastMessage?: string;
   lastActivity: number;
   extractedCart?: ExtractedCartResult;
   status: "active" | "pending_merchant_approval" | "confirmed" | "dispatched" | "cancelled";
@@ -28,6 +34,7 @@ interface ManagedSession {
     id: string;
     direction: "inbound" | "outbound";
     text: string;
+    envelopedText?: string;
     timestamp: number;
     quickPills?: any[];
   }>;
@@ -140,11 +147,19 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
               existing ? { sessionId: existing.sessionId, previousSlots: existing.extractedCart?.slots } : undefined
             );
 
+            // Envelope raw inbound untrusted customer text with provenance
+            const envelopedInbound = envelopeUntrustedContent(messageText, {
+              source: "whatsapp",
+              author: senderPhone,
+              timestamp: new Date().toISOString(),
+            });
+
             const managedSession: ManagedSession = {
               sessionId: sessionKey,
               customerPhone: senderPhone,
               customerName: value?.contacts?.[0]?.profile?.name || existing?.customerName || "Valued Customer",
               lastMessageText: messageText,
+              envelopedLastMessage: envelopedInbound,
               lastActivity: Date.now(),
               extractedCart,
               status: extractedCart.isSupervised ? "pending_merchant_approval" : "active",
@@ -154,6 +169,7 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
                   id: messageId || `msg_${Date.now()}`,
                   direction: "inbound",
                   text: messageText,
+                  envelopedText: envelopedInbound,
                   timestamp: Date.now(),
                 },
                 {
@@ -491,6 +507,35 @@ router.post("/v1/whatsapp/simulate", (req: Request, res: Response) => {
       autoReply: analysis.replyText,
       dialect,
       customerPhone,
+      envelopedContent: envelopeUntrustedContent(message, { source: "whatsapp", author: customerPhone }),
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/whatsapp/armor/envelope
+ * Capability 3: Envelop untrusted text, sanitize injection breakout attempts, and verify provenance
+ */
+router.post(["/v1/whatsapp/armor/envelope", "/api/v1/whatsapp/armor/envelope"], (req: Request, res: Response) => {
+  try {
+    const { text, source = "whatsapp", author = "+8801700000000" } = req.body || {};
+    if (!text) {
+      return res.status(400).json({ success: false, error: "text is required" });
+    }
+
+    const enveloped = envelopeUntrustedContent(text, { source, author });
+    const unwrapped = unwrapUntrustedContent(enveloped);
+
+    return res.json({
+      success: true,
+      data: {
+        raw: text,
+        enveloped,
+        unwrapped,
+        armorInstruction: PROMPT_INJECTION_ARMOR_INSTRUCTION,
+      },
     });
   } catch (err: any) {
     return res.status(500).json({ success: false, error: err.message });
