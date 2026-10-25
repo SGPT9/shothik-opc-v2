@@ -74,6 +74,8 @@ export interface TwinCommandPaletteProps {
   onOpenVoiceCommander?: () => void;
   onOpenSwarmGraph?: () => void;
   onOpenAddCredits?: () => void;
+  onConveneDaciMeeting?: () => void;
+  onConveneThinkingHatsMeeting?: () => void;
   // Category 2: Growth & Revenue
   onOpenAutoColdOutreach?: () => void;
   onOpenEmailOutreach?: () => void;
@@ -167,6 +169,8 @@ export function TwinCommandPalette({
   onOpenVoiceCommander,
   onOpenSwarmGraph,
   onOpenAddCredits,
+  onConveneDaciMeeting,
+  onConveneThinkingHatsMeeting,
   onOpenAutoColdOutreach,
   onOpenEmailOutreach,
   onOpenLeadCrm,
@@ -429,6 +433,38 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Instant 1-Tap bKash / Nagad credit top-up</span>
               </div>
             </div>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onConveneDaciMeeting)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-purple-500/10 text-purple-500 border border-purple-500/20">
+                <Users className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">DACI Resolution Meeting (AI-Company)</span>
+                <span className="text-[11px] text-zinc-500">Driver/Approver/Contributor debate generating binding action tickets</span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-purple-500/30 text-purple-400 font-mono">DACI</Badge>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onConveneThinkingHatsMeeting)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+                <Brain className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">Six Thinking Hats Risk Audit</span>
+                <span className="text-[11px] text-zinc-500">White/Red/Black/Yellow/Green/Blue stress-test on company strategy</span>
+              </div>
+            </div>
+            <Badge variant="outline" className="text-[10px] border-amber-500/30 text-amber-400 font-mono">6 Hats</Badge>
           </CommandItem>
         </CommandGroup>
 
