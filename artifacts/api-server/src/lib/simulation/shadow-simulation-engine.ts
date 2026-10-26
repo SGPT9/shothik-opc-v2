@@ -82,7 +82,7 @@ export class ShadowSimulationEngine {
 
     // 1. Deep clone state to create completely isolated shadow sandbox
     const baseInitial: ShadowState = {
-      walletBalanceBdt: 25000,
+      walletBalanceBdt: 50000,
       inventoryStock: {
         "SKU_TSHIRT_BLK": 150,
         "SKU_HOODIE_NVY": 40,
