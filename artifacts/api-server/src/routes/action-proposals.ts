@@ -1,7 +1,41 @@
 import { Router } from "express";
-import { globalActionEngine, proposalPayloadSchema } from "../lib/actions/action-proposal-engine";
+import { globalActionEngine, proposalPayloadSchema, type ProposalPayload } from "../lib/actions/action-proposal-engine";
+import { shadowSimulationEngine, type SimulationAction } from "../lib/simulation/shadow-simulation-engine";
 
 export const actionProposalsRouter = Router();
+
+function mapProposalToSimulationAction(kind: string, data: any): SimulationAction | null {
+  if (kind === "bkash.payout") {
+    return {
+      twinId: "finance_twin",
+      actionName: "mfs_disburse",
+      params: {
+        amountBdt: data.amount,
+        recipientPhone: data.recipientPhone,
+      },
+    };
+  }
+  if (kind === "courier.dispatch") {
+    return {
+      twinId: "operations_twin",
+      actionName: "book_courier_consignment",
+      params: {
+        district: "Dhaka",
+        recipientPhone: data.recipientPhone,
+      },
+    };
+  }
+  if (kind === "invoice.issue") {
+    return {
+      twinId: "finance_twin",
+      actionName: "issue_tax_invoice",
+      params: {
+        amountBdt: data.totalAmountBdt,
+      },
+    };
+  }
+  return null;
+}
 
 actionProposalsRouter.get(["/action-proposals", "/v1/action-proposals", "/api/v1/action-proposals"], (req, res) => {
   const owner = req.query.owner as string | undefined;
@@ -26,6 +60,12 @@ actionProposalsRouter.post(["/action-proposals", "/v1/action-proposals", "/api/v
     expiresInMinutes,
   );
 
+  // Pre-flight Shadow Simulation rehearsal
+  const simAction = mapProposalToSimulationAction(parsed.data.kind, parsed.data.data);
+  if (simAction) {
+    proposal.simulationReport = shadowSimulationEngine.rehearse([simAction]);
+  }
+
   res.status(201).json({ success: true, proposal });
 });
 
@@ -42,6 +82,26 @@ actionProposalsRouter.get(["/action-proposals/:id", "/v1/action-proposals/:id", 
 actionProposalsRouter.post(["/action-proposals/:id/approve", "/v1/action-proposals/:id/approve", "/api/v1/action-proposals/:id/approve"], async (req, res) => {
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const existing = globalActionEngine.getProposal(id);
+    if (!existing) {
+      res.status(404).json({ success: false, error: "Action proposal not found" });
+      return;
+    }
+
+    // Shadow simulation invariant check before executing state mutation
+    const simAction = mapProposalToSimulationAction(existing.kind, existing.data);
+    if (simAction) {
+      const report = shadowSimulationEngine.rehearse([simAction]);
+      if (report.verdict === "REJECTED_INVARIANT_VIOLATION") {
+        res.status(422).json({
+          success: false,
+          error: `Action proposal blocked by Shadow Simulation: ${report.violations.join("; ")}`,
+          simulationReport: report,
+        });
+        return;
+      }
+    }
+
     const proposal = await globalActionEngine.approve(id);
     res.json({ success: true, message: "Action proposal approved & executed", proposal });
   } catch (err: any) {

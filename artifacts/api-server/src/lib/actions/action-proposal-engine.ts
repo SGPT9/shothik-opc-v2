@@ -64,6 +64,7 @@ export interface ActionProposal {
   reviewedAt?: string;
   result?: string;
   error?: string;
+  simulationReport?: any;
 }
 
 export class ActionProposalEngine {
