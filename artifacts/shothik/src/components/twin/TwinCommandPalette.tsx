@@ -70,6 +70,7 @@ export interface TwinCommandPaletteProps {
   onOpenAutoMode?: () => void;
   onOpenNightshift?: () => void;
   onOpenDailyDigest?: () => void;
+  onOpenDeepResearch?: () => void;
   onOpenCompanySettings?: () => void;
   onOpenVoiceCommander?: () => void;
   onOpenSwarmGraph?: () => void;
@@ -165,6 +166,7 @@ export function TwinCommandPalette({
   onOpenAutoMode,
   onOpenNightshift,
   onOpenDailyDigest,
+  onOpenDeepResearch,
   onOpenCompanySettings,
   onOpenVoiceCommander,
   onOpenSwarmGraph,
@@ -292,6 +294,22 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘M</CommandShortcut>
+          </CommandItem>
+
+          <CommandItem
+            onSelect={() => handleSelect(onOpenDeepResearch)}
+            className="flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition"
+          >
+            <div className="flex items-center gap-3">
+              <div className="p-1.5 rounded-md bg-indigo-500/10 text-indigo-500 border border-indigo-500/20">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-semibold text-zinc-900 dark:text-zinc-100">DeerFlow 2.0 Deep Research Studio</span>
+                <span className="text-[11px] text-zinc-500">Systematic literature reviews, citations & NBR sandbox math</span>
+              </div>
+            </div>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘R</CommandShortcut>
           </CommandItem>
 
           <CommandItem
