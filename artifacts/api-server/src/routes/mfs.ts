@@ -6,6 +6,7 @@ import { bkashPgwClient } from "../lib/mfs/bkash-pgw-client";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 import { capabilityLeashEngine } from "../lib/security/capability-leash";
+import { AuditLedgerEngine } from "../lib/audit/audit-ledger-engine";
 
 const router = Router();
 
@@ -481,6 +482,24 @@ router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: R
       referenceId: payoutTrxId,
       note: creatorNote || "Creator Marketplace Revenue Cash-Out",
     });
+
+    // Bridge 6: Record double-entry entry in NBR Audit Ledger
+    try {
+      AuditLedgerEngine.postJournalEntry({
+        transactionRef: payoutTrxId,
+        transactionType: "courier_payout",
+        memo: `Creator MFS Payout: Gross ৳${payoutAmountBdt}, TDS ৳${tdsAmountBdt}, Net ৳${netDisbursedBdt}`,
+        initiatorKind: "responsibility",
+        initiatorId: "mfs_payout_engine",
+        lines: [
+          { accountCode: "2030", debitBdt: payoutAmountBdt, creditBdt: 0, description: "Clear Creator Payable" },
+          { accountCode: "1020", debitBdt: 0, creditBdt: netDisbursedBdt, description: "MFS Wallet Cash Disbursed" },
+          { accountCode: "2020", debitBdt: 0, creditBdt: tdsAmountBdt, description: "NBR Statutory TDS Withholding" },
+        ],
+      });
+    } catch {
+      // Non-blocking fallback
+    }
 
     return res.status(200).json({
       success: true,

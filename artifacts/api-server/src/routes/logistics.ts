@@ -8,6 +8,8 @@ import { eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 import { capabilityLeashEngine } from "../lib/security/capability-leash";
+import { durableSagaEngine } from "../lib/saga/durable-saga-engine";
+import { AuditLedgerEngine } from "../lib/audit/audit-ledger-engine";
 
 const router = Router();
 
@@ -186,7 +188,7 @@ router.post("/v1/logistics/steadfast/book", idempotencyMiddleware, async (req: R
       // Memory fallback holds state
     }
 
-    return res.status(200).json({
+    const responsePayload = {
       success: true,
       provider,
       consignmentId,
@@ -200,7 +202,27 @@ router.post("/v1/logistics/steadfast/book", idempotencyMiddleware, async (req: R
         ? `🚚 *Order Confirmation — Delivery Booked*\n\nTracking: ${trackingCode}\nAddress: ${order.deliveryAddress}, ${order.city}\nAmount to Pay: ৳${order.codAmountBdt} BDT (Cash On Delivery)\n\nThank you for ordering with us!`
         : null,
       message: "Parcel booked successfully with courier partner",
-    });
+    };
+
+    // Bridge 6: Post courier booking double-entry to NBR Audit Ledger
+    try {
+      const totalCourierExpense = deliveryFeeBdt + codFeeBdt;
+      AuditLedgerEngine.postJournalEntry({
+        transactionRef: trackingCode,
+        transactionType: "courier_payout",
+        memo: `Courier Parcel Booking: ${provider.toUpperCase()} (${trackingCode})`,
+        initiatorKind: "responsibility",
+        initiatorId: "logistics_engine",
+        lines: [
+          { accountCode: "6010", debitBdt: totalCourierExpense, creditBdt: 0, description: `Courier Expense (${provider})` },
+          { accountCode: "1030", debitBdt: 0, creditBdt: totalCourierExpense, description: "Offset against Courier COD Account" },
+        ],
+      });
+    } catch {
+      // Non-blocking
+    }
+
+    return res.status(200).json(responsePayload);
   } catch (error: any) {
     return res.status(500).json({
       success: false,
@@ -352,6 +374,70 @@ router.post("/v1/logistics/webhook", async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: "Failed to process logistics webhook",
+      message: err?.message || String(err),
+    });
+  }
+});
+/**
+ * POST /api/v1/logistics/dispatch-saga
+ * Executes transactional dispatch coordinating MFS escrow, courier booking, and Mushak-6.3 VAT
+ * with automatic compensating rollback via Durable Saga Engine.
+ */
+router.post("/v1/logistics/dispatch-saga", idempotencyMiddleware, async (req: Request, res: Response) => {
+  try {
+    const {
+      orderId = `ORD_${Date.now()}`,
+      merchantId = "merch_default",
+      recipientPhone,
+      deliveryDistrict = "Dhaka",
+      amountBdt,
+      simulateFailure = false,
+      simulateTaxFailure = false,
+      idempotencyKey,
+      correlationId,
+    } = req.body;
+
+    if (!amountBdt || amountBdt <= 0) {
+      return res.status(400).json({
+        success: false,
+        error: "amountBdt is required and must be greater than zero",
+      });
+    }
+
+    if (!recipientPhone) {
+      return res.status(400).json({
+        success: false,
+        error: "recipientPhone is required",
+      });
+    }
+
+    const record = await durableSagaEngine.executeSaga({
+      sagaName: "MFS_PAYOUT_LOGISTICS_BOOKING",
+      initialContext: {
+        orderId,
+        merchantId,
+        recipientPhone,
+        deliveryDistrict,
+        amountBdt,
+        simulateFailure,
+        simulateTaxFailure,
+      },
+      idempotencyKey,
+      correlationId,
+    });
+
+    const isFailure = record.status === "COMPENSATED" || record.status === "COMPENSATION_FAILED" || record.status === "FAILED";
+
+    return res.status(isFailure ? 422 : 200).json({
+      success: !isFailure,
+      sagaId: record.sagaId,
+      status: record.status,
+      data: record,
+    });
+  } catch (err: any) {
+    return res.status(500).json({
+      success: false,
+      error: "Failed to execute coordinated dispatch saga",
       message: err?.message || String(err),
     });
   }

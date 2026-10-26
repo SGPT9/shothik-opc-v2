@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { logger } from "../logger";
+import { AuditLedgerEngine } from "../audit/audit-ledger-engine";
 
 export type SagaStepStatus =
   | "PENDING"
@@ -206,6 +207,45 @@ export class DurableSagaEngine {
       record.completedAt = new Date().toISOString();
       this.saveExecution(record);
       logger.info({ sagaId, durationMs: Date.now() - new Date(record.startedAt).getTime() }, "[SagaEngine] Saga completed successfully");
+
+      // Bridge 6: Post cryptographic double-entry journal entry to Audit Ledger
+      try {
+        if (record.sagaName === "ESCROW_COD_SETTLEMENT" && record.context.codAmount) {
+          const codAmount = Number(record.context.codAmount);
+          const commissionFee = Math.round(codAmount * (record.context.commissionRate ?? 0.01));
+          const netDisbursed = codAmount - commissionFee;
+          AuditLedgerEngine.postJournalEntry({
+            transactionRef: record.sagaId,
+            transactionType: "courier_payout",
+            memo: `Saga ${record.sagaId}: COD Settlement disbursed ৳${netDisbursed} net of ৳${commissionFee} commission`,
+            initiatorKind: "responsibility",
+            initiatorId: "saga_engine",
+            lines: [
+              { accountCode: "1020", debitBdt: netDisbursed, creditBdt: 0, description: "Settlement to MFS Wallet" },
+              { accountCode: "6010", debitBdt: commissionFee, creditBdt: 0, description: "Courier Collection Commission" },
+              { accountCode: "1030", debitBdt: 0, creditBdt: codAmount, description: "Clear COD Receivables" },
+            ],
+          });
+        } else if (record.sagaName === "MFS_PAYOUT_LOGISTICS_BOOKING" && record.context.amountBdt) {
+          const amount = Number(record.context.amountBdt);
+          const vat = Math.round(amount * 0.05);
+          AuditLedgerEngine.postJournalEntry({
+            transactionRef: record.sagaId,
+            transactionType: "sale_bkash",
+            memo: `Saga ${record.sagaId}: Escrow delivery reserve with Mushak-6.3 VAT`,
+            initiatorKind: "responsibility",
+            initiatorId: "saga_engine",
+            lines: [
+              { accountCode: "1020", debitBdt: amount, creditBdt: 0, description: "Escrow Reserve Held" },
+              { accountCode: "4010", debitBdt: 0, creditBdt: amount - vat, description: "E-Commerce Revenue" },
+              { accountCode: "2010", debitBdt: 0, creditBdt: vat, description: "Mushak-6.3 Output VAT" },
+            ],
+          });
+        }
+      } catch (auditErr: any) {
+        logger.warn({ error: auditErr.message, sagaId }, "[SagaEngine] Audit ledger recording skipped");
+      }
+
       return record;
     }
 
