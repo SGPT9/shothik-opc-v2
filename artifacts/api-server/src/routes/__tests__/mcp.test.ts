@@ -48,6 +48,34 @@ describe("MCP Gateway Routes (/api/mcp)", () => {
     expect(json.content).toContain("Server node and port audit");
   });
 
+  it("GET /api/mcp/capabilities discovers DeerFlow 2.0 research and data skills", async () => {
+    const res = await fetch(`${baseUrl}/api/mcp/capabilities`);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+
+    const hasDeepResearch = json.capabilities.some((c: any) => c.id === "deep-research");
+    expect(hasDeepResearch).toBe(true);
+
+    const hasSlr = json.capabilities.some((c: any) => c.id === "systematic-literature-review");
+    expect(hasSlr).toBe(true);
+  });
+
+  it("GET /api/mcp/capabilities/:id retrieves DeerFlow deep-research metadata and source", async () => {
+    const res = await fetch(`${baseUrl}/api/mcp/capabilities/deep-research`);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.capability.id).toBe("deep-research");
+    expect(json.capability.category).toBe("research");
+
+    const sourceRes = await fetch(`${baseUrl}/api/mcp/capabilities/deep-research/source`);
+    expect(sourceRes.status).toBe(200);
+    const sourceJson = (await sourceRes.json()) as any;
+    expect(sourceJson.success).toBe(true);
+    expect(sourceJson.content).toContain("Deep Research Skill");
+  });
+
   it("GET /api/mcp/capabilities/:id returns 404 for unknown capability", async () => {
     const res = await fetch(`${baseUrl}/api/mcp/capabilities/non-existent-skill-999`);
     expect(res.status).toBe(404);

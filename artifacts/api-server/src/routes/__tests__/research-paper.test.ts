@@ -98,6 +98,50 @@ describe("AutoResearchClaw Academic Research Paper Engine Integration", () => {
       expect(json.data.qualityScore.originality).toBeGreaterThan(90);
     });
 
+    it("POST /api/v1/research/paper/generate with useDeerFlowSlr attaches DeerFlow 2.0 metadata", async () => {
+      const res = await fetch(`${baseUrl}/api/v1/research/paper/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: "Cryptographic Capability Leashes in South Asian Autonomous Agent Swarms",
+          topic: "HMAC Capability Tokens in Distributed Commerce",
+          fieldOfStudy: "Computer Science & Cryptography",
+          targetFormat: "IEEE",
+          useDeerFlowSlr: true,
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.data.deerflowMeta).toBeDefined();
+      expect(json.data.deerflowMeta.poweredBy).toBe("DeerFlow 2.0 Super Agent");
+      expect(json.data.deerflowMeta.slrSkill).toBe("systematic-literature-review");
+    });
+
+    it("POST /api/v1/research/paper/deerflow-slr generates structured multi-paper literature review", async () => {
+      const res = await fetch(`${baseUrl}/api/v1/research/paper/deerflow-slr`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          topic: "Speculative Decoding and Edge-first Vector Search",
+          fieldOfStudy: "Distributed Systems & Machine Learning",
+          scopeCount: 25,
+          citationFormat: "IEEE",
+        }),
+      });
+
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.success).toBe(true);
+      expect(json.data.reviewId).toMatch(/^SLR-/);
+      expect(json.data.methodology).toBe("DEERFLOW_V2_SLR");
+      expect(json.data.scopeCount).toBe(25);
+      expect(json.data.themes.length).toBeGreaterThan(0);
+      expect(json.data.annotatedBibliography.length).toBeGreaterThan(0);
+      expect(json.data.sha256VerificationHash).toBeDefined();
+    });
+
     it("POST /api/v1/research/paper/verify evaluates paper rubric scores", async () => {
       const sampleText = "We present a comprehensive evaluation of autonomous multi-agent systems in e-commerce fulfillment across Dhaka micro-hubs. Our methodology combines empirical latency measurements with stochastic load balancing.";
 
