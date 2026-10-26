@@ -13,6 +13,7 @@ import { logger } from "../logger.js";
 import { semanticMemory } from "../semantic-memory.js";
 import { dshRuntime } from "../dsh-runtime.js";
 import { VernacularDialectEngine } from "../vernacular-dialects.js";
+import { actorSupervisor } from "./actor-supervisor.js";
 
 export type SpecializedTwinType =
   | "marketing_twin"
@@ -70,6 +71,43 @@ export class TwinOrchestrator {
 
   private constructor() {
     this.dialectEngine = VernacularDialectEngine.getInstance();
+    this.initSupervisedActors();
+  }
+
+  private initSupervisedActors(): void {
+    const specializedTwins: SpecializedTwinType[] = [
+      "marketing_twin",
+      "seo_twin",
+      "sales_twin",
+      "crm_twin",
+      "content_twin",
+      "website_twin",
+      "analytics_twin",
+      "customer_support_twin",
+      "operations_twin",
+      "developer_twin",
+    ];
+
+    for (const twinType of specializedTwins) {
+      if (!actorSupervisor.getActorState(twinType)) {
+        actorSupervisor.spawnActor({
+          actorId: twinType,
+          type: twinType,
+          initialState: () => ({ processedCount: 0, lastIntent: "" }),
+          handler: async (state, message) => {
+            const { observation, signal } = message.payload || {};
+            const result = await this.executeWithSpecializedTwin(twinType, observation, signal);
+            return {
+              newState: {
+                processedCount: (state.processedCount || 0) + 1,
+                lastIntent: observation?.inferredIntent || message.type,
+              },
+              result,
+            };
+          },
+        });
+      }
+    }
   }
 
   static getInstance(): TwinOrchestrator {
@@ -134,9 +172,24 @@ export class TwinOrchestrator {
     }
 
     // ───────────────────────────────────────────────
-    // STAGE 4: EXECUTE
+    // STAGE 4: EXECUTE (Supervised Erlang/OTP Actor Tree)
     // ───────────────────────────────────────────────
-    const twinOutput = await this.executeWithSpecializedTwin(decision.targetTwin, observation, signal);
+    let twinOutput: string;
+    try {
+      twinOutput = await actorSupervisor.call<any, string>(
+        decision.targetTwin,
+        {
+          sender: "twin-orchestrator",
+          type: observation.inferredIntent,
+          payload: { observation, signal },
+        },
+        5000
+      );
+    } catch (err: any) {
+      logger.warn({ err: err?.message, targetTwin: decision.targetTwin }, "[TwinOrchestrator] Actor supervisor call fell back to direct execution");
+      twinOutput = await this.executeWithSpecializedTwin(decision.targetTwin, observation, signal);
+    }
+
     await dshRuntime.recordEvent(dshSession.id, "tool_call", {
       tool: decision.targetTwin,
       arguments: observation.normalizedPayload,
@@ -191,7 +244,7 @@ export class TwinOrchestrator {
     } else if (/lead|customer|buy|অর্ডার|দাম কত/i.test(rawText)) {
       inferredIntent = "sales_conversion";
       urgency = "critical";
-    } else if (/post|blog|social|facebook|campaign/i.test(rawText)) {
+    } else if (/post|blog|social|facebook|campaign|পোস্ট|ব্লগ|ক্যাম্পেইন/i.test(rawText)) {
       inferredIntent = "content_marketing";
       urgency = "low";
     }

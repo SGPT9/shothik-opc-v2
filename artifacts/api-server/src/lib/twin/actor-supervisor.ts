@@ -68,6 +68,11 @@ export class ActorSupervisor {
     isLoopRunning: boolean;
     startedAt: string;
   }>();
+  private readonly pendingCalls = new Map<string, {
+    resolve: (res: any) => void;
+    reject: (err: any) => void;
+    timer: NodeJS.Timeout;
+  }>();
 
   private constructor(config?: Partial<SupervisorConfig>) {
     this.config = {
@@ -155,7 +160,7 @@ export class ActorSupervisor {
   /**
    * Synchronous call (Request-Reply): enqueues message and awaits execution result.
    */
-  public async call<TPayload, TResult>(
+  public async call<TPayload = any, TResult = any>(
     actorId: string,
     message: Omit<ActorMessage<TPayload>, "id" | "timestamp">,
     timeoutMs = 5000
@@ -166,36 +171,13 @@ export class ActorSupervisor {
     }
 
     return new Promise<TResult>((resolve, reject) => {
+      const sendResult = this.send(actorId, message);
       const timer = setTimeout(() => {
+        this.pendingCalls.delete(sendResult.messageId);
         reject(new Error(`Actor call timed out after ${timeoutMs}ms`));
       }, timeoutMs);
 
-      // Wrapper to intercept result
-      const originalHandler = actor.spec.handler;
-      const wrappedHandler: MessageHandler<any, any, any> = async (state, msg) => {
-        try {
-          const res = await originalHandler(state, msg);
-          if (msg.payload?.__isCallWrapper) {
-            clearTimeout(timer);
-            resolve(res.result);
-          }
-          return res;
-        } catch (err) {
-          if (msg.payload?.__isCallWrapper) {
-            clearTimeout(timer);
-            reject(err);
-          }
-          throw err;
-        } finally {
-          actor.spec.handler = originalHandler;
-        }
-      };
-
-      actor.spec.handler = wrappedHandler;
-      this.send(actorId, {
-        ...message,
-        payload: { ...message.payload, __isCallWrapper: true },
-      });
+      this.pendingCalls.set(sendResult.messageId, { resolve, reject, timer });
     });
   }
 
@@ -215,11 +197,18 @@ export class ActorSupervisor {
       actor.status = "PROCESSING";
 
       try {
-        const { newState } = await actor.spec.handler(actor.state, msg);
+        const { newState, result } = await actor.spec.handler(actor.state, msg);
         actor.state = newState;
         actor.processedCount++;
         actor.mailbox.shift(); // Successfully processed: remove from queue
         actor.status = actor.mailbox.length > 0 ? "PROCESSING" : "IDLE";
+
+        const pending = this.pendingCalls.get(msg.id);
+        if (pending) {
+          clearTimeout(pending.timer);
+          this.pendingCalls.delete(msg.id);
+          pending.resolve(result);
+        }
       } catch (err: any) {
         // CRASH CAUGHT BY SUPERVISOR
         const errorMsg = err?.message || String(err);
@@ -238,6 +227,13 @@ export class ActorSupervisor {
           timestamp: now,
         });
         if (actor.deadLetters.length > 50) actor.deadLetters.shift();
+
+        const pending = this.pendingCalls.get(msg.id);
+        if (pending) {
+          clearTimeout(pending.timer);
+          this.pendingCalls.delete(msg.id);
+          pending.reject(err);
+        }
 
         // Prune older crash timestamps outside window
         const cutoff = now - this.config.periodSeconds * 1000;
