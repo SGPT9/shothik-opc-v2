@@ -125,3 +125,71 @@ sandboxRouter.post("/v1/sandbox/simulate-webhook", async (req: Request, res: Res
     res.status(500).json({ success: false, error: err.message });
   }
 });
+
+/**
+ * POST /api/v1/sandbox/deerflow-calc
+ * Executes verified financial, Mushak 6.3 VAT, or margin computations inside the sandbox.
+ */
+sandboxRouter.post("/v1/sandbox/deerflow-calc", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      calculationType = "mushak_63_vat",
+      baseAmount = 10000,
+      vatRatePercent = 15,
+      withholdingTaxPercent = 0,
+      supplementaryDutyPercent = 0,
+    } = req.body || {};
+
+    const safeBase = Math.max(0, Number(baseAmount) || 0);
+    const safeVatRate = Math.max(0, Math.min(100, Number(vatRatePercent) || 15));
+    const safeSdRate = Math.max(0, Math.min(100, Number(supplementaryDutyPercent) || 0));
+    const safeAitRate = Math.max(0, Math.min(100, Number(withholdingTaxPercent) || 0));
+
+    // Execute within sandbox
+    const code = `
+const base = ${safeBase};
+const sd = base * (${safeSdRate} / 100);
+const vatBase = base + sd;
+const vat = vatBase * (${safeVatRate} / 100);
+const ait = base * (${safeAitRate} / 100);
+const totalPayable = vatBase + vat;
+const netReceivable = base - ait;
+console.log(JSON.stringify({
+  baseAmount: base,
+  supplementaryDuty: Math.round(sd * 100) / 100,
+  vatAmount: Math.round(vat * 100) / 100,
+  withholdingTax: Math.round(ait * 100) / 100,
+  totalPayable: Math.round(totalPayable * 100) / 100,
+  netReceivable: Math.round(netReceivable * 100) / 100,
+  calculationType: "${calculationType}",
+  engine: "deerflow-sandbox-v2"
+}));
+`;
+
+    const execResult = await codeSandbox.execute({
+      language: "javascript",
+      code,
+      timeoutMs: 5000,
+    });
+
+    if (!execResult.success) {
+      res.status(500).json({ success: false, error: execResult.stderr || "Computation failed" });
+      return;
+    }
+
+    let parsedResult = {};
+    try {
+      parsedResult = JSON.parse(execResult.stdout.trim());
+    } catch {
+      parsedResult = { rawOutput: execResult.stdout };
+    }
+
+    res.status(200).json({
+      success: true,
+      calculation: parsedResult,
+      executionDurationMs: execResult.durationMs,
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});

@@ -65,4 +65,28 @@ describe("Isolated Code Interpreter Sandbox (/api/v1/sandbox)", () => {
     expect(json.success).toBe(false);
     expect(json.result.error).toBe("SECURITY_VIOLATION");
   });
+
+  it("POST /api/v1/sandbox/deerflow-calc calculates exact Mushak 6.3 VAT and withholding taxes", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/sandbox/deerflow-calc`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        calculationType: "mushak_63_vat",
+        baseAmount: 20000,
+        vatRatePercent: 15,
+        withholdingTaxPercent: 5,
+        supplementaryDutyPercent: 10,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.calculation.baseAmount).toBe(20000);
+    expect(json.calculation.supplementaryDuty).toBe(2000); // 10% of 20000
+    expect(json.calculation.vatAmount).toBe(3300); // 15% of (20000 + 2000)
+    expect(json.calculation.withholdingTax).toBe(1000); // 5% of 20000
+    expect(json.calculation.totalPayable).toBe(25300); // 22000 + 3300
+    expect(json.calculation.engine).toBe("deerflow-sandbox-v2");
+  });
 });

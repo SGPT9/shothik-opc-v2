@@ -22,6 +22,15 @@ const generatePaperSchema = z.object({
   ]).optional(),
   keywords: z.array(z.string()).optional(),
   includeBibtex: z.boolean().optional(),
+  useDeerFlowSlr: z.boolean().optional(),
+});
+
+const slrSchema = z.object({
+  topic: z.string().min(2, "Topic is required"),
+  fieldOfStudy: z.string().optional(),
+  scopeCount: z.number().int().min(5).max(50).optional(),
+  citationFormat: z.enum(["APA", "IEEE", "BibTeX"]).optional(),
+  timeWindow: z.string().optional(),
 });
 
 /**
@@ -87,6 +96,31 @@ researchPaperRouter.post("/v1/research/paper/generate", (req: Request, res: Resp
   }
 
   const result = AutoResearchBridge.generatePaperDraft(parse.data as ResearchPaperGenerationParams);
+  return res.json({
+    success: true,
+    data: result,
+  });
+});
+
+/**
+ * POST /api/v1/research/paper/deerflow-slr
+ * Generates an end-to-end Systematic Literature Review (SLR) synthesized across academic papers
+ * using the ByteDance DeerFlow 2.0 multi-agent research harness.
+ */
+researchPaperRouter.post("/v1/research/paper/deerflow-slr", (req: Request, res: Response) => {
+  const parse = slrSchema.safeParse(req.body);
+  if (!parse.success) {
+    return res.status(400).json({
+      success: false,
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Invalid systematic literature review parameters",
+        details: parse.error.issues,
+      },
+    });
+  }
+
+  const result = AutoResearchBridge.generateSystematicLiteratureReview(parse.data as any);
   return res.json({
     success: true,
     data: result,

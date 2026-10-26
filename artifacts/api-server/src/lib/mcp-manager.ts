@@ -27,6 +27,7 @@ export class McpManager {
   private static instance: McpManager;
   private catalogPath: string;
   private skillsRoot: string;
+  private deerFlowSkillsRoot: string = "";
   private cachedCatalog: SkillCatalog | null = null;
 
   private constructor() {
@@ -40,6 +41,7 @@ export class McpManager {
 
     let foundCatalog = "";
     let foundSkillsRoot = "";
+    let foundDeerFlowSkills = "";
 
     for (const root of candidateRoots) {
       const catPath = path.resolve(root, "reference-repos/AI-skills-for-networks/catalog.json");
@@ -57,8 +59,17 @@ export class McpManager {
       }
     }
 
+    for (const root of candidateRoots) {
+      const deerSkillsPath = path.resolve(root, "deer-flow-backend/skills/public");
+      if (fsSync.existsSync(deerSkillsPath)) {
+        foundDeerFlowSkills = deerSkillsPath;
+        break;
+      }
+    }
+
     this.catalogPath = foundCatalog || path.resolve(cwd, "../../reference-repos/AI-skills-for-networks/catalog.json");
     this.skillsRoot = foundSkillsRoot || path.resolve(cwd, "../../reference-repos/AI-skills-for-networks");
+    this.deerFlowSkillsRoot = foundDeerFlowSkills;
   }
 
   public static getInstance(): McpManager {
@@ -68,16 +79,75 @@ export class McpManager {
     return McpManager.instance;
   }
 
+  private parseSkillFrontmatter(content: string, fallbackId: string): { title: string; category: string; description: string } {
+    let name = fallbackId;
+    let description = `Autonomous skill: ${fallbackId}`;
+    let title = fallbackId
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+    const lines = content.split("\n");
+    let inFrontmatter = false;
+
+    for (let i = 0; i < Math.min(lines.length, 30); i++) {
+      const line = lines[i].trim();
+      if (line === "---") {
+        inFrontmatter = !inFrontmatter;
+        continue;
+      }
+      if (inFrontmatter) {
+        if (line.startsWith("name:")) {
+          name = line.replace("name:", "").trim();
+        } else if (line.startsWith("description:")) {
+          description = line.replace("description:", "").trim();
+        }
+      } else if (line.startsWith("# ")) {
+        title = line.replace(/^#\s+/, "").replace(/\s+Skill$/, "").trim();
+        break;
+      }
+    }
+
+    // Determine semantic category
+    let category = "general";
+    if (
+      name.includes("research") ||
+      name.includes("paper") ||
+      name.includes("literature") ||
+      name.includes("academic")
+    ) {
+      category = "research";
+    } else if (
+      name.includes("analysis") ||
+      name.includes("chart") ||
+      name.includes("consulting") ||
+      name.includes("data")
+    ) {
+      category = "data";
+    } else if (
+      name.includes("generation") ||
+      name.includes("ppt") ||
+      name.includes("video") ||
+      name.includes("podcast") ||
+      name.includes("music") ||
+      name.includes("newsletter")
+    ) {
+      category = "creative";
+    }
+
+    return { title, category, description };
+  }
+
   public async getCatalog(): Promise<SkillCatalog> {
     if (this.cachedCatalog) return this.cachedCatalog;
 
+    let baseCatalog: SkillCatalog;
     try {
       const content = await fs.readFile(this.catalogPath, "utf-8");
-      this.cachedCatalog = JSON.parse(content) as SkillCatalog;
-      return this.cachedCatalog;
-    } catch (err) {
+      baseCatalog = JSON.parse(content) as SkillCatalog;
+    } catch {
       // Fallback catalog if file is missing
-      return {
+      baseCatalog = {
         version: 1,
         skills: [
           {
@@ -97,6 +167,37 @@ export class McpManager {
         ],
       };
     }
+
+    // Dynamically ingest DeerFlow 2.0 public skills
+    try {
+      if (this.deerFlowSkillsRoot && fsSync.existsSync(this.deerFlowSkillsRoot)) {
+        const entries = await fs.readdir(this.deerFlowSkillsRoot, { withFileTypes: true });
+        for (const entry of entries) {
+          if (entry.isDirectory()) {
+            const skillId = entry.name;
+            if (baseCatalog.skills.some((s) => s.id === skillId)) continue;
+
+            const skillMdPath = path.join(this.deerFlowSkillsRoot, skillId, "SKILL.md");
+            if (fsSync.existsSync(skillMdPath)) {
+              const content = await fs.readFile(skillMdPath, "utf-8");
+              const meta = this.parseSkillFrontmatter(content, skillId);
+              baseCatalog.skills.push({
+                id: skillId,
+                title: meta.title,
+                category: meta.category as any,
+                path: `deerflow:${skillId}`,
+                description: meta.description,
+              });
+            }
+          }
+        }
+      }
+    } catch {
+      // Keep base catalog if reading deer-flow directory fails
+    }
+
+    this.cachedCatalog = baseCatalog;
+    return this.cachedCatalog;
   }
 
   public async listCapabilities(category?: string, query?: string): Promise<PublicSkillMetadata[]> {
@@ -138,6 +239,22 @@ export class McpManager {
 
     // Sanitize file name to prevent path traversal
     const safeFile = path.basename(file);
+
+    // Check if it's a DeerFlow skill
+    if (match.path.startsWith("deerflow:")) {
+      const skillSubdir = match.path.replace("deerflow:", "");
+      if (this.deerFlowSkillsRoot) {
+        const targetPath = path.resolve(this.deerFlowSkillsRoot, skillSubdir, safeFile);
+        try {
+          const content = await fs.readFile(targetPath, "utf-8");
+          return { id, file: safeFile, content };
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }
+
     const targetPath = path.resolve(this.skillsRoot, match.path, safeFile);
 
     try {
