@@ -7,6 +7,7 @@ import { db, parcelsTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { logger } from "../lib/logger";
 import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
+import { capabilityLeashEngine } from "../lib/security/capability-leash";
 
 const router = Router();
 
@@ -58,6 +59,33 @@ router.post("/v1/logistics/steadfast/book", idempotencyMiddleware, async (req: R
     const isInsideDhaka = order.city.toLowerCase().includes("dhaka");
     const deliveryFeeBdt = isInsideDhaka ? 60 : 120;
     const codFeeBdt = Math.round(order.codAmountBdt * 0.01); // 1% COD fee
+
+    // Optional Cryptographic Capability Attenuation & Spend Leash check
+    const capabilityToken = (req.headers["x-capability-token"] as string) || (req.body?.capabilityToken as string);
+    if (capabilityToken) {
+      const totalDeliveryExpense = deliveryFeeBdt + codFeeBdt;
+      const leashCheck = capabilityLeashEngine.verifyLeash(capabilityToken, {
+        actionScope: "logistics_book",
+        district: order.city,
+        amountBdt: totalDeliveryExpense,
+      });
+      if (!leashCheck.valid) {
+        return res.status(403).json({
+          success: false,
+          error: `Capability leash rejected parcel booking: ${leashCheck.reason}`,
+          code: leashCheck.code,
+          details: leashCheck,
+        });
+      }
+      try {
+        capabilityLeashEngine.recordSpend(capabilityToken, totalDeliveryExpense);
+      } catch (spendErr: any) {
+        return res.status(403).json({
+          success: false,
+          error: `Failed to record spend against leash: ${spendErr.message}`,
+        });
+      }
+    }
 
     let trackingCode = `BD_${provider.toUpperCase()}_${Math.floor(100000 + Math.random() * 900000)}`;
     let consignmentId = `CN_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
