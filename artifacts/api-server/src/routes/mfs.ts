@@ -5,6 +5,7 @@ import { TrxVerificationRequestSchema, TIER_CREDIT_MAP } from "@workspace/hermes
 import { bkashPgwClient } from "../lib/mfs/bkash-pgw-client";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
+import { capabilityLeashEngine } from "../lib/security/capability-leash";
 
 const router = Router();
 
@@ -431,6 +432,31 @@ router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: R
         success: false,
         error: "Minimum payout amount is ৳500 BDT.",
       });
+    }
+
+    // Optional Cryptographic Capability Attenuation & Spend Leash check
+    const capabilityToken = (req.headers["x-capability-token"] as string) || (req.body?.capabilityToken as string);
+    if (capabilityToken) {
+      const leashCheck = capabilityLeashEngine.verifyLeash(capabilityToken, {
+        actionScope: "mfs_disburse",
+        amountBdt: payoutAmountBdt,
+      });
+      if (!leashCheck.valid) {
+        return res.status(403).json({
+          success: false,
+          error: `Capability leash rejected payout: ${leashCheck.reason}`,
+          code: leashCheck.code,
+          details: leashCheck,
+        });
+      }
+      try {
+        capabilityLeashEngine.recordSpend(capabilityToken, payoutAmountBdt);
+      } catch (spendErr: any) {
+        return res.status(403).json({
+          success: false,
+          error: `Failed to record spend against leash: ${spendErr.message}`,
+        });
+      }
     }
 
     if (!walletNumber || !/^01[3-9]\d{8}$/.test(walletNumber.trim())) {
