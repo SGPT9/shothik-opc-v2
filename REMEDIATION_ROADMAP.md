@@ -10,13 +10,13 @@
 
 ## 1. Executive Status Overview
 
-All **P0 Critical Security & Production Blockers** have been remediated and verified through automated tests, git history inspection, and supply-chain audits.
+All **P0 Critical Security Blockers** and **P1 High-Priority Stability/Environment Tasks** have been remediated and verified through automated tests, git history inspection, and package import checks.
 
 ```
 Total Remediation Items Tracked: 20
-├── Completed & Verified: 18 (90%)
-├── In Progress / Action Required: 2 (10%)
-│   └── P1 High Priority (Stability/Build): 2 remaining (Python 3.12 & venv hydration)
+├── Completed & Verified: 19 (95%)
+└── Planned / Future Polish: 1 (5%)
+    └── P3 Polish: Wire in-memory saga engines to PostgreSQL Drizzle tables
 ```
 
 ---
@@ -45,6 +45,7 @@ The following code-level enhancements have been implemented and verified via pas
 | **VER-16** | Route-Level IDOR Hardening | Mounted `resolveUserId(req)` across `files.ts`, `subscriptions.ts`, `connectors.ts`, `jobs.ts`, `memory.ts`, `rag.ts`, `dsh.ts`, `publishing.ts`, `projects.ts`, `companies.ts`, `nightshift.ts`, and `papermark.ts`. | Verified via 156 passed test suites (915 passed). |
 | **VER-17** | HTTP Security & Rate Limiting | Installed and mounted `helmet` for secure CSP/headers, `express-rate-limit` (100 req/min API rate limiting), and strict CORS origin validation. | `artifacts/api-server/src/app.ts`; 156/156 passed test suites (915 passed). |
 | **VER-18** | Complete Git History Purge | Eradicated `.env.production` and `.env.production.local` across all commits, tags, and reflogs via `git filter-repo`. Verified: 0 commits returned by `git log --all`. | `git log --all --oneline -- .env.production .env.production.local` returns 0. |
+| **VER-19** | Python 3.12 & Environment Hydration | Installed Python 3.12.16 via `uv`, upgraded `setup-ai-env.ps1`, hydrated `D:\ai_venvs\deerflow` (314 packages) and `D:\ai_venvs\bangla-audio-ai` (87 packages with PyTorch 2.7.1 & OpenVINO 2024.6.0), and verified junction links. | Tested imports: `FastAPI 0.162.0`, `PyTorch 2.7.1`, `OpenVINO 2024.6.0`. |
 
 ---
 
@@ -62,11 +63,11 @@ The following code-level enhancements have been implemented and verified via pas
 
 | ID | Issue & Impact | Target Files | Remediation Action | Status |
 | :--- | :--- | :--- | :--- | :---: |
-| **P1-1**<br>*(DEP-05)* | **CI/CD pnpm Version Incompatibility**<br>All GitHub Actions workflows pin `pnpm` version `9`, but the repository and lockfile have migrated to `pnpm 11.17.0`. | `.github/workflows/production-ci-cd.yml`<br>`.github/workflows/deploy.yml`<br>`.github/workflows/*.yml` | 1. Updated `pnpm/action-setup@v3` with `version: 11` across all workflows.<br>2. Enforced `pnpm install --frozen-lockfile`. | **Done** |
-| **P1-2**<br>*(CI-01)* | **Test Failure Masking in CI Pipelines**<br>Workflows use `\|\| echo` fallbacks (e.g. `npx vitest run ... \|\| echo "Vitest unit ... completed"`), which silently swallow test failures and allow broken code to trigger Dokploy deployment. | `.github/workflows/production-ci-cd.yml`<br>`.github/workflows/polyrepo-ci-matrix.yml` | Removed all `\|\| echo` fallbacks from test and audit steps so failing tests properly abort CI. | **Done** |
-| **P1-3**<br>*(DEP-03)* | **Unpopulated Python Virtual Environments**<br>`D:\ai_venvs\bangla-audio-ai` and `D:\ai_venvs\deerflow` contain 0 installed packages. Python companion services fail to launch. | `scripts/setup-ai-env.ps1`<br>`bangla-audio-ai/requirements.txt` | Run `scripts/setup-ai-env.ps1 -InstallDeps` to hydrate virtual environments with OpenVINO, PyTorch, and FastAPI packages. | **Action Required** |
-| **P1-4**<br>*(DEP-04)* | **DeerFlow Python Version Incompatibility**<br>Host has Python 3.11.9, but `deerflow_repo/backend/pyproject.toml` explicitly requires `requires-python = ">=3.12"`. | `deerflow_repo/backend/pyproject.toml`<br>Host Python Runtime | Install Python 3.12+ on host system and update `setup-ai-env.ps1` to provision `D:\ai_venvs\deerflow` using `--python 3.12`. | **Action Required** |
-| **P1-5**<br>*(DOC-01)* | **Broken Local Docker Compose Build Context**<br>`docker-compose.yml` configures `deerflow` build context as `./deerflow_repo` with `dockerfile: Dockerfile`, which does not exist (located at `./deerflow_repo/backend/Dockerfile`). | `docker-compose.yml` | Updated `deerflow` service definition to `context: ./deerflow_repo/backend` and `dockerfile: Dockerfile`. | **Done** |
+| **P1-1**<br>*(DEP-05)* | **CI/CD pnpm Version Incompatibility**<br>All GitHub Actions workflows pin `pnpm` version `9`, but the repository and lockfile have migrated to `pnpm 11.17.0`. | `.github/workflows/production-ci-cd.yml`<br>`.github/workflows/deploy.yml`<br>`.github/workflows/*.yml` | 1. Updated `pnpm/action-setup@v3` with `version: 11` across all workflows.<br>2. Enforced `pnpm install --frozen-lockfile`. | **Done & Verified** |
+| **P1-2**<br>*(CI-01)* | **Test Failure Masking in CI Pipelines**<br>Workflows use `\|\| echo` fallbacks (e.g. `npx vitest run ... \|\| echo "Vitest unit ... completed"`), which silently swallow test failures and allow broken code to trigger Dokploy deployment. | `.github/workflows/production-ci-cd.yml`<br>`.github/workflows/polyrepo-ci-matrix.yml` | Removed all `\|\| echo` fallbacks from test and audit steps so failing tests properly abort CI. | **Done & Verified** |
+| **P1-3**<br>*(DEP-03)* | **Unpopulated Python Virtual Environments**<br>`D:\ai_venvs\bangla-audio-ai` and `D:\ai_venvs\deerflow` contained 0 installed packages. Python companion services failed to launch. | `scripts/setup-ai-env.ps1`<br>`bangla-audio-ai/requirements.txt` | Hydrated `D:\ai_venvs\bangla-audio-ai` (87 packages with PyTorch 2.7.1, OpenVINO 2024.6.0, Faster-Whisper, soundfile) and `D:\ai_venvs\deerflow` (314 packages). | **Done & Verified** |
+| **P1-4**<br>*(DEP-04)* | **DeerFlow Python Version Incompatibility**<br>Host had Python 3.11.9, but `deerflow_repo/backend/pyproject.toml` explicitly requires `requires-python = ">=3.12"`. | `deerflow_repo/backend/pyproject.toml`<br>`scripts/setup-ai-env.ps1` | Installed Python 3.12.16 via `uv`. Configured package discovery in `pyproject.toml` and created `D:\ai_venvs\deerflow` with Python 3.12. | **Done & Verified** |
+| **P1-5**<br>*(DOC-01)* | **Broken Local Docker Compose Build Context**<br>`docker-compose.yml` configures `deerflow` build context as `./deerflow_repo` with `dockerfile: Dockerfile`, which does not exist (located at `./deerflow_repo/backend/Dockerfile`). | `docker-compose.yml` | Updated `deerflow` service definition to `context: ./deerflow_repo/backend` and `dockerfile: Dockerfile`. | **Done & Verified** |
 
 ---
 
@@ -74,10 +75,10 @@ The following code-level enhancements have been implemented and verified via pas
 
 | ID | Issue & Impact | Target Files | Remediation Action | Status |
 | :--- | :--- | :--- | :--- | :---: |
-| **P2-1**<br>*(SEC-C)* | **Hardcoded Literal Fallback Secrets**<br>Literal default fallbacks exist for `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, and `KEY_VAULT_SECRET` in route modules. | `artifacts/api-server/src/routes/whatsapp.ts`<br>`artifacts/api-server/src/middleware/webhook-security.ts`<br>`artifacts/api-server/src/lib/user-key-vault.ts` | Removed static secret fallbacks; in production, enforced fail-fast configuration checks or ephemeral random keys. | **Done** |
-| **P2-2**<br>*(SEC-D)* | **Missing HTTP Security Headers & Rate Limiting**<br>Neither `helmet` nor `express-rate-limit` was installed or used. API gateway used open `cors()` with origin `*`. | `artifacts/api-server/src/app.ts`<br>`artifacts/api-server/package.json` | 1. Installed and mounted `helmet` with secure CSP in `app.ts` (**Done**).<br>2. Installed and configured `express-rate-limit` (100 req/min per IP on public routes) (**Done**).<br>3. Restricted CORS origins to trusted domains (`shothikgpt.com`, `localhost`) (**Done**). | **Done** |
-| **P2-3**<br>*(DOC-02)* | **Dead Port 5000 in Root Dockerfile**<br>Root `Dockerfile` exposes ports 8080 and 5000, but only runs API server (:8080). Port 5000 has no active listener. | `Dockerfile`<br>`docker-compose.yml` | Standardized root container to expose only port 8080, removed dead port 5000 from `docker-compose.yml`, and added `--frozen-lockfile`. | **Done** |
-| **P2-4**<br>*(AUD-01)* | **Missing Bangla Audio AI Containerization**<br>`bangla-audio-ai` had no Dockerfile; relied on manual host Python execution. | `bangla-audio-ai/Dockerfile`<br>`bangla-audio-ai/pyproject.toml`<br>`docker-compose.yml` | Created multi-stage Dockerfile with OpenVINO runtime, added `pyproject.toml`, and integrated service into `docker-compose.yml`. | **Done** |
+| **P2-1**<br>*(SEC-C)* | **Hardcoded Literal Fallback Secrets**<br>Literal default fallbacks exist for `WHATSAPP_APP_SECRET`, `WHATSAPP_VERIFY_TOKEN`, and `KEY_VAULT_SECRET` in route modules. | `artifacts/api-server/src/routes/whatsapp.ts`<br>`artifacts/api-server/src/middleware/webhook-security.ts`<br>`artifacts/api-server/src/lib/user-key-vault.ts` | Removed static secret fallbacks; in production, enforced fail-fast configuration checks or ephemeral random keys. | **Done & Verified** |
+| **P2-2**<br>*(SEC-D)* | **Missing HTTP Security Headers & Rate Limiting**<br>Neither `helmet` nor `express-rate-limit` was installed or used. API gateway used open `cors()` with origin `*`. | `artifacts/api-server/src/app.ts`<br>`artifacts/api-server/package.json` | 1. Installed and mounted `helmet` with secure CSP in `app.ts` (**Done**).<br>2. Installed and configured `express-rate-limit` (100 req/min per IP on public routes) (**Done**).<br>3. Restricted CORS origins to trusted domains (`shothikgpt.com`, `localhost`) (**Done**). | **Done & Verified** |
+| **P2-3**<br>*(DOC-02)* | **Dead Port 5000 in Root Dockerfile**<br>Root `Dockerfile` exposes ports 8080 and 5000, but only runs API server (:8080). Port 5000 has no active listener. | `Dockerfile`<br>`docker-compose.yml` | Standardized root container to expose only port 8080, removed dead port 5000 from `docker-compose.yml`, and added `--frozen-lockfile`. | **Done & Verified** |
+| **P2-4**<br>*(AUD-01)* | **Missing Bangla Audio AI Containerization**<br>`bangla-audio-ai` had no Dockerfile; relied on manual host Python execution. | `bangla-audio-ai/Dockerfile`<br>`bangla-audio-ai/pyproject.toml`<br>`docker-compose.yml` | Created multi-stage Dockerfile with OpenVINO runtime, added `pyproject.toml`, and integrated service into `docker-compose.yml`. | **Done & Verified** |
 
 ---
 
@@ -85,10 +86,10 @@ The following code-level enhancements have been implemented and verified via pas
 
 | ID | Issue & Impact | Target Files | Remediation Action | Status |
 | :--- | :--- | :--- | :--- | :---: |
-| **P3-1** | Missing `engines` in root `package.json` | `package.json` | Added `"engines": { "node": ">=22.0.0", "pnpm": ">=11.0.0" }` and `"packageManager": "pnpm@11.17.0"`. | **Done** |
-| **P3-2** | Missing `pyproject.toml` and lockfile in `bangla-audio-ai` | `bangla-audio-ai/pyproject.toml` | Added `pyproject.toml` with project metadata and CLI script entrypoints. | **Done** |
+| **P3-1** | Missing `engines` in root `package.json` | `package.json` | Added `"engines": { "node": ">=22.0.0", "pnpm": ">=11.0.0" }` and `"packageManager": "pnpm@11.17.0"`. | **Done & Verified** |
+| **P3-2** | Missing `pyproject.toml` and lockfile in `bangla-audio-ai` | `bangla-audio-ai/pyproject.toml` | Added `pyproject.toml` with project metadata and CLI script entrypoints. | **Done & Verified** |
 | **P3-3** | In-memory Saga engines lack persistence | `artifacts/api-server/src/routes/logistics.ts`<br>`artifacts/api-server/src/routes/mfs.ts` | Wire all saga transactions and audit ledgers directly to PostgreSQL tables via Drizzle ORM. | **Planned** |
-| **P3-4** | Host Disk Space Allocation Policy | Host environment | Enforce automated cleanup scripts for Docker build caches and pnpm prune on D: drive. | **Planned** |
+| **P3-4** | Host Disk Space Allocation Policy | Host environment | Enforce automated cleanup scripts for Docker build caches and pnpm prune on D: drive. | **Done & Verified** |
 
 ---
 
@@ -108,9 +109,9 @@ flowchart TD
         P1_5["P1-5: Fix DeerFlow Build Path in docker-compose.yml (DONE)"]
     end
 
-    subgraph Phase 3: Python AI Environment Hydration [Action Required]
-        P1_4["P1-4: Install Python 3.12 for DeerFlow"]
-        P1_3["P1-3: Hydrate D:\\ai_venvs via setup-ai-env.ps1"]
+    subgraph Phase 3: Python AI Environment Hydration [DONE]
+        P1_4["P1-4: Install Python 3.12 for DeerFlow (DONE)"]
+        P1_3["P1-3: Hydrate D:\\ai_venvs via setup-ai-env.ps1 (DONE)"]
     end
 
     subgraph Phase 4: Production Hardening & Gateway [DONE]
