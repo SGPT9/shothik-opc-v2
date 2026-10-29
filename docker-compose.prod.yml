@@ -72,13 +72,26 @@ services:
   # 5. DeerFlow Deep Research Engine (LangGraph Python 3.12)
   deerflow:
     build:
-      context: ./deerflow_repo/backend
-      dockerfile: Dockerfile
+      # Dockerfile does `COPY backend ./backend`, so the context must be the repo root.
+      context: ./deerflow_repo
+      dockerfile: backend/Dockerfile
     container_name: shothik-deerflow-prod
     restart: always
+    # Image default listens on 8001; the gateway contract in this stack is :8000.
+    command: ["sh", "-c", "cd backend && PYTHONPATH=. uv run uvicorn app.gateway.app:app --host 0.0.0.0 --port 8000"]
     environment:
       - LOG_LEVEL=info
-      - PORT=8000
+      # Passed through from the host shell / .env; never baked into the image.
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+    volumes:
+      # Gateway searches cwd (/app/backend) and its parent (/app) for config.yaml.
+      - ./deerflow_repo/config.yaml:/app/config.yaml:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - shothik-mesh
 

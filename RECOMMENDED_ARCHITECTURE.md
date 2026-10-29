@@ -77,7 +77,7 @@ Option B provides the highest leverage, lowest operational complexity, and highe
   - **Security (P0)**: Rotate all credentials committed in `.env.production` / `.env.production.local` (`JWT_SECRET`, `DATABASE_URL`, `OPENROUTER_API_KEY`) and scrub git history via `git-filter-repo` or BFG.
   - **Security (P0)**: Introduce a global or route-group `requireAuth` middleware for all sensitive endpoints, replacing manual body `userId` lookups.
   - **Security (P1)**: Remove hardcoded fallback secrets (`WHATSAPP_APP_SECRET`, `KEY_VAULT_SECRET`) and replace with strict initialization checks.
-  - **Docker (P1)**: Fix `docker-compose.yml` by updating the DeerFlow build context to `./deerflow_repo/backend` and removing the dead port 5000 mapping on `shothik-hermes`.
+  - **Docker (P1)**: Fix `docker-compose.yml` by updating the DeerFlow build to `context: ./deerflow_repo` with `dockerfile: backend/Dockerfile` and removing the dead port 5000 mapping on `shothik-hermes`.
   - **CI/CD (P1)**: Upgrade GitHub Actions workflows from `pnpm 9` to `pnpm 11` and remove `|| echo` fallbacks to ensure test failures fail the build.
 
 ### Q5: What is the lowest-risk path to a stable, secure, maintainable deployment?
