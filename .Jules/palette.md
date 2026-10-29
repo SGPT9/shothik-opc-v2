@@ -1,0 +1,3 @@
+## 2024-10-24 - Add ARIA Labels and Connect Form Inputs for Accessibility
+**Learning:** Icon-only buttons (like the `✕` close modal button) are completely inaccessible to screen readers without an `aria-label`. Furthermore, having a `<label>` element right next to an `<input>` field visually doesn't link them semantically. They must be explicitly linked using the `htmlFor` attribute on the label and matching `id` attribute on the input, ensuring screen readers can correctly announce the input's purpose and improving the click target size.
+**Action:** Always verify icon-only buttons include an `aria-label` or `aria-labelledby`, and explicitly link all form labels to their inputs with `htmlFor` and `id`.
