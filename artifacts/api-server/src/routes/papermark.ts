@@ -143,8 +143,8 @@ function buildShareUrl(slug: string): string {
  */
 router.post("/v1/papermark/links", async (req: Request, res: Response): Promise<void> => {
   try {
+    const userId = resolveUserId(req, req.body?.userId || "usr_default");
     const {
-      userId = "usr_default",
       documentId = `doc_${Date.now()}`,
       title = "Untitled Trackable Presentation",
       documentType = "pitch_deck",
