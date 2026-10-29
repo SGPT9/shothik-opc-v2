@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useTwin } from "../../../artifacts/shothik/src/hooks/useTwin";
 import { useTranslation } from "../../../artifacts/shothik/src/i18n";
@@ -810,7 +810,12 @@ export default function TwinPage() {
     setShowRevokeConfirm(false);
   };
 
-  const handleContinueInWritingStudio = (task: {
+  // ⚡ Bolt Performance Optimization:
+  // Wrapped handleContinueInWritingStudio in useCallback to prevent it from being recreated
+  // on every render of TwinPage. This allows TaskFeed and TaskCard (which are wrapped in React.memo)
+  // to avoid unnecessary re-renders, significantly improving UI responsiveness when interacting
+  // with other stateful elements on the page.
+  const handleContinueInWritingStudio = useCallback((task: {
     title: string;
     description?: string;
     result?: string;
@@ -831,7 +836,7 @@ export default function TwinPage() {
     });
 
     router.push(`/writing-studio?intent=${intent}&seed=twin`);
-  };
+  }, [router]);
 
   return (
     <div className="container mx-auto max-w-6xl py-8 px-4">
