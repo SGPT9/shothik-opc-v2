@@ -76,8 +76,13 @@ describe('DokployClient', () => {
     });
     vi.stubGlobal('fetch', mockFetch);
 
-    await expect(client.deployApplication('app-123')).rejects.toThrow(
-      'Dokploy API Error (400): Invalid repository name'
-    );
+    let threw = false;
+    try {
+      await client.deployApplication('app-123');
+    } catch (err: any) {
+      threw = true;
+      expect(err.message).toContain('Dokploy API Error (400): Invalid repository name');
+    }
+    expect(threw).toBe(true);
   });
 });

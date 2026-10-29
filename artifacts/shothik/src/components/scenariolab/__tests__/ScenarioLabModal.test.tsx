@@ -11,8 +11,8 @@ describe("ScenarioLabModal Component", () => {
     render(<ScenarioLabModal isOpen={true} onClose={() => {}} />);
 
     expect(screen.getByText(/ScenarioLab™ Stress-Test & Financial Engine/i)).toBeInTheDocument();
-    expect(screen.getByText(/900 Monte Carlo Runs Locked/i)).toBeInTheDocument();
-    expect(screen.getByText(/30-Scenario System Reliability \(900-Run Monte Carlo\)/i)).toBeInTheDocument();
+    expect(screen.getByText(/1200 Monte Carlo Runs Locked/i)).toBeInTheDocument();
+    expect(screen.getByText(/40-Scenario System Reliability \(1200-Run Monte Carlo\)/i)).toBeInTheDocument();
     expect(screen.getByText(/Financial TAM \/ SAM \/ SOM CAC Payback Engine/i)).toBeInTheDocument();
   });
 

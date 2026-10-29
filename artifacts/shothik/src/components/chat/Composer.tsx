@@ -35,6 +35,8 @@ import {
   ShoppingBag,
   CreditCard,
   FlaskConical,
+  Users,
+  Calendar,
 } from "lucide-react";
 import {
   forwardRef,
@@ -56,6 +58,7 @@ import { ContextUsageIndicator } from "./ContextUsageIndicator";
 import { ConversationIntelligencePanel, type FollowUpSuggestion } from "./ConversationIntelligencePanel";
 import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
+import { TeamModal } from "@/components/team/TeamModal";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -224,6 +227,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const [isTrackingOpen, setIsTrackingOpen] = useState(false);
     const [isScenarioLabOpen, setIsScenarioLabOpen] = useState(false);
     const [isVoiceStudioOpen, setIsVoiceStudioOpen] = useState(false);
+    const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+    const [teamModalTab, setTeamModalTab] = useState<"agents" | "memory" | "schedule">("agents");
     const [perplexityFocus, setPerplexityFocus] = useState<PerplexityFocusMode>("all");
     const [isDraggingOver, setIsDraggingOver] = useState(false);
     const lastPromptRef = useRef<string>("");
@@ -476,6 +481,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
     const isMentionMenuVisible = textValue.startsWith("@") && !textValue.includes(" ");
 
     const matchingSlashCommands = [
+      // Autonomous Team, Memory & Scheduler Studio
+      { cmd: "/team", label: "Autonomous Agent Team", desc: "Manage subagents, delegation policies & roster", Icon: Users, action: () => { setTeamModalTab("agents"); setIsTeamModalOpen(true); } },
+      { cmd: "/schedule", label: "Scheduler & Cron Engine", desc: "Configure recurring batch jobs and timers", Icon: Calendar, action: () => { setTeamModalTab("schedule"); setIsTeamModalOpen(true); } },
+      { cmd: "/memory", label: "Second-Me Memory Vault", desc: "Search and manage episodic memory chunks", Icon: Brain, action: () => { setTeamModalTab("memory"); setIsTeamModalOpen(true); } },
+
       // 12 Canonical Platform Services
       { cmd: "/ai", label: "Pillar 1 · AI Execution", desc: "Turn high-level intent into completed work across workflows & tools", Icon: Sparkles, action: () => { if (onSend) onSend("Execute autonomous workflow for this task with complete observation and tool steps."); else if (onAction) onAction({ type: "SEND_MESSAGE", payload: { text: "Execute autonomous workflow for this task with complete observation and tool steps." } }); } },
       { cmd: "/thesis", label: "Pillar 2 · Academic & Research", desc: "Literature synthesis, thesis workspaces, APA/IEEE reference citations", Icon: GraduationCap, tab: "research" as const },
@@ -1128,6 +1138,13 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
           <UnifiedVoiceStudioModal
             isOpen={isVoiceStudioOpen}
             onClose={() => setIsVoiceStudioOpen(false)}
+          />
+        )}
+        {isTeamModalOpen && (
+          <TeamModal
+            isOpen={isTeamModalOpen}
+            onClose={() => setIsTeamModalOpen(false)}
+            initialTab={teamModalTab}
           />
         )}
       </div>

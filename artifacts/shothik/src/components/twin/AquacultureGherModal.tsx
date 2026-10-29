@@ -75,6 +75,7 @@ export const AquacultureGherModal: React.FC<AquacultureGherModalProps> = ({
 
   // Keyboard shortcut ⌘Q / Ctrl+Q
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "q") {
         e.preventDefault();

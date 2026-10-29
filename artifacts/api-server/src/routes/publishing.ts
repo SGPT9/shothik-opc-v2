@@ -8,6 +8,7 @@ import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { NilkhetImpositionEngine } from "../lib/nilkhet-imposition-engine.js";
 import { NilkhetSpineCalculator, type PaperWeightGSM, type BindingStyle } from "@workspace/office-engine/spine-calculator";
 import { NilkhetPodEngine } from "../lib/publishing/nilkhet-pod-engine.js";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -236,7 +237,7 @@ router.post(
  */
 router.get("/v1/publishing/orders", async (req: Request, res: Response): Promise<void> => {
   try {
-    const rawUserId = req.headers["x-user-id"] || req.query.userId;
+    const rawUserId = resolveUserId(req, "");
     const userId = rawUserId ? String(rawUserId) : undefined;
     const status = req.query.status ? String(req.query.status) : undefined;
 

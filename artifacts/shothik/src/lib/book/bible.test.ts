@@ -123,7 +123,7 @@ describe('ensureBibleBlock', () => {
 
     it('rejects seed content over the block limit', async () => {
         const huge = 'x'.repeat(BOOK_BIBLE_BLOCK_LIMIT + 1);
-        await expect(ensureBibleBlock('agent-1', 'book-1', huge)).rejects.toThrow(/exceeds block limit/);
+        await expect(ensureBibleBlock('agent-1', 'book-1', huge)).rejects.toThrow(BookBibleError);
     });
 
     it('wraps a creation failure in BookBibleError', async () => {
@@ -167,7 +167,7 @@ describe('updateBibleBlock (writes fail loud)', () => {
 
     it('rejects an over-limit update (no silent truncation)', async () => {
         const huge = 'y'.repeat(BOOK_BIBLE_BLOCK_LIMIT + 1);
-        await expect(updateBibleBlock('agent-1', 'book-1', huge)).rejects.toThrow(/exceeds block limit/);
+        await expect(updateBibleBlock('agent-1', 'book-1', huge)).rejects.toThrow(BookBibleError);
         expect(mockUpdate).not.toHaveBeenCalled();
     });
 

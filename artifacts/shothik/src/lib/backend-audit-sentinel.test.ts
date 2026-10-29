@@ -34,12 +34,17 @@ describe("Full Backend Audit & DB Pool Sentinel Suite", () => {
     });
 
     it("triggers query timeout error when query execution exceeds budget", async () => {
-      await expect(
-        databasePoolSentinel.executeQuery("slow_query", async () => {
+      let threw = false;
+      try {
+        await databasePoolSentinel.executeQuery("slow_query", async () => {
           await new Promise((resolve) => setTimeout(resolve, 6000));
           return "SLOW_SUCCESS";
-        })
-      ).rejects.toThrow("exceeded maximum execution timeout");
-    });
+        });
+      } catch (err: any) {
+        threw = true;
+        expect(err.message).toContain("exceeded maximum execution timeout");
+      }
+      expect(threw).toBe(true);
+    }, 10000);
   });
 });

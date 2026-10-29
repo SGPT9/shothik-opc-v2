@@ -10,6 +10,7 @@ import {
 } from "@workspace/db";
 import { eq, desc, and } from "drizzle-orm";
 import { logger } from "../lib/logger";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -231,7 +232,7 @@ router.post("/v1/papermark/links", async (req: Request, res: Response): Promise<
  */
 router.get("/v1/papermark/links", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.query.userId as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
 
     // Gather links from memory
     let links: StoredLink[] = Array.from(memoryLinks.values()).filter(

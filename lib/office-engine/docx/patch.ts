@@ -628,12 +628,12 @@ export async function saveDocx(
     watermarkOnly = false,
   ) => {
     if (hf === undefined) return
-    const refs = trailingSectPr.match(new RegExp(`<w:${kind}Reference[^>]*/>`, 'g')) ?? []
+    const refs = (trailingSectPr.match(new RegExp(`<w:${kind}Reference[^>]*/>`, 'g')) ?? []) as string[]
     // non-schema w:type="odd" and untyped references count as default (mirrors parse)
     const existing =
-      refs.find((r) => r.includes(`w:type="${hfType}"`)) ??
+      refs.find((r: string) => r.includes(`w:type="${hfType}"`)) ??
       (hfType === 'default'
-        ? (refs.find((r) => r.includes('w:type="odd"')) ?? refs.find((r) => !/w:type="/.test(r)))
+        ? (refs.find((r: string) => r.includes('w:type="odd"')) ?? refs.find((r: string) => !/w:type="/.test(r)))
         : undefined)
     const rId = existing ? /r:id="([^"]+)"/.exec(existing)?.[1] : undefined
     const target = rId ? relTargets.get(rId) : undefined
@@ -696,11 +696,11 @@ export async function saveDocx(
     const block = parsed.blocks.find((b) => b.docxIndex === edit.lastBlockIndex)
     const sectPr =
       block?.originalXml?.match(/<w:sectPr[^>]*\/>|<w:sectPr[\s\S]*?<\/w:sectPr>/)?.[0] ?? ''
-    const refs = sectPr.match(new RegExp(`<w:${edit.kind}Reference[^>]*/>`, 'g')) ?? []
+    const refs = (sectPr.match(new RegExp(`<w:${edit.kind}Reference[^>]*/>`, 'g')) ?? []) as string[]
     const existing =
-      refs.find((r) => r.includes('w:type="default"')) ??
-      refs.find((r) => r.includes('w:type="odd"')) ??
-      refs.find((r) => !/w:type="/.test(r))
+      refs.find((r: string) => r.includes('w:type="default"')) ??
+      refs.find((r: string) => r.includes('w:type="odd"')) ??
+      refs.find((r: string) => !/w:type="/.test(r))
     const rId = existing ? /r:id="([^"]+)"/.exec(existing)?.[1] : undefined
     const target = rId ? relTargets.get(rId) : undefined
     if (target) {

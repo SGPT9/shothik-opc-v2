@@ -82,6 +82,8 @@ temp-open-design/
 .windsurf
 .vercel
 .env*
+!.env.example
+!.env.*.example
 
 # Reference clones & deployment archives
 inkos-clone/
@@ -119,3 +121,12 @@ logs/
 
 
 
+# Local Python environments & external reference repositories
+.venv-antigravity/
+antigravity-sdk-python/
+deerflow_repo/
+jiuwenswarm_repo/
+externals/
+open-duet/
+rea/
+github-prompt-reverse-engineer/

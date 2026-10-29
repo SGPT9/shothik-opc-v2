@@ -69,6 +69,7 @@ export const HyperlocalFleetModal: React.FC<HyperlocalFleetModalProps> = ({
 
   // Keyboard shortcut ⌘H / Ctrl+H
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "h") {
         e.preventDefault();

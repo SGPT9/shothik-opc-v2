@@ -24,6 +24,8 @@ export interface SandboxExecutionResponse {
   error?: string;
 }
 
+const SAFE_ENV_KEYS = ["PATH", "Path", "SYSTEMROOT", "SystemRoot", "TEMP", "TMP", "HOME", "LANG"] as const;
+
 export class IsolatedCodeSandbox {
   private static instance: IsolatedCodeSandbox;
   private tempDir = path.join(os.tmpdir(), "shothik-sandboxes");
@@ -39,18 +41,55 @@ export class IsolatedCodeSandbox {
     return IsolatedCodeSandbox.instance;
   }
 
+  private buildMinimalEnv(customVars?: Record<string, string>): NodeJS.ProcessEnv {
+    const cleanEnv: NodeJS.ProcessEnv = {
+      NODE_ENV: "sandbox",
+    };
+    for (const key of SAFE_ENV_KEYS) {
+      if (process.env[key]) {
+        cleanEnv[key] = process.env[key];
+      }
+    }
+    if (customVars && typeof customVars === "object") {
+      for (const [k, v] of Object.entries(customVars)) {
+        if (/^[A-Z0-9_]+$/i.test(k) && typeof v === "string" && !/^(PATH|LD_PRELOAD|NODE_OPTIONS)$/i.test(k)) {
+          cleanEnv[k] = v.slice(0, 512);
+        }
+      }
+    }
+    return cleanEnv;
+  }
+
   /**
-   * Executes code within a sandboxed temporary file with timeout and resource guards.
+   * Executes code within a sandboxed temporary file with timeout, isolated environment, and resource guards.
    */
   async execute(params: SandboxExecutionRequest): Promise<SandboxExecutionResponse> {
     const { language, code, timeoutMs = 10000 } = params;
+    const clampedTimeoutMs = Math.max(500, Math.min(15000, Number(timeoutMs) || 10000));
     const executionId = `sbx_${randomUUID().slice(0, 8)}`;
     const startTime = performance.now();
 
-    // Security guard: Reject obvious destructive patterns
-    const forbiddenPatterns = [/rm\s+-rf\s+\//, /format\s+[a-z]:/i, /:\(\)\{\s*:\|:&\s*\};:/];
+    // Security guard: Reject destructive commands, process spawning, bracket-notation bypasses, and secret/filesystem exfiltration
+    const forbiddenPatterns = [
+      /rm\s+-rf\s+\//,
+      /format\s+[a-z]:/i,
+      /:\(\)\{\s*:\|:&\s*\};:/,
+      /\bchild_process\b/,
+      /\bprocess\.env\b/,
+      /\bprocess\s*\[/,
+      /\bos\.environ\b/,
+      /\bsubprocess\b/,
+      /\bshutil\.rmtree\b/,
+      /\brequire\s*\(\s*['"](?:node:)?(?:fs|child_process|net|http|https|dgram|tls|cluster|worker_threads|vm)['"]\s*\)/,
+      /\bimport\s*\(\s*['"](?:node:)?(?:fs|child_process|net|http|https|dgram|tls|cluster|worker_threads|vm)['"]\s*\)/,
+      /(?:^|\s)import\s+.*from\s+['"](?:node:)?(?:fs|child_process|net|http|https|os|dgram|tls|cluster|worker_threads|vm|inspector)['"]/m,
+      /\bprocess\.(?:binding|dlopen|mainModule|kill)\b/,
+      /\b(?:globalThis|global)\s*\[/,
+      /\b(?:\.env\.local|users\.json|id_rsa|\/etc\/passwd|\/etc\/shadow)\b/i,
+    ];
     for (const pattern of forbiddenPatterns) {
       if (pattern.test(code)) {
+        logger.warn({ language, pattern: pattern.source }, "[code-sandbox] Blocked unsafe code pattern");
         return {
           success: false,
           language,
@@ -91,26 +130,27 @@ export class IsolatedCodeSandbox {
 
         const child = spawn(cmd, args, {
           cwd: this.tempDir,
-          env: {
-            ...process.env,
-            NODE_ENV: "sandbox",
-            ...params.environmentVars,
-          },
+          env: this.buildMinimalEnv(params.environmentVars),
+          windowsHide: true,
         });
 
         const timer = setTimeout(() => {
           killed = true;
           child.kill("SIGKILL");
-          stderr += `\nExecution timed out after ${timeoutMs}ms`;
+          stderr += `\nExecution timed out after ${clampedTimeoutMs}ms`;
           resolve({ stdout, stderr, exitCode: 124 });
-        }, timeoutMs);
+        }, clampedTimeoutMs);
 
         child.stdout?.on("data", (data) => {
-          stdout += data.toString();
+          if (stdout.length < 65536) {
+            stdout += data.toString();
+          }
         });
 
         child.stderr?.on("data", (data) => {
-          stderr += data.toString();
+          if (stderr.length < 65536) {
+            stderr += data.toString();
+          }
         });
 
         child.on("close", (code) => {
@@ -123,7 +163,6 @@ export class IsolatedCodeSandbox {
         child.on("error", (err) => {
           if (!killed) {
             clearTimeout(timer);
-            // Fallback for systems where python might not be in PATH
             resolve({
               stdout,
               stderr: `Process launch failed: ${err.message}. Ensure '${cmd}' is available in PATH.`,
@@ -155,7 +194,6 @@ export class IsolatedCodeSandbox {
         error: err.message,
       };
     } finally {
-      // Cleanup temp script
       fs.unlink(scriptPath).catch(() => {});
     }
   }

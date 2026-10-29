@@ -559,6 +559,12 @@ export default defineConfig(async ({ mode }) => {
         changeOrigin: true,
         secure: false,
       },
+      '/v1': {
+        target: process.env.API_SERVER_ORIGIN ?? 'http://localhost:8080',
+        rewrite: (p) => `/api${p}`,
+        changeOrigin: true,
+        secure: false,
+      },
       // API endpoint is /paraphrase-with-variantV2; must not swallow the /paraphrase page route
       '/paraphrase-with-variant': {
         target: externalApiOrigin,

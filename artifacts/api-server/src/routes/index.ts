@@ -112,6 +112,9 @@ import { capabilityLeashRouter } from "./capability-leash";
 import { actorSupervisorRouter } from "./actor-supervisor";
 import { speculativeRouter } from "./speculative-router";
 import { shadowSimulationRouter } from "./shadow-simulation";
+import agentsRouter from "./agents";
+import scheduleRouter from "./schedule";
+import teamRouter from "./team";
 
 const router: IRouter = Router();
 
@@ -228,6 +231,11 @@ router.use(capabilityLeashRouter);
 router.use(actorSupervisorRouter);
 router.use(speculativeRouter);
 router.use(shadowSimulationRouter);
+router.use("/agents", agentsRouter);
+router.use("/v1/agents", agentsRouter);
+router.use("/schedule", scheduleRouter);
+router.use("/v1/schedule", scheduleRouter);
+router.use(teamRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.

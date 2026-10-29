@@ -4,6 +4,7 @@ import { openDataLoader } from "../lib/document-parsing/opendataloader-bridge";
 import { ragEngine } from "../lib/rag-engine";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -14,7 +15,8 @@ const router = Router();
  */
 router.post("/v1/files/upload", idempotencyMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { filename = "document.pdf", fileBase64, rawContent, userId = "usr_default", metadata } = req.body;
+    const { filename = "document.pdf", fileBase64, rawContent, userId: bodyUserId, metadata } = req.body;
+    const userId = resolveUserId(req, typeof bodyUserId === "string" ? bodyUserId : "usr_default");
 
     if (!fileBase64 && !rawContent) {
       res.status(400).json({
@@ -142,7 +144,7 @@ router.post("/v1/files/batch-upload", async (req: Request, res: Response): Promi
  */
 router.get("/v1/files", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
     const allDocs = await ragEngine.listDocuments(userId);
 
     res.status(200).json({
@@ -162,7 +164,7 @@ router.get("/v1/files", async (req: Request, res: Response): Promise<void> => {
  */
 router.get("/v1/files/:docId/content", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
     const { docId } = req.params;
     const allDocs = await ragEngine.listDocuments(userId);
     const doc = allDocs.find((d) => d.id === docId);
@@ -187,7 +189,7 @@ router.get("/v1/files/:docId/content", async (req: Request, res: Response): Prom
  */
 router.delete("/v1/files/:docId", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
     const { docId } = req.params;
     await ragEngine.deleteDocument(userId, docId as string);
     res.status(200).json({

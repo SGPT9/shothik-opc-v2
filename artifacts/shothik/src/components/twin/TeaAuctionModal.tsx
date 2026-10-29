@@ -77,6 +77,7 @@ export const TeaAuctionModal: React.FC<TeaAuctionModalProps> = ({
 
   // Keyboard shortcut ⌘T / Ctrl+T
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "t") {
         e.preventDefault();

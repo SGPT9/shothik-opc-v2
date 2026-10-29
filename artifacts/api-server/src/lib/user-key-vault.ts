@@ -3,7 +3,12 @@ import { eq, and } from "drizzle-orm";
 import crypto from "crypto";
 import { logger } from "./logger";
 
-const ENCRYPTION_SECRET = process.env.KEY_VAULT_SECRET || process.env.BETTER_AUTH_SECRET || "shothik-default-vault-secure-seed-key-32bytes!";
+const isProd = process.env.NODE_ENV === "production";
+const configuredSecret = process.env.KEY_VAULT_SECRET || process.env.BETTER_AUTH_SECRET;
+if (isProd && !configuredSecret) {
+  logger.error("[UserKeyVault] CRITICAL: KEY_VAULT_SECRET is unset in production environment! Using ephemeral instance key.");
+}
+const ENCRYPTION_SECRET = configuredSecret || (!isProd ? "shothik-default-vault-secure-seed-key-32bytes!" : crypto.randomBytes(32).toString("hex"));
 
 // Derive 32-byte key
 const keyBuffer = crypto.createHash("sha256").update(ENCRYPTION_SECRET).digest();

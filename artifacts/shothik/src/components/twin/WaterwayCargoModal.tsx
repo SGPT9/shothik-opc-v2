@@ -79,6 +79,7 @@ export const WaterwayCargoModal: React.FC<WaterwayCargoModalProps> = ({
 
   // Keyboard shortcut ⌘W / Ctrl+W
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
         e.preventDefault();

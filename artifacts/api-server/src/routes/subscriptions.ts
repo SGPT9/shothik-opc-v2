@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { userSubscriptionsTable, toolUsageTable, llmUsageTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -50,7 +51,7 @@ const DEFAULT_TIER_LIMITS: Record<string, Record<string, number>> = {
  */
 router.get(["/v1/subscriptions/me", "/v1/subscriptions/current"], async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "guest";
+    const userId = resolveUserId(req, "guest");
 
     if (userId === "guest") {
       res.json({
@@ -101,7 +102,7 @@ router.get(["/v1/subscriptions/me", "/v1/subscriptions/current"], async (req: Re
  */
 router.get("/v1/subscriptions/usage", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "guest";
+    const userId = resolveUserId(req, "guest");
 
     const rows = await db
       .select()
@@ -127,7 +128,7 @@ router.get("/v1/subscriptions/usage", async (req: Request, res: Response) => {
  */
 router.post("/v1/subscriptions/check-limit", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || req.body.userId || "guest";
+    const userId = resolveUserId(req, typeof req.body?.userId === "string" ? req.body.userId : "guest");
     const tool = req.body.tool;
 
     if (!tool) {
@@ -189,7 +190,7 @@ router.post("/v1/subscriptions/check-limit", async (req: Request, res: Response)
  */
 router.post("/v1/subscriptions/increment-usage", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || req.body.userId || "guest";
+    const userId = resolveUserId(req, typeof req.body?.userId === "string" ? req.body.userId : "guest");
     const tool = req.body.tool;
 
     if (!tool) {
@@ -233,7 +234,7 @@ router.post("/v1/subscriptions/increment-usage", async (req: Request, res: Respo
  */
 router.post("/v1/subscriptions/llm-track", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || req.body.userId || "guest";
+    const userId = resolveUserId(req, typeof req.body?.userId === "string" ? req.body.userId : "guest");
     const { tool, provider, tokens, inputTokens, outputTokens, costUsd } = req.body;
 
     await db.insert(llmUsageTable).values({
@@ -267,7 +268,7 @@ const userCreditLedger = new Map<string, number>([
  * Returns the live credit balance for the user
  */
 router.get(["/v1/subscriptions/credits", "/api/v1/subscriptions/credits"], async (req: Request, res: Response) => {
-  const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
+  const userId = resolveUserId(req, "usr_default");
   const currentCredits = userCreditLedger.get(userId) ?? 500;
 
   res.status(200).json({
@@ -683,6 +684,23 @@ router.get(["/payment-methods/:id/public", "/v1/payment-methods/:id/public"], (r
   res.status(200).json({ success: true, data: method });
 });
 
+interface PublicPaymentTransaction {
+  _id: string;
+  package: string;
+  plan: string;
+  payment_method: string;
+  amount: number;
+  currency: string;
+  status: "pending" | "completed" | "failed";
+  customer_email: string;
+  credits: number;
+  verified: boolean;
+  createdAt: string;
+  verifiedAt?: string;
+}
+
+const pendingPublicTransactions = new Map<string, PublicPaymentTransaction>();
+
 router.post(["/payment-transactions/initiate", "/v1/payment-transactions/initiate"], (req: Request, res: Response) => {
   const { package: pkgId, plan: planId, payment_method = "bkash", customer_email } = req.body || {};
   const selectedPkg = PUBLIC_PACKAGES.find((p) => p._id === pkgId) || PUBLIC_PACKAGES[0];
@@ -691,22 +709,29 @@ router.post(["/payment-transactions/initiate", "/v1/payment-transactions/initiat
   // Credits to allocate upon verification
   const credits = selectedPkg._id === "starter-pass" ? 50 : (selectedPkg._id === "pro-operator" ? 550 : 1500);
 
+  const txRecord: PublicPaymentTransaction = {
+    _id: transactionId,
+    package: selectedPkg._id,
+    plan: planId || "monthly",
+    payment_method,
+    amount: selectedPkg.price.BDT,
+    currency: "BDT",
+    status: "pending",
+    customer_email: customer_email || "tester@shothik.ai",
+    credits,
+    verified: false,
+    createdAt: new Date().toISOString(),
+  };
+
+  pendingPublicTransactions.set(transactionId, txRecord);
+
   // Return success redirect path with transaction metadata
   const successUrl = `/pricing/checkout/success?trx_id=${transactionId}&package_id=${selectedPkg._id}&credits=${credits}`;
 
   res.status(200).json({
     success: true,
     data: {
-      payment_transaction: {
-        _id: transactionId,
-        package: selectedPkg._id,
-        plan: planId || "monthly",
-        payment_method,
-        amount: selectedPkg.price.BDT,
-        currency: "BDT",
-        status: "pending",
-        customer_email: customer_email || "tester@shothik.ai",
-      },
+      payment_transaction: txRecord,
       redirect_url: successUrl,
       payment_url: successUrl,
     },
@@ -714,31 +739,66 @@ router.post(["/payment-transactions/initiate", "/v1/payment-transactions/initiat
 });
 
 router.post(["/payment-transactions/:id/verify", "/v1/payment-transactions/:id/verify"], (req: Request, res: Response) => {
-  const trxId = req.params.id;
-  const userId = (req.headers["x-user-id"] as string) || "usr_default";
+  const trxId = String(req.params.id || "");
+  const userId = resolveUserId(req, "usr_default");
 
-  // Credit 500 or appropriate credits
+  const txRecord = pendingPublicTransactions.get(trxId);
+  if (!txRecord) {
+    return res.status(404).json({
+      success: false,
+      error: `Transaction ${trxId} not found or expired.`,
+    });
+  }
+
+  // Idempotency: avoid double-crediting
+  if (txRecord.status === "completed" && txRecord.verified) {
+    return res.status(200).json({
+      success: true,
+      message: "Transaction was already verified and credited.",
+      data: {
+        _id: trxId,
+        status: "completed",
+        verified: true,
+      },
+    });
+  }
+
+  // Settle transaction and credit exact tier tokens
+  txRecord.status = "completed";
+  txRecord.verified = true;
+  txRecord.verifiedAt = new Date().toISOString();
+
   const currentCredits = userCreditLedger.get(userId) ?? 500;
-  userCreditLedger.set(userId, currentCredits + 550);
+  userCreditLedger.set(userId, currentCredits + txRecord.credits);
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Transaction verified and credits credited successfully.",
     data: {
       _id: trxId,
       status: "completed",
       verified: true,
+      creditedAmount: txRecord.credits,
     },
   });
 });
 
 router.get(["/payment-transactions/:id/status", "/v1/payment-transactions/:id/status"], (req: Request, res: Response) => {
-  res.status(200).json({
+  const trxId = String(req.params.id || "");
+  const txRecord = pendingPublicTransactions.get(trxId);
+  if (!txRecord) {
+    return res.status(404).json({
+      success: false,
+      error: "Transaction not found.",
+    });
+  }
+
+  return res.status(200).json({
     success: true,
     data: {
-      _id: req.params.id,
-      status: "completed",
-      is_paid: true,
+      _id: txRecord._id,
+      status: txRecord.status,
+      is_paid: txRecord.status === "completed",
     },
   });
 });

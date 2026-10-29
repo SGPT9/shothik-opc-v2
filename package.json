@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
     "dev": "pnpm --filter @workspace/shothik run dev",
     "dev:api": "pnpm --filter @workspace/api-server run dev",
     "dev:mockup": "pnpm --filter @workspace/mockup-sandbox run dev",
@@ -15,7 +16,7 @@
     "typecheck": "pnpm --filter @workspace/shothik run typecheck",
     "typecheck:api": "pnpm --filter @workspace/api-server run typecheck",
     "typecheck:all": "pnpm -r --if-present run typecheck",
-    "test": "pnpm --filter @workspace/api-server test",
+    "test:all": "pnpm -r test",
     "test:run": "pnpm --filter @workspace/api-server test",
     "test:api": "pnpm --filter @workspace/api-server run test",
     "test:ecc": "pnpm --filter @workspace/api-server test",
@@ -78,9 +79,18 @@
     "vitest": "^4.1.11",
     "wrangler": "^4.129.0"
   },
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=11.0.0"
+  },
+
   "overrides": {
     "@playwright/test": "^1.59.1",
-    "axios": "^1.7.9",
+    "axios": "^1.19.0",
+    "dompurify": ">=3.2.4",
+    "proxy-addr": ">=2.0.8",
+    "tinypool": ">=2.1.2",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3"
   },

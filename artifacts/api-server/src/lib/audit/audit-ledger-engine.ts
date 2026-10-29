@@ -36,7 +36,8 @@ export interface JournalEntry {
     | "vat_mushak_6_3"
     | "customs_duty"
     | "franchise_royalty"
-    | "courier_payout";
+    | "courier_payout"
+    | "mfs_payout";
   postedAt: string;
   memo: string;
   lines: JournalEntryLine[];

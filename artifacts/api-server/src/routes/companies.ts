@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { logger } from "../lib/logger";
+import { resolveUserId } from "../middleware/auth.js";
 
 export interface CompanyTask {
   id: string;
@@ -57,6 +58,7 @@ export interface ServerCompanyProfile {
   docs: CompanyDoc[];
   feed: CompanyStandupMessage[];
   collaborators: CompanyCollaborator[];
+  externalSkills?: string[];
 }
 
 const IN_MEMORY_COMPANIES = new Map<string, ServerCompanyProfile>();
@@ -157,7 +159,7 @@ const router = Router();
  */
 router.get("/v1/twin/companies", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
     const companies = Array.from(IN_MEMORY_COMPANIES.values()).filter(
       (c) => c.userId === userId || userId === "usr_default"
     );
@@ -188,7 +190,7 @@ router.get("/v1/twin/companies/:slug", async (req: Request, res: Response) => {
       const name = rawSlug.replace(/-/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
       company = {
         id: `comp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
-        userId: (req.headers["x-user-id"] as string) || "usr_default",
+        userId: resolveUserId(req, "usr_default"),
         name,
         slug,
         industry: "Technology & AI",
@@ -210,7 +212,8 @@ router.get("/v1/twin/companies/:slug", async (req: Request, res: Response) => {
             dayHeader: "TODAY",
             text: `🚀 Autonomous workspace initialized for **${name}** at \`https://${slug}.shothikgpt.com\`. Ready for task execution!`,
           }
-        ]
+        ],
+        externalSkills: ["youtube", "instagram"],
       };
       IN_MEMORY_COMPANIES.set(slug, company);
     }
@@ -238,7 +241,7 @@ router.post("/v1/twin/companies", async (req: Request, res: Response) => {
     }
 
     const slug = slugify(name);
-    const userId = (req.headers["x-user-id"] as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
 
     const company: ServerCompanyProfile = {
       id: `comp_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
@@ -266,9 +269,10 @@ router.post("/v1/twin/companies", async (req: Request, res: Response) => {
           dayHeader: "TODAY",
           text: `🚀 Welcome to **${name}**! Autonomous co-founder engine synthesized your PRD, configured SRE budget, and queued Wayfinder execution tickets.`,
         }
-      ]
+      ],
+      externalSkills: ["youtube", "instagram"],
+      // End of company initialization
     };
-
     IN_MEMORY_COMPANIES.set(slug, company);
 
     // Dual-write to PostgreSQL companies table
@@ -381,7 +385,7 @@ router.post("/v1/twin/companies/:slug/sync", async (req: Request, res: Response)
     if (!company) {
       company = {
         id: clientState.id || `comp_${Date.now()}`,
-        userId: (req.headers["x-user-id"] as string) || "usr_default",
+        userId: resolveUserId(req, "usr_default"),
         name: clientState.name || slug,
         slug,
         industry: clientState.industry || "General",

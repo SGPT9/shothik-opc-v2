@@ -43,7 +43,11 @@ function verifyPassword(password: string, combined: string): boolean {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "shothik_unified_auth_secret_2026_bd";
+const isProduction = process.env.NODE_ENV === "production";
+if (isProduction && !process.env.JWT_SECRET) {
+  throw new Error("[Auth Security] CRITICAL: JWT_SECRET environment variable must be explicitly configured when NODE_ENV=production.");
+}
+const JWT_SECRET = process.env.JWT_SECRET || "shothik_dev_only_ephemeral_jwt_secret";
 
 function generateToken(userId: string, email: string): string {
   const payload = Buffer.from(
@@ -57,12 +61,16 @@ function generateToken(userId: string, email: string): string {
   return `${payload}.${signature}`;
 }
 
-function verifyToken(token: string): { userId: string; email: string } | null {
+export function verifyToken(token: string): { userId: string; email: string } | null {
   try {
     const [payload, signature] = token.split(".");
     if (!payload || !signature) return null;
     const expectedSig = crypto.createHmac("sha256", JWT_SECRET).update(payload).digest("base64url");
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) return null;
+    const sigBuf = Buffer.from(signature);
+    const expectedBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      return null;
+    }
     const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf-8"));
     if (data.exp && data.exp < Date.now()) return null;
     return { userId: data.userId, email: data.email };
@@ -71,17 +79,30 @@ function verifyToken(token: string): { userId: string; email: string } | null {
   }
 }
 
+export function verifyAuthRequest(req: Request): { userId: string; email: string } | null {
+  const token = extractToken(req);
+  if (!token) return null;
+  return verifyToken(token);
+}
+
+let persistTimer: NodeJS.Timeout | null = null;
 function persistUsers(): void {
-  try {
-    const dir = path.dirname(USERS_FILE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    try {
+      const dir = path.dirname(USERS_FILE_PATH);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      const allUsers = Array.from(usersById.values());
+      fs.promises.writeFile(USERS_FILE_PATH, JSON.stringify(allUsers, null, 2), "utf-8").catch((err: any) => {
+        logger.error({ error: err?.message }, "[Auth] Failed to persist users file asynchronously");
+      });
+    } catch (err: any) {
+      logger.error({ error: err.message }, "[Auth] Failed to schedule users file persistence");
     }
-    const allUsers = Array.from(usersById.values());
-    fs.writeFileSync(USERS_FILE_PATH, JSON.stringify(allUsers, null, 2), "utf-8");
-  } catch (err: any) {
-    logger.error({ error: err.message }, "[Auth] Failed to persist users file");
-  }
+  }, 50);
+  persistTimer.unref?.();
 }
 
 function loadUsers(): void {
@@ -98,44 +119,47 @@ function loadUsers(): void {
     logger.warn({ error: err.message }, "[Auth] Initializing fresh users table");
   }
 
-  // Pre-seed developer and tester accounts if not present
-  if (!usersByEmail.has("dev@shothik.local")) {
-    const devUser: StoredUser = {
-      id: "dev_user_local",
-      _id: "dev_user_local",
-      name: "Developer",
-      email: "dev@shothik.local",
-      passwordHash: hashPassword("Developer123!"),
-      role: "admin",
-      country: "BD",
-      credits: 1500,
-      tier: "enterprise",
-      authProvider: "local_dev",
-      createdAt: new Date().toISOString(),
-    };
-    usersByEmail.set(devUser.email.toLowerCase(), devUser);
-    usersById.set(devUser.id, devUser);
-  }
+  // Only pre-seed local developer/tester accounts outside production
+  if (!isProduction) {
+    const devSeedPassword = process.env.DEV_SEED_PASSWORD || crypto.randomBytes(16).toString("hex");
+    if (!usersByEmail.has("dev@shothik.local")) {
+      const devUser: StoredUser = {
+        id: "dev_user_local",
+        _id: "dev_user_local",
+        name: "Developer",
+        email: "dev@shothik.local",
+        passwordHash: hashPassword(devSeedPassword),
+        role: "admin",
+        country: "BD",
+        credits: 1500,
+        tier: "enterprise",
+        authProvider: "local_dev",
+        createdAt: new Date().toISOString(),
+      };
+      usersByEmail.set(devUser.email.toLowerCase(), devUser);
+      usersById.set(devUser.id, devUser);
+    }
 
-  if (!usersByEmail.has("tester@shothik.ai")) {
-    const testerUser: StoredUser = {
-      id: "usr_tester_shothik_01",
-      _id: "usr_tester_shothik_01",
-      name: "Shothik Beta Tester",
-      email: "tester@shothik.ai",
-      passwordHash: hashPassword("Tester123!"),
-      role: "user",
-      country: "BD",
-      credits: 500,
-      tier: "starter",
-      authProvider: "credentials",
-      createdAt: new Date().toISOString(),
-    };
-    usersByEmail.set(testerUser.email.toLowerCase(), testerUser);
-    usersById.set(testerUser.id, testerUser);
-  }
+    if (!usersByEmail.has("tester@shothik.ai")) {
+      const testerUser: StoredUser = {
+        id: "usr_tester_shothik_01",
+        _id: "usr_tester_shothik_01",
+        name: "Shothik Beta Tester",
+        email: "tester@shothik.ai",
+        passwordHash: hashPassword(devSeedPassword),
+        role: "user",
+        country: "BD",
+        credits: 500,
+        tier: "starter",
+        authProvider: "credentials",
+        createdAt: new Date().toISOString(),
+      };
+      usersByEmail.set(testerUser.email.toLowerCase(), testerUser);
+      usersById.set(testerUser.id, testerUser);
+    }
 
-  persistUsers();
+    persistUsers();
+  }
 }
 
 // Initialize users on boot
@@ -146,7 +170,7 @@ function sanitizeUser(user: StoredUser) {
   return rest;
 }
 
-function extractToken(req: Request): string | null {
+export function extractToken(req: Request): string | null {
   const authHeader = req.headers["authorization"] || req.headers["Authorization"];
   if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
     return authHeader.slice(7).trim();
@@ -155,11 +179,24 @@ function extractToken(req: Request): string | null {
   if (typeof tokenHeader === "string" && tokenHeader.trim()) {
     return tokenHeader.trim();
   }
-  // Check cookie if cookie-parser is mounted
   if ((req as any).cookies?.shothik_session) {
     return (req as any).cookies.shothik_session;
   }
   return null;
+}
+
+function sanitizeRedirectPath(rawNext: unknown): string {
+  if (typeof rawNext !== "string" || !rawNext.trim()) return "/twin";
+  try {
+    const decoded = decodeURIComponent(rawNext.trim());
+    // Must be a strictly local relative path starting with single '/' and no control chars
+    if (decoded.startsWith("/") && !decoded.startsWith("//") && !/[\r\n<>"'`\\]/.test(decoded)) {
+      return decoded;
+    }
+  } catch {
+    // ignore malformed URI component
+  }
+  return "/twin";
 }
 
 /**
@@ -197,7 +234,7 @@ router.post(["/auth/sign-up", "/v1/auth/sign-up", "/sign-up"], (req: Request, re
       passwordHash: hashPassword(password),
       role: "user",
       country: String(country || "BD"),
-      credits: 500, // Welcome gift of 500 credits
+      credits: 500,
       tier: "starter",
       authProvider: "credentials",
       createdAt: new Date().toISOString(),
@@ -274,7 +311,7 @@ router.post(["/auth/sign-out", "/v1/auth/sign-out", "/sign-out"], (_req: Request
 
 /**
  * GET /api/auth/session
- * Returns authenticated user context based on token, header, or Cloudflare Access
+ * Returns authenticated user context based on verified token
  */
 router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res: Response) => {
   const token = extractToken(req);
@@ -292,9 +329,10 @@ router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res
     }
   }
 
-  // Cloudflare Zero Trust header support
+  // Cloudflare Zero Trust header support (requires both email and JWT assertion header, plus explicit CF_ACCESS_ENABLED)
   const cfEmail = req.headers["cf-access-authenticated-user-email"] as string | undefined;
-  if (cfEmail) {
+  const cfJwtAssertion = req.headers["cf-access-jwt-assertion"] as string | undefined;
+  if (cfEmail && cfJwtAssertion && process.env.CF_ACCESS_ENABLED === "true") {
     let user = usersByEmail.get(cfEmail.toLowerCase());
     if (!user) {
       const userId = `cf_usr_${cfEmail.replace(/[^a-zA-Z0-9]/g, "_")}`;
@@ -320,8 +358,8 @@ router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res
     });
   }
 
-  // Fallback dev account if explicitly requested via query or header
-  const isDevExplicit = req.query.dev === "1" || req.headers["x-dev-mode"] === "true";
+  // Fallback dev account ONLY allowed when NODE_ENV !== 'production'
+  const isDevExplicit = !isProduction && (req.query.dev === "1" || req.headers["x-dev-mode"] === "true");
   if (isDevExplicit) {
     const devUser = usersByEmail.get("dev@shothik.local");
     return res.status(200).json({
@@ -341,12 +379,19 @@ router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res
 
 /**
  * GET /api/auth/oauth/google
- * Test Google sign-in simulation for immediate tester onboarding
+ * Test Google sign-in simulation for local/dev tester onboarding (disabled in production unless ALLOW_DEV_OAUTH_SIMULATION=true)
  */
 router.get(["/auth/oauth/google", "/v1/auth/oauth/google"], (req: Request, res: Response) => {
-  const nextPath = (req.query.next as string) || "/twin";
-  
-  // Provision or retrieve demo Google tester
+  if (isProduction && process.env.ALLOW_DEV_OAUTH_SIMULATION !== "true") {
+    res.status(403).json({
+      success: false,
+      message: "Simulated Google OAuth is disabled in production. Configure real OAuth credentials.",
+    });
+    return;
+  }
+
+  const safeNextPath = sanitizeRedirectPath(req.query.next);
+
   const googleEmail = "tester.google@shothik.ai";
   let user = usersByEmail.get(googleEmail);
   if (!user) {
@@ -370,7 +415,6 @@ router.get(["/auth/oauth/google", "/v1/auth/oauth/google"], (req: Request, res: 
 
   const token = generateToken(user.id, user.email);
 
-  // Return a small HTML redirect that writes the token into localStorage and forwards to the app
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -381,10 +425,10 @@ router.get(["/auth/oauth/google", "/v1/auth/oauth/google"], (req: Request, res: 
           <p>Redirecting to your workspace...</p>
         </div>
         <script>
-          localStorage.setItem("jwt_token", "${token}");
-          localStorage.setItem("accessToken", "${token}");
+          localStorage.setItem("jwt_token", ${JSON.stringify(token)});
+          localStorage.setItem("accessToken", ${JSON.stringify(token)});
           localStorage.setItem("shothik_user", ${JSON.stringify(JSON.stringify(sanitizeUser(user)))});
-          window.location.replace("${decodeURIComponent(nextPath)}");
+          window.location.replace(${JSON.stringify(safeNextPath)});
         </script>
       </body>
     </html>
@@ -401,6 +445,10 @@ router.post("/auth/convex-token", (req: Request, res: Response) => {
         return res.status(200).json({ token, user: sanitizeUser(user) });
       }
     }
+  }
+
+  if (isProduction) {
+    return res.status(401).json({ success: false, message: "Unauthorized." });
   }
 
   return res.status(200).json({
@@ -443,6 +491,12 @@ router.post(["/auth/login", "/v1/auth/login", "/login"], (req: Request, res: Res
     const { email, password, oneTapUser } = req.body || {};
 
     if (oneTapUser && email) {
+      if (isProduction) {
+        return res.status(401).json({
+          success: false,
+          message: "Unverified One-Tap login is disabled in production.",
+        });
+      }
       const normalizedEmail = String(email).trim().toLowerCase();
       let user = usersByEmail.get(normalizedEmail);
       if (!user) {
@@ -634,4 +688,3 @@ router.post(["/auth/logout", "/v1/auth/logout"], (_req: Request, res: Response) 
 });
 
 export default router;
-

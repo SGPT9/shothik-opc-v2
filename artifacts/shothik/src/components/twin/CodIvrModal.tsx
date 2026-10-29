@@ -56,6 +56,7 @@ export const CodIvrModal: React.FC<CodIvrModalProps> = ({ isOpen, onClose }) => 
 
   // Keyboard shortcut ⌘V / Ctrl+V
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
         e.preventDefault();

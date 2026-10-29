@@ -63,6 +63,7 @@ export const RmgMerchandisingModal: React.FC<RmgMerchandisingModalProps> = ({
 
   // Keyboard shortcut ⌘R / Ctrl+R
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "r") {
         e.preventDefault();

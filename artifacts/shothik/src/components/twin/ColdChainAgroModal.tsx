@@ -74,6 +74,7 @@ export const ColdChainAgroModal: React.FC<ColdChainAgroModalProps> = ({
 
   // Keyboard shortcut ⌘A / Ctrl+A
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "a") {
         e.preventDefault();

@@ -4,6 +4,7 @@ import { db } from "@workspace/db";
 import { projectsTable, writingAutosaveTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -18,7 +19,7 @@ const router = Router();
  */
 router.get("/v1/projects", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const projects = await db
       .select()
       .from(projectsTable)
@@ -64,7 +65,7 @@ router.get("/v1/projects/:id", async (req: Request, res: Response) => {
  */
 router.post("/v1/projects", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const { title, type, template, description, sections, settings } = req.body;
 
     if (!title || !type) {
@@ -98,7 +99,7 @@ router.post("/v1/projects", idempotencyMiddleware, async (req: Request, res: Res
  */
 router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const id = String(req.params.id);
     const updates: Record<string, unknown> = {};
 
@@ -169,7 +170,7 @@ router.delete("/v1/projects/:id", async (req: Request, res: Response) => {
  */
 router.post("/v1/writing/autosave", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const { localProjectId, content, wordCount } = req.body;
 
     if (!localProjectId) {
@@ -209,7 +210,7 @@ router.post("/v1/writing/autosave", async (req: Request, res: Response) => {
  */
 router.get("/v1/writing/autosave/:localProjectId", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const localProjectId = String(req.params.localProjectId);
 
     const rows = await db
@@ -231,7 +232,7 @@ router.get("/v1/writing/autosave/:localProjectId", async (req: Request, res: Res
  */
 router.post("/v1/writing/sections", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const { localProjectId, sections } = req.body;
 
     if (!localProjectId) {
@@ -270,7 +271,7 @@ router.post("/v1/writing/sections", async (req: Request, res: Response) => {
  */
 router.get("/v1/writing/sections/:localProjectId", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const localProjectId = String(req.params.localProjectId);
 
     const rows = await db

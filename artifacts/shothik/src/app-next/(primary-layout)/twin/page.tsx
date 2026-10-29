@@ -94,6 +94,10 @@ const ScenarioLabModal = dynamic(() => import("@/components/scenariolab/Scenario
 const UnifiedVoiceStudioModal = dynamic(() => import("@/components/voice/UnifiedVoiceStudioModal").then((m) => m.UnifiedVoiceStudioModal), { ssr: false });
 const AgentMarketplaceModal = dynamic(() => import("@/components/marketplace/AgentMarketplaceModal").then((m) => m.AgentMarketplaceModal), { ssr: false });
 const JuteExportModal = dynamic(() => import("@/components/twin/JuteExportModal").then((m) => m.JuteExportModal), { ssr: false });
+const TeamModal = dynamic(() => import("@/components/team/TeamModal").then((m) => m.TeamModal), { ssr: false });
+import { TeamPanel } from "@/components/team/TeamPanel";
+import { MemoryViewer } from "@/components/memory/MemoryViewer";
+import { SchedulePanel } from "@/components/schedule/SchedulePanel";
 import { memoryExtractionService } from "@/lib/memory/MemoryExtractionService";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
@@ -352,6 +356,7 @@ export default function TwinPage() {
   const [redeployOpen, setRedeployOpen] = useState(false);
   const [autoColdOutreachOpen, setAutoColdOutreachOpen] = useState(false);
   const [specializedTwinsOpen, setSpecializedTwinsOpen] = useState(false);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
   const [capsuleActive, setCapsuleActive] = useState(false);
   const [capsuleStatus, setCapsuleStatus] = useState("Autonomous Twin executing in background...");
   const [capsuleTwin, setCapsuleTwin] = useState("Swarm Orchestrator");
@@ -479,96 +484,83 @@ export default function TwinPage() {
         return;
       }
 
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "w") {
-        e.preventDefault();
-        setWhatsAppCommerceOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "x") {
-        e.preventDefault();
-        setMushakTaxStudioOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "o") {
-        e.preventDefault();
-        setOutboundCallingOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "u") {
-        e.preventDefault();
-        setCrossBorderCustomsOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "f") {
-        e.preventDefault();
-        setFranchiseMultiBranchOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "l") {
-        e.preventDefault();
-        setLiveSellingOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "d") {
-        e.preventDefault();
-        setAuditLedgerOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "r") {
-        e.preventDefault();
-        setCourierArbitrageOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
-        e.preventDefault();
-        setFreelancerRemittanceOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "h") {
-        e.preventDefault();
-        setDarkHubFulfillmentOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "m") {
-        e.preventDefault();
-        setMultiChannelCashflowOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "q") {
-        e.preventDefault();
-        setWholesaleRfqEscrowOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "a") {
-        e.preventDefault();
-        setAgriMandiRadarOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "v") {
-        e.preventDefault();
-        setMultiDialectVoiceOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "g") {
-        e.preventDefault();
-        setSwarmGraphOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "b") {
-        e.preventDefault();
-        setVastSpotGpuOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "e") {
-        e.preventDefault();
-        setEdgeMeshOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "t") {
-        e.preventDefault();
-        setCanaryDirectorOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
-        e.preventDefault();
-        setVulnerabilityImmunityOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
-        e.preventDefault();
-        setEpistemicConsensusOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "z") {
-        e.preventDefault();
-        setZkSnarkProverOpen((prev) => !prev);
-      } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "y") {
-        e.preventDefault();
-        setWasmVectorIndexOpen((prev) => !prev);
-      } else if (e.altKey && e.key.toLowerCase() === "f") {
-        e.preventDefault();
-        setRtoFraudShieldOpen((prev) => !prev);
-      } else if (e.altKey && e.key.toLowerCase() === "i") {
-        e.preventDefault();
-        setFlashInventoryOpen((prev) => !prev);
-      } else if (e.altKey && e.key.toLowerCase() === "d") {
-        e.preventDefault();
-        setLandRegistryOpen((prev) => !prev);
-      } else if (e.altKey && e.key.toLowerCase() === "s") {
-        e.preventDefault();
-        setScenarioLabOpen((prev) => !prev);
-      } else if (e.altKey && e.key.toLowerCase() === "v") {
-        e.preventDefault();
-        setVoiceStudioOpen((prev) => !prev);
-      } else if (e.altKey && e.key.toLowerCase() === "e") {
-        e.preventDefault();
-        setEmporiumOpen((prev) => !prev);
-      } else if (e.altKey && e.key.toLowerCase() === "c") {
-        e.preventDefault();
-        if (typeof window !== "undefined") window.location.href = "/community";
-      } else if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key.toLowerCase() === "j") {
-        e.preventDefault();
-        setJuteExportOpen((prev) => !prev);
+      // 3. Protect active text selection so Ctrl+C / Ctrl+A / Ctrl+X work naturally
+      if (typeof window !== "undefined" && window.getSelection()?.toString()) {
+        return;
+      }
+
+      const key = e.key.toLowerCase();
+
+      // 4. Secondary Shift shortcuts (⌘⇧<Key> / Ctrl+Shift+<Key>) evaluated BEFORE non-shift shortcuts
+      if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
+        if (key === "j") { e.preventDefault(); setJuteExportOpen((prev) => !prev); }
+        else if (key === "o") { e.preventDefault(); setAutoColdOutreachOpen((prev) => !prev); }
+        else if (key === "g") { e.preventDefault(); setPlatformElevatorsOpen((prev) => !prev); }
+        else if (key === "p") { e.preventDefault(); setFieldAgentPosOpen((prev) => !prev); }
+        else if (key === "w") { e.preventDefault(); setMultiCarrierWebhookOpen((prev) => !prev); }
+        else if (key === "e") { e.preventDefault(); setExportComplianceOpen((prev) => !prev); }
+        else if (key === "x") { e.preventDefault(); setFxHedgingOpen((prev) => !prev); }
+        else if (key === "y") { e.preventDefault(); setPayrollTaxOpen((prev) => !prev); }
+        else if (key === "i") { e.preventDefault(); setInvoiceFactoringOpen((prev) => !prev); }
+        else if (key === "v") { e.preventDefault(); setVoiceCommerceOpen((prev) => !prev); }
+        else if (key === "l") { e.preventDefault(); setLegalContractsOpen((prev) => !prev); }
+        else if (key === "b") { e.preventDefault(); setDutyDrawbackOpen((prev) => !prev); }
+        else if (key === "t") { e.preventDefault(); setTenderBidOpen((prev) => !prev); }
+        else if (key === "d") { e.preventDefault(); setDokployOpen((prev) => !prev); }
+        else if (key === "u") { e.preventDefault(); setWebGpuEmbeddingOpen((prev) => !prev); }
+        else if (key === "n") { e.preventDefault(); setCustomsTariffOpen((prev) => !prev); }
+        else if (key === "k") { e.preventDefault(); setKycOcrOpen((prev) => !prev); }
+        return;
+      }
+
+      // 5. Primary ⌘<Key> / Ctrl+<Key> shortcuts
+      if ((e.metaKey || e.ctrlKey) && !e.altKey) {
+        if (key === "w") { e.preventDefault(); setWhatsAppCommerceOpen((prev) => !prev); }
+        else if (key === "x") { e.preventDefault(); setMushakTaxStudioOpen((prev) => !prev); }
+        else if (key === "o") { e.preventDefault(); setOutboundCallingOpen((prev) => !prev); }
+        else if (key === "u") { e.preventDefault(); setCrossBorderCustomsOpen((prev) => !prev); }
+        else if (key === "f") { e.preventDefault(); setFranchiseMultiBranchOpen((prev) => !prev); }
+        else if (key === "l") { e.preventDefault(); setLiveSellingOpen((prev) => !prev); }
+        else if (key === "d") { e.preventDefault(); setAuditLedgerOpen((prev) => !prev); }
+        else if (key === "r") { e.preventDefault(); setCourierArbitrageOpen((prev) => !prev); }
+        else if (key === "i") { e.preventDefault(); setFreelancerRemittanceOpen((prev) => !prev); }
+        else if (key === "h") { e.preventDefault(); setDarkHubFulfillmentOpen((prev) => !prev); }
+        else if (key === "m") { e.preventDefault(); setMultiChannelCashflowOpen((prev) => !prev); }
+        else if (key === "q") { e.preventDefault(); setWholesaleRfqEscrowOpen((prev) => !prev); }
+        else if (key === "a") { e.preventDefault(); setAgriMandiRadarOpen((prev) => !prev); }
+        else if (key === "v") { e.preventDefault(); setMultiDialectVoiceOpen((prev) => !prev); }
+        else if (key === "g") { e.preventDefault(); setSwarmGraphOpen((prev) => !prev); }
+        else if (key === "b") { e.preventDefault(); setVastSpotGpuOpen((prev) => !prev); }
+        else if (key === "e") { e.preventDefault(); setEdgeMeshOpen((prev) => !prev); }
+        else if (key === "t") { e.preventDefault(); setCanaryDirectorOpen((prev) => !prev); }
+        else if (key === "p") { e.preventDefault(); setVulnerabilityImmunityOpen((prev) => !prev); }
+        else if (key === "j") { e.preventDefault(); setEpistemicConsensusOpen((prev) => !prev); }
+        else if (key === "z") { e.preventDefault(); setZkSnarkProverOpen((prev) => !prev); }
+        else if (key === "y") { e.preventDefault(); setWasmVectorIndexOpen((prev) => !prev); }
+        else if (key === "n") { e.preventDefault(); setNightshiftOpen((prev) => !prev); }
+        else if (key === "4") { e.preventDefault(); setMushak43DeclarationOpen((prev) => !prev); }
+        else if (key === "9") { e.preventDefault(); setCorporateTaxOpen((prev) => !prev); }
+        return;
+      }
+
+      // 6. Alt / Option shortcuts (⌥<Key>)
+      if (e.altKey && !e.metaKey && !e.ctrlKey) {
+        if (key === "f") { e.preventDefault(); setRtoFraudShieldOpen((prev) => !prev); }
+        else if (key === "i") { e.preventDefault(); setFlashInventoryOpen((prev) => !prev); }
+        else if (key === "d") { e.preventDefault(); setLandRegistryOpen((prev) => !prev); }
+        else if (key === "s") { e.preventDefault(); setScenarioLabOpen((prev) => !prev); }
+        else if (key === "v") { e.preventDefault(); setVoiceStudioOpen((prev) => !prev); }
+        else if (key === "e") { e.preventDefault(); setEmporiumOpen((prev) => !prev); }
+        else if (key === "b") { e.preventDefault(); setStartupBuildsOpen((prev) => !prev); }
+        else if (key === "o") { e.preventDefault(); setMultiModelParetoOpen((prev) => !prev); }
+        else if (key === "u") { e.preventDefault(); setAgentComputerOpen((prev) => !prev); }
+        else if (key === "m") { e.preventDefault(); setInventoryMatrixOpen((prev) => !prev); }
+        else if (key === "q") { e.preventDefault(); setCodIvrOpen((prev) => !prev); }
+        else if (key === "l") { e.preventDefault(); setEarlyLiquidityOpen((prev) => !prev); }
+        else if (key === "r") { e.preventDefault(); setDebtRecoveryOpen((prev) => !prev); }
+        else if (key === "j") { e.preventDefault(); setHalalGovernanceOpen((prev) => !prev); }
+        else if (key === "p") { e.preventDefault(); setCollectiveBuyingOpen((prev) => !prev); }
+        else if (key === "c") { e.preventDefault(); if (typeof window !== "undefined") window.location.href = "/community"; }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -1538,6 +1530,27 @@ export default function TwinPage() {
             >
               <Brain className="w-4 h-4 text-purple-600 dark:text-purple-400" />
               <span>TWIN BRAIN & MEMORY</span>
+            </button>
+          </div>
+
+          {/* Autonomous Team & Scheduler Studio Widget */}
+          <div className="space-y-3 pt-4 border-t border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center justify-between">
+              <h3 className="font-serif text-base font-bold text-zinc-950 dark:text-white">
+                Agent Team & Scheduler
+              </h3>
+              <Badge variant="outline" className="text-[10px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 font-mono">
+                Team • Memory • Cron
+              </Badge>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setTeamModalOpen(true)}
+              className={`w-full ${beveledBtnClass} bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800/80 font-bold`}
+            >
+              <Users className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+              <span>TEAM & SCHEDULER STUDIO</span>
             </button>
           </div>
         </section>
@@ -3265,6 +3278,7 @@ export default function TwinPage() {
       {voiceStudioOpen && <UnifiedVoiceStudioModal isOpen={voiceStudioOpen} onClose={() => setVoiceStudioOpen(false)} />}
       {emporiumOpen && <AgentMarketplaceModal isOpen={emporiumOpen} onClose={() => setEmporiumOpen(false)} />}
       {juteExportOpen && <JuteExportModal isOpen={juteExportOpen} onClose={() => setJuteExportOpen(false)} />}
+      {teamModalOpen && <TeamModal isOpen={teamModalOpen} onClose={() => setTeamModalOpen(false)} />}
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

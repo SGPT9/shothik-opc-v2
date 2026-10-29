@@ -6,6 +6,7 @@ import { BkashPgwClient } from "../lib/mfs/bkash-pgw-client";
 import { ragEngine } from "../lib/rag-engine";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -31,7 +32,7 @@ function getSyncKey(userId: string, provider: string) {
  * Returns user's active connectors with masked keys
  */
 router.get("/v1/connectors", async (req: Request, res: Response) => {
-  const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+  const userId = resolveUserId(req, "usr_default");
 
   try {
     const userProviders = await userKeyVault.listUserProviders(userId).catch(() => []);
@@ -192,7 +193,7 @@ router.post("/v1/connectors/messaging/dispatch-tracking", async (req: Request, r
  * Returns aggregated status and indexing stats across all live connectors
  */
 router.get("/v1/connectors/status", async (req: Request, res: Response) => {
-  const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+  const userId = resolveUserId(req, "usr_default");
 
   try {
     const activeProvidersMap = ((await userKeyVault.listUserProviders(userId).catch(() => ({}))) || {}) as Record<string, boolean>;
@@ -456,7 +457,7 @@ router.post("/v1/connectors/gdrive/sync", idempotencyMiddleware, async (req: Req
  * Ingests repository files or README docs into RAG memory
  */
 router.post("/v1/connectors/github/sync", idempotencyMiddleware, async (req: Request, res: Response) => {
-  const userId = (req.headers["x-user-id"] as string) || req.body?.userId || "usr_default";
+  const userId = resolveUserId(req, typeof req.body?.userId === "string" ? req.body.userId : "usr_default");
   const { repo, branch = "main", files = [] } = req.body || {};
 
   if (!repo) {
@@ -554,7 +555,7 @@ Features 68 specialized agents, Boi Mela publishing, Nilkhet POD manufacturing, 
  * Lists all indexed RAG documents for a specific provider
  */
 router.get("/v1/connectors/:provider/items", async (req: Request, res: Response) => {
-  const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+  const userId = resolveUserId(req, "usr_default");
   const provider = String(req.params.provider);
 
   try {
@@ -680,7 +681,7 @@ router.post("/v1/connectors/:provider/verify", handleTestConnector);
  * Deletes user's stored credentials and cleans up status
  */
 router.delete("/v1/connectors/:provider", async (req: Request, res: Response) => {
-  const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+  const userId = resolveUserId(req, "usr_default");
   const { provider } = req.params;
 
   try {

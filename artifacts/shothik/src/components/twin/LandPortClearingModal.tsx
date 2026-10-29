@@ -79,6 +79,7 @@ export const LandPortClearingModal: React.FC<LandPortClearingModalProps> = ({
 
   // Keyboard shortcut ⌘L / Ctrl+L
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "l") {
         e.preventDefault();

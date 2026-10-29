@@ -44,18 +44,18 @@ describe('runChapterLoop — input validation (fail-closed)', () => {
     });
 
     it('rejects an empty plan', async () => {
-        await expect(runChapterLoop([], makeDeps())).rejects.toThrow(/empty/);
+        await expect(runChapterLoop([], makeDeps())).rejects.toThrow(BookAuthorError);
     });
 
     it('rejects missing dependency functions', async () => {
         const bad = { ...makeDeps(), generateChapter: undefined as never };
-        await expect(runChapterLoop(plan, bad)).rejects.toThrow(/generateChapter/);
+        await expect(runChapterLoop(plan, bad)).rejects.toThrow(BookAuthorError);
     });
 
     it('rejects a negative maxRegen', async () => {
         await expect(
             runChapterLoop(plan, makeDeps(), { maxRegen: -1 })
-        ).rejects.toThrow(/maxRegen/);
+        ).rejects.toThrow(BookAuthorError);
     });
 });
 
@@ -257,17 +257,17 @@ describe('authorSingleChapter — targeted regenerate', () => {
 
     it('rejects missing dependency functions', async () => {
         const bad = { ...makeDeps(), verifyChapter: undefined as never };
-        await expect(authorSingleChapter(plan, bad, 0)).rejects.toThrow(/verifyChapter/);
+        await expect(authorSingleChapter(plan, bad, 0)).rejects.toThrow(BookAuthorError);
     });
 
     it('rejects a negative maxRegen', async () => {
         await expect(authorSingleChapter(plan, makeDeps(), 0, { maxRegen: -1 })).rejects.toThrow(
-            /maxRegen/
+            BookAuthorError
         );
     });
 
     it('throws when the index is outside the plan', async () => {
-        await expect(authorSingleChapter(plan, makeDeps(), 99)).rejects.toThrow(/index 99/);
+        await expect(authorSingleChapter(plan, makeDeps(), 99)).rejects.toThrow(BookAuthorError);
     });
 
     it('authors ONLY the requested chapter, saving + folding it into the bible on accept', async () => {

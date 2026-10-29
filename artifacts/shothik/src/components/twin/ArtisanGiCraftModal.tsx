@@ -79,6 +79,7 @@ export const ArtisanGiCraftModal: React.FC<ArtisanGiCraftModalProps> = ({
 
   // Keyboard shortcut ⌘J / Ctrl+J
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();

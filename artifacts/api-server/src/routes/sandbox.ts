@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { codeSandbox, SandboxLanguage } from "../lib/code-sandbox.js";
+import { verifyAuthRequest } from "./auth.js";
 import { logger } from "../lib/logger.js";
 
 export const sandboxRouter = Router();
@@ -19,10 +20,22 @@ sandboxRouter.get("/v1/sandbox/runtimes", (_req: Request, res: Response): void =
 
 /**
  * POST /api/v1/sandbox/run
- * Executes arbitrary code safely inside the isolated sandbox.
+ * Executes code safely inside the isolated sandbox.
+ * Requires valid authentication in production environments.
  */
 sandboxRouter.post("/v1/sandbox/run", async (req: Request, res: Response): Promise<void> => {
   try {
+    if (process.env.NODE_ENV === "production") {
+      const authUser = verifyAuthRequest(req);
+      if (!authUser) {
+        res.status(401).json({
+          success: false,
+          error: "Authentication required to execute code in production sandbox",
+        });
+        return;
+      }
+    }
+
     const { language = "javascript", code, timeoutMs = 10000, environmentVars } = req.body;
 
     if (!code || typeof code !== "string") {
@@ -96,7 +109,7 @@ sandboxRouter.post("/v1/sandbox/simulate-webhook", async (req: Request, res: Res
       simulatedPayload = {
         tracking_code: safeTracking,
         invoice: safeInvoice,
-        status: event, // "delivered" | "in_transit" | "cancelled" | "return"
+        status: event,
         updated_at: new Date().toISOString(),
         delivery_charge: 60,
         cod_amount: safeAmount,
@@ -140,12 +153,12 @@ sandboxRouter.post("/v1/sandbox/deerflow-calc", async (req: Request, res: Respon
       supplementaryDutyPercent = 0,
     } = req.body || {};
 
+    const safeCalculationType = String(calculationType || "mushak_63_vat").replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 48);
     const safeBase = Math.max(0, Number(baseAmount) || 0);
     const safeVatRate = Math.max(0, Math.min(100, Number(vatRatePercent) || 15));
     const safeSdRate = Math.max(0, Math.min(100, Number(supplementaryDutyPercent) || 0));
     const safeAitRate = Math.max(0, Math.min(100, Number(withholdingTaxPercent) || 0));
 
-    // Execute within sandbox
     const code = `
 const base = ${safeBase};
 const sd = base * (${safeSdRate} / 100);
@@ -161,7 +174,7 @@ console.log(JSON.stringify({
   withholdingTax: Math.round(ait * 100) / 100,
   totalPayable: Math.round(totalPayable * 100) / 100,
   netReceivable: Math.round(netReceivable * 100) / 100,
-  calculationType: "${calculationType}",
+  calculationType: ${JSON.stringify(safeCalculationType)},
   engine: "deerflow-sandbox-v2"
 }));
 `;

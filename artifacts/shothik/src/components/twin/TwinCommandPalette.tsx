@@ -309,7 +309,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Systematic literature reviews, citations & NBR sandbox math</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘R</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧R</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -509,7 +509,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Autonomous B2B lead discovery & daily email sending</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘O</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧O</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -618,7 +618,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">MHI tier progression, bKash referral cashback & 1688 group import cohorts</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘G</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧G</CommandShortcut>
           </CommandItem>
         </CommandGroup>
 
@@ -965,7 +965,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘B
+              ⌘Q
             </CommandShortcut>
           </CommandItem>
 
@@ -1003,7 +1003,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘P
+              ⌘⇧P
             </CommandShortcut>
           </CommandItem>
 
@@ -1041,7 +1041,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘W
+              ⌘⇧W
             </CommandShortcut>
           </CommandItem>
 
@@ -1060,7 +1060,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘E
+              ⌘⇧E
             </CommandShortcut>
           </CommandItem>
 
@@ -1079,7 +1079,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘X
+              ⌘⇧X
             </CommandShortcut>
           </CommandItem>
 
@@ -1098,7 +1098,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘Y
+              ⌘⇧Y
             </CommandShortcut>
           </CommandItem>
 
@@ -1136,7 +1136,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘I
+              ⌘⇧I
             </CommandShortcut>
           </CommandItem>
 
@@ -1155,7 +1155,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘R
+              ⌥R
             </CommandShortcut>
           </CommandItem>
 
@@ -1174,7 +1174,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘V
+              ⌘⇧V
             </CommandShortcut>
           </CommandItem>
 
@@ -1193,7 +1193,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘L
+              ⌘⇧L
             </CommandShortcut>
           </CommandItem>
 
@@ -1212,7 +1212,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘B
+              ⌘⇧B
             </CommandShortcut>
           </CommandItem>
 
@@ -1231,7 +1231,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘J
+              ⌥J
             </CommandShortcut>
           </CommandItem>
 
@@ -1250,7 +1250,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘P
+              ⌥P
             </CommandShortcut>
           </CommandItem>
 
@@ -1269,7 +1269,7 @@ export function TwinCommandPalette({
               </div>
             </div>
             <CommandShortcut className="text-[10px] font-mono bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400">
-              ⌘T
+              ⌘⇧T
             </CommandShortcut>
           </CommandItem>
         </CommandGroup>
@@ -1297,7 +1297,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">1200px Desktop & 375px Mobile responsive iframe preview</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘P</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥B</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1388,7 +1388,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Docker container memory, CPU & port allocation monitor</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘D</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧D</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1421,7 +1421,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Zero-copy binary state vector & multi-master delta mesh</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘W</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥W</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1501,7 +1501,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Dynamic routing across Gemini, Claude, DeepSeek & Ollama</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘O</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥O</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1533,7 +1533,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Zero-latency cosine cache & BGE-m3 on-device tensor acceleration</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘U</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧U</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1595,7 +1595,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">CAS leased task worker, human approval gates & PDF form filler</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘U</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥U</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1612,7 +1612,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">8-digit HS Code classifier, Total Tax Incidence (TTI) & CIPL generator</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘N</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧N</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1629,7 +1629,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Cross-channel buffer allocation, stock-out radar & dark store rebalancing</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘I</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥M</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1646,7 +1646,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Autonomous outbound calling, address verification & fraud deterrence</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘V</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥Q</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1663,7 +1663,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Automated invoice discount scoring, 80% advance disbursement & MFS settlement</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘L</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌥L</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1680,7 +1680,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">Autonomous Smart NID & municipal trade license extraction with SHA-256 seal</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘K</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧K</CommandShortcut>
           </CommandItem>
 
           <CommandItem
@@ -1747,7 +1747,7 @@ export function TwinCommandPalette({
                 <span className="text-[11px] text-zinc-500">BJMC grading, moisture penalty, 12% cash subsidy & NBR bonded ledger</span>
               </div>
             </div>
-            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘J</CommandShortcut>
+            <CommandShortcut className="font-mono text-[10px] text-zinc-400">⌘⇧J</CommandShortcut>
           </CommandItem>
         </CommandGroup>
 

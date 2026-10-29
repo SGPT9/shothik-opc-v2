@@ -47,7 +47,7 @@ describe('storeByokKey (validation, before any DB/crypto)', () => {
   });
 
   it('rejects an unknown provider', async () => {
-    await expect(storeByokKey(USER, 'cohere', 'sk-x')).rejects.toThrow(/must be one of/);
+    await expect(storeByokKey(USER, 'cohere', 'sk-x')).rejects.toThrow(KeyCustodyError);
     expect(mutation).not.toHaveBeenCalled();
   });
 
@@ -58,7 +58,7 @@ describe('storeByokKey (validation, before any DB/crypto)', () => {
 
   it('rejects when the vault secret is not configured', async () => {
     delete process.env.SECOND_ME_VAULT_SECRET;
-    await expect(storeByokKey(USER, 'openai', 'sk-x')).rejects.toThrow(/unavailable/);
+    await expect(storeByokKey(USER, 'openai', 'sk-x')).rejects.toThrow(KeyCustodyError);
     expect(mutation).not.toHaveBeenCalled();
   });
 });

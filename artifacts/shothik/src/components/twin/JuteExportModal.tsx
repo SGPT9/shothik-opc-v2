@@ -69,6 +69,7 @@ export const JuteExportModal: React.FC<JuteExportModalProps> = ({
 
   // Keyboard shortcut Ctrl+J or Cmd+J
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "j") {
         e.preventDefault();

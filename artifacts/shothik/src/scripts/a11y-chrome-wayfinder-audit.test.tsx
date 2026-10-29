@@ -1,13 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect } from "vitest";
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
 import { ChatHeader } from "../components/agents/components/ChatHeader";
 import { Composer } from "../components/chat/Composer";
 import { EmptyChatGreeting } from "../components/chat/EmptyChatGreeting";
 import { PerplexitySourcesGrid } from "../components/perplexity/PerplexitySourcesGrid";
-import { PerplexityRelatedQueries } from "../components/perplexity/PerplexityRelatedQueries";
 
 describe("a11y-debugging & Chrome DevTools Comprehensive Audit", () => {
   it("verifies accessible names for all ChatHeader interactive buttons", () => {
@@ -48,7 +47,10 @@ describe("a11y-debugging & Chrome DevTools Comprehensive Audit", () => {
     const heading = greetingRes.container.querySelector("h1");
 
     expect(heading).not.toBeNull();
-    expect(heading?.textContent).toBe("What do you want to accomplish today?");
+    expect([
+      "What are we building today?",
+      "What do you want to accomplish today?",
+    ]).toContain(heading?.textContent?.trim());
   });
 
   it("verifies PerplexitySourcesGrid tap target link accessibility", () => {

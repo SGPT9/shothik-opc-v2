@@ -151,6 +151,7 @@ export const CrossBorderCustomsModal: React.FC<CrossBorderCustomsModalProps> = (
 
   // Global Keyboard Shortcut: ⌘U or Ctrl+U
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "u") {
         e.preventDefault();

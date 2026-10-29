@@ -24,7 +24,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 9
+          version: 11
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
@@ -33,7 +33,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install Dependencies
-        run: pnpm install --no-frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: TypeScript Compiler Check
         run: node artifacts/shothik/run_typecheck.cjs
@@ -94,7 +94,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v3
         with:
-          version: 9
+          version: 11
 
       - name: Setup Node.js 22
         uses: actions/setup-node@v4
@@ -104,7 +104,7 @@ jobs:
 
       - name: Install Dependencies & Build
         run: |
-          pnpm install --no-frozen-lockfile
+          pnpm install --frozen-lockfile
           pnpm --filter @workspace/shothik run build
 
       - name: Deploy to Cloudflare Workers

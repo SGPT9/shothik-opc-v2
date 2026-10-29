@@ -3,6 +3,7 @@ import { taskQueue, JobType, JobProgressEvent } from "../lib/queue/task-queue";
 import { dbAutoSync } from "../lib/db-bootstrap";
 import { validateRequest } from "../lib/middleware/zod-validator";
 import { JobSubmitSchema } from "@workspace/api-zod";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -127,7 +128,7 @@ router.get("/v1/jobs/:jobId", (req: Request, res: Response): void => {
  * List all active and completed background jobs for a user
  */
 router.get("/v1/jobs", (req: Request, res: Response): void => {
-  const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+  const userId = resolveUserId(req, "usr_default");
   const jobs = taskQueue.listJobs(userId);
 
   res.status(200).json({

@@ -44,7 +44,7 @@ Write-Host "[2/5] Setting Persistent User Environment Variables..." -ForegroundC
 Write-Host "  [OK] HF_HOME -> $hfCache" -ForegroundColor Green
 Write-Host "  [OK] OLLAMA_MODELS -> $ollamaCache" -ForegroundColor Green
 
-# 3. Check for Python 3.11 & uv
+# 3. Check for Python & uv
 Write-Host ""
 Write-Host "[3/5] Checking Python Toolchain..." -ForegroundColor Yellow
 $py = Get-Command python -ErrorAction SilentlyContinue
@@ -52,7 +52,7 @@ if ($py) {
     $pyVersion = python --version
     Write-Host "  [OK] Detected Python: $pyVersion" -ForegroundColor Green
 } else {
-    Write-Host "  [X] Python not found on PATH! Please install Python 3.11." -ForegroundColor Red
+    Write-Host "  [X] Python not found on PATH! Please install Python 3.11+." -ForegroundColor Red
     return
 }
 
@@ -71,9 +71,8 @@ Write-Host ""
 Write-Host "[4/5] Provisioning Virtual Environments & Directory Junctions..." -ForegroundColor Yellow
 
 $services = @(
-    @{ Name = "deerflow"; TargetDir = "deer-flow-backend" },
-    @{ Name = "rvc"; TargetDir = "Retrieval-based-Voice-Conversion-WebUI" },
-    @{ Name = "openwebui"; TargetDir = "open-webui" }
+    @{ Name = "deerflow"; TargetDir = "deerflow_repo\backend" },
+    @{ Name = "bangla-audio-ai"; TargetDir = "..\bangla-audio-ai" }
 )
 
 $repoRoot = (Get-Item -Path $PSScriptRoot).Parent.FullName
@@ -117,21 +116,20 @@ if ($InstallDeps) {
     Write-Host ""
     Write-Host "[5/5] Installing Dependencies with Intel Arc / DirectML Support..." -ForegroundColor Yellow
     
-    # DeerFlow
+    # DeerFlow (pyproject.toml)
     $deerVenvPy = Join-Path $BaseStorageDir "deerflow\Scripts\python.exe"
-    $deerReq = Join-Path $repoRoot "deer-flow-backend\backend\requirements.txt"
-    if (Test-Path $deerReq) {
-        Write-Host "  Installing DeerFlow dependencies..." -ForegroundColor Cyan
-        uv pip install -p $deerVenvPy -r $deerReq
+    $deerPyproject = Join-Path $repoRoot "deerflow_repo\backend\pyproject.toml"
+    if (Test-Path $deerPyproject) {
+        Write-Host "  Installing DeerFlow dependencies from pyproject.toml..." -ForegroundColor Cyan
+        uv pip install -p $deerVenvPy -r $deerPyproject
     }
 
-    # RVC
-    $rvcVenvPy = Join-Path $BaseStorageDir "rvc\Scripts\python.exe"
-    $rvcReq = Join-Path $repoRoot "Retrieval-based-Voice-Conversion-WebUI\requirments_cpu_py312.txt"
-    if (Test-Path $rvcReq) {
-        Write-Host "  Installing RVC dependencies & torch-directml for Intel Arc B580..." -ForegroundColor Cyan
-        uv pip install -p $rvcVenvPy -r $rvcReq
-        uv pip install -p $rvcVenvPy torch-directml
+    # Bangla Audio AI (requirements.txt)
+    $banglaVenvPy = Join-Path $BaseStorageDir "bangla-audio-ai\Scripts\python.exe"
+    $banglaReq = Join-Path $repoRoot "..\bangla-audio-ai\requirements.txt"
+    if (Test-Path $banglaReq) {
+        Write-Host "  Installing Bangla Audio AI dependencies for Intel Arc B580 (OpenVINO)..." -ForegroundColor Cyan
+        uv pip install -p $banglaVenvPy -r $banglaReq
     }
 } else {
     Write-Host ""
