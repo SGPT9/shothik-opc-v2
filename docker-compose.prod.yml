@@ -34,6 +34,8 @@ services:
       - REDIS_URL=redis://redis:6379
       - SEARXNG_URL=http://searxng:8080
       - OLLAMA_HOST=http://host.docker.internal:11434
+      - DEERFLOW_BACKEND_URL=http://deerflow:8000
+      - BANGLA_AUDIO_AI_URL=http://bangla-audio-ai:8001
     volumes:
       - ./data:/app/data
     ports:
@@ -41,6 +43,8 @@ services:
     depends_on:
       - redis
       - searxng
+      - deerflow
+      - bangla-audio-ai
     networks:
       - shothik-mesh
 
@@ -62,6 +66,32 @@ services:
     restart: always
     environment:
       - SEARXNG_BASE_URL=https://api.shothikgpt.com/search
+    networks:
+      - shothik-mesh
+
+  # 5. DeerFlow Deep Research Engine (LangGraph Python 3.12)
+  deerflow:
+    build:
+      context: ./deerflow_repo/backend
+      dockerfile: Dockerfile
+    container_name: shothik-deerflow-prod
+    restart: always
+    environment:
+      - LOG_LEVEL=info
+      - PORT=8000
+    networks:
+      - shothik-mesh
+
+  # 6. Bangla Audio AI Voice Synthesis (OpenVINO Python 3.11)
+  bangla-audio-ai:
+    build:
+      context: ../bangla-audio-ai
+      dockerfile: Dockerfile
+    container_name: shothik-bangla-audio-prod
+    restart: always
+    environment:
+      - PORT=8001
+      - PYTHONUNBUFFERED=1
     networks:
       - shothik-mesh
 

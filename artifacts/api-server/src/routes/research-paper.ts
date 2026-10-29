@@ -8,7 +8,7 @@ import { inferenceGateway } from "../lib/inference-gateway.js";
 
 export const researchPaperRouter = Router();
 
-const DEERFLOW_BACKEND_URL = process.env.DEERFLOW_BACKEND_URL || "http://127.0.0.1:8000";
+const DEERFLOW_BACKEND_URL = process.env.DEERFLOW_BACKEND_URL || process.env.DEERFLOW_API_URL || "http://127.0.0.1:8000";
 
 const generatePaperSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
