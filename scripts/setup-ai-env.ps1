@@ -71,8 +71,8 @@ Write-Host ""
 Write-Host "[4/5] Provisioning Virtual Environments & Directory Junctions..." -ForegroundColor Yellow
 
 $services = @(
-    @{ Name = "deerflow"; TargetDir = "deerflow_repo\backend" },
-    @{ Name = "bangla-audio-ai"; TargetDir = "..\bangla-audio-ai" }
+    @{ Name = "deerflow"; TargetDir = "deerflow_repo\backend"; PyVersion = "3.12" },
+    @{ Name = "bangla-audio-ai"; TargetDir = "..\bangla-audio-ai"; PyVersion = "3.11" }
 )
 
 $repoRoot = (Get-Item -Path $PSScriptRoot).Parent.FullName
@@ -80,6 +80,7 @@ $repoRoot = (Get-Item -Path $PSScriptRoot).Parent.FullName
 foreach ($svc in $services) {
     $svcName = $svc["Name"]
     $svcDir = $svc["TargetDir"]
+    $pyVer = $svc["PyVersion"]
     $svcVenvPath = Join-Path $BaseStorageDir $svcName
     $localPath = Join-Path $repoRoot $svcDir
     $junctionPath = Join-Path $localPath ".venv"
@@ -90,8 +91,8 @@ foreach ($svc in $services) {
         # Create venv on D: if not existing
         $pyExe = Join-Path $svcVenvPath "Scripts\python.exe"
         if (-not (Test-Path $pyExe)) {
-            Write-Host "    Creating isolated venv at $svcVenvPath..." -ForegroundColor Gray
-            uv venv $svcVenvPath --python 3.11 | Out-Null
+            Write-Host "    Creating isolated venv ($pyVer) at $svcVenvPath..." -ForegroundColor Gray
+            python -m uv venv $svcVenvPath --python $pyVer | Out-Null
             if (-not (Test-Path $pyExe)) {
                 python -m venv $svcVenvPath
             }
@@ -116,12 +117,13 @@ if ($InstallDeps) {
     Write-Host ""
     Write-Host "[5/5] Installing Dependencies with Intel Arc / DirectML Support..." -ForegroundColor Yellow
     
-    # DeerFlow (pyproject.toml)
+    # DeerFlow (pyproject.toml + harness package)
     $deerVenvPy = Join-Path $BaseStorageDir "deerflow\Scripts\python.exe"
-    $deerPyproject = Join-Path $repoRoot "deerflow_repo\backend\pyproject.toml"
-    if (Test-Path $deerPyproject) {
-        Write-Host "  Installing DeerFlow dependencies from pyproject.toml..." -ForegroundColor Cyan
-        uv pip install -p $deerVenvPy -r $deerPyproject
+    $deerBackendDir = Join-Path $repoRoot "deerflow_repo\backend"
+    $harnessDir = Join-Path $deerBackendDir "packages\harness"
+    if (Test-Path (Join-Path $deerBackendDir "pyproject.toml")) {
+        Write-Host "  Installing DeerFlow dependencies with uv..." -ForegroundColor Cyan
+        python -m uv pip install -p $deerVenvPy -e $harnessDir -e $deerBackendDir
     }
 
     # Bangla Audio AI (requirements.txt)
@@ -129,7 +131,7 @@ if ($InstallDeps) {
     $banglaReq = Join-Path $repoRoot "..\bangla-audio-ai\requirements.txt"
     if (Test-Path $banglaReq) {
         Write-Host "  Installing Bangla Audio AI dependencies for Intel Arc B580 (OpenVINO)..." -ForegroundColor Cyan
-        uv pip install -p $banglaVenvPy -r $banglaReq
+        python -m uv pip install -p $banglaVenvPy -r $banglaReq
     }
 } else {
     Write-Host ""
