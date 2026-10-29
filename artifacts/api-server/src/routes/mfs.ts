@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { eq } from "drizzle-orm";
-import { db, userSubscriptionsTable } from "@workspace/db";
+import { db, userSubscriptionsTable, mfsTransactionsTable } from "@workspace/db";
 import { TrxVerificationRequestSchema, TIER_CREDIT_MAP } from "@workspace/hermes/contracts";
 import { bkashPgwClient } from "../lib/mfs/bkash-pgw-client";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
@@ -77,6 +77,25 @@ router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, re
 
     // Mark TrxID as processed
     processedTrxIds.add(trxId);
+
+    // Persist verified transaction directly to PostgreSQL mfs_transactions table
+    try {
+      await db.insert(mfsTransactionsTable).values({
+        trxId,
+        userId: userId || "usr_default",
+        provider,
+        amountBdt: String(amountBdt),
+        tier,
+        status: "RECONCILED",
+        metadata: {
+          creditedCredits: tierConfig.credits,
+          tierLabel: tierConfig.label,
+          verifiedAt: new Date().toISOString(),
+        },
+      }).onConflictDoNothing();
+    } catch (dbErr: any) {
+      console.warn("[mfs] Could not persist reconciled MFS transaction to DB:", dbErr?.message);
+    }
 
     // Update or insert subscription in PostgreSQL
     try {
@@ -172,6 +191,24 @@ router.post("/v1/mfs/speculative-order", async (req: Request, res: Response) => 
 
     speculativeLedger.set(orderId, order);
 
+    // Persist speculative order directly to PostgreSQL mfs_transactions table
+    try {
+      await db.insert(mfsTransactionsTable).values({
+        trxId: trxId || `SPEC_${orderId}`,
+        userId,
+        provider,
+        amountBdt: String(amountBdt || 0),
+        status: trxId ? "RECONCILED" : "PENDING_RECONCILIATION",
+        metadata: {
+          orderId,
+          speculative: true,
+          simulatedAt: order.simulatedAt,
+        },
+      }).onConflictDoNothing();
+    } catch (dbErr: any) {
+      console.warn("[mfs] Speculative order DB write notice:", dbErr?.message);
+    }
+
     return res.status(200).json({
       success: true,
       orderId,
@@ -191,9 +228,31 @@ router.post("/v1/mfs/speculative-order", async (req: Request, res: Response) => 
  * GET /api/v1/mfs/speculative-order/:orderId
  * Check order reconciliation status
  */
-router.get("/v1/mfs/speculative-order/:orderId", (req: Request, res: Response) => {
+router.get("/v1/mfs/speculative-order/:orderId", async (req: Request, res: Response) => {
   const orderId = typeof req.params.orderId === "string" ? req.params.orderId : String(req.params.orderId || "");
-  const order = speculativeLedger.get(orderId);
+  let order = speculativeLedger.get(orderId);
+  if (!order) {
+    try {
+      const [record] = await db
+        .select()
+        .from(mfsTransactionsTable)
+        .where(eq(mfsTransactionsTable.trxId, `SPEC_${orderId}`));
+      if (record) {
+        order = {
+          orderId,
+          userId: record.userId,
+          amountBdt: Number(record.amountBdt),
+          provider: record.provider as any,
+          trxId: record.trxId.startsWith("SPEC_") ? undefined : record.trxId,
+          status: record.status as any,
+          simulatedAt: record.createdAt.toISOString(),
+          reconciledAt: record.reconciledAt?.toISOString(),
+        };
+      }
+    } catch {
+      // In-memory fallback
+    }
+  }
   if (!order) {
     return res.status(404).json({ success: false, error: "Order not found" });
   }
@@ -250,6 +309,26 @@ router.post("/v1/mfs/bkash/execute-payment", async (req: Request, res: Response)
     const execResult = await bkashPgwClient.executePayment(paymentID);
     const trxId = execResult.trxID || `BKH${Date.now().toString().slice(-7)}`;
     processedTrxIds.add(trxId);
+
+    // Persist executed bKash PGW payment to PostgreSQL mfs_transactions table
+    try {
+      await db.insert(mfsTransactionsTable).values({
+        trxId,
+        userId: userId || "usr_default",
+        provider: "bkash",
+        amountBdt: String(execResult.amount || 0),
+        tier,
+        status: "RECONCILED",
+        metadata: {
+          paymentID: execResult.paymentID,
+          currency: execResult.currency,
+          statusCode: execResult.statusCode,
+          paymentExecuteTime: execResult.paymentExecuteTime,
+        },
+      }).onConflictDoNothing();
+    } catch (dbErr: any) {
+      console.warn("[mfs] Failed to record executed payment in DB:", dbErr?.message);
+    }
 
     // Credit user balance and update subscription
     if (userId && userId !== "guest") {

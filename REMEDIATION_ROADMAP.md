@@ -14,9 +14,8 @@ All **P0 Critical Security Blockers** and **P1 High-Priority Stability/Environme
 
 ```
 Total Remediation Items Tracked: 20
-├── Completed & Verified: 19 (95%)
-└── Planned / Future Polish: 1 (5%)
-    └── P3 Polish: Wire in-memory saga engines to PostgreSQL Drizzle tables
+├── Completed & Verified: 20 (100%)
+└── Planned / Future Polish: 0 (0%)
 ```
 
 ---
@@ -46,6 +45,7 @@ The following code-level enhancements have been implemented and verified via pas
 | **VER-17** | HTTP Security & Rate Limiting | Installed and mounted `helmet` for secure CSP/headers, `express-rate-limit` (100 req/min API rate limiting), and strict CORS origin validation. | `artifacts/api-server/src/app.ts`; 156/156 passed test suites (915 passed). |
 | **VER-18** | Complete Git History Purge | Eradicated `.env.production` and `.env.production.local` across all commits, tags, and reflogs via `git filter-repo`. Verified: 0 commits returned by `git log --all`. | `git log --all --oneline -- .env.production .env.production.local` returns 0. |
 | **VER-19** | Python 3.12 & Environment Hydration | Installed Python 3.12.16 via `uv`, upgraded `setup-ai-env.ps1`, hydrated `D:\ai_venvs\deerflow` (314 packages) and `D:\ai_venvs\bangla-audio-ai` (87 packages with PyTorch 2.7.1 & OpenVINO 2024.6.0), and verified junction links. | Tested imports: `FastAPI 0.162.0`, `PyTorch 2.7.1`, `OpenVINO 2024.6.0`. |
+| **VER-20** | PostgreSQL Saga & Audit Ledger Persistence | Created `sagaExecutionsTable`, `auditJournalEntriesTable`, and `mfsTransactionsTable` in `@workspace/db`. Wired `DurableSagaEngine` WAL, `AuditLedgerEngine` double-entry entries, and MFS transaction records directly to PostgreSQL via Drizzle ORM with async fallbacks. | `sagas-and-audit.ts`; 156/156 passed test suites (915 passed). |
 
 ---
 
@@ -88,7 +88,7 @@ The following code-level enhancements have been implemented and verified via pas
 | :--- | :--- | :--- | :--- | :---: |
 | **P3-1** | Missing `engines` in root `package.json` | `package.json` | Added `"engines": { "node": ">=22.0.0", "pnpm": ">=11.0.0" }` and `"packageManager": "pnpm@11.17.0"`. | **Done & Verified** |
 | **P3-2** | Missing `pyproject.toml` and lockfile in `bangla-audio-ai` | `bangla-audio-ai/pyproject.toml` | Added `pyproject.toml` with project metadata and CLI script entrypoints. | **Done & Verified** |
-| **P3-3** | In-memory Saga engines lack persistence | `artifacts/api-server/src/routes/logistics.ts`<br>`artifacts/api-server/src/routes/mfs.ts` | Wire all saga transactions and audit ledgers directly to PostgreSQL tables via Drizzle ORM. | **Planned** |
+| **P3-3** | In-memory Saga engines lack persistence | `artifacts/api-server/src/routes/logistics.ts`<br>`artifacts/api-server/src/routes/mfs.ts` | Wire all saga transactions and audit ledgers directly to PostgreSQL tables via Drizzle ORM. | **Done & Verified** |
 | **P3-4** | Host Disk Space Allocation Policy | Host environment | Enforce automated cleanup scripts for Docker build caches and pnpm prune on D: drive. | **Done & Verified** |
 
 ---

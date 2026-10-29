@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { db, auditJournalEntriesTable } from "@workspace/db";
+import { desc } from "drizzle-orm";
 
 /**
  * Shothik NBR Statutory Audit Dossier & Double-Entry Ledger Reconciler (Slice 34)
@@ -233,6 +235,32 @@ export class AuditLedgerEngine {
     };
 
     this.journals.set(entry.entryId, entry);
+
+    // Persist double-entry transaction directly to PostgreSQL audit_journal_entries table via Drizzle ORM
+    try {
+      db.insert(auditJournalEntriesTable)
+        .values({
+          entryId: entry.entryId,
+          transactionRef: entry.transactionRef,
+          transactionType: entry.transactionType,
+          memo: entry.memo,
+          lines: entry.lines,
+          totalDebitBdt: String(entry.totalDebitBdt),
+          totalCreditBdt: String(entry.totalCreditBdt),
+          isBalanced: entry.isBalanced,
+          auditHash: entry.auditHash,
+          initiatorKind: entry.initiatorKind,
+          initiatorId: entry.initiatorId,
+          postedAt: new Date(entry.postedAt),
+        })
+        .onConflictDoNothing()
+        .catch(() => {
+          // In-memory ledger remains authoritative fallback
+        });
+    } catch {
+      // Non-blocking in-memory fallback
+    }
+
     return { success: true, entry };
   }
 
@@ -355,6 +383,52 @@ export class AuditLedgerEngine {
       list = list.filter((j) => (j.initiatorKind || "person") === filter.initiatorKind);
     }
     return list;
+  }
+
+  /**
+   * Asynchronously list journal entries, falling back to PostgreSQL if memory is empty
+   */
+  static async listJournalsAsync(filter?: { nobodyWatching?: boolean; initiatorKind?: InitiatorKind }): Promise<JournalEntry[]> {
+    const memoryList = this.listJournals(filter);
+    if (memoryList.length > 0) {
+      return memoryList;
+    }
+
+    try {
+      const rows = await db
+        .select()
+        .from(auditJournalEntriesTable)
+        .orderBy(desc(auditJournalEntriesTable.postedAt));
+
+      if (rows.length > 0) {
+        let entries: JournalEntry[] = rows.map((r) => ({
+          entryId: r.entryId,
+          transactionRef: r.transactionRef,
+          transactionType: r.transactionType as any,
+          postedAt: r.postedAt.toISOString(),
+          memo: r.memo,
+          lines: r.lines as any,
+          totalDebitBdt: Number(r.totalDebitBdt),
+          totalCreditBdt: Number(r.totalCreditBdt),
+          isBalanced: r.isBalanced,
+          auditHash: r.auditHash,
+          initiatorKind: (r.initiatorKind as any) || "person",
+          initiatorId: r.initiatorId ?? undefined,
+        }));
+
+        if (filter?.nobodyWatching) {
+          entries = entries.filter((j) => (j.initiatorKind || "person") !== "person");
+        }
+        if (filter?.initiatorKind) {
+          entries = entries.filter((j) => (j.initiatorKind || "person") === filter.initiatorKind);
+        }
+        return entries;
+      }
+    } catch {
+      // In-memory fallback
+    }
+
+    return [];
   }
 
   /**

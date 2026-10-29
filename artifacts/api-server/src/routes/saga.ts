@@ -20,9 +20,9 @@ sagaRouter.get("/v1/sagas/definitions", (_req: Request, res: Response) => {
  * GET /api/v1/sagas
  * Lists recent Saga execution logs with their final or current status.
  */
-sagaRouter.get("/v1/sagas", (req: Request, res: Response) => {
+sagaRouter.get("/v1/sagas", async (req: Request, res: Response) => {
   const limit = req.query.limit ? parseInt(String(req.query.limit), 10) : 50;
-  const executions = durableSagaEngine.listExecutions(limit);
+  const executions = await durableSagaEngine.listExecutionsAsync(limit);
   res.json({
     success: true,
     count: executions.length,
@@ -34,9 +34,9 @@ sagaRouter.get("/v1/sagas", (req: Request, res: Response) => {
  * GET /api/v1/sagas/:id
  * Fetches single saga details, WAL steps, and rollback trail.
  */
-sagaRouter.get("/v1/sagas/:id", (req: Request, res: Response) => {
+sagaRouter.get("/v1/sagas/:id", async (req: Request, res: Response) => {
   const sagaId = String(req.params.id);
-  const saga = durableSagaEngine.getExecution(sagaId);
+  const saga = await durableSagaEngine.getExecutionAsync(sagaId);
   if (!saga) {
     res.status(404).json({
       success: false,

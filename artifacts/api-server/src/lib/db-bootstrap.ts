@@ -179,6 +179,55 @@ export class DatabaseAutoSyncEngine {
           feed JSONB NOT NULL DEFAULT '[]',
           created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
           updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );`,
+
+        // Persistent Saga Executions WAL
+        `CREATE TABLE IF NOT EXISTS saga_executions (
+          id SERIAL PRIMARY KEY,
+          saga_id TEXT NOT NULL UNIQUE,
+          saga_name TEXT NOT NULL,
+          correlation_id TEXT NOT NULL,
+          idempotency_key TEXT,
+          status TEXT NOT NULL,
+          context JSONB NOT NULL DEFAULT '{}',
+          current_step_index INTEGER NOT NULL DEFAULT 0,
+          steps JSONB NOT NULL DEFAULT '[]',
+          error TEXT,
+          started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          completed_at TIMESTAMP WITH TIME ZONE,
+          updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );`,
+
+        // NBR Statutory Double-Entry Audit Ledger
+        `CREATE TABLE IF NOT EXISTS audit_journal_entries (
+          id SERIAL PRIMARY KEY,
+          entry_id TEXT NOT NULL UNIQUE,
+          transaction_ref TEXT NOT NULL,
+          transaction_type TEXT NOT NULL,
+          memo TEXT NOT NULL,
+          lines JSONB NOT NULL DEFAULT '[]',
+          total_debit_bdt NUMERIC(14, 2) NOT NULL,
+          total_credit_bdt NUMERIC(14, 2) NOT NULL,
+          is_balanced BOOLEAN NOT NULL DEFAULT TRUE,
+          audit_hash TEXT NOT NULL,
+          initiator_kind TEXT,
+          initiator_id TEXT,
+          posted_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+        );`,
+
+        // MFS Reconciled Transactions & Speculative Order Ledger
+        `CREATE TABLE IF NOT EXISTS mfs_transactions (
+          id SERIAL PRIMARY KEY,
+          trx_id TEXT NOT NULL UNIQUE,
+          user_id TEXT NOT NULL DEFAULT 'usr_default',
+          provider TEXT NOT NULL,
+          amount_bdt NUMERIC(12, 2) NOT NULL,
+          tier TEXT,
+          status TEXT NOT NULL DEFAULT 'RECONCILED',
+          metadata JSONB NOT NULL DEFAULT '{}',
+          created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+          reconciled_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
         );`
       ];
 
@@ -199,7 +248,10 @@ export class DatabaseAutoSyncEngine {
         "background_jobs",
         "parcels",
         "idempotency_keys",
-        "companies"
+        "companies",
+        "saga_executions",
+        "audit_journal_entries",
+        "mfs_transactions"
       );
       this.isInitialized = true;
 

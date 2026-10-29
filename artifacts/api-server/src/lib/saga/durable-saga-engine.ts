@@ -1,6 +1,8 @@
 import crypto from "crypto";
 import { logger } from "../logger";
 import { AuditLedgerEngine } from "../audit/audit-ledger-engine";
+import { db, sagaExecutionsTable } from "@workspace/db";
+import { eq, desc } from "drizzle-orm";
 
 export type SagaStepStatus =
   | "PENDING"
@@ -288,7 +290,34 @@ export class DurableSagaEngine {
    * Resumes a failed or interrupted saga from its last checkpoint.
    */
   public async resumeSaga(sagaId: string): Promise<SagaExecutionRecord> {
-    const record = this.executions.get(sagaId);
+    let record = this.executions.get(sagaId);
+    if (!record) {
+      try {
+        const [row] = await db
+          .select()
+          .from(sagaExecutionsTable)
+          .where(eq(sagaExecutionsTable.sagaId, sagaId));
+        if (row) {
+          record = {
+            sagaId: row.sagaId,
+            sagaName: row.sagaName,
+            correlationId: row.correlationId,
+            idempotencyKey: row.idempotencyKey ?? undefined,
+            status: row.status as any,
+            context: row.context as any,
+            currentStepIndex: row.currentStepIndex,
+            steps: row.steps as any,
+            startedAt: row.startedAt.toISOString(),
+            completedAt: row.completedAt?.toISOString(),
+            error: row.error ?? undefined,
+          };
+          this.executions.set(record.sagaId, record);
+        }
+      } catch (err: any) {
+        logger.debug({ error: err?.message, sagaId }, "[SagaEngine] Database lookup note");
+      }
+    }
+
     if (!record) {
       throw new Error(`Saga ${sagaId} not found`);
     }
@@ -341,10 +370,78 @@ export class DurableSagaEngine {
     return this.executions.get(sagaId);
   }
 
+  public async getExecutionAsync(sagaId: string): Promise<SagaExecutionRecord | undefined> {
+    const memoryRecord = this.executions.get(sagaId);
+    if (memoryRecord) {
+      return memoryRecord;
+    }
+
+    try {
+      const [row] = await db
+        .select()
+        .from(sagaExecutionsTable)
+        .where(eq(sagaExecutionsTable.sagaId, sagaId));
+      if (row) {
+        const record: SagaExecutionRecord = {
+          sagaId: row.sagaId,
+          sagaName: row.sagaName,
+          correlationId: row.correlationId,
+          idempotencyKey: row.idempotencyKey ?? undefined,
+          status: row.status as any,
+          context: row.context as any,
+          currentStepIndex: row.currentStepIndex,
+          steps: row.steps as any,
+          startedAt: row.startedAt.toISOString(),
+          completedAt: row.completedAt?.toISOString(),
+          error: row.error ?? undefined,
+        };
+        this.executions.set(record.sagaId, record);
+        return record;
+      }
+    } catch (err: any) {
+      logger.debug({ error: err?.message, sagaId }, "[SagaEngine] Async getExecution DB fallback note");
+    }
+    return undefined;
+  }
+
   public listExecutions(limit = 50): SagaExecutionRecord[] {
     return Array.from(this.executions.values())
       .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime())
       .slice(0, limit);
+  }
+
+  public async listExecutionsAsync(limit = 50): Promise<SagaExecutionRecord[]> {
+    const inMemory = this.listExecutions(limit);
+    if (inMemory.length > 0) {
+      return inMemory;
+    }
+
+    try {
+      const rows = await db
+        .select()
+        .from(sagaExecutionsTable)
+        .orderBy(desc(sagaExecutionsTable.startedAt))
+        .limit(limit);
+
+      if (rows.length > 0) {
+        return rows.map((row) => ({
+          sagaId: row.sagaId,
+          sagaName: row.sagaName,
+          correlationId: row.correlationId,
+          idempotencyKey: row.idempotencyKey ?? undefined,
+          status: row.status as any,
+          context: row.context as any,
+          currentStepIndex: row.currentStepIndex,
+          steps: row.steps as any,
+          startedAt: row.startedAt.toISOString(),
+          completedAt: row.completedAt?.toISOString(),
+          error: row.error ?? undefined,
+        }));
+      }
+    } catch (err: any) {
+      logger.debug({ error: err?.message }, "[SagaEngine] Async listExecutions DB fallback note");
+    }
+    return [];
   }
 
   private saveExecution(record: SagaExecutionRecord): void {
@@ -355,6 +452,42 @@ export class DurableSagaEngine {
       }
     }
     this.executions.set(record.sagaId, { ...record });
+
+    // Persist Write-Ahead Log directly to PostgreSQL saga_executions table
+    try {
+      db.insert(sagaExecutionsTable)
+        .values({
+          sagaId: record.sagaId,
+          sagaName: record.sagaName,
+          correlationId: record.correlationId,
+          idempotencyKey: record.idempotencyKey ?? null,
+          status: record.status,
+          context: (record.context as Record<string, unknown>) ?? {},
+          currentStepIndex: record.currentStepIndex ?? 0,
+          steps: record.steps ?? [],
+          error: record.error ?? null,
+          startedAt: new Date(record.startedAt),
+          completedAt: record.completedAt ? new Date(record.completedAt) : null,
+          updatedAt: new Date(),
+        })
+        .onConflictDoUpdate({
+          target: sagaExecutionsTable.sagaId,
+          set: {
+            status: record.status,
+            context: (record.context as Record<string, unknown>) ?? {},
+            currentStepIndex: record.currentStepIndex ?? 0,
+            steps: record.steps ?? [],
+            error: record.error ?? null,
+            completedAt: record.completedAt ? new Date(record.completedAt) : null,
+            updatedAt: new Date(),
+          },
+        })
+        .catch((err: any) => {
+          logger.debug({ error: err?.message, sagaId: record.sagaId }, "[SagaEngine] PostgreSQL upsert note");
+        });
+    } catch (err: any) {
+      logger.debug({ error: err?.message, sagaId: record.sagaId }, "[SagaEngine] Database persistence note");
+    }
   }
 
   /**
