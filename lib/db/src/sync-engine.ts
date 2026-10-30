@@ -1,7 +1,17 @@
 import { pool, db } from "./index";
-import { sqliteDb, rawSqlite, ensureTablesInitialized } from "./sqlite";
-import { offlineProjectsTable, offlineParcelsTable, offlineNilkhetOrdersTable } from "./schema/sqlite-schema";
-import { projectsTable, nilkhetOrdersTable, parcelsTable } from "./schema";
+import { sqliteDb, ensureTablesInitialized } from "./sqlite";
+import {
+  offlineProjectsTable,
+  offlineParcelsTable,
+  offlineNilkhetOrdersTable,
+  offlineAutosaveTable,
+} from "./schema/sqlite-schema";
+import {
+  projectsTable,
+  nilkhetOrdersTable,
+  parcelsTable,
+  writingAutosaveTable,
+} from "./schema";
 import { eq } from "drizzle-orm";
 
 export interface SyncEngineStatus {
@@ -10,6 +20,7 @@ export interface SyncEngineStatus {
   syncedProjectsCount: number;
   syncedParcelsCount: number;
   syncedOrdersCount: number;
+  syncedAutosavesCount: number;
   error?: string;
 }
 
@@ -23,6 +34,7 @@ export class OfflineSyncEngine {
     syncedProjectsCount: 0,
     syncedParcelsCount: 0,
     syncedOrdersCount: 0,
+    syncedAutosavesCount: 0,
   };
 
   public static getInstance(): OfflineSyncEngine {
@@ -74,11 +86,12 @@ export class OfflineSyncEngine {
             .values({
               id: p.id,
               userId: p.userId,
-              name: p.title,
+              title: p.title,
               description: p.genre || "offline-sync",
-              category: "general",
+              type: "book",
             } as any)
             .onConflictDoNothing();
+          await sqliteDb.delete(offlineProjectsTable).where(eq(offlineProjectsTable.id, p.id));
           this.status.syncedProjectsCount++;
         } catch {}
       }
@@ -101,6 +114,7 @@ export class OfflineSyncEngine {
               status: parcel.status,
             } as any)
             .onConflictDoNothing();
+          await sqliteDb.delete(offlineParcelsTable).where(eq(offlineParcelsTable.id, parcel.id));
           this.status.syncedParcelsCount++;
         } catch {}
       }
@@ -124,7 +138,34 @@ export class OfflineSyncEngine {
               status: o.status,
             } as any)
             .onConflictDoNothing();
+          await sqliteDb.delete(offlineNilkhetOrdersTable).where(eq(offlineNilkhetOrdersTable.id, o.id));
           this.status.syncedOrdersCount++;
+        } catch {}
+      }
+
+      // 4. Sync Offline Writing Autosaves
+      const localAutosaves = await sqliteDb.select().from(offlineAutosaveTable);
+      for (const a of localAutosaves) {
+        try {
+          await db
+            .insert(writingAutosaveTable)
+            .values({
+              userId: a.userId,
+              localProjectId: a.localProjectId,
+              content: a.content,
+              wordCount: a.wordCount,
+              savedAt: new Date(a.savedAt),
+            })
+            .onConflictDoUpdate({
+              target: [writingAutosaveTable.userId, writingAutosaveTable.localProjectId],
+              set: {
+                content: a.content,
+                wordCount: a.wordCount,
+                savedAt: new Date(a.savedAt),
+              },
+            });
+          await sqliteDb.delete(offlineAutosaveTable).where(eq(offlineAutosaveTable.id, a.id));
+          this.status.syncedAutosavesCount++;
         } catch {}
       }
 
