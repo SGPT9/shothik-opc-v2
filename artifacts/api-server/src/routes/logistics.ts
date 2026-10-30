@@ -10,6 +10,7 @@ import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 import { capabilityLeashEngine } from "../lib/security/capability-leash";
 import { durableSagaEngine } from "../lib/saga/durable-saga-engine";
 import { AuditLedgerEngine } from "../lib/audit/audit-ledger-engine";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -152,7 +153,7 @@ router.post("/v1/logistics/steadfast/book", idempotencyMiddleware, async (req: R
         consignmentId,
         trackingCode,
         provider,
-        userId: (req.headers["x-user-id"] as string) || "usr_default",
+        userId: resolveUserId(req, "usr_default"),
         recipientName: order.customerName,
         recipientPhone: order.customerPhone,
         city: order.city,
@@ -207,12 +208,12 @@ router.post("/v1/logistics/steadfast/book", idempotencyMiddleware, async (req: R
     // Bridge 6: Post courier booking double-entry to NBR Audit Ledger
     try {
       const totalCourierExpense = deliveryFeeBdt + codFeeBdt;
-      AuditLedgerEngine.postJournalEntry({
+      await AuditLedgerEngine.postJournalEntryAsync({
         transactionRef: trackingCode,
         transactionType: "courier_payout",
         memo: `Courier Parcel Booking: ${provider.toUpperCase()} (${trackingCode})`,
         initiatorKind: "responsibility",
-        initiatorId: "logistics_engine",
+        initiatorId: resolveUserId(req, "logistics_engine"),
         lines: [
           { accountCode: "6010", debitBdt: totalCourierExpense, creditBdt: 0, description: `Courier Expense (${provider})` },
           { accountCode: "1030", debitBdt: 0, creditBdt: totalCourierExpense, description: "Offset against Courier COD Account" },
@@ -385,9 +386,9 @@ router.post("/v1/logistics/webhook", async (req: Request, res: Response) => {
  */
 router.post("/v1/logistics/dispatch-saga", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
+    const merchantId = resolveUserId(req, req.body.merchantId || "merch_default");
     const {
       orderId = `ORD_${Date.now()}`,
-      merchantId = "merch_default",
       recipientPhone,
       deliveryDistrict = "Dhaka",
       amountBdt,

@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { durableSagaEngine } from "../lib/saga/durable-saga-engine";
 import { logger } from "../lib/logger";
+import { resolveUserId } from "../middleware/auth.js";
 
 export const sagaRouter = Router();
 
@@ -66,9 +67,10 @@ sagaRouter.post("/v1/sagas/execute", async (req: Request, res: Response) => {
       return;
     }
 
+    const userId = resolveUserId(req, initialContext?.userId || "usr_default");
     const record = await durableSagaEngine.executeSaga({
       sagaName,
-      initialContext: initialContext || {},
+      initialContext: { ...(initialContext || {}), userId },
       idempotencyKey,
       correlationId,
     });

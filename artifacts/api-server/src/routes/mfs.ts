@@ -7,6 +7,7 @@ import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 import { capabilityLeashEngine } from "../lib/security/capability-leash";
 import { AuditLedgerEngine } from "../lib/audit/audit-ledger-engine";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -44,7 +45,8 @@ router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, re
       });
     }
 
-    const { trxId, provider, tier, amountBdt, userId } = parseResult.data;
+    const { trxId, provider, tier, amountBdt, userId: payloadUserId } = parseResult.data;
+    const userId = resolveUserId(req, payloadUserId || "usr_default");
 
     // Idempotency check: prevent duplicate credit on 3G network retries
     if (processedTrxIds.has(trxId)) {
@@ -176,7 +178,8 @@ router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, re
  */
 router.post("/v1/mfs/speculative-order", async (req: Request, res: Response) => {
   try {
-    const { userId = "usr_default", amountBdt, provider = "bkash", trxId } = req.body;
+    const userId = resolveUserId(req, req.body.userId || "usr_default");
+    const { amountBdt, provider = "bkash", trxId } = req.body;
     const orderId = `ORD_${Date.now()}_${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
     const order: SpeculativeOrder = {
@@ -301,7 +304,8 @@ router.post("/v1/mfs/bkash/create-payment", async (req: Request, res: Response) 
  */
 router.post("/v1/mfs/bkash/execute-payment", async (req: Request, res: Response) => {
   try {
-    const { paymentID, userId = "usr_default", tier = "pro" } = req.body;
+    const userId = resolveUserId(req, req.body.userId || "usr_default");
+    const { paymentID, tier = "pro" } = req.body;
     if (!paymentID) {
       return res.status(400).json({ success: false, error: "paymentID is required" });
     }
@@ -502,8 +506,8 @@ router.post("/v1/mfs/nagad/callback", async (req: Request, res: Response) => {
  */
 router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
+    const userId = resolveUserId(req, req.body?.userId || "usr_creator_default");
     const {
-      userId = "usr_creator_default",
       payoutAmountBdt,
       mfsProvider = "bkash",
       walletNumber,
@@ -571,12 +575,12 @@ router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: R
 
     // Bridge 6: Record double-entry entry in NBR Audit Ledger
     try {
-      AuditLedgerEngine.postJournalEntry({
+      await AuditLedgerEngine.postJournalEntryAsync({
         transactionRef: payoutTrxId,
         transactionType: "mfs_payout",
         memo: `Creator MFS Payout: Gross ৳${payoutAmountBdt}, TDS ৳${tdsAmountBdt}, Net ৳${netDisbursedBdt}`,
         initiatorKind: "responsibility",
-        initiatorId: "mfs_payout_engine",
+        initiatorId: userId,
         lines: [
           { accountCode: "2030", debitBdt: payoutAmountBdt, creditBdt: 0, description: "Clear Creator Payable" },
           { accountCode: "1020", debitBdt: 0, creditBdt: netDisbursedBdt, description: "MFS Wallet Cash Disbursed" },

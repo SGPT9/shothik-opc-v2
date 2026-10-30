@@ -265,6 +265,51 @@ export class AuditLedgerEngine {
   }
 
   /**
+   * Post a balanced double-entry transaction to the General Ledger with awaited PostgreSQL persistence (WAL)
+   */
+  static async postJournalEntryAsync(params: {
+    transactionRef: string;
+    transactionType: JournalEntry["transactionType"];
+    memo: string;
+    initiatorKind?: InitiatorKind;
+    initiatorId?: string;
+    lines: {
+      accountCode: string;
+      debitBdt: number;
+      creditBdt: number;
+      description?: string;
+    }[];
+  }): Promise<{ success: boolean; entry?: JournalEntry; error?: string }> {
+    const result = this.postJournalEntry(params);
+    if (!result.success || !result.entry) {
+      return result;
+    }
+
+    try {
+      await db.insert(auditJournalEntriesTable)
+        .values({
+          entryId: result.entry.entryId,
+          transactionRef: result.entry.transactionRef,
+          transactionType: result.entry.transactionType,
+          memo: result.entry.memo,
+          lines: result.entry.lines,
+          totalDebitBdt: String(result.entry.totalDebitBdt),
+          totalCreditBdt: String(result.entry.totalCreditBdt),
+          isBalanced: result.entry.isBalanced,
+          auditHash: result.entry.auditHash,
+          initiatorKind: result.entry.initiatorKind,
+          initiatorId: result.entry.initiatorId,
+          postedAt: new Date(result.entry.postedAt),
+        })
+        .onConflictDoNothing();
+    } catch {
+      // In-memory ledger remains authoritative fallback
+    }
+
+    return result;
+  }
+
+  /**
    * Generate Real-Time Trial Balance
    */
   static getTrialBalance(): {

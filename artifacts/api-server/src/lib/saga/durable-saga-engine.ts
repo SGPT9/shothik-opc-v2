@@ -157,7 +157,7 @@ export class DurableSagaEngine {
       startedAt: new Date().toISOString(),
     };
 
-    this.saveExecution(record);
+    await this.saveExecution(record);
     if (idempotencyKey) {
       this.idempotencyIndex.set(idempotencyKey, sagaId);
     }
@@ -175,6 +175,7 @@ export class DurableSagaEngine {
       record.currentStepIndex = i;
       record.steps[i].status = "EXECUTING";
       record.steps[i].startedAt = new Date().toISOString();
+      await this.saveExecution(record);
 
       try {
         logger.debug({ sagaId, step: step.name, index: i }, "[SagaEngine] Executing step");
@@ -190,6 +191,7 @@ export class DurableSagaEngine {
         }
 
         executedStepIndices.push(i);
+        await this.saveExecution(record);
       } catch (err: any) {
         logger.error({ sagaId, step: step.name, error: err?.message }, "[SagaEngine] Step failed");
         record.steps[i].status = "FAILED";
@@ -199,6 +201,7 @@ export class DurableSagaEngine {
         failureOccurred = true;
         failureError = err;
         failedStepIndex = i;
+        await this.saveExecution(record);
         break;
       }
     }
@@ -207,7 +210,7 @@ export class DurableSagaEngine {
     if (!failureOccurred) {
       record.status = "COMPLETED";
       record.completedAt = new Date().toISOString();
-      this.saveExecution(record);
+      await this.saveExecution(record);
       logger.info({ sagaId, durationMs: Date.now() - new Date(record.startedAt).getTime() }, "[SagaEngine] Saga completed successfully");
 
       // Bridge 6: Post cryptographic double-entry journal entry to Audit Ledger
@@ -216,7 +219,7 @@ export class DurableSagaEngine {
           const codAmount = Number(record.context.codAmount);
           const commissionFee = Math.round(codAmount * (record.context.commissionRate ?? 0.01));
           const netDisbursed = codAmount - commissionFee;
-          AuditLedgerEngine.postJournalEntry({
+          await AuditLedgerEngine.postJournalEntryAsync({
             transactionRef: record.sagaId,
             transactionType: "courier_payout",
             memo: `Saga ${record.sagaId}: COD Settlement disbursed ৳${netDisbursed} net of ৳${commissionFee} commission`,
@@ -231,7 +234,7 @@ export class DurableSagaEngine {
         } else if (record.sagaName === "MFS_PAYOUT_LOGISTICS_BOOKING" && record.context.amountBdt) {
           const amount = Number(record.context.amountBdt);
           const vat = Math.round(amount * 0.05);
-          AuditLedgerEngine.postJournalEntry({
+          await AuditLedgerEngine.postJournalEntryAsync({
             transactionRef: record.sagaId,
             transactionType: "sale_bkash",
             memo: `Saga ${record.sagaId}: Escrow delivery reserve with Mushak-6.3 VAT`,
@@ -255,6 +258,7 @@ export class DurableSagaEngine {
     record.status = "COMPENSATING";
     record.error = failureError?.message || String(failureError);
     logger.warn({ sagaId, failedStepIndex }, "[SagaEngine] Initiating backward compensation");
+    await this.saveExecution(record);
 
     let allCompensationsSucceeded = true;
 
@@ -263,6 +267,7 @@ export class DurableSagaEngine {
       const idx = executedStepIndices[j];
       const step = steps[idx];
       record.steps[idx].status = "COMPENSATING";
+      await this.saveExecution(record);
 
       try {
         logger.info({ sagaId, step: step.name, index: idx }, "[SagaEngine] Compensating step");
@@ -277,11 +282,12 @@ export class DurableSagaEngine {
         record.steps[idx].error = `Compensation failed: ${compErr?.message || String(compErr)}`;
         allCompensationsSucceeded = false;
       }
+      await this.saveExecution(record);
     }
 
     record.status = allCompensationsSucceeded ? "COMPENSATED" : "COMPENSATION_FAILED";
     record.completedAt = new Date().toISOString();
-    this.saveExecution(record);
+    await this.saveExecution(record);
 
     return record;
   }
@@ -358,11 +364,12 @@ export class DurableSagaEngine {
           record.steps[i].status = "COMPENSATION_FAILED";
           allSucceeded = false;
         }
+        await this.saveExecution(record);
       }
     }
     record.status = allSucceeded ? "COMPENSATED" : "COMPENSATION_FAILED";
     record.completedAt = new Date().toISOString();
-    this.saveExecution(record);
+    await this.saveExecution(record);
     return record;
   }
 
@@ -444,7 +451,7 @@ export class DurableSagaEngine {
     return [];
   }
 
-  private saveExecution(record: SagaExecutionRecord): void {
+  private async saveExecution(record: SagaExecutionRecord): Promise<void> {
     if (this.executions.size >= this.MAX_RECORDS) {
       const oldestKey = this.executions.keys().next().value;
       if (oldestKey) {
@@ -455,7 +462,7 @@ export class DurableSagaEngine {
 
     // Persist Write-Ahead Log directly to PostgreSQL saga_executions table
     try {
-      db.insert(sagaExecutionsTable)
+      await db.insert(sagaExecutionsTable)
         .values({
           sagaId: record.sagaId,
           sagaName: record.sagaName,
@@ -481,9 +488,6 @@ export class DurableSagaEngine {
             completedAt: record.completedAt ? new Date(record.completedAt) : null,
             updatedAt: new Date(),
           },
-        })
-        .catch((err: any) => {
-          logger.debug({ error: err?.message, sagaId: record.sagaId }, "[SagaEngine] PostgreSQL upsert note");
         });
     } catch (err: any) {
       logger.debug({ error: err?.message, sagaId: record.sagaId }, "[SagaEngine] Database persistence note");

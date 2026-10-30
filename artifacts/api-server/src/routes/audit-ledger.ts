@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import { AuditLedgerEngine } from "../lib/audit/audit-ledger-engine.js";
+import { resolveUserId } from "../middleware/auth.js";
 
 export const auditLedgerRouter = Router();
 
@@ -87,7 +88,7 @@ auditLedgerRouter.get(["/v1/audit/journal-entries", "/v1/audit/journals"], async
 /**
  * POST /v1/audit/journal-entries/post and /v1/audit/journal
  */
-auditLedgerRouter.post(["/v1/audit/journal-entries/post", "/v1/audit/journal"], (req: Request, res: Response) => {
+auditLedgerRouter.post(["/v1/audit/journal-entries/post", "/v1/audit/journal"], async (req: Request, res: Response) => {
   try {
     const parse = postJournalSchema.safeParse(req.body);
     if (!parse.success) {
@@ -97,7 +98,11 @@ auditLedgerRouter.post(["/v1/audit/journal-entries/post", "/v1/audit/journal"], 
       });
     }
 
-    const result = AuditLedgerEngine.postJournalEntry(parse.data);
+    const initiatorId = parse.data.initiatorId || resolveUserId(req, "system");
+    const result = await AuditLedgerEngine.postJournalEntryAsync({
+      ...parse.data,
+      initiatorId,
+    });
     return res.status(result.success ? 201 : 400).json(result);
   } catch (error: any) {
     return res.status(500).json({
@@ -139,7 +144,11 @@ auditLedgerRouter.post(["/v1/audit/dossier/generate", "/v1/audit/dossier/compile
       });
     }
 
-    const dossier = AuditLedgerEngine.generateNbrDossier(parse.data);
+    const merchantId = resolveUserId(req, parse.data.merchantId);
+    const dossier = AuditLedgerEngine.generateNbrDossier({
+      ...parse.data,
+      merchantId,
+    });
     return res.status(200).json({
       success: true,
       dossier,
