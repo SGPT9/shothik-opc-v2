@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MCPServerConfig } from "../../api/agent-cockpit/mcp/route";
 import { SecurityRule } from "../../api/agent-cockpit/permissions/route";
 
@@ -68,18 +68,20 @@ export default function AgentCockpitPage() {
     }
   };
 
-  const filteredServers = servers.filter(
+  // ⚡ Bolt: Memoize filtered servers to prevent O(n) filtering on every render when dependencies haven't changed
+  const filteredServers = useMemo(() => servers.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ), [servers, searchQuery]);
 
-  const filteredRules = rules.filter(
+  // ⚡ Bolt: Memoize filtered rules to prevent O(n) filtering on every render when dependencies haven't changed
+  const filteredRules = useMemo(() => rules.filter(
     (r) =>
       r.capability.toLowerCase().includes(searchQuery.toLowerCase()) ||
       r.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  ), [rules, searchQuery]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
