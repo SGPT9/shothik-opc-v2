@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MCPServerConfig } from "../../api/agent-cockpit/mcp/route";
 import { SecurityRule } from "../../api/agent-cockpit/permissions/route";
 
@@ -68,18 +68,31 @@ export default function AgentCockpitPage() {
     }
   };
 
-  const filteredServers = servers.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // ⚡ Bolt Performance Optimization:
+  // Memoized the filtering of servers and rules to prevent unnecessary O(N) recalculations on every render.
+  // Cached `searchQuery.toLowerCase()` before filtering to turn O(N) string conversion into O(1),
+  // reducing memory allocations and improving main thread performance during typing.
+  const { filteredServers, filteredRules } = useMemo(() => {
+    if (!searchQuery) {
+      return { filteredServers: servers, filteredRules: rules };
+    }
 
-  const filteredRules = rules.filter(
-    (r) =>
-      r.capability.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+    const query = searchQuery.toLowerCase();
+
+    return {
+      filteredServers: servers.filter(
+        (s) =>
+          s.name.toLowerCase().includes(query) ||
+          s.description.toLowerCase().includes(query) ||
+          s.category.toLowerCase().includes(query)
+      ),
+      filteredRules: rules.filter(
+        (r) =>
+          r.capability.toLowerCase().includes(query) ||
+          r.description.toLowerCase().includes(query)
+      )
+    };
+  }, [servers, rules, searchQuery]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
