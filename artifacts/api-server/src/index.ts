@@ -1,3 +1,33 @@
+import fs from "fs";
+import path from "path";
+
+// Auto-load .env into process.env if present
+for (const envFile of [
+  path.resolve(process.cwd(), ".env"),
+  path.resolve(process.cwd(), "../../.env"),
+  path.resolve(process.cwd(), ".env.local"),
+  path.resolve(process.cwd(), "../../.env.local"),
+]) {
+  if (fs.existsSync(envFile)) {
+    try {
+      const lines = fs.readFileSync(envFile, "utf8").split("\n");
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (trimmed && !trimmed.startsWith("#") && trimmed.includes("=")) {
+          const eqIdx = trimmed.indexOf("=");
+          const k = trimmed.substring(0, eqIdx).trim();
+          const v = trimmed.substring(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
+          if (!process.env[k]) {
+            process.env[k] = v;
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+}
+
 import app from "./app";
 import { logger } from "./lib/logger";
 import { dbAutoSync } from "./lib/db-bootstrap";

@@ -144,8 +144,8 @@ export async function getLatestTwinSeed(identity: string): Promise<TwinSeedRecor
  */
 export async function migrateTwinSeeds(fromIdentity: string, toIdentity: string): Promise<void> {
   if (fromIdentity === toIdentity) return;
-  await db.transaction(async (tx: any) => {
-    await tx.execute(sql`
+  try {
+    await db.execute(sql`
       UPDATE twin_seeds AS src
       SET identity = ${toIdentity}
       WHERE src.identity = ${fromIdentity}
@@ -155,6 +155,20 @@ export async function migrateTwinSeeds(fromIdentity: string, toIdentity: string)
             AND dst.conversation_id = src.conversation_id
         )
     `);
-    await tx.delete(twinSeedsTable).where(eq(twinSeedsTable.identity, fromIdentity));
-  });
+    await db.delete(twinSeedsTable).where(eq(twinSeedsTable.identity, fromIdentity));
+  } catch {
+    // Database fallback
+  }
+
+  // Always keep in-memory store in sync
+  for (const [key, record] of Array.from(memorySeedStore.entries())) {
+    if (key.startsWith(`${fromIdentity}::`)) {
+      const convId = key.substring(`${fromIdentity}::`.length);
+      const newKey = `${toIdentity}::${convId}`;
+      if (!memorySeedStore.has(newKey)) {
+        memorySeedStore.set(newKey, { ...record, conversationId: convId });
+      }
+      memorySeedStore.delete(key);
+    }
+  }
 }

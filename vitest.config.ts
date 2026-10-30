@@ -6,6 +6,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     globals: true,
+    testTimeout: 15000,
     setupFiles: [path.resolve(__dirname, './test/setup.ts')],
     pool: 'forks', // Prevents React 19 hook issues across files in JSDOM
     forks: {

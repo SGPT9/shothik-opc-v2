@@ -1,13 +1,14 @@
 "use client";
 
-import { createBrowserClient } from "@insforge/sdk/ssr";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getInsforgePublicConfig } from "@/lib/insforge/config";
 
-let browserClient: ReturnType<typeof createBrowserClient> | null = null;
+let browserClient: SupabaseClient | null = null;
 
-export function getInsforgeBrowserClient() {
+export function getInsforgeBrowserClient(): SupabaseClient {
   if (!browserClient) {
-    browserClient = createBrowserClient(getInsforgePublicConfig());
+    const { baseUrl, anonKey } = getInsforgePublicConfig();
+    browserClient = createClient(baseUrl, anonKey);
   }
 
   return browserClient;

@@ -1,4 +1,4 @@
-import { createClient } from "@insforge/sdk";
+import { createClient } from "@supabase/supabase-js";
 import logger from "@/lib/logger";
 
 export interface InsForgeUserProfile {
@@ -17,13 +17,10 @@ export interface RlsAccessCheckResult {
   role: "owner" | "member" | "denied";
 }
 
-const INSFORGE_BASE_URL = process.env.NEXT_PUBLIC_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
-const INSFORGE_ANON_KEY = process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || "insforge_anon_ ers8j28a_key_default";
+const SUPABASE_BASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_INSFORGE_URL || "https://xgnzsikvguswhtozvokx.supabase.co";
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || "sb_publishable_pa1rLrMH8sLguAUhbTHfmw_wAcIY9hY";
 
-export const insforgeClient = createClient({
-  baseUrl: INSFORGE_BASE_URL,
-  anonKey: INSFORGE_ANON_KEY,
-});
+export const insforgeClient = createClient(SUPABASE_BASE_URL, SUPABASE_ANON_KEY);
 
 export class InsForgeAuthRlsService {
   /**
@@ -31,7 +28,7 @@ export class InsForgeAuthRlsService {
    */
   static async signInWithGoogleOAuth(): Promise<{ redirectUrl: string }> {
     logger.info("[insforge-auth] Initiating Google 1-Tap OAuth sign-in flow");
-    const redirectUrl = `${INSFORGE_BASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent("https://shothik.app/auth/callback")}`;
+    const redirectUrl = `${SUPABASE_BASE_URL}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent("https://shothik.app/auth/callback")}`;
     return { redirectUrl };
   }
 

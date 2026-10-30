@@ -1,9 +1,9 @@
-import { createClient } from "@insforge/sdk";
+import { createClient } from "@supabase/supabase-js";
 
-const insforge = createClient({
-  baseUrl: import.meta.env.VITE_INSFORGE_BASE_URL || "https://ers8j28a.ap-southeast.insforge.app",
-  anonKey: import.meta.env.VITE_INSFORGE_ANON_KEY || "anon-key-placeholder",
-});
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || (import.meta.env as any).VITE_INSFORGE_BASE_URL || "https://xgnzsikvguswhtozvokx.supabase.co";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || (import.meta.env as any).VITE_INSFORGE_ANON_KEY || "sb_publishable_pa1rLrMH8sLguAUhbTHfmw_wAcIY9hY";
+
+const insforge = createClient(supabaseUrl, supabaseAnonKey);
 
 const SLIDE_API_URL = import.meta.env.VITE_SLIDE_API_URL || "http://localhost:3004";
 
@@ -148,30 +148,34 @@ export const cancelSlideJob = async (jobId: string): Promise<boolean> => {
   }
 };
 
-// InsForge PostgreSQL DB Sync
+// Supabase / InsForge PostgreSQL DB Sync
 export const syncJobToInsForgePostgres = async (job: SlideJob): Promise<boolean> => {
   try {
-    const { data, error } = await insforge.database
+    const { data, error } = await (insforge as any)
       .from("slide_jobs")
       .insert([{ id: job.id, status: job.status, progress: job.progress, created_at: new Date().toISOString() }]);
 
     if (error) {
-      console.warn("InsForge DB insert warning (fallback active):", error.message);
+      console.warn("DB insert warning (fallback active):", error.message);
     }
     return !error;
   } catch (e) {
-    console.warn("InsForge DB sync offline fallback:", e);
+    console.warn("DB sync offline fallback:", e);
     return false;
   }
 };
 
-// InsForge Realtime WebSocket Subscription
+// Supabase / InsForge Realtime Subscription
 export const subscribeToInsForgeRealtimeSlideUpdates = (
   jobId: string,
   onUpdate: (payload: any) => void
 ) => {
-  return (insforge.realtime as any).subscribe(`slide_jobs:${jobId}`, (payload: any) => {
-    onUpdate(payload);
-  });
+  if (typeof (insforge as any).channel === "function") {
+    return (insforge as any)
+      .channel(`slide_jobs:${jobId}`)
+      .on("broadcast", { event: "update" }, (payload: any) => onUpdate(payload))
+      .subscribe();
+  }
+  return () => {};
 };
 

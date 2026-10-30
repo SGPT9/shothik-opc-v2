@@ -45,7 +45,7 @@ export class InsForgeStorageAdapter {
         throw new Error(error?.message || "Storage upload failed");
       }
 
-      const key = data.key || options.path;
+      const key = (data as any).key || (data as any).path || options.path;
       const { data: urlData } = insforge.storage.from(options.bucket).getPublicUrl(key);
 
       const publicUrl = urlData?.publicUrl || `/storage/v1/object/public/${options.bucket}/${key}`;
@@ -80,7 +80,7 @@ export class InsForgeStorageAdapter {
     try {
       const insforge = getInsforgeBrowserClient();
       if (!insforge) return false;
-      const { error } = await insforge.storage.from(bucket).remove(key);
+      const { error } = await insforge.storage.from(bucket).remove([key]);
 
       if (error) {
         logger.error("[insforge-storage] Delete failed", { bucket, key, error: error.message });

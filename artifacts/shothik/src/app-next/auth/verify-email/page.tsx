@@ -50,10 +50,16 @@ export default function VerifyEmailCodePage() {
         throw new Error(t("auth.messages.unableToVerify"));
       }
 
-      const { error: verifyError } = await insforge.auth.verifyEmail({
-        email: normalizedEmail,
-        otp: normalizedOtp,
-      });
+      const { error: verifyError } = typeof (insforge.auth as any).verifyOtp === "function"
+        ? await (insforge.auth as any).verifyOtp({
+            email: normalizedEmail,
+            token: normalizedOtp,
+            type: "email",
+          })
+        : await (insforge.auth as any).verifyEmail({
+            email: normalizedEmail,
+            otp: normalizedOtp,
+          });
 
       if (verifyError) {
         throw new Error(verifyError.message || t("auth.messages.unableToVerify"));

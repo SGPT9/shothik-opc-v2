@@ -134,8 +134,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         const insforge = getInsforgeBrowserClient();
         if (insforge) {
         const resolveInsforgeUser = async () => {
+          const fetchUser = async (): Promise<{ data: { user: any } | null; error: any }> => {
+            if (typeof (insforge.auth as any).getUser === "function") {
+              return await (insforge.auth as any).getUser();
+            }
+            if (typeof (insforge.auth as any).getCurrentUser === "function") {
+              return await (insforge.auth as any).getCurrentUser();
+            }
+            return { data: null, error: null };
+          };
+
           const current = await withTimeout(
-            insforge.auth.getCurrentUser(),
+            fetchUser(),
             AUTH_PROBE_TIMEOUT_MS,
           );
           let resolvedUser = !current.error
@@ -167,7 +177,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           }
 
           const refreshed = await withTimeout(
-            insforge.auth.getCurrentUser(),
+            fetchUser(),
             AUTH_PROBE_TIMEOUT_MS,
           );
           resolvedUser = !refreshed.error
