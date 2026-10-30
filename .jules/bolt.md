@@ -1,0 +1,3 @@
+## 2024-05-18 - Optimized React re-renders in filtering logic
+**Learning:** In React components with search bars and list filtering (like `AgentCockpitPage`), placing string conversion operations like `.toLowerCase()` inside a `.filter()` callback for list items leads to O(N) recalculations on every render. If the data items are not memoized, this causes significant main thread blocking during user typing.
+**Action:** Always extract the search query transformation (e.g., `query.toLowerCase()`) outside the loop, and wrap the list filtering logic in `useMemo` with dependencies on the data source and search query to improve typing performance and reduce memory allocations.
