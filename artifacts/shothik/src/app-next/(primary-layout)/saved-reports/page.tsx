@@ -112,6 +112,7 @@ export default function SavedReportsPage() {
   const [modalCopied, setModalCopied] = useState<boolean>(false);
 
   useEffect(() => {
+    // 1. Initial hydration from local storage & active sessions
     const sessions = getChatSessions();
     const manuscripts = listOfflineManuscripts();
 
@@ -134,6 +135,31 @@ export default function SavedReportsPage() {
     }));
 
     setReports([...sessionReports, ...manuscriptReports]);
+
+    // 2. Asynchronous cloud sync with backend /api/v1/reports
+    fetch("/api/v1/reports")
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.success && Array.isArray(data.reports) && data.reports.length > 0) {
+          const cloudReports: Report[] = data.reports.map((r: any) => ({
+            id: r.id,
+            title: r.title,
+            type: r.type || "markdown",
+            date: new Date(r.updatedAt || Date.now()).toLocaleDateString(),
+            snippet: r.snippet || r.content || "Cloud synced report.",
+            chatId: r.chatId || r.id,
+          }));
+
+          setReports((prev) => {
+            const existingIds = new Set(prev.map((p) => p.id));
+            const newCloud = cloudReports.filter((c) => !existingIds.has(c.id));
+            return [...prev, ...newCloud];
+          });
+        }
+      })
+      .catch(() => {
+        // Resilient fallback to local storage
+      });
   }, []);
 
   const filtered = reports.filter(r => 

@@ -38,3 +38,26 @@ export const insertProjectSchema = createInsertSchema(projectsTable).omit({
 });
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projectsTable.$inferSelect;
+
+/**
+ * Saved Reports table — persistent cloud storage for executive briefs, pitch decks, tax reviews, and financial analyses.
+ */
+export const savedReportsTable = pgTable("saved_reports", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  type: text("type").notNull().default("markdown"), // "markdown" | "slides" | "sheet" | "pdf"
+  snippet: text("snippet").notNull().default(""),
+  content: text("content").notNull().default(""),
+  chatId: text("chat_id").notNull(),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertSavedReportSchema = createInsertSchema(savedReportsTable).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertSavedReport = z.infer<typeof insertSavedReportSchema>;
+export type SavedReport = typeof savedReportsTable.$inferSelect;

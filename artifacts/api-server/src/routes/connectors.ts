@@ -291,8 +291,9 @@ router.post("/v1/connectors/notion/sync", idempotencyMiddleware, async (req: Req
       syncSummary: "Syncing workspace pages...",
     });
 
-    // Dynamic extraction of Notion workspace documents
-    const sampleNotionPages = [
+    // Dynamic extraction of Notion workspace documents with user Key Vault check
+    const vaultCredentials = await userKeyVault.getKey(userId, "notion");
+    let sampleNotionPages = [
       {
         id: "page_notion_prd_01",
         title: "Product Requirement Document: Shothik Swarm Orchestration",
@@ -324,6 +325,35 @@ router.post("/v1/connectors/notion/sync", idempotencyMiddleware, async (req: Req
       },
     ];
 
+    let syncSource = "vault_local_seed";
+    if (vaultCredentials?.apiKey) {
+      try {
+        const liveRes = await fetch("https://api.notion.com/v1/search", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${vaultCredentials.apiKey}`,
+            "Notion-Version": "2022-06-28",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ page_size: pageLimit }),
+        });
+        if (liveRes.ok) {
+          const notionData: any = await liveRes.json();
+          if (Array.isArray(notionData?.results) && notionData.results.length > 0) {
+            sampleNotionPages = notionData.results.map((r: any, idx: number) => ({
+              id: r.id || `live_page_${idx}`,
+              title: r.properties?.title?.title?.[0]?.plain_text || r.properties?.Name?.title?.[0]?.plain_text || `Notion Page ${r.id}`,
+              category: r.object || "Page",
+              content: `Notion Document: ${r.url || r.id}\nCreated: ${r.created_time || "N/A"}\nLast Edited: ${r.last_edited_time || "N/A"}`,
+            }));
+            syncSource = "live_notion_api";
+          }
+        }
+      } catch (liveErr: any) {
+        logger.warn(`[connectors-notion] Live API call fallback: ${liveErr.message}`);
+      }
+    }
+
     const ingestedPages = [];
     for (const page of sampleNotionPages) {
       const doc = await ragEngine.ingestDocument({
@@ -350,6 +380,7 @@ router.post("/v1/connectors/notion/sync", idempotencyMiddleware, async (req: Req
     return res.status(200).json({
       success: true,
       provider: "notion",
+      source: syncSource,
       syncedCount: ingestedPages.length,
       durationMs: duration,
       pages: ingestedPages,
@@ -385,7 +416,8 @@ router.post("/v1/connectors/gdrive/sync", idempotencyMiddleware, async (req: Req
       syncSummary: "Scanning Drive documents & sheets...",
     });
 
-    const sampleDriveFiles = [
+    const driveVaultCreds = await userKeyVault.getKey(userId, "google_drive");
+    let sampleDriveFiles = [
       {
         id: "gdrive_doc_logistics",
         title: "Dhaka Metro Courier Logistics & Dispatch Unit Economics.gdoc",
@@ -406,6 +438,27 @@ router.post("/v1/connectors/gdrive/sync", idempotencyMiddleware, async (req: Req
 - Automated API Disbursal TAT: Real-time via bKash B2C API.`,
       },
     ];
+
+    let driveSyncSource = "vault_local_seed";
+    if (driveVaultCreds?.apiKey) {
+      try {
+        const driveRes = await fetch(`https://www.googleapis.com/drive/v3/files?pageSize=10&fields=files(id,name,mimeType)&key=${driveVaultCreds.apiKey}`);
+        if (driveRes.ok) {
+          const driveData: any = await driveRes.json();
+          if (Array.isArray(driveData?.files) && driveData.files.length > 0) {
+            sampleDriveFiles = driveData.files.map((f: any) => ({
+              id: f.id,
+              title: f.name || "Drive Document",
+              mimeType: f.mimeType || "application/octet-stream",
+              content: `Google Drive Resource: ${f.name} (Type: ${f.mimeType})\nDrive File ID: ${f.id}`,
+            }));
+            driveSyncSource = "live_google_drive_api";
+          }
+        }
+      } catch (driveErr: any) {
+        logger.warn(`[connectors-gdrive] Live API call fallback: ${driveErr.message}`);
+      }
+    }
 
     const ingestedFiles = [];
     for (const file of sampleDriveFiles) {
@@ -433,6 +486,7 @@ router.post("/v1/connectors/gdrive/sync", idempotencyMiddleware, async (req: Req
     return res.status(200).json({
       success: true,
       provider: "google_drive",
+      source: driveSyncSource,
       folderId,
       syncedCount: ingestedFiles.length,
       durationMs: duration,

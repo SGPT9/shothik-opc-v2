@@ -162,3 +162,37 @@ export const offlineUsersTable = sqliteTable("offline_users", {
 
 export type OfflineUserCredit = typeof offlineUserCreditsTable.$inferSelect;
 export type OfflineUser = typeof offlineUsersTable.$inferSelect;
+
+/**
+ * Local SQLite table for offline saved reports
+ */
+export const offlineSavedReportsTable = sqliteTable("offline_saved_reports", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  type: text("type").notNull().default("markdown"),
+  snippet: text("snippet").notNull().default(""),
+  content: text("content").notNull().default(""),
+  chatId: text("chat_id").notNull(),
+  metadata: text("metadata").notNull().default("{}"),
+  createdAt: integer("created_at").notNull().$defaultFn(() => Date.now()),
+  updatedAt: integer("updated_at").notNull().$defaultFn(() => Date.now()),
+});
+
+/**
+ * Local SQLite table for offline creator guilds
+ */
+export const offlineCreatorGuildsTable = sqliteTable("offline_creator_guilds", {
+  guildId: text("guild_id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  region: text("region").notNull(),
+  memberCount: integer("member_count").notNull().default(1),
+  activePoolOrders: integer("active_pool_orders").notNull().default(0),
+  totalVolumePooledBDT: integer("total_volume_pooled_bdt").notNull().default(0),
+  topSuppliers: text("top_suppliers").notNull().default("[]"),
+  createdAt: integer("created_at").notNull().$defaultFn(() => Date.now()),
+});
+
+export type OfflineSavedReport = typeof offlineSavedReportsTable.$inferSelect;
+export type OfflineCreatorGuild = typeof offlineCreatorGuildsTable.$inferSelect;

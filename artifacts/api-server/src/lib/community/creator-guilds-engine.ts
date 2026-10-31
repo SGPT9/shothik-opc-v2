@@ -1,3 +1,6 @@
+import { db, creatorGuildsTable } from "@workspace/db";
+import { logger } from "../logger";
+
 export interface CreatorGuild {
   guildId: string;
   name: string;
@@ -7,6 +10,7 @@ export interface CreatorGuild {
   activePoolOrders: number;
   totalVolumePooledBDT: number;
   topSuppliers: string[];
+  createdAt?: string;
 }
 
 export interface VerifiedSupplierBadge {
@@ -31,6 +35,7 @@ export class CreatorGuildsEngine {
       activePoolOrders: 8,
       totalVolumePooledBDT: 4500000,
       topSuppliers: ["Narsingdi Weaving Mill", "Islam Garments Syndicate"],
+      createdAt: "2026-01-01T00:00:00Z",
     },
     {
       guildId: "GUILD-CTG-ELECTRONICS",
@@ -41,6 +46,7 @@ export class CreatorGuildsEngine {
       activePoolOrders: 5,
       totalVolumePooledBDT: 6200000,
       topSuppliers: ["Agrabad Electronics Hub", "Khatunganj Importers"],
+      createdAt: "2026-01-10T00:00:00Z",
     },
     {
       guildId: "GUILD-BOIMELA-AUTHORS",
@@ -51,6 +57,7 @@ export class CreatorGuildsEngine {
       activePoolOrders: 12,
       totalVolumePooledBDT: 1850000,
       topSuppliers: ["Nilkhet Offset Press Syndicate", "Bangla Academy Press"],
+      createdAt: "2026-02-01T00:00:00Z",
     },
   ];
 
@@ -78,10 +85,71 @@ export class CreatorGuildsEngine {
   ];
 
   public static listGuilds(): CreatorGuild[] {
-    return this.GUILDS;
+    return [...this.GUILDS];
   }
 
   public static listVerifiedSuppliers(): VerifiedSupplierBadge[] {
-    return this.SUPPLIERS;
+    return [...this.SUPPLIERS];
+  }
+
+  public static async createGuild(params: {
+    name: string;
+    category: CreatorGuild["category"];
+    region: CreatorGuild["region"];
+    creatorId?: string;
+    initialVolumeBDT?: number;
+    topSuppliers?: string[];
+  }): Promise<CreatorGuild> {
+    const rawTag = params.name
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(0, 6)
+      .toUpperCase();
+    const tag = rawTag || "COMMUNITY";
+    const guildId = `GUILD-${params.region.toUpperCase()}-${tag}-${Math.floor(100 + Math.random() * 900)}`;
+
+    const newGuild: CreatorGuild = {
+      guildId,
+      name: params.name,
+      category: params.category,
+      region: params.region,
+      memberCount: 1,
+      activePoolOrders: 1,
+      totalVolumePooledBDT: params.initialVolumeBDT ?? 50000,
+      topSuppliers: params.topSuppliers && params.topSuppliers.length > 0
+        ? params.topSuppliers
+        : ["Local Verified Artisan Network"],
+      createdAt: new Date().toISOString(),
+    };
+
+    // Try persisting to PostgreSQL
+    try {
+      if (db) {
+        await db.insert(creatorGuildsTable).values({
+          guildId,
+          guildName: newGuild.name,
+          vertical: newGuild.category,
+          regionalHub: newGuild.region,
+          memberCount: newGuild.memberCount,
+          collectivePoolValueBDT: String(newGuild.totalVolumePooledBDT),
+          escrowBadge: "VERIFIED_ESCROW_TIER_1",
+          createdAt: new Date(),
+        });
+      }
+    } catch (err: any) {
+      logger.warn(`[guilds] DB persist fallback: ${err.message}`);
+    }
+
+    this.GUILDS.unshift(newGuild);
+    logger.info(`[guilds] Formed new creator guild: ${newGuild.name} (${guildId})`);
+    return newGuild;
+  }
+
+  public static joinGuild(guildId: string, userId: string): CreatorGuild | null {
+    const guild = this.GUILDS.find((g) => g.guildId === guildId);
+    if (!guild) return null;
+
+    guild.memberCount += 1;
+    logger.info(`[guilds] User ${userId} joined guild ${guildId}. Total members: ${guild.memberCount}`);
+    return guild;
   }
 }
