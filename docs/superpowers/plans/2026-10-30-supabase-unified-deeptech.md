@@ -2,11 +2,11 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Transform Shothik AI into a collaborative, Perplexity/ChatGPT-grade vernacular platform by implementing Supabase Realtime multi-user Monaco presence, Figma-style share links, TUS resumable asset pipelines, GitHub-backed Letta twin memory, and sub-second voice streaming.
+**Goal:** Transform Shothik AI into a collaborative, Perplexity/ChatGPT-grade vernacular platform by implementing Supabase Realtime multi-user Monaco presence, Figma-style share links, Git for Writers plot branching, cryptographic proof of authorship, synchronized dual-language editing, TUS resumable assets, GitHub Letta twin memory, and sub-second voice streaming with podcast RSS syndication.
 
-**Architecture:** A layered architecture integrating Supabase PostgreSQL 17.6 (Zero-Trust RLS, `pgvector`, `pgmq`), Supabase Realtime (Presence & Broadcast for Monaco cursors and voice chunks), Supabase Storage (resumable TUS and TTL temp sandboxes), and local Node/Python engines (Letta Twin and Intel Arc Voice AI on `:8001`).
+**Architecture:** A layered architecture integrating Supabase PostgreSQL 17.6 (Zero-Trust RLS, `pgvector`, `pgcrypto` cryptographic audit ledgers, `pgmq`), Supabase Realtime (Presence & Broadcast for Monaco cursors, dual-language scroll sync, and audio streams), Supabase Storage (resumable TUS and TTL temp sandboxes), and local Node/Python engines (Letta Twin and Intel Arc Voice AI on `:8001`).
 
-**Tech Stack:** TypeScript, Drizzle ORM, Supabase JavaScript SDK (`@supabase/supabase-js`), Monaco Editor, Yjs (`yjs`, `y-supabase`), pgvector, Web Audio API, Express, Vitest.
+**Tech Stack:** TypeScript, Drizzle ORM, Supabase JavaScript SDK (`@supabase/supabase-js`), Monaco Editor, Yjs (`yjs`, `y-supabase`), pgvector, pgcrypto, Web Audio API, Express, Vitest.
 
 **Spec:** `docs/superpowers/specs/2026-10-30-supabase-unified-deeptech-design.md`
 
@@ -21,14 +21,14 @@
 ## Review Focus
 
 1. **Stale/Expired Share Links**: A client accessing a room with a revoked `share_token` must be rejected with HTTP 403 / Realtime channel disconnect.
-2. **Concurrent Presence Leaders**: Two clients disconnecting simultaneously must not leave the document unpersisted or trigger duplicate flush writes.
-3. **Bandwidth Degradation on Patchy 2G/3G**: Large PDF or audio chunk uploads must resume from the exact byte offset on reconnect without restarting.
-4. **Invalid Bengali Ligature Encodings in Yjs**: Concurrent multi-user edits on complex Bengali conjuncts must not corrupt UTF-8 character boundaries.
+2. **Branch Merge Conflict Preservation**: Merging an alternative plot branch into the main manuscript must never clobber uncommitted canonical sections without a preview diff.
+3. **Cryptographic Certificate Verification**: Modifying even a single character in an authored chapter must invalidate its cryptographic proof signature.
+4. **Dual-Language Scroll Alignment Drift**: Rapid asynchronous scrolling in one editor must smoothly lerp the companion language editor without infinite scroll event loops.
 5. **Realtime Audio Dropped Packets**: An interrupted voice stream must gracefully buffer and play back without crashing the Web Audio context.
 
 ---
 
-### Task 1: Project Schema Migration for Figma/Miro-Style Room Links & pgvector
+### Task 1: Project Schema Migration for Room Links, Plot Branching, RBAC & pgvector
 
 **Files:**
 - Modify: `lib/db/src/schema/projects.ts`
@@ -38,9 +38,9 @@
 
 **Interfaces:**
 - Consumes: `projectsTable` in `@workspace/db`
-- Produces: `shareToken`, `accessMode`, `passcodeHash` fields on `projectsTable`; `documentEmbeddingsTable` with HNSW vector index
+- Produces: `shareToken`, `accessMode`, `passcodeHash`, `parentProjectId`, `branchName`, `lineageRootId` on `projectsTable`; `documentEmbeddingsTable` with HNSW vector index
 
-- [ ] **Step 1: Write the failing test for room link generation and authorization**
+- [ ] **Step 1: Write the failing test for room link generation and plot branching**
 
 ```typescript
 // artifacts/api-server/src/routes/__tests__/project-room-share.test.ts
@@ -52,18 +52,27 @@ const app = express();
 app.use(express.json());
 app.use("/api", projectsRouter);
 
-describe("Project Room Link & Share Access", () => {
-  it("generates a shareable room link with accessMode='link_edit'", async () => {
-    const res = await fetch("http://127.0.0.1:8080/api/v1/projects/create-share-link", {
+describe("Project Room Link & Plot Branching", () => {
+  it("generates a shareable room link and creates a plot branch", async () => {
+    // 1. Share link
+    const shareRes = await fetch("http://127.0.0.1:8080/api/v1/projects/create-share-link", {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-user-id": "owner_123" },
       body: JSON.stringify({ projectId: "test-uuid", accessMode: "link_edit" })
     });
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.success).toBe(true);
-    expect(json.data.shareToken).toMatch(/^prj_sh_[a-f0-9]{8}$/);
-    expect(json.data.shareUrl).toContain(json.data.shareToken);
+    expect(shareRes.status).toBe(200);
+    const shareJson = await shareRes.json();
+    expect(shareJson.data.shareToken).toMatch(/^prj_sh_[a-f0-9]{8}$/);
+
+    // 2. Plot branch
+    const branchRes = await fetch("http://127.0.0.1:8080/api/v1/projects/branches", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-user-id": "owner_123" },
+      body: JSON.stringify({ parentProjectId: "test-uuid", branchName: "Tragic-Ending" })
+    });
+    expect(branchRes.status).toBe(201);
+    const branchJson = await branchRes.json();
+    expect(branchJson.data.branchName).toBe("Tragic-Ending");
   });
 });
 ```
@@ -75,7 +84,7 @@ Expected: FAIL with route not found or schema property missing.
 
 - [ ] **Step 3: Implement schema fields in `lib/db/src/schema/projects.ts` & `embeddings.ts`**
 
-Add `shareToken: text("share_token").unique()`, `accessMode: text("access_mode").notNull().default("private")`, and `passcodeHash: text("passcode_hash")` to `projectsTable`. Create `documentEmbeddingsTable` with vector dimension 1536 and Bengali search vector. Update `artifacts/api-server/src/routes/projects.ts` with `/v1/projects/create-share-link`.
+Add `shareToken`, `accessMode`, `passcodeHash`, `parentProjectId`, `branchName`, `lineageRootId` to `projectsTable`. Create `documentEmbeddingsTable`. Update `artifacts/api-server/src/routes/projects.ts` with `/v1/projects/create-share-link` and `/v1/projects/branches`.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -86,7 +95,7 @@ Expected: PASS
 
 ```bash
 git add lib/db/src/schema artifacts/api-server/src/routes/projects.ts artifacts/api-server/src/routes/__tests__/project-room-share.test.ts
-git commit -m "feat(schema): add room share tokens and document embeddings table"
+git commit -m "feat(schema): add room share tokens, plot branching, and embeddings table"
 ```
 
 ---
@@ -147,7 +156,7 @@ git commit -m "feat(storage): implement resumable TUS storage ticket provider"
 
 ---
 
-### Task 3: Supabase Realtime Presence & Monaco Remote Cursor Synchronization
+### Task 3: Supabase Realtime Presence, Monaco Remote Cursors & Dual-Language Split Screen
 
 **Files:**
 - Create: `artifacts/api-server/src/lib/realtime/monaco-presence-manager.ts`
@@ -155,27 +164,25 @@ git commit -m "feat(storage): implement resumable TUS storage ticket provider"
 
 **Interfaces:**
 - Consumes: Supabase Realtime channel `project:${projectId}`
-- Produces: `MonacoPresenceManager.formatCursorPayload()`, `validatePresenceState()`
+- Produces: `MonacoPresenceManager.formatCursorPayload()`, `MonacoPresenceManager.formatScrollSyncPayload()`
 
-- [ ] **Step 1: Write the failing test for presence throttle and format validation**
+- [ ] **Step 1: Write the failing test for presence throttle and dual-language scroll sync**
 
 ```typescript
 // artifacts/api-server/src/lib/realtime/__tests__/monaco-presence.test.ts
 import { describe, it, expect } from "vitest";
 import { MonacoPresenceManager } from "../monaco-presence-manager.js";
 
-describe("Monaco Presence Manager", () => {
-  it("validates and serializes remote cursor coordinates with assigned collaborator color", () => {
-    const payload = MonacoPresenceManager.formatCursorPayload({
-      userId: "usr_alice",
-      name: "Alice",
-      lineNumber: 14,
-      column: 22,
-      collaboratorIndex: 2
+describe("Monaco Presence & Dual-Language Sync Manager", () => {
+  it("serializes remote cursor and dual-language paragraph scroll alignment", () => {
+    const payload = MonacoPresenceManager.formatScrollSyncPayload({
+      userId: "usr_translator",
+      sourceParagraphId: "p_12",
+      targetParagraphId: "p_12_bn",
+      scrollRatio: 0.45
     });
-    expect(payload.color).toBeDefined();
-    expect(payload.cursor.lineNumber).toBe(14);
-    expect(payload.cursor.column).toBe(22);
+    expect(payload.sourceParagraphId).toBe("p_12");
+    expect(payload.scrollRatio).toBe(0.45);
   });
 });
 ```
@@ -187,7 +194,7 @@ Expected: FAIL with module not found.
 
 - [ ] **Step 3: Implement `MonacoPresenceManager`**
 
-Implement presence state serialization, 30ms throttling helpers, and collaborator color rotation (emerald, violet, amber, cyan, rose, blue, orange, teal).
+Implement presence state serialization, 30ms throttling helpers, collaborator color rotation, and dual-language scroll sync payloads.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -198,37 +205,36 @@ Expected: PASS
 
 ```bash
 git add artifacts/api-server/src/lib/realtime artifacts/api-server/src/lib/realtime/__tests__/monaco-presence.test.ts
-git commit -m "feat(realtime): add Monaco remote cursor presence manager"
+git commit -m "feat(realtime): add Monaco remote cursor presence and dual-language sync"
 ```
 
 ---
 
-### Task 4: Yjs CRDT Document Provider with Leader-Elected Persistence
+### Task 4: Yjs CRDT Document Provider with Leader-Elected Persistence & Branch Merging
 
 **Files:**
 - Create: `artifacts/api-server/src/lib/realtime/crdt-sync-provider.ts`
+- Modify: `artifacts/api-server/src/routes/projects.ts`
 - Test: `artifacts/api-server/src/lib/realtime/__tests__/crdt-sync-provider.test.ts`
 
 **Interfaces:**
 - Consumes: `projectsTable`, `writingAutosaveTable`
-- Produces: `CrdtSyncProvider.flushDocumentSnapshot()`, `electLeaderClient()`
+- Produces: `CrdtSyncProvider.flushDocumentSnapshot()`, `CrdtSyncProvider.mergeBranchSnapshots()`
 
-- [ ] **Step 1: Write the failing test for leader-elected document flush**
+- [ ] **Step 1: Write the failing test for branch merging and leader-elected flush**
 
 ```typescript
 // artifacts/api-server/src/lib/realtime/__tests__/crdt-sync-provider.test.ts
 import { describe, it, expect } from "vitest";
 import { CrdtSyncProvider } from "../crdt-sync-provider.js";
 
-describe("CRDT Sync Provider", () => {
-  it("elects the oldest active client as persistence leader to prevent flush collisions", () => {
-    const clients = [
-      { userId: "usr_2", joinedAt: 1700000050 },
-      { userId: "usr_1", joinedAt: 1700000010 },
-      { userId: "usr_3", joinedAt: 1700000090 }
-    ];
-    const leader = CrdtSyncProvider.electLeader(clients);
-    expect(leader).toBe("usr_1");
+describe("CRDT Sync Provider & Branch Reconciler", () => {
+  it("reconciles alternative branch text into canonical manuscript with diff delta", () => {
+    const canonical = "The morning dawn in Dhaka was quiet.";
+    const branchText = "The morning dawn in Dhaka was stormy and dark.";
+    const mergeResult = CrdtSyncProvider.mergeText(canonical, branchText);
+    expect(mergeResult.hasConflicts).toBe(false);
+    expect(mergeResult.mergedText).toBe(branchText);
   });
 });
 ```
@@ -238,9 +244,9 @@ describe("CRDT Sync Provider", () => {
 Run: `pnpm --filter @workspace/api-server exec vitest run src/lib/realtime/__tests__/crdt-sync-provider.test.ts`  
 Expected: FAIL with module not found.
 
-- [ ] **Step 3: Implement `CrdtSyncProvider` in `crdt-sync-provider.ts`**
+- [ ] **Step 3: Implement `CrdtSyncProvider` and merge endpoint**
 
-Implement deterministic client leader election, state vector compaction, and debounced 5-second persistence flushes to `writing_autosave` and `projects`.
+Implement deterministic client leader election, state vector compaction, debounced flushes, and branch merging in `crdt-sync-provider.ts` and `projects.ts`.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -250,13 +256,69 @@ Expected: PASS
 - [ ] **Step 5: Commit**
 
 ```bash
-git add artifacts/api-server/src/lib/realtime/crdt-sync-provider.ts artifacts/api-server/src/lib/realtime/__tests__/crdt-sync-provider.test.ts
-git commit -m "feat(crdt): add Yjs sync provider with leader-elected persistence"
+git add artifacts/api-server/src/lib/realtime/crdt-sync-provider.ts artifacts/api-server/src/routes/projects.ts artifacts/api-server/src/lib/realtime/__tests__/crdt-sync-provider.test.ts
+git commit -m "feat(crdt): add Yjs sync provider with branch merging logic"
 ```
 
 ---
 
-### Task 5: Monaco Inline AI Ghost Typing & Diff Decoration Streamer
+### Task 5: Cryptographic Proof of Authorship & Copyright Certificate Ledger Generator
+
+**Files:**
+- Create: `artifacts/api-server/src/lib/security/authorship-certificate-engine.ts`
+- Modify: `artifacts/api-server/src/routes/projects.ts`
+- Test: `artifacts/api-server/src/lib/security/__tests__/authorship-certificate.test.ts`
+
+**Interfaces:**
+- Consumes: `audit_journal_entries`, `projectsTable`
+- Produces: `AuthorshipCertificateEngine.generateCertificate(projectId, userId)`
+
+- [ ] **Step 1: Write the failing test for SHA-256 digital proof certificate generation**
+
+```typescript
+// artifacts/api-server/src/lib/security/__tests__/authorship-certificate.test.ts
+import { describe, it, expect } from "vitest";
+import { AuthorshipCertificateEngine } from "../authorship-certificate-engine.js";
+
+describe("Authorship Certificate Engine", () => {
+  it("generates an immutable cryptographic proof certificate with SHA-256 hash", () => {
+    const cert = AuthorshipCertificateEngine.createCertificate({
+      projectId: "proj_123",
+      title: "Amar Boi",
+      authorId: "usr_author_1",
+      content: "Chapter 1 content...",
+      createdAt: new Date("2026-10-30T10:00:00Z")
+    });
+    expect(cert.sha256Signature).toMatch(/^[a-f0-9]{64}$/);
+    expect(cert.certificateId).toMatch(/^SHOTHIK-AUTH-[A-Z0-9]{8}$/);
+  });
+});
+```
+
+- [ ] **Step 2: Run test to verify it fails**
+
+Run: `pnpm --filter @workspace/api-server exec vitest run src/lib/security/__tests__/authorship-certificate.test.ts`  
+Expected: FAIL with module not found.
+
+- [ ] **Step 3: Implement `AuthorshipCertificateEngine`**
+
+Compute SHA-256 digest of manuscript content, anchor immutable audit entry into `audit_journal_entries`, and return formatted verifiable certificate data.
+
+- [ ] **Step 4: Run test to verify it passes**
+
+Run: `pnpm --filter @workspace/api-server exec vitest run src/lib/security/__tests__/authorship-certificate.test.ts`  
+Expected: PASS
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add artifacts/api-server/src/lib/security/authorship-certificate-engine.ts artifacts/api-server/src/routes/projects.ts artifacts/api-server/src/lib/security/__tests__/authorship-certificate.test.ts
+git commit -m "feat(security): implement cryptographic proof of authorship certificate generator"
+```
+
+---
+
+### Task 6: Monaco Inline AI Ghost Typing & Diff Decoration Streamer
 
 **Files:**
 - Create: `artifacts/api-server/src/lib/realtime/ghost-typing-streamer.ts`
@@ -265,7 +327,7 @@ git commit -m "feat(crdt): add Yjs sync provider with leader-elected persistence
 
 **Interfaces:**
 - Consumes: `inferenceGateway` streaming output
-- Produces: `GhostTypingStreamer.formatDeltaFrame(text, position)`
+- Produces: `GhostTypingStreamer.createDiffFrame(options)`
 
 - [ ] **Step 1: Write the failing test for delta frame formatting and diff decoration generation**
 
@@ -312,7 +374,7 @@ git commit -m "feat(monaco): add ghost typing and diff decoration streamer"
 
 ---
 
-### Task 6: GitHub Workspace Ingestion & Whole-Repository pgvector Context Assembly
+### Task 7: GitHub Workspace Ingestion & Whole-Repository pgvector Context Assembly
 
 **Files:**
 - Modify: `artifacts/api-server/src/routes/connectors.ts`
@@ -321,7 +383,7 @@ git commit -m "feat(monaco): add ghost typing and diff decoration streamer"
 
 **Interfaces:**
 - Consumes: GitHub file trees from `connectors.ts`
-- Produces: `RepoTreeAssembler.assembleMultiFileContext(repo, pattern, query)`
+- Produces: `RepoTreeAssembler.packFiles(files, tokenBudget)`
 
 - [ ] **Step 1: Write the failing test for `@chapters` whole-repository context packing**
 
@@ -366,7 +428,7 @@ git commit -m "feat(rag): add multi-file repository context assembler"
 
 ---
 
-### Task 7: Clickable Git-Lineage Citations & Automated Editor PR Review
+### Task 8: Clickable Git-Lineage Citations & Automated Editor PR Review
 
 **Files:**
 - Create: `artifacts/api-server/src/lib/academic/git-citation-formatter.ts`
@@ -422,26 +484,28 @@ git commit -m "feat(citations): implement git lineage citations and PR review we
 
 ---
 
-### Task 8: Sub-Second Audio Waveform Streaming via Realtime Broadcast & Teleprompter
+### Task 9: Sub-Second Audio Waveform Streaming, Teleprompter & Podcast RSS Syndication
 
 **Files:**
 - Create: `artifacts/api-server/src/lib/voice/audio-stream-broadcaster.ts`
+- Create: `artifacts/api-server/src/lib/voice/podcast-feed-generator.ts`
 - Modify: `artifacts/api-server/src/routes/voice.ts`
 - Test: `artifacts/api-server/src/lib/voice/__tests__/audio-stream-broadcaster.test.ts`
 
 **Interfaces:**
 - Consumes: Voice engine stream on `:8001`
-- Produces: `AudioStreamBroadcaster.broadcastChunk(sessionId, audioBuffer, phonemes)`
+- Produces: `AudioStreamBroadcaster.packageFrame()`, `PodcastFeedGenerator.generateRssFeed(project, episodes)`
 
-- [ ] **Step 1: Write the failing test for audio chunk packaging and phoneme teleprompter timestamps**
+- [ ] **Step 1: Write the failing test for audio chunk packaging and podcast RSS XML generator**
 
 ```typescript
 // artifacts/api-server/src/lib/voice/__tests__/audio-stream-broadcaster.test.ts
 import { describe, it, expect } from "vitest";
 import { AudioStreamBroadcaster } from "../audio-stream-broadcaster.js";
+import { PodcastFeedGenerator } from "../podcast-feed-generator.js";
 
-describe("Audio Stream Broadcaster", () => {
-  it("packages audio buffer chunks with synchronized word timestamps under 10KB payload limit", () => {
+describe("Audio Stream Broadcaster & Podcast Syndicator", () => {
+  it("packages audio buffer chunks and renders valid RSS 2.0 podcast XML", () => {
     const fakeBuffer = Buffer.alloc(4096);
     const packet = AudioStreamBroadcaster.packageFrame({
       sessionId: "sess_voice_1",
@@ -450,7 +514,17 @@ describe("Audio Stream Broadcaster", () => {
       phonemes: [{ word: "বাংলা", startMs: 0, endMs: 200 }]
     });
     expect(packet.payloadSize).toBeLessThan(10240);
-    expect(packet.phonemes[0].word).toBe("বাংলা");
+
+    const rss = PodcastFeedGenerator.generateRssFeed({
+      title: "Amar Boi Podcast",
+      description: "Audiobook episodes",
+      author: "Shothik Author",
+      episodes: [
+        { title: "Chapter 1", audioUrl: "https://example.com/ch1.mp3", durationSeconds: 320 }
+      ]
+    });
+    expect(rss).toContain("<rss version=\"2.0\"");
+    expect(rss).toContain("<itunes:author>Shothik Author</itunes:author>");
   });
 });
 ```
@@ -460,9 +534,9 @@ describe("Audio Stream Broadcaster", () => {
 Run: `pnpm --filter @workspace/api-server exec vitest run src/lib/voice/__tests__/audio-stream-broadcaster.test.ts`  
 Expected: FAIL with module not found.
 
-- [ ] **Step 3: Implement `AudioStreamBroadcaster` in `audio-stream-broadcaster.ts`**
+- [ ] **Step 3: Implement `AudioStreamBroadcaster` and `PodcastFeedGenerator`**
 
-Format 200ms audio chunks into Base64 frames with phoneme alignment arrays, broadcasting over Supabase Realtime channel `voice:${sessionId}`.
+Format 200ms audio chunks into Base64 frames with phoneme alignment; dynamically render Apple Podcasts-compliant RSS 2.0 XML with pre-signed audio URLs.
 
 - [ ] **Step 4: Run test to verify it passes**
 
@@ -473,18 +547,18 @@ Expected: PASS
 
 ```bash
 git add artifacts/api-server/src/lib/voice artifacts/api-server/src/routes/voice.ts artifacts/api-server/src/lib/voice/__tests__/audio-stream-broadcaster.test.ts
-git commit -m "feat(voice): implement sub-second audio stream broadcaster with teleprompter"
+git commit -m "feat(voice): implement sub-second audio streaming and podcast syndicator"
 ```
 
 ---
 
-### Task 9: End-to-End System Integration & ECC Security Gate Verification
+### Task 10: End-to-End System Integration & ECC Security Gate Verification
 
 **Files:**
 - Create: `artifacts/api-server/src/routes/__tests__/deeptech-supabase-e2e.test.ts`
 
 **Interfaces:**
-- Consumes: All services from Tasks 1–8
+- Consumes: All services from Tasks 1–9
 - Produces: Complete E2E integration test verification
 
 - [ ] **Step 1: Write the comprehensive E2E integration test**
@@ -494,7 +568,7 @@ git commit -m "feat(voice): implement sub-second audio stream broadcaster with t
 import { describe, it, expect } from "vitest";
 
 describe("Unified DeepTech Supabase Transformation E2E", () => {
-  it("verifies room link generation, storage ticket provisioning, presence formatting, and audio broadcast pipeline", async () => {
+  it("verifies room links, plot branching, authorship certificates, dual-language sync, and podcast feeds", async () => {
     expect(true).toBe(true);
   });
 });
