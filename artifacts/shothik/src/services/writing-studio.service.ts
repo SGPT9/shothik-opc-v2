@@ -159,3 +159,72 @@ export const editLatexWithAi = async (data: AiEditLatexRequest): Promise<AiEditL
   const response = await writingStudioClient.post('/api/ai/edit', data);
   return response.data;
 };
+
+
+// ── Supabase DeepTech Integration Client APIs ──
+
+import type {
+  RoomShareConfig,
+  PlotBranch,
+  PlotBranchMergeResult,
+  AuthorshipCertificate,
+  ResumableSessionResponse,
+} from '@/types/writing-studio';
+
+export const createRoomShareConfig = async (
+  projectId: string,
+  accessMode: 'public' | 'passcode' | 'restricted',
+  passcode?: string
+): Promise<RoomShareConfig> => {
+  const response = await writingStudioClient.post(`/api/v1/projects/${encodeURIComponent(projectId)}/share`, {
+    accessMode,
+    passcode,
+  });
+  return response.data;
+};
+
+export const createPlotBranch = async (
+  parentProjectId: string,
+  branchName: string
+): Promise<PlotBranch> => {
+  const response = await writingStudioClient.post(`/api/v1/projects/${encodeURIComponent(parentProjectId)}/branches`, {
+    branchName,
+  });
+  return response.data;
+};
+
+export const mergePlotBranch = async (
+  canonicalProjectId: string,
+  branchProjectId: string
+): Promise<PlotBranchMergeResult> => {
+  const response = await writingStudioClient.post(
+    `/api/v1/projects/${encodeURIComponent(canonicalProjectId)}/branches/${encodeURIComponent(branchProjectId)}/merge`
+  );
+  return response.data;
+};
+
+export const generateAuthorshipCertificate = async (
+  projectId: string,
+  author: { name: string; email: string; title: string }
+): Promise<AuthorshipCertificate> => {
+  const response = await writingStudioClient.post(
+    `/api/v1/projects/${encodeURIComponent(projectId)}/authorship-certificate`,
+    author
+  );
+  return response.data;
+};
+
+export const createResumableUploadTicket = async (params: {
+  bucket: string;
+  filename: string;
+  contentType: string;
+  sizeBytes: number;
+}): Promise<ResumableSessionResponse> => {
+  const response = await writingStudioClient.post('/api/v1/storage/resumable-session', params);
+  return response.data;
+};
+
+export const getPodcastFeedUrl = (projectId: string): string => {
+  const baseUrl = writingStudioClient.defaults.baseURL || '';
+  return `${baseUrl}/api/v1/podcasts/${encodeURIComponent(projectId)}/feed.xml`;
+};

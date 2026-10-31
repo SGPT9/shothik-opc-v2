@@ -39,6 +39,13 @@ import { ManuscriptImportModal } from "./ManuscriptImportModal";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
 import { NilkhetOrderModal } from "@/components/books/NilkhetOrderModal";
 import { Button } from "@/components/ui/button";
+import { CollaborativePresence } from "./CollaborativePresence";
+import { RoomShareModal } from "./components/RoomShareModal";
+import { PlotBranchModal } from "./components/PlotBranchModal";
+import { AuthorshipCertificateModal } from "./components/AuthorshipCertificateModal";
+import { PodcastAudioModal } from "./components/PodcastAudioModal";
+import { ResumableUploadModal } from "./components/ResumableUploadModal";
+import { Users, GitBranch, Award, Radio, UploadCloud } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -65,6 +72,11 @@ export function PolishedWriteView({
   const [preview3D, setPreview3D] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNilkhetModalOpen, setIsNilkhetModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
+  const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
+  const [isPodcastModalOpen, setIsPodcastModalOpen] = useState(false);
+  const [isResumableModalOpen, setIsResumableModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -211,7 +223,61 @@ export function PolishedWriteView({
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <CollaborativePresence
+              bookId={project?._id || project?.id || "default"}
+              currentChapterTitle={activeChapter?.title}
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsShareModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              title="Share Room with Live Presence & Passcode"
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Share</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsBranchModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/30 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
+              title="Git for Writers: Plot Branching & Alternative Endings"
+            >
+              <GitBranch className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Branches</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsCertificateModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="Cryptographic Proof of Authorship Certificate"
+            >
+              <Award className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Copyright</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsPodcastModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              title="Audiobook Podcast RSS Feed & Waveform Player"
+            >
+              <Radio className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Podcast</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsResumableModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
+              title="TUS Resumable Upload for Large Audio & Thesis PDFs"
+            >
+              <UploadCloud className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Upload</span>
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -493,6 +559,42 @@ export function PolishedWriteView({
         bookTitle={title}
         pageCount={Math.max(48, Math.ceil(wordCount / 250))}
         authorName={project?.author || "Shothik Author"}
+      />
+
+      {/* Supabase DeepTech Modals */}
+      <RoomShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+      />
+      <PlotBranchModal
+        isOpen={isBranchModalOpen}
+        onClose={() => setIsBranchModalOpen(false)}
+        projectId={project?._id || project?.id || "default"} 
+        projectTitle={title}
+        onMergeComplete={(merged) => {
+          setContent(merged);
+        }}
+      />
+      <AuthorshipCertificateModal
+        isOpen={isCertificateModalOpen}
+        onClose={() => setIsCertificateModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        authorName={project?.author || "Tareq Masud"}
+      />
+      <PodcastAudioModal
+        isOpen={isPodcastModalOpen}
+        onClose={() => setIsPodcastModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        chapters={chapters}
+      />
+      <ResumableUploadModal
+        isOpen={isResumableModalOpen}
+        onClose={() => setIsResumableModalOpen(false)}
+        bucket="academic-manuscripts"
       />
     </div>
   );
