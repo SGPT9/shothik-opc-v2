@@ -6,6 +6,7 @@ import { projectsTable, writingAutosaveTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { resolveUserId } from "../middleware/auth.js";
+import { CrdtSyncProvider } from "../lib/realtime/crdt-sync-provider.js";
 
 const router = Router();
 
@@ -439,6 +440,64 @@ router.get("/v1/projects/:id/branches", async (req: Request, res: Response) => {
     res.json({ success: true, data: branches });
   } catch (err: any) {
     logger.error({ err }, "Failed to list project branches");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/projects/:id/branches/:branchId/merge
+ * Reconcile and merge an alternative plot branch back into the canonical draft.
+ */
+router.post("/v1/projects/:id/branches/:branchId/merge", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const branchId = String(req.params.branchId);
+
+    const [target] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, id));
+
+    if (!target) {
+      res.status(404).json({ success: false, error: "Canonical project not found" });
+      return;
+    }
+
+    const [branch] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, branchId));
+
+    if (!branch) {
+      res.status(404).json({ success: false, error: "Branch project not found" });
+      return;
+    }
+
+    const mergeResult = CrdtSyncProvider.mergeText(
+      target.content || "",
+      branch.content || ""
+    );
+
+    const [updated] = await db
+      .update(projectsTable)
+      .set({
+        content: mergeResult.mergedText,
+        wordCount: mergeResult.mergedText.trim() ? mergeResult.mergedText.trim().split(/\s+/).length : 0,
+        updatedAt: new Date(),
+      })
+      .where(eq(projectsTable.id, target.id))
+      .returning();
+
+    res.json({
+      success: true,
+      data: {
+        mergedProject: updated,
+        branchId: branch.id,
+        mergeResult,
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to merge plot branch");
     res.status(500).json({ success: false, error: err.message });
   }
 });
