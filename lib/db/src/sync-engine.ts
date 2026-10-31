@@ -114,7 +114,7 @@ export class OfflineSyncEngine {
               status: parcel.status,
             } as any)
             .onConflictDoNothing();
-          await sqliteDb.delete(offlineParcelsTable).where(eq(offlineParcelsTable.id, parcel.id));
+          await sqliteDb.delete(offlineParcelsTable).where(eq(offlineParcelsTable.trackingCode, parcel.trackingCode));
           this.status.syncedParcelsCount++;
         } catch {}
       }
@@ -138,7 +138,7 @@ export class OfflineSyncEngine {
               status: o.status,
             } as any)
             .onConflictDoNothing();
-          await sqliteDb.delete(offlineNilkhetOrdersTable).where(eq(offlineNilkhetOrdersTable.id, o.id));
+          await sqliteDb.delete(offlineNilkhetOrdersTable).where(eq(offlineNilkhetOrdersTable.orderId, o.orderId));
           this.status.syncedOrdersCount++;
         } catch {}
       }
@@ -147,21 +147,22 @@ export class OfflineSyncEngine {
       const localAutosaves = await sqliteDb.select().from(offlineAutosaveTable);
       for (const a of localAutosaves) {
         try {
+          const wordCount = a.content ? a.content.trim().split(/\s+/).length : 0;
           await db
             .insert(writingAutosaveTable)
             .values({
               userId: a.userId,
-              localProjectId: a.localProjectId,
+              localProjectId: a.docId,
               content: a.content,
-              wordCount: a.wordCount,
-              savedAt: new Date(a.savedAt),
+              wordCount,
+              savedAt: new Date(a.updatedAt),
             })
             .onConflictDoUpdate({
               target: [writingAutosaveTable.userId, writingAutosaveTable.localProjectId],
               set: {
                 content: a.content,
-                wordCount: a.wordCount,
-                savedAt: new Date(a.savedAt),
+                wordCount,
+                savedAt: new Date(a.updatedAt),
               },
             });
           await sqliteDb.delete(offlineAutosaveTable).where(eq(offlineAutosaveTable.id, a.id));

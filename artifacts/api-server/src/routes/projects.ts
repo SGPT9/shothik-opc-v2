@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import { eq, desc } from "drizzle-orm";
+import crypto from "crypto";
+import { eq, desc, or } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { projectsTable, writingAutosaveTable } from "@workspace/db";
 import { logger } from "../lib/logger";
@@ -293,6 +294,151 @@ router.get("/v1/writing/sections/:localProjectId", async (req: Request, res: Res
     }
   } catch (err: any) {
     logger.error({ err }, "Failed to get sections");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Figma/Miro-Style Room Links & "Git for Writers" Plot Branching
+// ---------------------------------------------------------------------------
+
+/**
+ * POST /api/v1/projects/create-share-link
+ * Generate or retrieve a shareable Figma/Miro-style room link.
+ */
+router.post("/v1/projects/create-share-link", async (req: Request, res: Response) => {
+  try {
+    const userId = resolveUserId(req);
+    const { projectId, accessMode = "link_edit", passcode } = req.body;
+
+    if (!projectId) {
+      res.status(400).json({ success: false, error: "projectId is required" });
+      return;
+    }
+
+    const [project] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, projectId));
+
+    if (!project) {
+      res.status(404).json({ success: false, error: "Project not found" });
+      return;
+    }
+
+    const shareToken = project.shareToken || `prj_sh_${crypto.randomBytes(4).toString("hex")}`;
+    const passcodeHash = passcode ? crypto.createHash("sha256").update(passcode).digest("hex") : project.passcodeHash;
+
+    const [updated] = await db
+      .update(projectsTable)
+      .set({
+        shareToken,
+        accessMode,
+        passcodeHash,
+        updatedAt: new Date(),
+      })
+      .where(eq(projectsTable.id, projectId))
+      .returning();
+
+    const shareUrl = `/studio?room=${shareToken}`;
+
+    res.json({
+      success: true,
+      data: {
+        projectId: updated.id,
+        shareToken: updated.shareToken,
+        accessMode: updated.accessMode,
+        shareUrl,
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to create share link");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/projects/branches
+ * Create a 'Git for Writers' alternative storyline branch.
+ */
+router.post("/v1/projects/branches", async (req: Request, res: Response) => {
+  try {
+    const userId = resolveUserId(req);
+    const { parentProjectId, branchName } = req.body;
+
+    if (!parentProjectId || !branchName) {
+      res.status(400).json({ success: false, error: "parentProjectId and branchName are required" });
+      return;
+    }
+
+    const [parent] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, parentProjectId));
+
+    if (!parent) {
+      res.status(404).json({ success: false, error: "Parent project not found" });
+      return;
+    }
+
+    const lineageRootId = parent.lineageRootId || parent.id;
+    const branchTitle = `${parent.title} (Branch: ${branchName})`;
+
+    const [branch] = await db
+      .insert(projectsTable)
+      .values({
+        userId,
+        title: branchTitle,
+        type: parent.type,
+        template: parent.template,
+        description: parent.description,
+        content: parent.content,
+        sections: parent.sections,
+        settings: parent.settings,
+        wordCount: parent.wordCount,
+        progress: parent.progress,
+        parentProjectId: parent.id,
+        branchName,
+        lineageRootId,
+      })
+      .returning();
+
+    res.status(201).json({ success: true, data: branch });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to create plot branch");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/projects/:id/branches
+ * List all branches across the lineage for a given project.
+ */
+router.get("/v1/projects/:id/branches", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+
+    const [target] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, id));
+
+    if (!target) {
+      res.status(404).json({ success: false, error: "Project not found" });
+      return;
+    }
+
+    const rootId = target.lineageRootId || target.id;
+
+    const branches = await db
+      .select()
+      .from(projectsTable)
+      .where(or(eq(projectsTable.parentProjectId, rootId), eq(projectsTable.lineageRootId, rootId), eq(projectsTable.id, rootId)))
+      .orderBy(desc(projectsTable.updatedAt));
+
+    res.json({ success: true, data: branches });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to list project branches");
     res.status(500).json({ success: false, error: err.message });
   }
 });

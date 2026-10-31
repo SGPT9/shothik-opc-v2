@@ -81,9 +81,12 @@ temp-open-design/
 .trae
 .windsurf
 .vercel
+.superpowers/
 .env*
-!.env.example
-!.env.*.example
+!.superpowers/
+.env.example
+!.superpowers/
+.env.*.example
 
 # Reference clones & deployment archives
 inkos-clone/

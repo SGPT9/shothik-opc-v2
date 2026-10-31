@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 
 /**
  * Projects table — migrated from Convex `projects` collection.
- * Stores writing studio projects, research projects, and assignments.
+ * Stores writing studio projects, research projects, assignments, and Git for Writers plot branches.
  */
 export const projectsTable = pgTable("projects", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -19,6 +19,14 @@ export const projectsTable = pgTable("projects", {
   wordCount: integer("word_count").notNull().default(0),
   progress: integer("progress").notNull().default(0),
   starred: boolean("starred").notNull().default(false),
+  // Figma/Miro-style Room Collaboration Links
+  shareToken: text("share_token").unique(),
+  accessMode: text("access_mode").notNull().default("private"), // "private" | "link_view" | "link_edit"
+  passcodeHash: text("passcode_hash"),
+  // Git for Writers — Plot Branching & Lineage
+  parentProjectId: uuid("parent_project_id"),
+  branchName: text("branch_name").notNull().default("main"),
+  lineageRootId: uuid("lineage_root_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

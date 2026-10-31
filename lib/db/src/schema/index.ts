@@ -9,3 +9,4 @@ export * from "./nilkhet-orders";
 export * from "./jobs-and-idempotency";
 export * from "./commerce-ops";
 export * from "./sagas-and-audit";
+export * from "./embeddings";
