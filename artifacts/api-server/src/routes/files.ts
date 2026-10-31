@@ -5,6 +5,7 @@ import { ragEngine } from "../lib/rag-engine";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { resolveUserId } from "../middleware/auth.js";
+import { supabaseStorageService } from "../lib/storage/supabase-storage.js";
 
 const router = Router();
 
@@ -237,6 +238,38 @@ router.post("/v1/files/ocr", idempotencyMiddleware, async (req: Request, res: Re
     });
   } catch (error: any) {
     logger.error({ error: error.message }, "[files/ocr] OCR processing failure");
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/v1/storage/resumable-session
+ * Provisions a signed TUS upload ticket for Supabase Storage with user isolation
+ */
+router.post("/v1/storage/resumable-session", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { bucket = "manuscripts", filename, contentType, metadata, userId: bodyUserId } = req.body;
+    const userId = resolveUserId(req, typeof bodyUserId === "string" ? bodyUserId : "usr_default");
+
+    if (!filename) {
+      res.status(400).json({ success: false, error: "filename is required" });
+      return;
+    }
+
+    const session = await supabaseStorageService.createUploadSession({
+      bucket,
+      filename,
+      userId,
+      contentType,
+      metadata,
+    });
+
+    res.status(200).json({
+      success: true,
+      session,
+    });
+  } catch (error: any) {
+    logger.error({ error: error.message }, "[files/storage] Failed to create upload session");
     res.status(500).json({ success: false, error: error.message });
   }
 });
