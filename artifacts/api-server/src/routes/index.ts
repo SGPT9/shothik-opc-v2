@@ -47,6 +47,7 @@ import companiesRouter from "./companies";
 import twinTasksRouter from "./twin-tasks";
 import papermarkRouter from "./papermark";
 import demographyDialectsRouter from "./demography-dialects";
+import githubReviewRouter from "./github-review-webhook";
 
 import taxRouter from "./tax.js";
 import telephonyRouter from "./telephony.js";
@@ -221,6 +222,7 @@ router.use(memoryRouter);
 router.use(projectsRouter);
 router.use(subscriptionsRouter);
 router.use(connectorsRouter);
+router.use(githubReviewRouter);
 router.use(filesRouter);
 router.use(jobsRouter);
 router.use(writingToolsRouter);
