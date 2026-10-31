@@ -7,6 +7,7 @@ import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { resolveUserId } from "../middleware/auth.js";
 import { CrdtSyncProvider } from "../lib/realtime/crdt-sync-provider.js";
+import { AuthorshipCertificateEngine } from "../lib/security/authorship-certificate-engine.js";
 
 const router = Router();
 
@@ -498,6 +499,43 @@ router.post("/v1/projects/:id/branches/:branchId/merge", async (req: Request, re
     });
   } catch (err: any) {
     logger.error({ err }, "Failed to merge plot branch");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/projects/:id/authorship-certificate
+ * Issues an immutable, cryptographically signed Authorship Certificate anchored in audit history.
+ */
+router.post("/v1/projects/:id/authorship-certificate", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const userId = resolveUserId(req);
+
+    const [project] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, id));
+
+    if (!project) {
+      res.status(404).json({ success: false, error: "Project not found" });
+      return;
+    }
+
+    const certificate = AuthorshipCertificateEngine.createCertificate({
+      projectId: project.id,
+      title: project.title,
+      authorId: userId,
+      content: project.content || "",
+      createdAt: project.createdAt ? new Date(project.createdAt) : undefined,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: certificate,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to generate authorship certificate");
     res.status(500).json({ success: false, error: err.message });
   }
 });
