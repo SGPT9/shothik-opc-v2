@@ -76,7 +76,9 @@ const STATUS_COLORS: Record<Task["status"], { color: string; spin?: boolean }> =
   failed: { color: "text-destructive" },
 };
 
-function TaskCard({
+// ⚡ Bolt Optimization: Memoize TaskCard to prevent unnecessary re-renders of the entire
+// task list when unrelated tasks update their status or new tasks are appended.
+const TaskCard = React.memo(function TaskCard({
   task,
   onContinueInWritingStudio,
 }: {
@@ -181,7 +183,7 @@ function TaskCard({
       )}
     </div>
   );
-}
+});
 
 export default function TaskFeed({ tasks, className, onContinueInWritingStudio }: TaskFeedProps) {
   const { t } = useTranslation();
