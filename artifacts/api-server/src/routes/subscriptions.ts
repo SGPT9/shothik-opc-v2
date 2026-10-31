@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { eq, and } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { userSubscriptionsTable, toolUsageTable, llmUsageTable } from "@workspace/db";
+import { userSubscriptionsTable, toolUsageTable, llmUsageTable, userCreditsTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { resolveUserId } from "../middleware/auth.js";
@@ -263,13 +263,53 @@ const userCreditLedger = new Map<string, number>([
   ["dev_user_local", 1200],
 ]);
 
+async function getPersistedCredits(userId: string): Promise<number> {
+  try {
+    const record = await db
+      .select()
+      .from(userCreditsTable)
+      .where(eq(userCreditsTable.userId, userId))
+      .then((rows) => rows[0]);
+    if (record) {
+      userCreditLedger.set(userId, record.balance);
+      return record.balance;
+    }
+  } catch (err) {
+    // Fallback
+  }
+  return userCreditLedger.get(userId) ?? 500;
+}
+
+async function persistCreditDeduction(userId: string, newBalance: number, amountSpent = 0): Promise<void> {
+  userCreditLedger.set(userId, newBalance);
+  try {
+    await db
+      .insert(userCreditsTable)
+      .values({
+        userId,
+        balance: newBalance,
+        lifetimeSpent: amountSpent,
+      })
+      .onConflictDoUpdate({
+        target: userCreditsTable.userId,
+        set: {
+          balance: newBalance,
+          updatedAt: new Date(),
+        },
+      });
+  } catch (err) {
+    // Fallback
+  }
+}
+
+
 /**
  * GET /api/v1/subscriptions/credits
  * Returns the live credit balance for the user
  */
 router.get(["/v1/subscriptions/credits", "/api/v1/subscriptions/credits"], async (req: Request, res: Response) => {
   const userId = resolveUserId(req, "usr_default");
-  const currentCredits = userCreditLedger.get(userId) ?? 500;
+  const currentCredits = await getPersistedCredits(userId);
 
   res.status(200).json({
     success: true,
@@ -334,7 +374,7 @@ router.post(
     try {
       const { userId = "usr_default", amount = 1, taskId, taskTitle, reason = "Autonomous Twin Task" } = req.body;
       const cost = Math.max(1, Number(amount) || 1);
-      const currentBalance = userCreditLedger.get(userId) ?? 500;
+      const currentBalance = await getPersistedCredits(userId);
 
       if (currentBalance < cost) {
         logger.warn({ userId, currentBalance, cost }, "[CreditLedger] Insufficient credits for task execution");
@@ -350,7 +390,7 @@ router.post(
       }
 
       const newBalance = currentBalance - cost;
-      userCreditLedger.set(userId, newBalance);
+      await persistCreditDeduction(userId, newBalance, cost);
 
       const transactionId = `TX_CR_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
       logger.info({ userId, cost, newBalance, taskId, transactionId }, "[CreditLedger] Deducted credits for autonomous task");
@@ -738,7 +778,7 @@ router.post(["/payment-transactions/initiate", "/v1/payment-transactions/initiat
   });
 });
 
-router.post(["/payment-transactions/:id/verify", "/v1/payment-transactions/:id/verify"], (req: Request, res: Response) => {
+router.post(["/payment-transactions/:id/verify", "/v1/payment-transactions/:id/verify"], async (req: Request, res: Response) => {
   const trxId = String(req.params.id || "");
   const userId = resolveUserId(req, "usr_default");
 
@@ -768,8 +808,8 @@ router.post(["/payment-transactions/:id/verify", "/v1/payment-transactions/:id/v
   txRecord.verified = true;
   txRecord.verifiedAt = new Date().toISOString();
 
-  const currentCredits = userCreditLedger.get(userId) ?? 500;
-  userCreditLedger.set(userId, currentCredits + txRecord.credits);
+  const currentCredits = await getPersistedCredits(userId);
+  await persistCreditDeduction(userId, currentCredits + txRecord.credits, 0);
 
   return res.status(200).json({
     success: true,

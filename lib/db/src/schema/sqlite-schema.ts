@@ -136,3 +136,29 @@ export type OfflineParcel = typeof offlineParcelsTable.$inferSelect;
 export type OfflineNilkhetOrder = typeof offlineNilkhetOrdersTable.$inferSelect;
 export type OfflinePapermarkLink = typeof offlinePapermarkLinksTable.$inferSelect;
 export type OfflinePapermarkView = typeof offlinePapermarkViewsTable.$inferSelect;
+
+
+/**
+ * Local SQLite table for offline user credit balance
+ */
+export const offlineUserCreditsTable = sqliteTable("offline_user_credits", {
+  userId: text("user_id").primaryKey(),
+  balance: integer("balance").notNull().default(500),
+  updatedAt: integer("updated_at").notNull().$defaultFn(() => Date.now()),
+});
+
+/**
+ * Local SQLite table for offline users accounts mirror
+ */
+export const offlineUsersTable = sqliteTable("offline_users", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull().unique(),
+  passwordHash: text("password_hash").notNull(),
+  fullName: text("full_name").default(""),
+  role: text("role").default("user"),
+  createdAt: integer("created_at").notNull().$defaultFn(() => Date.now()),
+  updatedAt: integer("updated_at").notNull().$defaultFn(() => Date.now()),
+});
+
+export type OfflineUserCredit = typeof offlineUserCreditsTable.$inferSelect;
+export type OfflineUser = typeof offlineUsersTable.$inferSelect;

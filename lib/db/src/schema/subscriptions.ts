@@ -72,3 +72,23 @@ export const insertLlmUsageSchema = createInsertSchema(llmUsageTable).omit({
 });
 export type InsertLlmUsage = z.infer<typeof insertLlmUsageSchema>;
 export type LlmUsage = typeof llmUsageTable.$inferSelect;
+
+
+/**
+ * User Credits table — persists user balance, avoiding in-memory reset on reboot.
+ */
+export const userCreditsTable = pgTable("user_credits", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  balance: integer("balance").notNull().default(500),
+  lifetimeEarned: integer("lifetime_earned").notNull().default(500),
+  lifetimeSpent: integer("lifetime_spent").notNull().default(0),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertUserCreditsSchema = createInsertSchema(userCreditsTable).omit({
+  id: true,
+  updatedAt: true,
+});
+export type InsertUserCredits = z.infer<typeof insertUserCreditsSchema>;
+export type UserCredits = typeof userCreditsTable.$inferSelect;

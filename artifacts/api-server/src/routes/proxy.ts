@@ -6,7 +6,8 @@ import { logger } from "../lib/logger";
 // Upstream origin for all /api routes the local server doesn't implement
 // (chat, conversations, auth, etc.). Overridable for development/testing
 // (e.g. pointing at a local mock while the real backend is unreachable).
-const UPSTREAM_ORIGIN = process.env.CHAT_API_ORIGIN ?? "https://www.shothikgpt.com";
+const UPSTREAM_ORIGIN = process.env.CHAT_API_ORIGIN || "https://www.shothikgpt.com";
+const STANDALONE_LOCAL_MODE = process.env.STANDALONE_LOCAL_MODE === "true";
 
 const HOP_BY_HOP = new Set([
   "host",
@@ -26,6 +27,15 @@ const router: IRouter = Router();
 // multipart uploads and SSE) without buffering or fixed timeouts. Mounted
 // last so local routes take precedence.
 router.use(async (req: Request, res: Response) => {
+  if (STANDALONE_LOCAL_MODE) {
+    res.status(404).json({
+      success: false,
+      error: "Not Found",
+      code: "ROUTE_NOT_FOUND",
+      message: `Endpoint ${req.method} ${req.url} is not registered in standalone local mode.`,
+    });
+  }
+
   const targetUrl = `${UPSTREAM_ORIGIN}/api${req.url}`;
   const controller = new AbortController();
   // Abort upstream work when the client goes away.
@@ -68,6 +78,17 @@ router.use(async (req: Request, res: Response) => {
       // Required by Node's fetch when the request body is a stream.
       ...(body && typeof body !== "string" ? { duplex: "half" as const } : {}),
     } as Parameters<typeof fetch>[1]);
+
+    const vercelError = upstream.headers.get("x-vercel-error");
+    if (upstream.status === 402 || vercelError === "DEPLOYMENT_DISABLED") {
+      logger.warn({ targetUrl, status: upstream.status, vercelError }, "[proxy] Upstream cloud deployment disabled, falling back to local 404");
+      res.status(404).json({
+        success: false,
+        error: "Not Found",
+        code: "UPSTREAM_INACTIVE",
+        message: `Endpoint ${req.method} ${req.url} not implemented locally, and upstream cloud gateway is currently inactive.`,
+      });
+    }
 
     res.status(upstream.status);
     upstream.headers.forEach((value, key) => {

@@ -94,6 +94,60 @@ export class AgentMarketplaceService {
   /**
    * Install agent preset and calculate 80/20 creator revenue split
    */
+  public async installAgentWithCredits(agentId: string, userId = "usr_default"): Promise<AgentInstallResult & { remainingCredits?: number }> {
+    const agent = this.catalog.find((a) => a.id === agentId);
+    if (!agent) {
+      throw new Error(`Agent ${agentId} not found`);
+    }
+
+    let remainingCredits: number | undefined;
+    if (agent.priceCredits > 0) {
+      const res = await fetch("/api/v1/subscriptions/ledger:deduct", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          amount: agent.priceCredits,
+          taskId: `marketplace_install_${agent.id}`,
+          taskTitle: `Install Emporium Skill: ${agent.name}`,
+          reason: `Emporium Marketplace 80/20 Creator Split: ${agent.name}`,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorJson = await res.json().catch(() => ({}));
+        throw new Error(errorJson.message || "Insufficient wallet credits for Emporium install.");
+      }
+      const data = await res.json().catch(() => ({}));
+      remainingCredits = data.remainingCredits;
+    }
+
+    const priceBdt = agent.priceCredits;
+    const creatorPayoutBdt = Math.round(priceBdt * 0.8);
+    const platformFeeBdt = priceBdt - creatorPayoutBdt;
+    agent.installsCount += 1;
+
+    if (typeof window !== "undefined") {
+      try {
+        const installed = JSON.parse(localStorage.getItem("shothik_installed_agents") || "[]");
+        if (!installed.includes(agent.id)) {
+          installed.push(agent.id);
+          localStorage.setItem("shothik_installed_agents", JSON.stringify(installed));
+        }
+      } catch (e) {}
+    }
+
+    return {
+      success: true,
+      agentId: agent.id,
+      agentName: agent.name,
+      creatorPayoutBdt,
+      platformFeeBdt,
+      remainingCredits,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   public installAgent(agentId: string): AgentInstallResult {
     const agent = this.catalog.find((a) => a.id === agentId);
     if (!agent) {

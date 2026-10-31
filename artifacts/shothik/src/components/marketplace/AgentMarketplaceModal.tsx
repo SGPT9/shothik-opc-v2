@@ -43,11 +43,13 @@ export function AgentMarketplaceModal({ isOpen, onClose }: AgentMarketplaceModal
     }
   };
 
-  const handleInstall = (item: AgentMarketplaceItem) => {
+  const handleInstall = async (item: AgentMarketplaceItem) => {
     try {
-      agentMarketplaceService.installAgent(item.id);
+      await agentMarketplaceService.installAgentWithCredits(item.id);
       setInstalledMap((prev) => ({ ...prev, [item.id]: true }));
-    } catch {}
+    } catch (err: any) {
+      console.warn("Marketplace install error:", err?.message || err);
+    }
   };
 
   return (

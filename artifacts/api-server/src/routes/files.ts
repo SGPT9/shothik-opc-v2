@@ -1,5 +1,7 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import { openDataLoader } from "../lib/document-parsing/opendataloader-bridge";
 import { ragEngine } from "../lib/rag-engine";
 import { logger } from "../lib/logger";
@@ -33,6 +35,18 @@ router.post("/v1/files/upload", idempotencyMiddleware, async (req: Request, res:
     if (fileBase64) {
       const buffer = Buffer.from(fileBase64, "base64");
       fileHash = crypto.createHash("sha256").update(buffer).digest("hex");
+      // Persist raw binary to disk for download & printing
+      try {
+        const uploadDir = path.resolve(process.cwd(), "artifacts/api-server/data/uploads", userId);
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const savedFilePath = path.join(uploadDir, `${fileHash}_${path.basename(filename)}`);
+        fs.writeFileSync(savedFilePath, buffer);
+      } catch (err: any) {
+        logger.warn({ error: err.message }, "[files] Failed to cache raw file binary");
+      }
+
       const lower = filename.toLowerCase();
 
       if (lower.endsWith(".pdf")) {
@@ -166,7 +180,7 @@ router.get("/v1/files", async (req: Request, res: Response): Promise<void> => {
 router.get("/v1/files/:docId/content", async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = resolveUserId(req, "usr_default");
-    const { docId } = req.params;
+    const docId = String(req.params.docId);
     const allDocs = await ragEngine.listDocuments(userId);
     const doc = allDocs.find((d) => d.id === docId);
 
@@ -191,7 +205,7 @@ router.get("/v1/files/:docId/content", async (req: Request, res: Response): Prom
 router.delete("/v1/files/:docId", async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = resolveUserId(req, "usr_default");
-    const { docId } = req.params;
+    const docId = String(req.params.docId ?? "");
     await ragEngine.deleteDocument(userId, docId as string);
     res.status(200).json({
       success: true,
@@ -271,6 +285,33 @@ router.post("/v1/storage/resumable-session", async (req: Request, res: Response)
   } catch (error: any) {
     logger.error({ error: error.message }, "[files/storage] Failed to create upload session");
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+/**
+ * GET /api/v1/files/:docId/download
+ * Download raw original binary file
+ */
+router.get("/v1/files/:docId/download", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const targetDocId = String(req.params.docId ?? "");
+    const userId = resolveUserId(req, "usr_default");
+    const uploadDir = path.resolve(process.cwd(), "artifacts/api-server/data/uploads", userId);
+    
+    if (fs.existsSync(uploadDir)) {
+      const files = fs.readdirSync(uploadDir);
+      const match = files.find((f: string) => f.startsWith(targetDocId) || f.includes(targetDocId));
+      if (match) {
+        const fullPath = path.join(uploadDir, match);
+        res.download(fullPath);
+        return;
+      }
+    }
+    
+    res.status(404).json({ success: false, error: "Raw binary file not found on disk" });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 
