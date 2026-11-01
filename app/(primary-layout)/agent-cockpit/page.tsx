@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MCPServerConfig } from "../../api/agent-cockpit/mcp/route";
 import { SecurityRule } from "../../api/agent-cockpit/permissions/route";
 
@@ -68,18 +68,26 @@ export default function AgentCockpitPage() {
     }
   };
 
-  const filteredServers = servers.filter(
-    (s) =>
-      s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredServers = useMemo(() => {
+    if (!searchQuery) return servers;
+    const query = searchQuery.toLowerCase();
+    return servers.filter(
+      (s) =>
+        s.name.toLowerCase().includes(query) ||
+        s.description.toLowerCase().includes(query) ||
+        s.category.toLowerCase().includes(query)
+    );
+  }, [servers, searchQuery]);
 
-  const filteredRules = rules.filter(
-    (r) =>
-      r.capability.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRules = useMemo(() => {
+    if (!searchQuery) return rules;
+    const query = searchQuery.toLowerCase();
+    return rules.filter(
+      (r) =>
+        r.capability.toLowerCase().includes(query) ||
+        r.description.toLowerCase().includes(query)
+    );
+  }, [rules, searchQuery]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
