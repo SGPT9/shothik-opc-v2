@@ -32,3 +32,10 @@ export function sanitizeHtml(dirty: string): string {
 }
 
 export default sanitizeHtml;
+
+export function sanitizeSvg(dirty: string): string {
+  if (!dirty) return "";
+  return DOMPurify.sanitize(dirty, {
+    USE_PROFILES: { svg: true },
+  });
+}
