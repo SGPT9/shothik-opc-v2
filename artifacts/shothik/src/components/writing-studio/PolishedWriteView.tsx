@@ -46,7 +46,8 @@ import { AuthorshipCertificateModal } from "./components/AuthorshipCertificateMo
 import { PodcastAudioModal } from "./components/PodcastAudioModal";
 import { ResumableUploadModal } from "./components/ResumableUploadModal";
 import { BilingualSplitModal } from "./components/BilingualSplitModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages } from "lucide-react";
+import { NarrativeForecastModal } from "./components/NarrativeForecastModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -79,6 +80,7 @@ export function PolishedWriteView({
   const [isPodcastModalOpen, setIsPodcastModalOpen] = useState(false);
   const [isResumableModalOpen, setIsResumableModalOpen] = useState(false);
   const [isBilingualModalOpen, setIsBilingualModalOpen] = useState(false);
+  const [isForecastModalOpen, setIsForecastModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -289,6 +291,16 @@ export function PolishedWriteView({
             >
               <Languages className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Bilingual</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsForecastModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
+              title="Multi-Branch Narrative Forecast Engine (InkOS 3-Trajectory Simulation)"
+            >
+              <Compass className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Forecast</span>
             </Button>
             <Button
               size="sm"
@@ -614,6 +626,12 @@ export function PolishedWriteView({
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         initialContent={content}
+      />
+      <NarrativeForecastModal
+        isOpen={isForecastModalOpen}
+        onClose={() => setIsForecastModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
       />
     </div>
   );
