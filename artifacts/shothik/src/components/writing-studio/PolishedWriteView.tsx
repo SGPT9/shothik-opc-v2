@@ -56,7 +56,8 @@ import { LiteraryStyleDnaModal } from "./components/LiteraryStyleDnaModal";
 import { MultiverseSandboxModal } from "./components/MultiverseSandboxModal";
 import { AutopilotDaemonModal } from "./components/AutopilotDaemonModal";
 import { StoryBibleHudModal } from "./components/StoryBibleHudModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked } from "lucide-react";
+import { VoiceCastingModal } from "./components/VoiceCastingModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -99,6 +100,7 @@ export function PolishedWriteView({
   const [isMultiverseModalOpen, setIsMultiverseModalOpen] = useState(false);
   const [isAutopilotModalOpen, setIsAutopilotModalOpen] = useState(false);
   const [isStoryBibleModalOpen, setIsStoryBibleModalOpen] = useState(false);
+  const [isVoiceCastingModalOpen, setIsVoiceCastingModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -420,6 +422,16 @@ export function PolishedWriteView({
             >
               <BookMarked className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Story Bible</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsVoiceCastingModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
+              title="Multi-Cast Voice Casting & Dialect Director (Local 24kHz Neural Voice AI Engine :8001)"
+            >
+              <Mic className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Voice Casting</span>
             </Button>
             <Button
               size="sm"
@@ -822,6 +834,13 @@ export function PolishedWriteView({
         onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}
 
 ${prose}` : prose))}
+      />
+      <VoiceCastingModal
+        isOpen={isVoiceCastingModalOpen}
+        onClose={() => setIsVoiceCastingModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
       />
     </div>
   );
