@@ -50,7 +50,8 @@ import { NarrativeForecastModal } from "./components/NarrativeForecastModal";
 import { InteractiveStoryGraphModal } from "./components/InteractiveStoryGraphModal";
 import { SemanticDeslopModal } from "./components/SemanticDeslopModal";
 import { DirectorsTabletopModal } from "./components/DirectorsTabletopModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard } from "lucide-react";
+import { ShortFictionPackageModal } from "./components/ShortFictionPackageModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -87,6 +88,7 @@ export function PolishedWriteView({
   const [isStoryGraphModalOpen, setIsStoryGraphModalOpen] = useState(false);
   const [isDeslopModalOpen, setIsDeslopModalOpen] = useState(false);
   const [isTabletopModalOpen, setIsTabletopModalOpen] = useState(false);
+  const [isShortFictionModalOpen, setIsShortFictionModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -337,6 +339,16 @@ export function PolishedWriteView({
             >
               <Clapperboard className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Tabletop Play</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsShortFictionModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              title="Automated Commercial Short-Fiction Package Studio (12-Chapter Generator & Sales Pitch)"
+            >
+              <BookCopy className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Short Fiction</span>
             </Button>
             <Button
               size="sm"
@@ -689,6 +701,18 @@ export function PolishedWriteView({
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
+      />
+      <ShortFictionPackageModal
+        isOpen={isShortFictionModalOpen}
+        onClose={() => setIsShortFictionModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onApplyChapters={(newChapters) => {
+          setChapters(newChapters as any);
+          if (newChapters.length > 0 && newChapters[0].content) {
+            setContent(newChapters.map((c) => `## ${c.title}\n\n${c.content}`).join("\n\n---\n\n"));
+          }
+        }}
       />
     </div>
   );
