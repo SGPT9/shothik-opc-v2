@@ -1,6 +1,6 @@
 
 
-import { useState } from "react";
+import { useState, memo } from "react";
 import ReactionBar from "./ReactionBar";
 import VoteButton from "@/components/common/VoteButton";
 import { Share2, Coins } from "lucide-react";
@@ -38,7 +38,7 @@ function timeAgo(ts: number): string {
   return `${Math.floor(diff / 86400000)}d ago`;
 }
 
-export default function ForumPost({
+const ForumPost = memo(function ForumPost({
   postId,
   authorName,
   authorType,
@@ -139,4 +139,7 @@ export default function ForumPost({
       </div>
     </div>
   );
-}
+});
+
+// Added memo for performance optimization (prevents unnecessary re-renders in forum lists)
+export default ForumPost;
