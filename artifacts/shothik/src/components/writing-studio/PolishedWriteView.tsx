@@ -62,7 +62,8 @@ import { BinauralSoundscapeModal } from "./components/BinauralSoundscapeModal";
 import { BookTokTeaserModal } from "./components/BookTokTeaserModal";
 import { RoomBlockingModal } from "./components/RoomBlockingModal";
 import { ScriptStoryboardModal } from "./components/ScriptStoryboardModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film } from "lucide-react";
+import { RetentionRadarModal } from "./components/RetentionRadarModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -111,6 +112,7 @@ export function PolishedWriteView({
   const [isBookTokModalOpen, setIsBookTokModalOpen] = useState(false);
   const [isRoomBlockingModalOpen, setIsRoomBlockingModalOpen] = useState(false);
   const [isScriptStoryboardModalOpen, setIsScriptStoryboardModalOpen] = useState(false);
+  const [isRetentionRadarModalOpen, setIsRetentionRadarModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -492,6 +494,16 @@ export function PolishedWriteView({
             >
               <Film className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Script / Comic</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsRetentionRadarModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+              title="Market Trend & Reader Retention Radar (Cliffhanger Pacing & Commercial Trope Momentum)"
+            >
+              <TrendingUp className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Retention Radar</span>
             </Button>
             <Button
               size="sm"
@@ -938,6 +950,13 @@ ${prose}` : prose))}
         onInsertToManuscript={(insertedScript) => {
           setContent((prev) => prev + "\n\n" + insertedScript);
         }}
+      />
+      <RetentionRadarModal
+        isOpen={isRetentionRadarModalOpen}
+        onClose={() => setIsRetentionRadarModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
       />
     </div>
   );
