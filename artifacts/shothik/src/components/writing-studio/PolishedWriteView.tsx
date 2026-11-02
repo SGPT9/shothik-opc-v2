@@ -58,7 +58,8 @@ import { AutopilotDaemonModal } from "./components/AutopilotDaemonModal";
 import { StoryBibleHudModal } from "./components/StoryBibleHudModal";
 import { VoiceCastingModal } from "./components/VoiceCastingModal";
 import { PhonemeTunerModal } from "./components/PhonemeTunerModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck } from "lucide-react";
+import { BinauralSoundscapeModal } from "./components/BinauralSoundscapeModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -103,6 +104,7 @@ export function PolishedWriteView({
   const [isStoryBibleModalOpen, setIsStoryBibleModalOpen] = useState(false);
   const [isVoiceCastingModalOpen, setIsVoiceCastingModalOpen] = useState(false);
   const [isPhonemeModalOpen, setIsPhonemeModalOpen] = useState(false);
+  const [isSoundscapeModalOpen, setIsSoundscapeModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -444,6 +446,16 @@ export function PolishedWriteView({
             >
               <SpellCheck className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Phoneme Tuner</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsSoundscapeModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-teal-500/40 text-teal-400 hover:bg-teal-500/10 cursor-pointer"
+              title="Immersive 3D Binaural Soundscape & Audio Foley Engine (HRTF Spatial Rain, River, Traffic & Nature)"
+            >
+              <Headphones className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">3D Soundscape</span>
             </Button>
             <Button
               size="sm"
@@ -857,6 +869,13 @@ ${prose}` : prose))}
       <PhonemeTunerModal
         isOpen={isPhonemeModalOpen}
         onClose={() => setIsPhonemeModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <BinauralSoundscapeModal
+        isOpen={isSoundscapeModalOpen}
+        onClose={() => setIsSoundscapeModalOpen(false)}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         currentManuscriptText={content}
