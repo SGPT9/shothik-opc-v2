@@ -57,7 +57,8 @@ import { MultiverseSandboxModal } from "./components/MultiverseSandboxModal";
 import { AutopilotDaemonModal } from "./components/AutopilotDaemonModal";
 import { StoryBibleHudModal } from "./components/StoryBibleHudModal";
 import { VoiceCastingModal } from "./components/VoiceCastingModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic } from "lucide-react";
+import { PhonemeTunerModal } from "./components/PhonemeTunerModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -101,6 +102,7 @@ export function PolishedWriteView({
   const [isAutopilotModalOpen, setIsAutopilotModalOpen] = useState(false);
   const [isStoryBibleModalOpen, setIsStoryBibleModalOpen] = useState(false);
   const [isVoiceCastingModalOpen, setIsVoiceCastingModalOpen] = useState(false);
+  const [isPhonemeModalOpen, setIsPhonemeModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -432,6 +434,16 @@ export function PolishedWriteView({
             >
               <Mic className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Voice Casting</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsPhonemeModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-pink-500/40 text-pink-400 hover:bg-pink-500/10 cursor-pointer"
+              title="Custom Phoneme & Diacritic Pronunciation Tuner (IPA, SSML & Syllabification Engine)"
+            >
+              <SpellCheck className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Phoneme Tuner</span>
             </Button>
             <Button
               size="sm"
@@ -838,6 +850,13 @@ ${prose}` : prose))}
       <VoiceCastingModal
         isOpen={isVoiceCastingModalOpen}
         onClose={() => setIsVoiceCastingModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <PhonemeTunerModal
+        isOpen={isPhonemeModalOpen}
+        onClose={() => setIsPhonemeModalOpen(false)}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         currentManuscriptText={content}
