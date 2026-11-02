@@ -52,7 +52,8 @@ import { SemanticDeslopModal } from "./components/SemanticDeslopModal";
 import { DirectorsTabletopModal } from "./components/DirectorsTabletopModal";
 import { ShortFictionPackageModal } from "./components/ShortFictionPackageModal";
 import { ChekhovGunModal } from "./components/ChekhovGunModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair } from "lucide-react";
+import { LiteraryStyleDnaModal } from "./components/LiteraryStyleDnaModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -91,6 +92,7 @@ export function PolishedWriteView({
   const [isTabletopModalOpen, setIsTabletopModalOpen] = useState(false);
   const [isShortFictionModalOpen, setIsShortFictionModalOpen] = useState(false);
   const [isChekhovModalOpen, setIsChekhovModalOpen] = useState(false);
+  const [isStyleDnaModalOpen, setIsStyleDnaModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -361,6 +363,16 @@ export function PolishedWriteView({
             >
               <Crosshair className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Chekhov's Gun</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsStyleDnaModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
+              title="Literary Style DNA & Author Voice Fingerprint (Cadence, Lexicon & Voice Lock)"
+            >
+              <Fingerprint className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Style DNA</span>
             </Button>
             <Button
               size="sm"
@@ -731,6 +743,13 @@ export function PolishedWriteView({
         onClose={() => setIsChekhovModalOpen(false)}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
+      />
+      <LiteraryStyleDnaModal
+        isOpen={isStyleDnaModalOpen}
+        onClose={() => setIsStyleDnaModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        currentManuscriptText={content}
+        onApplyContinuation={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
       />
     </div>
   );
