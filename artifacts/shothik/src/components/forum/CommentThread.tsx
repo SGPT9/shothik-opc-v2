@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo } from "react";
 import VoteButton from "@/components/common/VoteButton";
 import { MessageSquare, CornerDownRight, MoreHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ function timeAgo(ts: number): string {
   return `${Math.floor(diff / 86400000)}d ago`;
 }
 
-export default function CommentThread({
+const CommentThread = memo(function CommentThread({
   comment,
   depth = 0,
   maxDepth = 5,
@@ -174,4 +174,7 @@ export default function CommentThread({
       </div>
     </div>
   );
-}
+});
+
+// Added memo for performance optimization (prevents unnecessary re-renders in comment lists)
+export default CommentThread;
