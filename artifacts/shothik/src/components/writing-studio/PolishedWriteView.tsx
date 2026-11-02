@@ -53,7 +53,8 @@ import { DirectorsTabletopModal } from "./components/DirectorsTabletopModal";
 import { ShortFictionPackageModal } from "./components/ShortFictionPackageModal";
 import { ChekhovGunModal } from "./components/ChekhovGunModal";
 import { LiteraryStyleDnaModal } from "./components/LiteraryStyleDnaModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint } from "lucide-react";
+import { MultiverseSandboxModal } from "./components/MultiverseSandboxModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -93,6 +94,7 @@ export function PolishedWriteView({
   const [isShortFictionModalOpen, setIsShortFictionModalOpen] = useState(false);
   const [isChekhovModalOpen, setIsChekhovModalOpen] = useState(false);
   const [isStyleDnaModalOpen, setIsStyleDnaModalOpen] = useState(false);
+  const [isMultiverseModalOpen, setIsMultiverseModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -373,6 +375,16 @@ export function PolishedWriteView({
             >
               <Fingerprint className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Style DNA</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsMultiverseModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
+              title="What-If? Multi-Verse & Canon Sandbox (AU, OOC & Relationship Branches)"
+            >
+              <GitFork className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Multi-Verse</span>
             </Button>
             <Button
               size="sm"
@@ -750,6 +762,13 @@ export function PolishedWriteView({
         projectId={project?._id || project?.id || "default"}
         currentManuscriptText={content}
         onApplyContinuation={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
+      />
+      <MultiverseSandboxModal
+        isOpen={isMultiverseModalOpen}
+        onClose={() => setIsMultiverseModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onInsertScene={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
       />
     </div>
   );
