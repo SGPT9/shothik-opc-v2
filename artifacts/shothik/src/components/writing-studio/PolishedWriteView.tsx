@@ -51,7 +51,8 @@ import { InteractiveStoryGraphModal } from "./components/InteractiveStoryGraphMo
 import { SemanticDeslopModal } from "./components/SemanticDeslopModal";
 import { DirectorsTabletopModal } from "./components/DirectorsTabletopModal";
 import { ShortFictionPackageModal } from "./components/ShortFictionPackageModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy } from "lucide-react";
+import { ChekhovGunModal } from "./components/ChekhovGunModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -89,6 +90,7 @@ export function PolishedWriteView({
   const [isDeslopModalOpen, setIsDeslopModalOpen] = useState(false);
   const [isTabletopModalOpen, setIsTabletopModalOpen] = useState(false);
   const [isShortFictionModalOpen, setIsShortFictionModalOpen] = useState(false);
+  const [isChekhovModalOpen, setIsChekhovModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -349,6 +351,16 @@ export function PolishedWriteView({
             >
               <BookCopy className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Short Fiction</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsChekhovModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-orange-500/40 text-orange-400 hover:bg-orange-500/10 cursor-pointer"
+              title="Chekhov’s Gun & Plot Foreshadowing Lifecycle Tracker (4-Stage State Machine)"
+            >
+              <Crosshair className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Chekhov's Gun</span>
             </Button>
             <Button
               size="sm"
@@ -713,6 +725,12 @@ export function PolishedWriteView({
             setContent(newChapters.map((c) => `## ${c.title}\n\n${c.content}`).join("\n\n---\n\n"));
           }
         }}
+      />
+      <ChekhovGunModal
+        isOpen={isChekhovModalOpen}
+        onClose={() => setIsChekhovModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
       />
     </div>
   );
