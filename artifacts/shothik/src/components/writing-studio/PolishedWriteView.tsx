@@ -63,7 +63,8 @@ import { BookTokTeaserModal } from "./components/BookTokTeaserModal";
 import { RoomBlockingModal } from "./components/RoomBlockingModal";
 import { ScriptStoryboardModal } from "./components/ScriptStoryboardModal";
 import { RetentionRadarModal } from "./components/RetentionRadarModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp } from "lucide-react";
+import { TensionEkgModal } from "./components/TensionEkgModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -113,6 +114,7 @@ export function PolishedWriteView({
   const [isRoomBlockingModalOpen, setIsRoomBlockingModalOpen] = useState(false);
   const [isScriptStoryboardModalOpen, setIsScriptStoryboardModalOpen] = useState(false);
   const [isRetentionRadarModalOpen, setIsRetentionRadarModalOpen] = useState(false);
+  const [isTensionEkgModalOpen, setIsTensionEkgModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -504,6 +506,16 @@ export function PolishedWriteView({
             >
               <TrendingUp className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Retention Radar</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsTensionEkgModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              title="Narrative Tension Heartbeat & Pacing Velocity EKG (Oscilloscope Waveform & Conflict Velocity)"
+            >
+              <Activity className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Tension EKG</span>
             </Button>
             <Button
               size="sm"
@@ -954,6 +966,13 @@ ${prose}` : prose))}
       <RetentionRadarModal
         isOpen={isRetentionRadarModalOpen}
         onClose={() => setIsRetentionRadarModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <TensionEkgModal
+        isOpen={isTensionEkgModalOpen}
+        onClose={() => setIsTensionEkgModalOpen(false)}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         currentManuscriptText={content}
