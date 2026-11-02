@@ -55,7 +55,8 @@ import { ChekhovGunModal } from "./components/ChekhovGunModal";
 import { LiteraryStyleDnaModal } from "./components/LiteraryStyleDnaModal";
 import { MultiverseSandboxModal } from "./components/MultiverseSandboxModal";
 import { AutopilotDaemonModal } from "./components/AutopilotDaemonModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon } from "lucide-react";
+import { StoryBibleHudModal } from "./components/StoryBibleHudModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -97,6 +98,18 @@ export function PolishedWriteView({
   const [isStyleDnaModalOpen, setIsStyleDnaModalOpen] = useState(false);
   const [isMultiverseModalOpen, setIsMultiverseModalOpen] = useState(false);
   const [isAutopilotModalOpen, setIsAutopilotModalOpen] = useState(false);
+  const [isStoryBibleModalOpen, setIsStoryBibleModalOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "B" || e.key === "b")) {
+        e.preventDefault();
+        setIsStoryBibleModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -397,6 +410,16 @@ export function PolishedWriteView({
             >
               <Moon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Autopilot</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsStoryBibleModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="Sub-Millisecond Offline Story Bible HUD (Ctrl+Shift+B: Instant Character, Location & Lore Reference)"
+            >
+              <BookMarked className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Story Bible</span>
             </Button>
             <Button
               size="sm"
@@ -790,6 +813,15 @@ export function PolishedWriteView({
         onApplyFixToManuscript={(before, after) => {
           setContent((prev) => (prev ? prev.replace(before, after) : after));
         }}
+      />
+      <StoryBibleHudModal
+        isOpen={isStoryBibleModalOpen}
+        onClose={() => setIsStoryBibleModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}
+
+${prose}` : prose))}
       />
     </div>
   );
