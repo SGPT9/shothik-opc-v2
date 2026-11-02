@@ -45,7 +45,8 @@ import { PlotBranchModal } from "./components/PlotBranchModal";
 import { AuthorshipCertificateModal } from "./components/AuthorshipCertificateModal";
 import { PodcastAudioModal } from "./components/PodcastAudioModal";
 import { ResumableUploadModal } from "./components/ResumableUploadModal";
-import { Users, GitBranch, Award, Radio, UploadCloud } from "lucide-react";
+import { BilingualSplitModal } from "./components/BilingualSplitModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -77,6 +78,7 @@ export function PolishedWriteView({
   const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
   const [isPodcastModalOpen, setIsPodcastModalOpen] = useState(false);
   const [isResumableModalOpen, setIsResumableModalOpen] = useState(false);
+  const [isBilingualModalOpen, setIsBilingualModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -277,6 +279,16 @@ export function PolishedWriteView({
             >
               <UploadCloud className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Upload</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsBilingualModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-teal-500/30 text-teal-400 hover:bg-teal-500/10 cursor-pointer"
+              title="Synchronized Dual-Language Split Screen (Bengali & English)"
+            >
+              <Languages className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Bilingual</span>
             </Button>
             <Button
               size="sm"
@@ -595,6 +607,13 @@ export function PolishedWriteView({
         isOpen={isResumableModalOpen}
         onClose={() => setIsResumableModalOpen(false)}
         bucket="academic-manuscripts"
+      />
+      <BilingualSplitModal
+        isOpen={isBilingualModalOpen}
+        onClose={() => setIsBilingualModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        initialContent={content}
       />
     </div>
   );

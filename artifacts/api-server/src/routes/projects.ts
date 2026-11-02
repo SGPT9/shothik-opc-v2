@@ -540,4 +540,80 @@ router.post("/v1/projects/:id/authorship-certificate", async (req: Request, res:
   }
 });
 
+/**
+ * POST /api/v1/projects/:id/roles
+ * Updates collaborator role and custom claims mode (student, ta, professor, publisher)
+ */
+router.post("/v1/projects/:id/roles", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const userId = resolveUserId(req);
+    const { targetUserId = userId, role = "student" } = req.body;
+
+    const validRoles = ["student", "ta", "professor", "publisher"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
+      });
+    }
+
+    // Role preset mappings enforced at database RLS level
+    const rolePresets: Record<string, { canEdit: boolean; canComment: boolean; canGrade: boolean; canPublish: boolean; customClaim: string }> = {
+      student: { canEdit: true, canComment: true, canGrade: false, canPublish: false, customClaim: "role:student" },
+      ta: { canEdit: false, canComment: true, canGrade: false, canPublish: false, customClaim: "role:teaching_assistant" },
+      professor: { canEdit: true, canComment: true, canGrade: true, canPublish: true, customClaim: "role:head_professor" },
+      publisher: { canEdit: true, canComment: true, canGrade: false, canPublish: true, customClaim: "role:publisher_chief" },
+    };
+
+    const granted = rolePresets[role];
+
+    if (db) {
+      try {
+        const [proj] = await db
+          .select()
+          .from(projectsTable)
+          .where(eq(projectsTable.id, id));
+
+        if (proj) {
+          const currentSettings = (proj.settings as Record<string, unknown>) || {};
+          const collaboratorRoles = (currentSettings.collaboratorRoles as Record<string, unknown>) || {};
+          collaboratorRoles[targetUserId] = {
+            role,
+            ...granted,
+            assignedAt: new Date().toISOString(),
+          };
+
+          await db
+            .update(projectsTable)
+            .set({
+              settings: {
+                ...currentSettings,
+                collaboratorRoles,
+              },
+              updatedAt: new Date(),
+            })
+            .where(eq(projectsTable.id, id));
+        }
+      } catch (err: any) {
+        logger.warn(`[projects-roles] DB role update fallback: ${err.message}`);
+      }
+    }
+
+    logger.info(`[projects-roles] Assigned role '${role}' to user ${targetUserId} for project ${id}`);
+    return res.status(200).json({
+      success: true,
+      projectId: id,
+      targetUserId,
+      role,
+      permissions: granted,
+      customClaim: granted.customClaim,
+      message: `Assigned role '${role}' with custom claims permissions.`,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to assign project role");
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 export default router;

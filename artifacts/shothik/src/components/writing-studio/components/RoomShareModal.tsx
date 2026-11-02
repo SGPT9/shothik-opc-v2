@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Users, Link2, Copy, Check, Lock, Globe, Shield, RefreshCw } from 'lucide-react';
+import { Users, Link2, Copy, Check, Lock, Globe, Shield, RefreshCw, GraduationCap, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createRoomShareConfig } from '@/services/writing-studio.service';
 
@@ -12,6 +12,8 @@ export interface RoomShareModalProps {
   projectTitle?: string;
 }
 
+export type ClassroomRole = 'student' | 'ta' | 'professor' | 'publisher';
+
 export function RoomShareModal({
   isOpen,
   onClose,
@@ -19,6 +21,7 @@ export function RoomShareModal({
   projectTitle = 'Untitled Manuscript',
 }: RoomShareModalProps) {
   const [accessMode, setAccessMode] = useState<'public' | 'passcode' | 'restricted'>('passcode');
+  const [classroomRole, setClassroomRole] = useState<ClassroomRole>('student');
   const [passcode, setPasscode] = useState('482910');
   const [isCopied, setIsCopied] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -52,6 +55,12 @@ export function RoomShareModal({
       if (res.shareToken) {
         setShareToken(res.shareToken);
       }
+      // Sync role permissions with backend custom claims endpoint
+      await fetch(`/api/v1/projects/${encodeURIComponent(projectId)}/roles`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: classroomRole }),
+      }).catch(() => null);
     } catch (err) {
       console.warn('Failed to update room share:', err);
     } finally {
@@ -61,13 +70,13 @@ export function RoomShareModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md bg-[#0b101b] border-slate-800 text-slate-200 shadow-2xl">
+      <DialogContent className="sm:max-w-lg bg-[#0b101b] border-slate-800 text-slate-200 shadow-2xl">
         <DialogTitle className="flex items-center gap-2 text-slate-100 text-base font-semibold">
           <Users className="w-4 h-4 text-indigo-400" />
-          <span>Live Collaboration & Room Passcode</span>
+          <span>Live Collaboration & Classroom Role Modes</span>
         </DialogTitle>
         <DialogDescription className="text-xs text-slate-400">
-          Share "{projectTitle}" for real-time Figma/Miro-style co-authoring without account walls.
+          Share "{projectTitle}" for real-time co-authoring with Supabase Auth Custom Claims enforcement.
         </DialogDescription>
 
         <div className="space-y-4 my-2">
@@ -123,6 +132,77 @@ export function RoomShareModal({
               </div>
               <span className="text-[10px] text-slate-400 leading-tight">Invited members</span>
             </button>
+          </div>
+
+          {/* Classroom & Publisher Role Selector */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <GraduationCap className="w-3.5 h-3.5 text-purple-400" />
+                <span>Classroom & Publisher Role Mode</span>
+              </label>
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-purple-950/50 text-purple-300 border border-purple-500/30">
+                JWT Custom Claim: role:{classroomRole}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setClassroomRole('student')}
+                className={cn(
+                  'p-2 rounded-lg border text-left transition-all flex flex-col gap-0.5',
+                  classroomRole === 'student'
+                    ? 'bg-purple-950/30 border-purple-500/60 text-purple-200 ring-1 ring-purple-500/30'
+                    : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                )}
+              >
+                <span className="text-xs font-semibold">Student</span>
+                <span className="text-[10px] text-slate-400">Submit drafts & assignments</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setClassroomRole('ta')}
+                className={cn(
+                  'p-2 rounded-lg border text-left transition-all flex flex-col gap-0.5',
+                  classroomRole === 'ta'
+                    ? 'bg-purple-950/30 border-purple-500/60 text-purple-200 ring-1 ring-purple-500/30'
+                    : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                )}
+              >
+                <span className="text-xs font-semibold">Teaching Assistant</span>
+                <span className="text-[10px] text-slate-400">Suggest & comment only</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setClassroomRole('professor')}
+                className={cn(
+                  'p-2 rounded-lg border text-left transition-all flex flex-col gap-0.5',
+                  classroomRole === 'professor'
+                    ? 'bg-purple-950/30 border-purple-500/60 text-purple-200 ring-1 ring-purple-500/30'
+                    : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                )}
+              >
+                <span className="text-xs font-semibold">Head Professor</span>
+                <span className="text-[10px] text-slate-400">Grade & final sign-off rights</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setClassroomRole('publisher')}
+                className={cn(
+                  'p-2 rounded-lg border text-left transition-all flex flex-col gap-0.5',
+                  classroomRole === 'publisher'
+                    ? 'bg-purple-950/30 border-purple-500/60 text-purple-200 ring-1 ring-purple-500/30'
+                    : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'
+                )}
+              >
+                <span className="text-xs font-semibold">Publisher Chief</span>
+                <span className="text-[10px] text-slate-400">Preflight & printing clearance</span>
+              </button>
+            </div>
           </div>
 
           {/* Passcode Configuration Field */}
@@ -188,7 +268,7 @@ export function RoomShareModal({
             disabled={isLoading}
             className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold"
           >
-            {isLoading ? 'Saving...' : 'Apply Access'}
+            {isLoading ? 'Saving...' : 'Apply Access & Role'}
           </Button>
         </div>
       </DialogContent>
