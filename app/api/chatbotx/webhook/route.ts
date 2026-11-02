@@ -12,7 +12,12 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get("hub.verify_token");
   const challenge = searchParams.get("hub.challenge");
 
-  const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN || "shothik_chatbotx_secret_token";
+  const VERIFY_TOKEN = process.env.META_WEBHOOK_VERIFY_TOKEN;
+
+  if (!VERIFY_TOKEN) {
+    console.error("🚨 SECURITY ERROR: META_WEBHOOK_VERIFY_TOKEN is not configured.");
+    return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
+  }
 
   if (mode === "subscribe" && token === VERIFY_TOKEN) {
     console.log("🟢 ChatbotX Webhook Verified Successfully!");
