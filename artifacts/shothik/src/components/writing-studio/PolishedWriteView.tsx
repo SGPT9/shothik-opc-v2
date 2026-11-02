@@ -61,7 +61,8 @@ import { PhonemeTunerModal } from "./components/PhonemeTunerModal";
 import { BinauralSoundscapeModal } from "./components/BinauralSoundscapeModal";
 import { BookTokTeaserModal } from "./components/BookTokTeaserModal";
 import { RoomBlockingModal } from "./components/RoomBlockingModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid } from "lucide-react";
+import { ScriptStoryboardModal } from "./components/ScriptStoryboardModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -109,6 +110,7 @@ export function PolishedWriteView({
   const [isSoundscapeModalOpen, setIsSoundscapeModalOpen] = useState(false);
   const [isBookTokModalOpen, setIsBookTokModalOpen] = useState(false);
   const [isRoomBlockingModalOpen, setIsRoomBlockingModalOpen] = useState(false);
+  const [isScriptStoryboardModalOpen, setIsScriptStoryboardModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -480,6 +482,16 @@ export function PolishedWriteView({
             >
               <Grid className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Room Blocking</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsScriptStoryboardModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="Novel-to-Screenplay & Comic Storyboard Transmuter (Fountain Script & 6-Panel Comic Layouts)"
+            >
+              <Film className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Script / Comic</span>
             </Button>
             <Button
               size="sm"
@@ -917,6 +929,15 @@ ${prose}` : prose))}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         currentManuscriptText={content}
+      />
+      <ScriptStoryboardModal
+        isOpen={isScriptStoryboardModalOpen}
+        onClose={() => setIsScriptStoryboardModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        currentManuscriptText={content}
+        onInsertToManuscript={(insertedScript) => {
+          setContent((prev) => prev + "\n\n" + insertedScript);
+        }}
       />
     </div>
   );
