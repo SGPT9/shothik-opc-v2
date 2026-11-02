@@ -49,7 +49,8 @@ import { BilingualSplitModal } from "./components/BilingualSplitModal";
 import { NarrativeForecastModal } from "./components/NarrativeForecastModal";
 import { InteractiveStoryGraphModal } from "./components/InteractiveStoryGraphModal";
 import { SemanticDeslopModal } from "./components/SemanticDeslopModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network } from "lucide-react";
+import { DirectorsTabletopModal } from "./components/DirectorsTabletopModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -85,6 +86,7 @@ export function PolishedWriteView({
   const [isForecastModalOpen, setIsForecastModalOpen] = useState(false);
   const [isStoryGraphModalOpen, setIsStoryGraphModalOpen] = useState(false);
   const [isDeslopModalOpen, setIsDeslopModalOpen] = useState(false);
+  const [isTabletopModalOpen, setIsTabletopModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -325,6 +327,16 @@ export function PolishedWriteView({
             >
               <Sparkles className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">De-Slop</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsTabletopModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-red-500/40 text-red-400 hover:bg-red-500/10 cursor-pointer"
+              title="Live Director's Tabletop Scene Simulator (InkOS Play)"
+            >
+              <Clapperboard className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Tabletop Play</span>
             </Button>
             <Button
               size="sm"
@@ -670,6 +682,13 @@ export function PolishedWriteView({
         projectTitle={title}
         currentContent={content}
         onApplyRevision={(newContent) => setContent(newContent)}
+      />
+      <DirectorsTabletopModal
+        isOpen={isTabletopModalOpen}
+        onClose={() => setIsTabletopModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
       />
     </div>
   );
