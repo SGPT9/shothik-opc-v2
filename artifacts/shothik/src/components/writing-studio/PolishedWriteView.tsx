@@ -54,7 +54,8 @@ import { ShortFictionPackageModal } from "./components/ShortFictionPackageModal"
 import { ChekhovGunModal } from "./components/ChekhovGunModal";
 import { LiteraryStyleDnaModal } from "./components/LiteraryStyleDnaModal";
 import { MultiverseSandboxModal } from "./components/MultiverseSandboxModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork } from "lucide-react";
+import { AutopilotDaemonModal } from "./components/AutopilotDaemonModal";
+import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -95,6 +96,7 @@ export function PolishedWriteView({
   const [isChekhovModalOpen, setIsChekhovModalOpen] = useState(false);
   const [isStyleDnaModalOpen, setIsStyleDnaModalOpen] = useState(false);
   const [isMultiverseModalOpen, setIsMultiverseModalOpen] = useState(false);
+  const [isAutopilotModalOpen, setIsAutopilotModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -385,6 +387,16 @@ export function PolishedWriteView({
             >
               <GitFork className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Multi-Verse</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsAutopilotModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              title="Autopilot Chapter Daemon & Mobile Push Dispatch (Overnight Checks & Telegram Approval Cards)"
+            >
+              <Moon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Autopilot</span>
             </Button>
             <Button
               size="sm"
@@ -769,6 +781,15 @@ export function PolishedWriteView({
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         onInsertScene={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
+      />
+      <AutopilotDaemonModal
+        isOpen={isAutopilotModalOpen}
+        onClose={() => setIsAutopilotModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onApplyFixToManuscript={(before, after) => {
+          setContent((prev) => (prev ? prev.replace(before, after) : after));
+        }}
       />
     </div>
   );
