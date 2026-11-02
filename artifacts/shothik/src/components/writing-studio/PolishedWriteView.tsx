@@ -48,6 +48,7 @@ import { ResumableUploadModal } from "./components/ResumableUploadModal";
 import { BilingualSplitModal } from "./components/BilingualSplitModal";
 import { NarrativeForecastModal } from "./components/NarrativeForecastModal";
 import { InteractiveStoryGraphModal } from "./components/InteractiveStoryGraphModal";
+import { SemanticDeslopModal } from "./components/SemanticDeslopModal";
 import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -83,6 +84,7 @@ export function PolishedWriteView({
   const [isBilingualModalOpen, setIsBilingualModalOpen] = useState(false);
   const [isForecastModalOpen, setIsForecastModalOpen] = useState(false);
   const [isStoryGraphModalOpen, setIsStoryGraphModalOpen] = useState(false);
+  const [isDeslopModalOpen, setIsDeslopModalOpen] = useState(false);
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -313,6 +315,16 @@ export function PolishedWriteView({
             >
               <Network className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Story Graph</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsDeslopModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="Semantic Prose De-Slopper (7-Point AI Tropes & Cliché Cleaner)"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">De-Slop</span>
             </Button>
             <Button
               size="sm"
@@ -650,6 +662,14 @@ export function PolishedWriteView({
         onClose={() => setIsStoryGraphModalOpen(false)}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
+      />
+      <SemanticDeslopModal
+        isOpen={isDeslopModalOpen}
+        onClose={() => setIsDeslopModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentContent={content}
+        onApplyRevision={(newContent) => setContent(newContent)}
       />
     </div>
   );
