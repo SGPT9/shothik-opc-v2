@@ -67,6 +67,7 @@ import { TensionEkgModal } from "./components/TensionEkgModal";
 import { RelationshipGraphModal } from "./components/RelationshipGraphModal";
 import { DialectTranspilerModal } from "./components/DialectTranspilerModal";
 import { ShowrunnersTableModal } from "./components/ShowrunnersTableModal";
+import { CharacterMessengerModal } from "./components/CharacterMessengerModal";
 import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -121,6 +122,7 @@ export function PolishedWriteView({
   const [isRelationshipGraphModalOpen, setIsRelationshipGraphModalOpen] = useState(false);
   const [isDialectTranspilerModalOpen, setIsDialectTranspilerModalOpen] = useState(false);
   const [isShowrunnersModalOpen, setIsShowrunnersModalOpen] = useState(false);
+  const [isCharacterMessengerModalOpen, setIsCharacterMessengerModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -552,6 +554,16 @@ export function PolishedWriteView({
             >
               <Users className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Showrunners</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsCharacterMessengerModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
+              title="Direct Character Messenger & Voice-Note Lore Chat (Text & Voice Notes with Himu, Badal, Rupa, OC Rafiq)"
+            >
+              <Mic className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Char Chat</span>
             </Button>
             <Button
               size="sm"
@@ -1030,6 +1042,13 @@ ${prose}` : prose))}
       <ShowrunnersTableModal
         isOpen={isShowrunnersModalOpen}
         onClose={() => setIsShowrunnersModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(updated) => setContent(content + updated)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CharacterMessengerModal
+        isOpen={isCharacterMessengerModalOpen}
+        onClose={() => setIsCharacterMessengerModalOpen(false)}
         activeEditorText={content}
         onApplyToManuscript={(updated) => setContent(content + updated)}
         projectId={project?._id || project?.id || "default"}
