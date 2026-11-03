@@ -68,6 +68,7 @@ import { RelationshipGraphModal } from "./components/RelationshipGraphModal";
 import { DialectTranspilerModal } from "./components/DialectTranspilerModal";
 import { ShowrunnersTableModal } from "./components/ShowrunnersTableModal";
 import { CharacterMessengerModal } from "./components/CharacterMessengerModal";
+import { BetaReadersModal } from "./components/BetaReadersModal";
 import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -123,6 +124,7 @@ export function PolishedWriteView({
   const [isDialectTranspilerModalOpen, setIsDialectTranspilerModalOpen] = useState(false);
   const [isShowrunnersModalOpen, setIsShowrunnersModalOpen] = useState(false);
   const [isCharacterMessengerModalOpen, setIsCharacterMessengerModalOpen] = useState(false);
+  const [isBetaReadersModalOpen, setIsBetaReadersModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -564,6 +566,16 @@ export function PolishedWriteView({
             >
               <Mic className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Char Chat</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsBetaReadersModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="Simulated AI Beta Reader Focus Group (5 Personas: Farhan, Nabila, Tahsin, Samira, Kabir • DNF Risk & Margin Critique)"
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Beta Readers</span>
             </Button>
             <Button
               size="sm"
@@ -1051,6 +1063,13 @@ ${prose}` : prose))}
         onClose={() => setIsCharacterMessengerModalOpen(false)}
         activeEditorText={content}
         onApplyToManuscript={(updated) => setContent(content + updated)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <BetaReadersModal
+        isOpen={isBetaReadersModalOpen}
+        onClose={() => setIsBetaReadersModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(updated) => setContent(updated)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
