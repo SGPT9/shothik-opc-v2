@@ -69,7 +69,8 @@ import { DialectTranspilerModal } from "./components/DialectTranspilerModal";
 import { ShowrunnersTableModal } from "./components/ShowrunnersTableModal";
 import { CharacterMessengerModal } from "./components/CharacterMessengerModal";
 import { BetaReadersModal } from "./components/BetaReadersModal";
-import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
+import { CharacterDuetModal } from "./components/CharacterDuetModal";
+import { Users, Zap, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -125,6 +126,7 @@ export function PolishedWriteView({
   const [isShowrunnersModalOpen, setIsShowrunnersModalOpen] = useState(false);
   const [isCharacterMessengerModalOpen, setIsCharacterMessengerModalOpen] = useState(false);
   const [isBetaReadersModalOpen, setIsBetaReadersModalOpen] = useState(false);
+  const [isCharacterDuetModalOpen, setIsCharacterDuetModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -576,6 +578,16 @@ export function PolishedWriteView({
             >
               <Users className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Beta Readers</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsCharacterDuetModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              title="Live Character Duet Mode 'Sentence Tennis' (Interactive Sentence-by-Sentence Ping-Pong Co-Authoring with Himu, Badal, Rupa, OC Rafiq, Misir Ali)"
+            >
+              <Zap className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Duet Tennis</span>
             </Button>
             <Button
               size="sm"
@@ -1070,6 +1082,13 @@ ${prose}` : prose))}
         onClose={() => setIsBetaReadersModalOpen(false)}
         activeEditorText={content}
         onApplyToManuscript={(updated) => setContent(updated)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CharacterDuetModal
+        isOpen={isCharacterDuetModalOpen}
+        onClose={() => setIsCharacterDuetModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
