@@ -76,6 +76,7 @@ import { MfaWorkshopModal } from "./components/MfaWorkshopModal";
 import { StreamerModeModal } from "./components/StreamerModeModal";
 import { CognitiveFrictionModal } from "./components/CognitiveFrictionModal";
 import { SurrealistDreamscapeModal } from "./components/SurrealistDreamscapeModal";
+import { LoreWikiModal } from "./components/LoreWikiModal";
 import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -139,6 +140,7 @@ export function PolishedWriteView({
   const [isStreamerModeModalOpen, setIsStreamerModeModalOpen] = useState(false);
   const [isCognitiveFrictionModalOpen, setIsCognitiveFrictionModalOpen] = useState(false);
   const [isSurrealistModalOpen, setIsSurrealistModalOpen] = useState(false);
+  const [isLoreWikiModalOpen, setIsLoreWikiModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -660,6 +662,16 @@ export function PolishedWriteView({
             >
               <CloudMoon className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Dreamscape</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsLoreWikiModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 cursor-pointer"
+              title="Autonomous World Lore Wiki & Encyclopedia Engine (Searchable Lore Bible, Cross-References & IP Pitch Deck)"
+            >
+              <BookOpen className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Lore Wiki</span>
             </Button>
             <Button
               size="sm"
@@ -1203,6 +1215,13 @@ ${prose}` : prose))}
         onClose={() => setIsSurrealistModalOpen(false)}
         manuscriptText={content}
         onApplyProse={(prose) => setContent(content + "\n\n" + prose)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <LoreWikiModal
+        isOpen={isLoreWikiModalOpen}
+        onClose={() => setIsLoreWikiModalOpen(false)}
+        manuscriptText={content}
+        onInsertLore={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
