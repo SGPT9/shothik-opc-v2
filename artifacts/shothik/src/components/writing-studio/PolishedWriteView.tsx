@@ -73,7 +73,8 @@ import { CharacterDuetModal } from "./components/CharacterDuetModal";
 import { BlockCatalyzerModal } from "./components/BlockCatalyzerModal";
 import { SensoryPaletteModal } from "./components/SensoryPaletteModal";
 import { MfaWorkshopModal } from "./components/MfaWorkshopModal";
-import { Users, Zap, Flame, Palette, GraduationCap, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
+import { StreamerModeModal } from "./components/StreamerModeModal";
+import { Users, Zap, Flame, Palette, GraduationCap, Tv, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -133,6 +134,7 @@ export function PolishedWriteView({
   const [isBlockCatalyzerModalOpen, setIsBlockCatalyzerModalOpen] = useState(false);
   const [isSensoryPaletteModalOpen, setIsSensoryPaletteModalOpen] = useState(false);
   const [isMfaWorkshopModalOpen, setIsMfaWorkshopModalOpen] = useState(false);
+  const [isStreamerModeModalOpen, setIsStreamerModeModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -624,6 +626,16 @@ export function PolishedWriteView({
             >
               <GraduationCap className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">MFA Workshop</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsStreamerModeModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
+              title="Live Audience 'Streamer Mode' & Interactive Co-Writing (Twitch/YouTube Polls, Real-Time Chat & Plot Branch Voting)"
+            >
+              <Tv className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Streamer</span>
             </Button>
             <Button
               size="sm"
@@ -1146,6 +1158,13 @@ ${prose}` : prose))}
         onClose={() => setIsMfaWorkshopModalOpen(false)}
         manuscriptText={content}
         onApplyRevision={(revised) => setContent(content + "\n\n" + revised)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <StreamerModeModal
+        isOpen={isStreamerModeModalOpen}
+        onClose={() => setIsStreamerModeModalOpen(false)}
+        manuscriptText={content}
+        onApplyBranch={(branchText) => setContent(content + "\n\n" + branchText)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
