@@ -64,6 +64,7 @@ import { RoomBlockingModal } from "./components/RoomBlockingModal";
 import { ScriptStoryboardModal } from "./components/ScriptStoryboardModal";
 import { RetentionRadarModal } from "./components/RetentionRadarModal";
 import { TensionEkgModal } from "./components/TensionEkgModal";
+import { RelationshipGraphModal } from "./components/RelationshipGraphModal";
 import { Users, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -115,6 +116,7 @@ export function PolishedWriteView({
   const [isScriptStoryboardModalOpen, setIsScriptStoryboardModalOpen] = useState(false);
   const [isRetentionRadarModalOpen, setIsRetentionRadarModalOpen] = useState(false);
   const [isTensionEkgModalOpen, setIsTensionEkgModalOpen] = useState(false);
+  const [isRelationshipGraphModalOpen, setIsRelationshipGraphModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -516,6 +518,16 @@ export function PolishedWriteView({
             >
               <Activity className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Tension EKG</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsRelationshipGraphModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              title="Dynamic Character Relationship & Social Topology Graph (Trust, Rivalry & Betrayal Vectors)"
+            >
+              <Network className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Relations</span>
             </Button>
             <Button
               size="sm"
@@ -973,6 +985,13 @@ ${prose}` : prose))}
       <TensionEkgModal
         isOpen={isTensionEkgModalOpen}
         onClose={() => setIsTensionEkgModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <RelationshipGraphModal
+        isOpen={isRelationshipGraphModalOpen}
+        onClose={() => setIsRelationshipGraphModalOpen(false)}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
         currentManuscriptText={content}
