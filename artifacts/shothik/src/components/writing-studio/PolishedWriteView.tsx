@@ -70,7 +70,8 @@ import { ShowrunnersTableModal } from "./components/ShowrunnersTableModal";
 import { CharacterMessengerModal } from "./components/CharacterMessengerModal";
 import { BetaReadersModal } from "./components/BetaReadersModal";
 import { CharacterDuetModal } from "./components/CharacterDuetModal";
-import { Users, Zap, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
+import { BlockCatalyzerModal } from "./components/BlockCatalyzerModal";
+import { Users, Zap, Flame, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -127,6 +128,7 @@ export function PolishedWriteView({
   const [isCharacterMessengerModalOpen, setIsCharacterMessengerModalOpen] = useState(false);
   const [isBetaReadersModalOpen, setIsBetaReadersModalOpen] = useState(false);
   const [isCharacterDuetModalOpen, setIsCharacterDuetModalOpen] = useState(false);
+  const [isBlockCatalyzerModalOpen, setIsBlockCatalyzerModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -588,6 +590,16 @@ export function PolishedWriteView({
             >
               <Zap className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Duet Tennis</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsBlockCatalyzerModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+              title="Beat the Block Flow-State Catalyzer & Reverse Outliner (Intrusion, Revelation, Hazard Sparks & 6-Beat Reverse Beat Sheet)"
+            >
+              <Flame className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Catalyzer</span>
             </Button>
             <Button
               size="sm"
@@ -1087,6 +1099,13 @@ ${prose}` : prose))}
       <CharacterDuetModal
         isOpen={isCharacterDuetModalOpen}
         onClose={() => setIsCharacterDuetModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <BlockCatalyzerModal
+        isOpen={isBlockCatalyzerModalOpen}
+        onClose={() => setIsBlockCatalyzerModalOpen(false)}
         activeEditorText={content}
         onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
         projectId={project?._id || project?.id || "default"}
