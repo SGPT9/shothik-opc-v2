@@ -74,7 +74,8 @@ import { BlockCatalyzerModal } from "./components/BlockCatalyzerModal";
 import { SensoryPaletteModal } from "./components/SensoryPaletteModal";
 import { MfaWorkshopModal } from "./components/MfaWorkshopModal";
 import { StreamerModeModal } from "./components/StreamerModeModal";
-import { Users, Zap, Flame, Palette, GraduationCap, Tv, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
+import { CognitiveFrictionModal } from "./components/CognitiveFrictionModal";
+import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -135,6 +136,7 @@ export function PolishedWriteView({
   const [isSensoryPaletteModalOpen, setIsSensoryPaletteModalOpen] = useState(false);
   const [isMfaWorkshopModalOpen, setIsMfaWorkshopModalOpen] = useState(false);
   const [isStreamerModeModalOpen, setIsStreamerModeModalOpen] = useState(false);
+  const [isCognitiveFrictionModalOpen, setIsCognitiveFrictionModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -636,6 +638,16 @@ export function PolishedWriteView({
             >
               <Tv className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Streamer</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsCognitiveFrictionModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+              title="Cognitive Flow & Reading Friction Heatmap (Green to Crimson Syntactic Tangles & Clause-Stacking Auditor)"
+            >
+              <Brain className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Friction Map</span>
             </Button>
             <Button
               size="sm"
@@ -1165,6 +1177,13 @@ ${prose}` : prose))}
         onClose={() => setIsStreamerModeModalOpen(false)}
         manuscriptText={content}
         onApplyBranch={(branchText) => setContent(content + "\n\n" + branchText)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CognitiveFrictionModal
+        isOpen={isCognitiveFrictionModalOpen}
+        onClose={() => setIsCognitiveFrictionModalOpen(false)}
+        manuscriptText={content}
+        onApplyRevision={(revised) => setContent(revised)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
