@@ -75,7 +75,8 @@ import { SensoryPaletteModal } from "./components/SensoryPaletteModal";
 import { MfaWorkshopModal } from "./components/MfaWorkshopModal";
 import { StreamerModeModal } from "./components/StreamerModeModal";
 import { CognitiveFrictionModal } from "./components/CognitiveFrictionModal";
-import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
+import { SurrealistDreamscapeModal } from "./components/SurrealistDreamscapeModal";
+import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -137,6 +138,7 @@ export function PolishedWriteView({
   const [isMfaWorkshopModalOpen, setIsMfaWorkshopModalOpen] = useState(false);
   const [isStreamerModeModalOpen, setIsStreamerModeModalOpen] = useState(false);
   const [isCognitiveFrictionModalOpen, setIsCognitiveFrictionModalOpen] = useState(false);
+  const [isSurrealistModalOpen, setIsSurrealistModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -648,6 +650,16 @@ export function PolishedWriteView({
             >
               <Brain className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Friction Map</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsSurrealistModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              title="Surrealist Dreamscape & Unreliable Narrator Mode (Non-Linear Cognitive Generation & Hidden True-State Ledger)"
+            >
+              <CloudMoon className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Dreamscape</span>
             </Button>
             <Button
               size="sm"
@@ -1184,6 +1196,13 @@ ${prose}` : prose))}
         onClose={() => setIsCognitiveFrictionModalOpen(false)}
         manuscriptText={content}
         onApplyRevision={(revised) => setContent(revised)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <SurrealistDreamscapeModal
+        isOpen={isSurrealistModalOpen}
+        onClose={() => setIsSurrealistModalOpen(false)}
+        manuscriptText={content}
+        onApplyProse={(prose) => setContent(content + "\n\n" + prose)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
