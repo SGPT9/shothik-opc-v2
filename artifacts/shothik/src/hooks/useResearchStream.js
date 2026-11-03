@@ -18,10 +18,12 @@ import { useConnectionState } from "./useConnectionState";
 
 export const useResearchStream = () => {
   const dispatch = useDispatch();
-  const { currentChatId } = useSelector((state) => state.researchChat);
-  const { isStreaming, jobId, isPolling, researches } = useSelector(
-    (state) => state.researchCore,
-  );
+  // ⚡ Bolt: Using specific property selectors to prevent unnecessary re-renders
+  const currentChatId = useSelector((state) => state.researchChat.currentChatId);
+  const isStreaming = useSelector((state) => state.researchCore.isStreaming);
+  const jobId = useSelector((state) => state.researchCore.jobId);
+  const isPolling = useSelector((state) => state.researchCore.isPolling);
+  const researches = useSelector((state) => state.researchCore.researches);
 
   const abortControllerRef = useRef(null);
   const pollingIntervalRef = useRef(null);
