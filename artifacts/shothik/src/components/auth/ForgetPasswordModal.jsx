@@ -9,7 +9,8 @@ import PasswordIcon from "@/components/icons/PasswordIcon";
 
 export default function ForgetPasswordModal() {
   const dispatch = useDispatch();
-  const { showForgotPasswordModal } = useSelector((state) => state.auth);
+  // ⚡ Bolt: Select specific property to prevent unnecessary re-renders
+  const showForgotPasswordModal = useSelector((state) => state.auth.showForgotPasswordModal);
 
   const handleClose = () => {
     dispatch(setShowForgotPasswordModal(false));
