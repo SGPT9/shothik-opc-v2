@@ -71,7 +71,8 @@ import { CharacterMessengerModal } from "./components/CharacterMessengerModal";
 import { BetaReadersModal } from "./components/BetaReadersModal";
 import { CharacterDuetModal } from "./components/CharacterDuetModal";
 import { BlockCatalyzerModal } from "./components/BlockCatalyzerModal";
-import { Users, Zap, Flame, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
+import { SensoryPaletteModal } from "./components/SensoryPaletteModal";
+import { Users, Zap, Flame, Palette, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -129,6 +130,7 @@ export function PolishedWriteView({
   const [isBetaReadersModalOpen, setIsBetaReadersModalOpen] = useState(false);
   const [isCharacterDuetModalOpen, setIsCharacterDuetModalOpen] = useState(false);
   const [isBlockCatalyzerModalOpen, setIsBlockCatalyzerModalOpen] = useState(false);
+  const [isSensoryPaletteModalOpen, setIsSensoryPaletteModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -600,6 +602,16 @@ export function PolishedWriteView({
             >
               <Flame className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Catalyzer</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsSensoryPaletteModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              title="Sensory Palette & 5-Sense Immersion Painter (Sight, Sound, Smell, Touch, Taste Distribution & Anti-Talking Heads Engine)"
+            >
+              <Palette className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Sensory</span>
             </Button>
             <Button
               size="sm"
@@ -1106,6 +1118,13 @@ ${prose}` : prose))}
       <BlockCatalyzerModal
         isOpen={isBlockCatalyzerModalOpen}
         onClose={() => setIsBlockCatalyzerModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <SensoryPaletteModal
+        isOpen={isSensoryPaletteModalOpen}
+        onClose={() => setIsSensoryPaletteModalOpen(false)}
         activeEditorText={content}
         onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
         projectId={project?._id || project?.id || "default"}
