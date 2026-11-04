@@ -77,6 +77,7 @@ import { StreamerModeModal } from "./components/StreamerModeModal";
 import { CognitiveFrictionModal } from "./components/CognitiveFrictionModal";
 import { SurrealistDreamscapeModal } from "./components/SurrealistDreamscapeModal";
 import { LoreWikiModal } from "./components/LoreWikiModal";
+import { ChronoBraiderModal } from "./components/ChronoBraiderModal";
 import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -141,6 +142,7 @@ export function PolishedWriteView({
   const [isCognitiveFrictionModalOpen, setIsCognitiveFrictionModalOpen] = useState(false);
   const [isSurrealistModalOpen, setIsSurrealistModalOpen] = useState(false);
   const [isLoreWikiModalOpen, setIsLoreWikiModalOpen] = useState(false);
+  const [isChronoBraiderModalOpen, setIsChronoBraiderModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -672,6 +674,16 @@ export function PolishedWriteView({
             >
               <BookOpen className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Lore Wiki</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsChronoBraiderModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="Multi-Tier Chrono-Braider (Non-Linear Flashback Alignment, Diegetic Chronology & Temporal Paradox Audit)"
+            >
+              <GitFork className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Chrono Braid</span>
             </Button>
             <Button
               size="sm"
@@ -1222,6 +1234,13 @@ ${prose}` : prose))}
         onClose={() => setIsLoreWikiModalOpen(false)}
         manuscriptText={content}
         onInsertLore={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <ChronoBraiderModal
+        isOpen={isChronoBraiderModalOpen}
+        onClose={() => setIsChronoBraiderModalOpen(false)}
+        manuscriptText={content}
+        onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
