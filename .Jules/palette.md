@@ -1,0 +1,3 @@
+## 2024-11-04 - Accessible Modals and Explicit Label Linkage
+**Learning:** Found an accessibility issue pattern in the `BkashCheckoutModal` component where the modal close button lacked an ARIA label and the transaction ID input field was missing explicit linkage with its associated label. Relying solely on visual proximity is insufficient for users navigating with screen readers or keyboards. Explicitly defining relationships provides context and dramatically increases the clickable area for form fields.
+**Action:** Always add `aria-label` to icon-only buttons such as modal closures. Always explicitly link labels to their input fields by combining `htmlFor` on the `<label>` and a matching `id` on the `<input>`.
