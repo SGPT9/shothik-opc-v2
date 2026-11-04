@@ -79,7 +79,8 @@ import { SurrealistDreamscapeModal } from "./components/SurrealistDreamscapeModa
 import { LoreWikiModal } from "./components/LoreWikiModal";
 import { ChronoBraiderModal } from "./components/ChronoBraiderModal";
 import { PlotDivergenceModal } from "./components/PlotDivergenceModal";
-import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity } from "lucide-react";
+import { SpatialGpsModal } from "./components/SpatialGpsModal";
+import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -145,6 +146,7 @@ export function PolishedWriteView({
   const [isLoreWikiModalOpen, setIsLoreWikiModalOpen] = useState(false);
   const [isChronoBraiderModalOpen, setIsChronoBraiderModalOpen] = useState(false);
   const [isPlotDivergenceModalOpen, setIsPlotDivergenceModalOpen] = useState(false);
+  const [isSpatialGpsModalOpen, setIsSpatialGpsModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -696,6 +698,16 @@ export function PolishedWriteView({
             >
               <GitPullRequest className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Divergence</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsSpatialGpsModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              title="Interactive Map & Spatial Timeline GPS (Transit Physics & Day/Night Auditor)"
+            >
+              <MapPin className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Spatial GPS</span>
             </Button>
             <Button
               size="sm"
@@ -1260,6 +1272,12 @@ ${prose}` : prose))}
         onClose={() => setIsPlotDivergenceModalOpen(false)}
         manuscriptText={content}
         onApplyDivergence={(prose) => setContent(content + prose)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <SpatialGpsModal
+        isOpen={isSpatialGpsModalOpen}
+        onClose={() => setIsSpatialGpsModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
