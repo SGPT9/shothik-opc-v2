@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CitationBadge } from "./CitationBadge";
+import { sanitizeHtml } from "@/lib/sanitize";
 
 interface MarkdownMessageProps {
   content: string;
@@ -398,7 +399,7 @@ export function MarkdownMessage({
                 {isPreviewOpen ? (
                   <div className="p-3 bg-white dark:bg-zinc-900 border-t border-border/40 rounded-b-xl overflow-hidden min-h-[160px] flex items-center justify-center">
                     {lang.toLowerCase() === "svg" ? (
-                      <div dangerouslySetInnerHTML={{ __html: text }} className="max-w-full max-h-64 flex items-center justify-center p-2" />
+                      <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }} className="max-w-full max-h-64 flex items-center justify-center p-2" />
                     ) : (
                       <iframe
                         title="Sandboxed HTML Preview"
