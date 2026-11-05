@@ -1,0 +1,3 @@
+## 2025-01-20 - Redux useSelector Destructuring Anti-pattern
+**Learning:** Destructuring entire objects from Redux `useSelector` (e.g., `const { user } = useSelector(state => state.auth)`) is a frequent performance anti-pattern in this codebase. This causes the component to unnecessarily re-render whenever ANY property on `state.auth` changes, even if `user` itself didn't change, because the selector returns a new object reference every time the parent object changes, triggering React's re-render.
+**Action:** Always select the specific primitive or nested object needed (e.g., `const user = useSelector(state => state.auth?.user)`). This ensures the component only re-renders when the exact slice of state it relies on actually updates.

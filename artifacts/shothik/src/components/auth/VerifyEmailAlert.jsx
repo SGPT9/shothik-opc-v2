@@ -10,7 +10,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 
 const VerifyEmailAlert = () => {
-  const { user } = useSelector((state) => state.auth);
+  // Performance optimization: prevent unnecessary re-renders when other auth state changes
+  const user = useSelector((state) => state.auth?.user);
   const router = useRouter();
   const [sent, setSent] = useState(false);
 
