@@ -80,7 +80,8 @@ import { LoreWikiModal } from "./components/LoreWikiModal";
 import { ChronoBraiderModal } from "./components/ChronoBraiderModal";
 import { PlotDivergenceModal } from "./components/PlotDivergenceModal";
 import { SpatialGpsModal } from "./components/SpatialGpsModal";
-import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin } from "lucide-react";
+import { ItemLedgerModal } from "./components/ItemLedgerModal";
+import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -147,6 +148,7 @@ export function PolishedWriteView({
   const [isChronoBraiderModalOpen, setIsChronoBraiderModalOpen] = useState(false);
   const [isPlotDivergenceModalOpen, setIsPlotDivergenceModalOpen] = useState(false);
   const [isSpatialGpsModalOpen, setIsSpatialGpsModalOpen] = useState(false);
+  const [isItemLedgerModalOpen, setIsItemLedgerModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -708,6 +710,16 @@ export function PolishedWriteView({
             >
               <MapPin className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Spatial GPS</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsItemLedgerModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="Strict Physical Item Economy & Ammunition Ledger (Physical Conservation & Ammo Auditor)"
+            >
+              <PackageCheck className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Item Ledger</span>
             </Button>
             <Button
               size="sm"
@@ -1277,6 +1289,13 @@ ${prose}` : prose))}
       <SpatialGpsModal
         isOpen={isSpatialGpsModalOpen}
         onClose={() => setIsSpatialGpsModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <ItemLedgerModal
+        isOpen={isItemLedgerModalOpen}
+        onClose={() => setIsItemLedgerModalOpen(false)}
+        manuscriptText={content}
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
