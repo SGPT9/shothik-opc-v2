@@ -1,4 +1,3 @@
-
 import LoadingScreen from "@/components/common/LoadingScreen";
 import Footer from "@/components/partials/footer";
 import Header from "@/components/partials/header";
@@ -13,7 +12,8 @@ import { useSelector } from "react-redux";
 
 export default function SecondaryLayout({ children }) {
   const [isLoadingPage, setIsLoadingPage] = useState(true);
-  const { accessToken } = useSelector((state) => state.auth);
+  // ⚡ Bolt: Destructuring auth state causes unnecessary re-renders when other auth fields change. Use specific selectors.
+  const accessToken = useSelector((state) => state.auth?.accessToken);
   useGetUserQuery(undefined, {
     skip: !accessToken,
   });
