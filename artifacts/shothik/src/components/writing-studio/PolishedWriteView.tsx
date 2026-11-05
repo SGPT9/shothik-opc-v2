@@ -81,6 +81,7 @@ import { ChronoBraiderModal } from "./components/ChronoBraiderModal";
 import { PlotDivergenceModal } from "./components/PlotDivergenceModal";
 import { SpatialGpsModal } from "./components/SpatialGpsModal";
 import { ItemLedgerModal } from "./components/ItemLedgerModal";
+import { LivingEpilogueModal } from "./components/LivingEpilogueModal";
 import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -149,6 +150,7 @@ export function PolishedWriteView({
   const [isPlotDivergenceModalOpen, setIsPlotDivergenceModalOpen] = useState(false);
   const [isSpatialGpsModalOpen, setIsSpatialGpsModalOpen] = useState(false);
   const [isItemLedgerModalOpen, setIsItemLedgerModalOpen] = useState(false);
+  const [isLivingEpilogueModalOpen, setIsLivingEpilogueModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -720,6 +722,16 @@ export function PolishedWriteView({
             >
               <PackageCheck className="h-3.5 w-3.5" />
               <span className="hidden sm:inline">Item Ledger</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsLivingEpilogueModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+              title="Interactive 'Living Epilogue' Reader App (Vintage Radio Bulletins, Newspaper Clippings & Seasonal Lore)"
+            >
+              <Radio className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Living Epilogue</span>
             </Button>
             <Button
               size="sm"
@@ -1296,6 +1308,12 @@ ${prose}` : prose))}
         isOpen={isItemLedgerModalOpen}
         onClose={() => setIsItemLedgerModalOpen(false)}
         manuscriptText={content}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <LivingEpilogueModal
+        isOpen={isLivingEpilogueModalOpen}
+        onClose={() => setIsLivingEpilogueModalOpen(false)}
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
