@@ -82,6 +82,7 @@ import { PlotDivergenceModal } from "./components/PlotDivergenceModal";
 import { SpatialGpsModal } from "./components/SpatialGpsModal";
 import { ItemLedgerModal } from "./components/ItemLedgerModal";
 import { LivingEpilogueModal } from "./components/LivingEpilogueModal";
+import { CulturalOriginalityModal } from "./components/CulturalOriginalityModal";
 import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -151,6 +152,7 @@ export function PolishedWriteView({
   const [isSpatialGpsModalOpen, setIsSpatialGpsModalOpen] = useState(false);
   const [isItemLedgerModalOpen, setIsItemLedgerModalOpen] = useState(false);
   const [isLivingEpilogueModalOpen, setIsLivingEpilogueModalOpen] = useState(false);
+  const [isCulturalOriginalityModalOpen, setIsCulturalOriginalityModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -736,6 +738,16 @@ export function PolishedWriteView({
             <Button
               size="sm"
               variant="outline"
+              onClick={() => setIsCulturalOriginalityModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-teal-500/40 text-teal-400 hover:bg-teal-500/10 cursor-pointer"
+              title="Cultural Folk Idiom & Regional Originality Scorer (Zero IP Risk Cultural Scanner)"
+            >
+              <Award className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Folk Scorer</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => setIsImportOpen(true)}
               className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-border text-muted-foreground hover:text-foreground cursor-pointer"
               title="Import Word, PDF, Text, or Bijoy Manuscript"
@@ -1314,6 +1326,13 @@ ${prose}` : prose))}
       <LivingEpilogueModal
         isOpen={isLivingEpilogueModalOpen}
         onClose={() => setIsLivingEpilogueModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CulturalOriginalityModal
+        isOpen={isCulturalOriginalityModalOpen}
+        onClose={() => setIsCulturalOriginalityModalOpen(false)}
+        manuscriptText={content}
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
