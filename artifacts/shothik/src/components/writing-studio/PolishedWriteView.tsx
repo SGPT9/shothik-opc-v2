@@ -83,6 +83,7 @@ import { SpatialGpsModal } from "./components/SpatialGpsModal";
 import { ItemLedgerModal } from "./components/ItemLedgerModal";
 import { LivingEpilogueModal } from "./components/LivingEpilogueModal";
 import { CulturalOriginalityModal } from "./components/CulturalOriginalityModal";
+import { PrintPreflightModal } from "./components/PrintPreflightModal";
 import { Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -153,6 +154,7 @@ export function PolishedWriteView({
   const [isItemLedgerModalOpen, setIsItemLedgerModalOpen] = useState(false);
   const [isLivingEpilogueModalOpen, setIsLivingEpilogueModalOpen] = useState(false);
   const [isCulturalOriginalityModalOpen, setIsCulturalOriginalityModalOpen] = useState(false);
+  const [isPrintPreflightModalOpen, setIsPrintPreflightModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -748,6 +750,16 @@ export function PolishedWriteView({
             <Button
               size="sm"
               variant="outline"
+              onClick={() => setIsPrintPreflightModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
+              title="One-Click Print Preflight & 6x9 Layout Typesetter (Nilkhet & Bangla Academy PDF/X-1a)"
+            >
+              <Printer className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">প্রিন্ট প্রিফ্লাইট</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => setIsImportOpen(true)}
               className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-border text-muted-foreground hover:text-foreground cursor-pointer"
               title="Import Word, PDF, Text, or Bijoy Manuscript"
@@ -1332,6 +1344,13 @@ ${prose}` : prose))}
       <CulturalOriginalityModal
         isOpen={isCulturalOriginalityModalOpen}
         onClose={() => setIsCulturalOriginalityModalOpen(false)}
+        manuscriptText={content}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <PrintPreflightModal
+        isOpen={isPrintPreflightModalOpen}
+        onClose={() => setIsPrintPreflightModalOpen(false)}
         manuscriptText={content}
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
