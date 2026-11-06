@@ -215,7 +215,7 @@ export class MonetizationPaywallService {
 
     return {
       transactionId,
-      paymentUrl: `/pricing/checkout?packageId=${encodeURIComponent(pkg.packageId)}&provider=${paymentProvider}`,
+      paymentUrl: `https://pay.${paymentProvider}.com.bd/topup?amount=${pkg.priceBdt}&trxId=${transactionId}`,
       creditsAdded,
       totalPaidBdt: pkg.priceBdt,
     };
