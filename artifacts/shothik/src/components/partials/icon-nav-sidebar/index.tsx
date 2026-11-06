@@ -1,5 +1,6 @@
 "use client";
 
+import { useCreditBalance } from "@/hooks/useCreditBalance";
 import React, { useState, useEffect } from "react";
 import { Link, usePathname, useRouter } from "@/lib/navigation";
 import {
@@ -47,7 +48,7 @@ export default function IconNavSidebar() {
   const router = useRouter();
   const user = useSelector((state: any) => state.auth?.user);
   const { user: authUser } = useAuth();
-  const userCredits = authUser?.credits ?? (user as any)?.credits ?? 550;
+  const userCredits = useCreditBalance(authUser?.credits ?? (user as any)?.credits) ?? 0;
   const masterId = user?._id || user?.email || "";
 
   const isWritingRoute = pathname.includes('/writing-studio') ||

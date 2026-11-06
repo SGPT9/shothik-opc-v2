@@ -18,7 +18,7 @@ describe('DeepTech Studio Modals', () => {
       />
     );
 
-    expect(screen.getByText(/Live Collaboration & Room Passcode/i)).toBeInTheDocument();
+    expect(screen.getByText(/Live Collaboration & Classroom Role Modes/i)).toBeInTheDocument();
     expect(screen.getByText(/^Public$/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Passcode/i).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText(/^Private$/i)).toBeInTheDocument();

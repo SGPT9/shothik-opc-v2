@@ -15,6 +15,7 @@ export interface Report {
   date: string;
   snippet: string;
   chatId: string;
+  source?: "chat" | "studio" | "cloud";
 }
 
 export interface BanglaBrief {
@@ -100,6 +101,13 @@ export function getBanglaBrief(title: string, snippet: string): BanglaBrief {
   };
 }
 
+// Studio manuscripts open in Writing Studio; chats open in the main chat ("/agents/chat" is not a real page)
+export function reportPath(r: Report) {
+  return r.source === "studio"
+    ? `/writing-studio?projectId=${encodeURIComponent(r.chatId)}`
+    : `/?conversationId=${encodeURIComponent(r.chatId)}`;
+}
+
 export default function SavedReportsPage() {
   const [, setLocation] = useLocation();
   const [search, setSearch] = useState("");
@@ -123,6 +131,7 @@ export default function SavedReportsPage() {
       date: new Date(s.updatedAt || Date.now()).toLocaleDateString(),
       snippet: s.preview || "Active multi-agent session trace and synthesized outputs.",
       chatId: s.id,
+      source: "chat" as const,
     }));
 
     const manuscriptReports: Report[] = manuscripts.map((m) => ({
@@ -132,6 +141,7 @@ export default function SavedReportsPage() {
       date: new Date(m.updatedAt || Date.now()).toLocaleDateString(),
       snippet: m.content ? m.content.slice(0, 140) + "..." : "Saved writing studio draft.",
       chatId: m.id,
+      source: "studio" as const,
     }));
 
     setReports([...sessionReports, ...manuscriptReports]);
@@ -177,7 +187,7 @@ export default function SavedReportsPage() {
 
   const handleCopyLink = (e: React.MouseEvent, report: Report) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/agents/chat?conversationId=${report.chatId}`;
+    const url = `${window.location.origin}${reportPath(report)}`;
     navigator.clipboard.writeText(url);
     setCopiedId(report.id);
     setTimeout(() => setCopiedId(null), 2000);
@@ -186,7 +196,7 @@ export default function SavedReportsPage() {
   const handleShareWhatsApp = (e: React.MouseEvent, report: Report, isBangla: boolean = false) => {
     e.stopPropagation();
     const origin = typeof window !== "undefined" ? window.location.origin : "https://shothik.ai";
-    const reportUrl = `${origin}/agents/chat?conversationId=${report.chatId}`;
+    const reportUrl = `${origin}${reportPath(report)}`;
     
     let shareText = "";
     if (isBangla) {
@@ -277,7 +287,7 @@ export default function SavedReportsPage() {
                   key={report.id} 
                   data-testid={`report-card-${report.id}`}
                   className="flex flex-col rounded-xl border border-border bg-card shadow-sm hover:shadow-md hover:border-brand/30 transition-all cursor-pointer group"
-                  onClick={() => setLocation(`/agents/chat?conversationId=${report.chatId}`)}
+                  onClick={() => setLocation(reportPath(report))}
                 >
                   <div className="p-5 flex-1 flex flex-col">
                     <div className="flex items-start justify-between mb-4">
@@ -399,7 +409,7 @@ export default function SavedReportsPage() {
                     </div>
 
                     <span className="flex items-center gap-1 text-xs font-medium text-brand opacity-0 group-hover:opacity-100 transition-opacity -translate-x-2 group-hover:translate-x-0 transform duration-200">
-                      Open in Chat
+                      {report.source === "studio" ? "Open in Studio" : "Open in Chat"}
                       <ArrowUpRight className="w-3.5 h-3.5" />
                     </span>
                   </div>

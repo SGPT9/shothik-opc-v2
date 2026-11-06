@@ -163,6 +163,7 @@ import { shadowSimulationRouter } from "./shadow-simulation";
 import agentsRouter from "./agents";
 import scheduleRouter from "./schedule";
 import teamRouter from "./team";
+import marketplaceRouter from "./marketplace";
 
 const router: IRouter = Router();
 
@@ -332,6 +333,7 @@ router.use("/v1/agents", agentsRouter);
 router.use("/schedule", scheduleRouter);
 router.use("/v1/schedule", scheduleRouter);
 router.use(teamRouter);
+router.use(marketplaceRouter);
 
 // Passthrough proxy for API routes not implemented locally (chat, etc.).
 // Must stay last so local routes take precedence.

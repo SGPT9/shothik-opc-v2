@@ -7,23 +7,21 @@
  * - Optional user details panel (hidden by default, opens contextually on artifacts).
  * - Multi-agent workflows (Research, Slides, Sheets, Code, Swarm, Voice) discoverable without first-paint clutter.
  */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "@/lib/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChatSession } from "./hooks/useChatSession";
 import { useChatStreamEngine } from "./hooks/useChatStreamEngine";
 import { useAttachmentUploader } from "./hooks/useAttachmentUploader";
-import { useTwinHandoffDetector } from "./hooks/useTwinHandoffDetector";
 import { ComponentErrorBoundary } from "./components/ChatErrorBoundaries";
 
 import { Composer, type ComposerAction } from "@/components/chat/Composer";
 import { cn } from "@/lib/utils";
-import { needle3, needle2 } from "@/lib/ai/needle-dispatcher";
+import { needle3 } from "@/lib/ai/needle-dispatcher";
 import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveState";
 import { Transcript } from "@/components/chat/Transcript";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
-import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
@@ -117,12 +115,12 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
 
   const { streamState, startStream, stopStream } = useChatStreamEngine();
   const { attachments, addAttachment, removeAttachment, clearAttachments } = useAttachmentUploader();
-  const { hasStartupIntent } = useTwinHandoffDetector(messages);
-  const { workingState, updateDraft, addChip, removeChip, recallContext, recordDecision, autoExtractAndCommit } = useSecondMeCognitiveState({
+  const { removeChip, recallContext, autoExtractAndCommit } = useSecondMeCognitiveState({
     sessionId: conversationId,
   });
 
   const isMobile = useIsMobile();
+  const sentDeepPromptRef = useRef<string | null>(null);
 
   // ── Contextual User Details / Artifact panel (hidden by default) ──
   const [artifactOpen, setArtifactOpen] = useState(Boolean(initialTab || searchParams.get("tab")));
@@ -922,6 +920,17 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     [addMessage, attachments, autoExtractAndCommit, clearAttachments, conversationId, finalizeLastAssistantMessage, recallContext, startStream, updateLastAssistantMessage, persona, updateMessageMetadata]
   );
 
+  // Deep-link: /?prompt=... sends once (used by Files "Query in Chat"), then clears the param
+  useEffect(() => {
+    const deepPrompt = searchParams.get("prompt");
+    if (!deepPrompt || sentDeepPromptRef.current === deepPrompt) return;
+    sentDeepPromptRef.current = deepPrompt;
+    handleSendMessage(deepPrompt);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("prompt");
+    window.history.replaceState({}, "", url.toString());
+  }, [searchParams, handleSendMessage]);
+
   // Control Layer: Checkpoint & Secret Resolution Handlers
   const handleApproveCheckpoint = useCallback(
     (checkpointId: string, message: any) => {
@@ -1539,11 +1548,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           onForkCreated={(newId) => switchConversation(newId)}
         />
 
-        <KeyboardShortcutsModal
-          open={isShortcutsOpen}
-          onOpenChange={setIsShortcutsOpen}
-        />
-
         <CommandPaletteModal
           open={isCommandPaletteOpen}
           onOpenChange={setIsCommandPaletteOpen}
@@ -1581,13 +1585,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             time: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           }))}
         />
-
-        {isVoiceOrbOpen && (
-          <UnifiedVoiceStudioModal
-            isOpen={isVoiceOrbOpen}
-            onClose={() => setIsVoiceOrbOpen(false)}
-          />
-        )}
 
         {isSwarmDebateOpen && (
           <SwarmAdversarialDebateModal

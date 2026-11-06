@@ -48,14 +48,10 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { PerplexityFocusSelector, PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
+import { PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
 import type { ChatPersona } from "@/lib/chat/types";
 import { RagKnowledgeVaultModal } from "./RagKnowledgeVaultModal";
 import { CourierTrackingModal } from "@/components/common/CourierTrackingModal";
-import { AgentMentionOverlay, type AgentOption } from "./AgentMentionOverlay";
-import { SlashCommandOverlay, type SlashCommandOption } from "./SlashCommandOverlay";
-import { ContextUsageIndicator } from "./ContextUsageIndicator";
-import { ConversationIntelligencePanel, type FollowUpSuggestion } from "./ConversationIntelligencePanel";
 import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 import { TeamModal } from "@/components/team/TeamModal";
@@ -1080,24 +1076,6 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             </div>
           </div>
         </div>
-
-        {/* Dictation Banner */}
-        {isListening && (
-          <div className="max-w-3xl mx-auto mt-2 flex items-center justify-between rounded-xl border border-rose-500/30 bg-rose-500/10 px-3.5 py-2 text-xs text-rose-400 animate-in fade-in slide-in-from-bottom-1 duration-200">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
-              <span>
-                Listening in <strong>{VOICE_LANGS.find((l) => l.code === voiceLang)?.label}</strong> — speak freely…
-              </span>
-            </div>
-            <button
-              onClick={() => setVoiceLang(voiceLang === "bn-BD" ? "en-US" : "bn-BD")}
-              className="text-[10px] font-mono font-bold bg-rose-500/20 px-2 py-0.5 rounded text-rose-300 hover:bg-rose-500/30 transition cursor-pointer"
-            >
-              Switch to {voiceLang === "bn-BD" ? "English" : "বাংলা"}
-            </button>
-          </div>
-        )}
 
         {/* Command hint */}
         {commandHint && (

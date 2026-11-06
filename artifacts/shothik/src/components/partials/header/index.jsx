@@ -50,6 +50,7 @@ import { useTranslation } from "@/i18n";
 import { OfflineSyncStatusBadge } from "@/components/sync/OfflineSyncStatusBadge";
 import { useAuth } from "@/providers/AuthProvider";
 import { fetchAgents } from "@/services/agent-team.service";
+import { useCreditBalance } from "@/hooks/useCreditBalance";
 
 const NotificationBell = lazy(() => import("@/components/forum/NotificationBell"));
 const TeamModal = lazy(() => import("@/components/team/TeamModal"));
@@ -90,7 +91,7 @@ export default function Header({ className, layout }) {
   const { accessToken, user: reduxUser } = useSelector((state) => state.auth);
   const { user: authUser } = useAuth();
   const user = reduxUser || authUser;
-  const userCredits = authUser?.credits ?? reduxUser?.credits ?? 550;
+  const userCredits = useCreditBalance(authUser?.credits ?? reduxUser?.credits) ?? 0;
   const { theme } = useSelector((state) => state.settings);
   const [mounted, setMounted] = useState(false);
   const [teamModalOpen, setTeamModalOpen] = useState(false);

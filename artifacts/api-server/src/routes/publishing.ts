@@ -561,6 +561,72 @@ router.get("/v1/publishing/books", (_req: Request, res: Response): void => {
 });
 
 /**
+ * POST /api/v1/publishing/books
+ * Publishes a new book to the catalogue
+ */
+router.post(["/v1/publishing/books", "/api/v1/publishing/books"], (req: Request, res: Response): void => {
+  const {
+    id = "book_" + Date.now().toString(36),
+    title = "Untitled Book",
+    subtitle = "",
+    authorName = "Shothik Community Author",
+    category = "Fiction",
+    genre = "General",
+    language = "bn",
+    pageCount = 120,
+    listPrice = "250",
+    creditPrice = 0,
+    currency = "BDT",
+    synopsis = "",
+    description = "",
+    coverUrl = null,
+    keywords = [],
+    chapters = [],
+  } = req.body || {};
+
+  const existingIdx = BOI_MELA_CATALOG.findIndex((b) => b.id === id || b._id === id);
+  const newBook = {
+    id,
+    _id: id,
+    title,
+    subtitle,
+    authorName,
+    userId: "usr_community_author",
+    category,
+    genre,
+    language,
+    pageCount: Number(pageCount) || 120,
+    listPrice: String(listPrice),
+    creditPrice: Number(creditPrice) || 0,
+    currency,
+    coverUrl,
+    coverPreset: "ekushey",
+    isbn: "978-984-" + Math.floor(10000 + Math.random() * 90000) + "-" + Math.floor(10 + Math.random() * 90) + "-" + Math.floor(1 + Math.random() * 9),
+    rating: 5.0,
+    ratingCount: 1,
+    publishedAt: new Date().toISOString(),
+    synopsis: synopsis || description || "Newly published manuscript on Shothik.",
+    description: description || synopsis || "Newly published manuscript on Shothik.",
+    keywords: Array.isArray(keywords) ? keywords : [],
+    chapters: Array.isArray(chapters) && chapters.length > 0 ? chapters : [
+      { id: "ch1", title: "Chapter 1", wordCount: 1500 }
+    ],
+  };
+
+  if (existingIdx >= 0) {
+    BOI_MELA_CATALOG[existingIdx] = { ...BOI_MELA_CATALOG[existingIdx], ...newBook };
+  } else {
+    BOI_MELA_CATALOG.unshift(newBook);
+  }
+
+  res.status(201).json({
+    success: true,
+    message: "Book published successfully to marketplace catalogue",
+    book: newBook,
+  });
+});
+
+/**
  * GET /api/v1/publishing/books/:bookId
  * Returns metadata and preview chapters for a specific book
  */

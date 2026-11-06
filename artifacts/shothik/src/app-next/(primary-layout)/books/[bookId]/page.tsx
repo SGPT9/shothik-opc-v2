@@ -34,6 +34,7 @@ import VoteButton from "@/components/common/VoteButton";
 import SendCreditsButton from "@/components/credits/SendCreditsButton";
 import { DistributionStatusPanel } from "@/components/books/DistributionStatusPanel";
 import { NilkhetOrderModal } from "@/components/books/NilkhetOrderModal";
+import { useCreditBalance } from "@/hooks/useCreditBalance";
 
 function TagBadge({ children }: { children: React.ReactNode }) {
   return (

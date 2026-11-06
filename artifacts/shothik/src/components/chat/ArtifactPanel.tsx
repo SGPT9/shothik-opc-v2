@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, PenLine, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown } from "lucide-react";
 import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
 import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
 import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
@@ -11,10 +11,8 @@ import { DiagramArtifact }      from "@/components/chat/artifacts/DiagramArtifac
 import { DocArtifact }          from "@/components/chat/artifacts/DocArtifact";
 import { CanvasSkeletonPreview } from "@/components/chat/artifacts/CanvasSkeletonPreview";
 import { PonytailSynthesizerCard } from "@/components/canvas/PonytailSynthesizerCard";
-import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
 import { CommerceActionCard } from "@/components/chat/CommerceActionCard";
-import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
 import { FCommerceBlueprints } from "@/components/commerce/FCommerceBlueprints";
 import { CommunityArtifact } from "@/components/chat/artifacts/CommunityArtifact";
 import { MultiAgentSwarmFlow } from "@/components/chat/artifacts/MultiAgentSwarmFlow";
@@ -46,6 +44,7 @@ import { LiveAgentTraceTimeline } from "@/components/chat/LiveAgentTraceTimeline
 import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp, Activity, GitBranch } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 import { cn } from "@/lib/utils";
+import { saveOfflineManuscript } from "@/lib/offline/offline-storage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -134,9 +133,6 @@ export function ArtifactPanel({
   onSheetDataChange,
   onCodeSnippetChange,
 }: ArtifactPanelProps) {
-  // Version History State (Pillar 5)
-  const [selectedVersion, setSelectedVersion] = useState<string>("v3");
-  const [showTerminal, setShowTerminal] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [internalMaximized, setInternalMaximized] = useState<boolean>(false);
   const effectiveMaximized = onToggleMaximize ? isMaximized : internalMaximized;
@@ -152,6 +148,20 @@ export function ArtifactPanel({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeTab, onClose]);
+
+  const studioContent =
+    activeTab === "research" ? researchSummary || researchQuery || ""
+    : activeTab === "code" ? codeSnippet || ""
+    : activeTab === "doc" ? docContent || ""
+    : "";
+
+  // Promote the canvas draft into a Writing Studio project (Claude/ChatGPT canvas parity)
+  const handleOpenInStudio = () => {
+    const id = `canvas-${Date.now()}`;
+    const title = (activeTab === "doc" ? docTitle : activeTab === "research" ? researchQuery : codeFilename) || "Canvas Draft";
+    saveOfflineManuscript({ id, title: title.slice(0, 80), content: studioContent, updatedAt: Date.now() });
+    window.location.href = `/writing-studio?projectId=${encodeURIComponent(id)}`;
+  };
 
   const handleCopyContent = () => {
     let contentToCopy = "";
@@ -199,46 +209,6 @@ export function ArtifactPanel({
 
   if (!activeTab) return null;
 
-  // Only show tabs that have content OR are the currently active tab (per DeepSeek-close spec)
-  const tabsWithContent = new Set<ArtifactTab>([activeTab]);
-  // Core work studio tabs readily accessible
-  tabsWithContent.add("approvals");
-  tabsWithContent.add("slides");
-  tabsWithContent.add("community");
-  tabsWithContent.add("commerce");
-  tabsWithContent.add("whatsapp");
-  tabsWithContent.add("career");
-  tabsWithContent.add("voicepitch");
-  tabsWithContent.add("promptlab");
-  tabsWithContent.add("legal");
-  tabsWithContent.add("arena");
-  tabsWithContent.add("twin");
-  tabsWithContent.add("leads");
-  tabsWithContent.add("seo");
-  tabsWithContent.add("flows");
-  tabsWithContent.add("video");
-  tabsWithContent.add("vattax");
-  tabsWithContent.add("photo");
-  tabsWithContent.add("inventory");
-  tabsWithContent.add("dubbing");
-  tabsWithContent.add("broadcast");
-  tabsWithContent.add("disputes");
-  tabsWithContent.add("pricewatcher");
-  tabsWithContent.add("swarm");
-  tabsWithContent.add("boimela");
-  tabsWithContent.add("synthesizer");
-  tabsWithContent.add("sheet");
-  tabsWithContent.add("research");
-  tabsWithContent.add("code");
-  tabsWithContent.add("diagram");
-  tabsWithContent.add("doc");
-  // Sources and History always show when panel is open — they provide contextual depth
-  tabsWithContent.add("sources");
-  tabsWithContent.add("history");
-  // Also show any previously mounted tabs
-  mounted.forEach((tab) => tabsWithContent.add(tab));
-
-  const visibleTabs = TABS.filter(({ id }) => tabsWithContent.has(id));
 
   return (
     <div
@@ -342,6 +312,18 @@ export function ArtifactPanel({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {studioContent && (
+            <button
+              type="button"
+              onClick={handleOpenInStudio}
+              className="flex shrink-0 items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-semibold text-brand bg-brand/10 hover:bg-brand/20 transition cursor-pointer"
+              title="Open this draft in InkOS Writing Studio"
+            >
+              <PenLine className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Open in Studio</span>
+            </button>
+          )}
+
           {/* 1-Click Copy Raw Content */}
           <button
             type="button"
@@ -394,12 +376,6 @@ export function ArtifactPanel({
         {mounted.has("approvals") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "approvals" ? "block" : "hidden"}`}>
             <ApprovalsArtifact />
-          </div>
-        )}
-
-        {mounted.has("slides") && (
-          <div className={`absolute inset-0 overflow-hidden ${activeTab === "slides" ? "block" : "hidden"}`}>
-            <SlidesArtifact initialTopic={slidesTopic} isStreaming={isStreaming} />
           </div>
         )}
 
@@ -725,14 +701,6 @@ export function ArtifactPanel({
         )}
       </div>
 
-      {/* ── Pillar 3: Terminal Console Drawer ── */}
-      {showTerminal && (
-        <ReplitTerminalConsole
-          isStreaming={isStreaming}
-          onClose={() => setShowTerminal(false)}
-          className="m-2 shrink-0 border-t border-slate-800"
-        />
-      )}
     </div>
   );
 }

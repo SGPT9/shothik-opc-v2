@@ -52,7 +52,7 @@ export default function PrimaryLayout({ children }) {
           <div className="flex h-screen w-full bg-background text-foreground transition-colors duration-200">
             <IconNavSidebar />
             <div className="flex h-screen flex-1 flex-col overflow-hidden">
-              {!isWritingStudioWorkspace && <Header layout="primary" />}
+              {!isFullViewportIde && <Header layout="primary" />}
               <VerifyEmailAlert />
               <div
                 className={cn(
