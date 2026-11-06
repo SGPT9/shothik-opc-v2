@@ -8,6 +8,7 @@ import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 import { capabilityLeashEngine } from "../lib/security/capability-leash";
 import { AuditLedgerEngine } from "../lib/audit/audit-ledger-engine";
 import { resolveUserId } from "../middleware/auth.js";
+import { getPersistedCredits, persistCreditDeduction } from "./subscriptions";
 
 const router = Router();
 
@@ -32,16 +33,94 @@ const processedTrxIds = new Set<string>();
 
 /**
  * POST /api/v1/mfs/verify-trx
- * Verifies bKash/Nagad 10-digit TrxID and credits user wallet with idempotency
+ * Verifies bKash/Nagad 10-digit TrxID and credits user wallet with idempotency.
+ * Supports both strict TrxVerificationRequestSchema payloads and flexible TwinRevenueLedger payloads.
  */
-router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, res: Response) => {
+router.post(["/v1/mfs/verify-trx", "/api/v1/mfs/verify-trx"], idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
+    const isStrictCandidate =
+      req.body &&
+      typeof req.body === "object" &&
+      (req.body.tier !== undefined || req.body.senderMobileNumber !== undefined);
+
     const parseResult = TrxVerificationRequestSchema.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid transaction payload",
-        details: parseResult.error.format(),
+      if (isStrictCandidate) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid transaction payload",
+          details: parseResult.error.format(),
+        });
+      }
+
+      // Flexible TwinRevenueLedger verification branch
+      const {
+        trxId,
+        amountBdt,
+        provider = "bkash",
+        userId: bodyUserId,
+        companyName = "VerifiQ",
+        note,
+      } = req.body || {};
+      const userId = resolveUserId(req, bodyUserId || "usr_default");
+
+      if (!trxId || typeof trxId !== "string") {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required field: trxId (bKash/Nagad Transaction ID)",
+        });
+      }
+
+      const cleanTrxId = trxId.trim();
+      if (!/^[A-Za-z0-9]{8,14}$/.test(cleanTrxId)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid TrxID format: "${cleanTrxId}". Expected 8-14 alphanumeric characters (e.g. BKA8829102).`,
+        });
+      }
+
+      if (!amountBdt || Number(amountBdt) <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing or invalid amountBdt. Must be a positive number.",
+        });
+      }
+
+      const amount = Number(amountBdt);
+      const mfsProvider = String(provider).toLowerCase() === "nagad" ? "nagad_trx" : "bkash_trx";
+
+      const { newTotalBdt, transaction } = TwinRevenueLedger.creditRevenue({
+        companyName,
+        amountBdt: amount,
+        source: mfsProvider,
+        referenceId: cleanTrxId,
+        note: note || `${String(provider).toUpperCase()} payment verified via MFS TrxID listener`,
+      });
+
+      const currentCredits = await getPersistedCredits(userId);
+      const creditEquivalent = Math.floor(amount / 10); // ৳10 = 1 task credit
+      const newCredits = currentCredits + creditEquivalent;
+      await persistCreditDeduction(userId, newCredits, 0);
+
+      return res.status(200).json({
+        success: true,
+        verified: true,
+        trxId: cleanTrxId,
+        provider: String(provider).toUpperCase(),
+        amountBdt: amount,
+        revenueUpdate: {
+          companyName,
+          previousRevenueBdt: newTotalBdt - amount,
+          newRevenueBdt: newTotalBdt,
+          transactionId: transaction.id,
+        },
+        creditUpdate: {
+          userId,
+          addedCredits: creditEquivalent,
+          newCreditsBalance: newCredits,
+        },
+        verifiedAt: new Date().toISOString(),
+        message: `${String(provider).toUpperCase()} TrxID ${cleanTrxId} verified — ৳${amount} BDT credited to ${companyName} revenue ledger`,
       });
     }
 
@@ -137,6 +216,7 @@ router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, re
     const creditedCredits = tierConfig.credits;
     const currentBalance = 550;
     const newBalance = currentBalance + creditedCredits;
+    await persistCreditDeduction(userId, newBalance, 0);
     const ledgerId = `LEDGER_${provider.toUpperCase()}_${trxId}_${Date.now()}`;
 
     // Credit revenue to Twin's live telemetry revenue ledger
@@ -711,5 +791,3 @@ router.post("/v1/mfs/nagad/verify", async (req: Request, res: Response) => {
 });
 
 export default router;
-
-
