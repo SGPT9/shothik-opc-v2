@@ -89,7 +89,8 @@ import { CipBarcodeModal } from "./components/CipBarcodeModal";
 import { WebnovelPaywallModal } from "./components/WebnovelPaywallModal";
 import { PolyglotMatrixModal } from "./components/PolyglotMatrixModal";
 import { ReadingScalerModal } from "./components/ReadingScalerModal";
-import { Globe, Coins, Library, Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
+import { RoyaltySplitModal } from "./components/RoyaltySplitModal";
+import { BadgeCheck, Globe, Coins, Library, Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -165,6 +166,7 @@ export function PolishedWriteView({
   const [isWebnovelPaywallModalOpen, setIsWebnovelPaywallModalOpen] = useState(false);
   const [isPolyglotMatrixModalOpen, setIsPolyglotMatrixModalOpen] = useState(false);
   const [isReadingScalerModalOpen, setIsReadingScalerModalOpen] = useState(false);
+  const [isRoyaltySplitModalOpen, setIsRoyaltySplitModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -820,6 +822,16 @@ export function PolishedWriteView({
             <Button
               size="sm"
               variant="outline"
+              onClick={() => setIsRoyaltySplitModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 cursor-pointer"
+              title="Cryptographic Royalty Split & Digital First Editions (InkOS #44)"
+            >
+              <BadgeCheck className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">রয়্যালটি ও ফার্স্ট এডিশন</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => setIsImportOpen(true)}
               className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-border text-muted-foreground hover:text-foreground cursor-pointer"
               title="Import Word, PDF, Text, or Bijoy Manuscript"
@@ -1443,6 +1455,12 @@ ${prose}` : prose))}
         isOpen={isReadingScalerModalOpen}
         onClose={() => setIsReadingScalerModalOpen(false)}
         onInsertProse={(snippet) => setContent(snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <RoyaltySplitModal
+        isOpen={isRoyaltySplitModalOpen}
+        onClose={() => setIsRoyaltySplitModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
     </div>
