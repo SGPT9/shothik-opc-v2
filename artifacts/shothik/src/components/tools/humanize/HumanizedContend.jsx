@@ -54,9 +54,13 @@ const HumanizedContend = () => {
   const [outputContent, setOutputContent] = useState([]);
   const [humanizeContend] = useHumanizeContendMutation();
   const miniLabel = useResponsive("between", "md", "xl");
-  const { user } = useSelector((state) => state.auth);
-  const { automaticStartHumanize } = useSelector(
-    (state) => state.settings.humanizeOptions,
+
+  // ⚡ Bolt Performance Optimization:
+  // Extracted specific properties using selective selectors instead of destructuring the entire object.
+  // This reduces unnecessary re-renders when unrelated state (like auth.accessToken) changes.
+  const user = useSelector((state) => state.auth?.user);
+  const automaticStartHumanize = useSelector(
+    (state) => state.settings?.humanizeOptions?.automaticStartHumanize,
   );
 
   // Humanize history
