@@ -7,7 +7,9 @@ export type FeatureType =
   | "student_assignment_slide"
   | "nbr_tax_return"
   | "land_porcha_ocr"
-  | "bcs_exam_prep";
+  | "bcs_exam_prep"
+  | "inkos_chapter_draft"
+  | "inkos_boi_mela_preflight";
 
 export interface CreditRateCard {
   featureType: FeatureType;
@@ -25,8 +27,21 @@ export interface CreditPackage {
   badge?: string;
 }
 
+export interface OutcomePassOption {
+  passId: string;
+  name: string;
+  persona: string;
+  priceBdt: number;
+  priceUsd: number;
+  creditsIncluded: number;
+  durationDays: number;
+  highlights: string[];
+  badge?: string;
+}
+
 export interface SubscriptionTier {
   tierId: string;
+  packageType: "starter" | "student_plus" | "creator_pro" | "studio_max";
   name: string;
   priceBdtMonth: number;
   priceUsdMonth: number;
@@ -35,6 +50,8 @@ export interface SubscriptionTier {
 }
 
 export const FEATURE_RATE_CARDS: CreditRateCard[] = [
+  { featureType: "inkos_chapter_draft", label: "InkOS Co-Writer & De-Slopper (#3, #27)", creditCost: 2 },
+  { featureType: "inkos_boi_mela_preflight", label: "Boi Mela 6×9 Print PDF & Cover Spine (#40–42)", creditCost: 8 },
   { featureType: "cofounder_tam_analysis", label: "Cofounder TAM/SAM/SOM Analysis", creditCost: 5 },
   { featureType: "web_search_validation", label: "Grounded Live Web Validation", creditCost: 2 },
   { featureType: "scenario_lab_stress_test", label: "ScenarioLab 2GB RAM Stress-Test", creditCost: 3 },
@@ -42,6 +59,53 @@ export const FEATURE_RATE_CARDS: CreditRateCard[] = [
   { featureType: "nbr_tax_return", label: "NBR Individual e-TIN Tax Return", creditCost: 15 },
   { featureType: "land_porcha_ocr", label: "CS/SA/RS/BS Land Record Porcha OCR", creditCost: 10 },
   { featureType: "bcs_exam_prep", label: "BCS & University 3D VTuber Viva Mock", creditCost: 8 },
+];
+
+export const OUTCOME_PASS_OPTIONS: OutcomePassOption[] = [
+  {
+    passId: "assignment_sprint",
+    name: "Assignment Sprint Pass",
+    persona: "🎓 Academic",
+    priceBdt: 199,
+    priceUsd: 2.99,
+    creditsIncluded: 120,
+    durationDays: 30,
+    badge: "STUDENT PICK",
+    highlights: ["120 Task Credits", "Turnitin Safe Paraphraser", "APA/IEEE Auto-Citation"],
+  },
+  {
+    passId: "thesis_defense",
+    name: "Thesis & Journal Pass",
+    persona: "🔬 Researcher",
+    priceBdt: 499,
+    priceUsd: 5.99,
+    creditsIncluded: 350,
+    durationDays: 30,
+    badge: "MOST POPULAR",
+    highlights: ["350 Task Credits", "Argument & Fallacy Tree (#11)", "Empirical Method Auditor (#15)"],
+  },
+  {
+    passId: "boi_mela_author",
+    name: "Ekushey Boi Mela Pass",
+    persona: "✍️ Author",
+    priceBdt: 799,
+    priceUsd: 8.99,
+    creditsIncluded: 600,
+    durationDays: 30,
+    badge: "AUTHOR EDITION",
+    highlights: ["600 Task Credits", "All 45 InkOS Capabilities", "6×9 Royal Demy Print PDF + Cover"],
+  },
+  {
+    passId: "pro_operator_pack",
+    name: "Venture & Growth Pass",
+    persona: "🚀 Founder",
+    priceBdt: 1299,
+    priceUsd: 12.99,
+    creditsIncluded: 1100,
+    durationDays: 30,
+    badge: "PRO OPERATOR",
+    highlights: ["1,100 Task Credits", "Twin AI + Pitch Deck Studio", "bKash/Steadfast/NBR Suite"],
+  },
 ];
 
 export const CREDIT_PACKAGES: CreditPackage[] = [
@@ -53,52 +117,59 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
 
 export const SUBSCRIPTION_TIERS: SubscriptionTier[] = [
   {
-    tierId: "starter_free",
-    name: "Free Explorer",
+    tierId: "starter",
+    packageType: "starter",
+    name: "Starter (Free)",
     priceBdtMonth: 0,
     priceUsdMonth: 0,
-    targetAudience: "Casual Users & Students",
-    features: ["50 Free Daily Credits", "Basic Web Search", "Standard Chat Support", "Watermarked Exports"],
-  },
-  {
-    tierId: "pro_monthly",
-    name: "Shothik Pro Co-Founder",
-    priceBdtMonth: 599,
-    priceUsdMonth: 4.99,
-    targetAudience: "Founders, Professionals & Creators",
+    targetAudience: "Casual Users & Explorers",
     features: [
-      "Unlimited Deep Research Dossiers",
-      "Full Work Canvas & Slide Studio (.pptx, Marp)",
-      "Dynamic Financial Spreadsheet Engine & CSV",
-      "Frontier Reasoning Models (DeepSeek V4, Claude, GPT-4o)",
-      "1-Click bKash / Nagad Instant Renewal",
+      "30 Monthly Universal Task Credits",
+      "Offline Story Bible HUD (#10) — 0 Credits",
+      "Basic Grammar, Paraphrase & Web Search",
+      "2 Active Writing Studio Projects",
     ],
   },
   {
-    tierId: "business_team",
-    name: "Business & Merchant Hub",
-    priceBdtMonth: 1490,
-    priceUsdMonth: 12.50,
-    targetAudience: "E-Commerce, F-Commerce & Agencies",
+    tierId: "student_plus",
+    packageType: "student_plus",
+    name: "Student Plus",
+    priceBdtMonth: 299,
+    priceUsdMonth: 3.99,
+    targetAudience: "🎓 University Students & Emerging Writers",
     features: [
-      "Everything in Pro + 5 Team Seats",
-      "Steadfast & Pathao Courier API Auto-Booking",
-      "bKash / Nagad TrxID Instant Fraud Verification",
-      "NBR Section 78 Tax & VAT Rebate Schedule Generator",
-      "Custom Branded Slide & Document Exports",
+      "150 Monthly Universal Task Credits",
+      "InkOS Studio Lite (De-Slopper #3, Citation Linker #14)",
+      "30 Plagiarism & AI Detector Scans / mo",
+      "1-Click bKash / Nagad Student Renewal",
     ],
   },
   {
-    tierId: "enterprise_legal_tax",
-    name: "Corporate & Legal Enterprise",
-    priceBdtMonth: 3490,
-    priceUsdMonth: 29.00,
-    targetAudience: "Law Firms, Tax Consultants & Accounting Teams",
+    tierId: "creator_pro",
+    packageType: "creator_pro",
+    name: "Creator Pro",
+    priceBdtMonth: 799,
+    priceUsdMonth: 8.99,
+    targetAudience: "✍️ Boi Mela Authors, Researchers & Creators",
     features: [
-      "High Court & Supreme Court Legal Precedent Search",
-      "Land Record Porcha OCR & CS/SA/RS Verification",
-      "NBR e-TIN Form 11GA & Mushak-6.3 Auto-Challan",
-      "Dedicated Account Manager & Priority SLA",
+      "550 Monthly Universal Task Credits",
+      "Full 45-Capability InkOS Writing Studio",
+      "6×9 Royal Demy Print PDF & Cover Spine (#40–42)",
+      "Unlimited Deep Research & Slide Studio",
+    ],
+  },
+  {
+    tierId: "studio_max",
+    packageType: "studio_max",
+    name: "Studio Max",
+    priceBdtMonth: 1999,
+    priceUsdMonth: 19.99,
+    targetAudience: "🚀 Publishers, Agencies & Power Operators",
+    features: [
+      "1,500 Monthly Universal Task Credits",
+      "Multi-Voice Audio Drama (#36) & BookTok Trailer (#37)",
+      "Publishing Royalties, Print-on-Demand & Team Seats",
+      "Steadfast/Pathao Logistics + NBR Tax Suite",
     ],
   },
 ];
@@ -144,7 +215,7 @@ export class MonetizationPaywallService {
 
     return {
       transactionId,
-      paymentUrl: `https://pay.${paymentProvider}.com.bd/topup?amount=${pkg.priceBdt}&trxId=${transactionId}`,
+      paymentUrl: `/pricing/checkout?packageId=${encodeURIComponent(pkg.packageId)}&provider=${paymentProvider}`,
       creditsAdded,
       totalPaidBdt: pkg.priceBdt,
     };

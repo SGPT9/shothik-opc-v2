@@ -12,10 +12,30 @@ import IconNavSidebar from "@/components/partials/icon-nav-sidebar";
 import MobileBottomNav from "@/components/partials/mobile-bottom-nav";
 import AlertDialog from "@/components/tools/common/AlertDialog";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { usePathname, useSearchParams } from "@/lib/navigation";
+import { cn } from "@/lib/utils";
 import ProgressProvider from "@/providers/ProgressProvider";
 import { Suspense } from "react";
 
 export default function PrimaryLayout({ children }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // Full-screen IDE workspaces (Writing Studio, Main Chat, Twin, Research) manage their own internal headers & scrollbars
+  const isWritingStudioWorkspace =
+    pathname.startsWith("/writing-studio") &&
+    (Boolean(searchParams.get("projectId")) ||
+      Boolean(searchParams.get("docId")) ||
+      searchParams.get("mode") === "3fold" ||
+      searchParams.get("workspace") === "3fold" ||
+      /^\/writing-studio\/[^/]+$/.test(pathname));
+
+  const isFullViewportIde =
+    isWritingStudioWorkspace ||
+    pathname === "/" ||
+    pathname === "/agents/chat" ||
+    pathname === "/writing-studio/chat";
+
   return (
     <ProgressProvider
       color={"#00AB55"}
@@ -32,18 +52,25 @@ export default function PrimaryLayout({ children }) {
           <div className="flex h-screen w-full bg-background text-foreground transition-colors duration-200">
             <IconNavSidebar />
             <div className="flex h-screen flex-1 flex-col overflow-hidden">
-              <Header layout="primary" />
+              {!isWritingStudioWorkspace && <Header layout="primary" />}
               <VerifyEmailAlert />
-              <div className="primary-layout-wrapper flex max-w-full flex-1 flex-col overflow-y-auto pb-14 md:pb-0">
-                <div className="relative flex flex-1 flex-col">
+              <div
+                className={cn(
+                  "primary-layout-wrapper flex max-w-full flex-1 flex-col pb-14 md:pb-0",
+                  isFullViewportIde ? "overflow-hidden" : "overflow-y-auto"
+                )}
+              >
+                <div className="relative flex flex-1 flex-col min-h-0">
                   <Suspense fallback={null}>
                     <AgentHistory />
                   </Suspense>
                   {children}
                 </div>
-                <FooterViewProvider>
-                  <Footer />
-                </FooterViewProvider>
+                {!isFullViewportIde && (
+                  <FooterViewProvider>
+                    <Footer />
+                  </FooterViewProvider>
+                )}
               </div>
             </div>
           </div>

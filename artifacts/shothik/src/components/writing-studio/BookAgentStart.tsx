@@ -1,5 +1,3 @@
-
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
@@ -45,9 +43,9 @@ const TOOL_TILES = [
 
 const AGENT_TILES: { label: string; Icon: React.ElementType; href: string }[] = [
   { label: 'AI Chat', Icon: MessageCircle, href: '/agents/chat' },
-  { label: 'AI Slides', Icon: Presentation, href: '/agents/presentation' },
-  { label: 'AI Sheets', Icon: Table, href: '/agents/sheets' },
-  { label: 'Research', Icon: Search, href: '/agents/research' },
+  { label: 'AI Slides', Icon: Presentation, href: '/slides' },
+  { label: 'AI Sheets', Icon: Table, href: '/?tab=sheet' },
+  { label: 'Research', Icon: Search, href: '/research' },
 ];
 
 type ProjectType = 'book' | 'research' | 'assignment';
@@ -103,46 +101,46 @@ const TYPE_CONFIGS: Record<
     label: 'Book',
     icon: BookOpen,
     color: 'var(--color-type-book)',
-    placeholder: 'e.g., A crime thriller set in 1940s New Orleans following a morally grey detective who discovers the city\'s darkest secret...',
+    placeholder: 'e.g., পুরান ঢাকার পটভূমিতে অমর একুশে বইমেলার জন্য একটি মনস্তাত্ত্বিক থ্রিলার উপন্যাস / A crime thriller set in 1990s Dhaka...',
     description: 'Build a long-form manuscript with chapter structure, comparables, and narrative arc guidance.',
     deliverableLabel: 'Book manuscript plan',
-    supportCopy: 'Best for fiction, nonfiction, memoir, and long-form publishing projects.',
+    supportCopy: 'Best for Ekushey Boi Mela fiction, nonfiction, memoir, and long-form publishing projects.',
   },
   research: {
     label: 'Research Paper',
     icon: FlaskConical,
     color: 'var(--color-type-research)',
-    placeholder: 'e.g., A paper investigating how social media algorithm design drives political polarization in Gen Z users...',
+    placeholder: 'e.g., Climate resilience and urban drainage modeling in Dhaka metropolitan wards using machine learning...',
     description: 'Generate a paper structure with sections, thesis framing, methodology cues, and source-aware notes.',
     deliverableLabel: 'Research paper plan',
-    supportCopy: 'Best for journal papers, conference submissions, theses, and literature reviews.',
+    supportCopy: 'Best for journal papers, conference submissions, honors/master\'s theses, and literature reviews.',
   },
   assignment: {
     label: 'Assignment',
     icon: GraduationCap,
     color: 'var(--color-type-assignment)',
-    placeholder: 'e.g., A case study analyzing Tesla\'s supply chain failures during COVID-19 and their strategic response...',
+    placeholder: 'e.g., A case study analyzing bKash & Nagad MFS financial inclusion impact across rural Bangladesh...',
     description: 'Turn a prompt or brief into a structured assignment outline with evidence and marking-criteria guidance.',
     deliverableLabel: 'Assignment draft plan',
-    supportCopy: 'Best for essays, case studies, lab reports, proposals, and coursework tasks.',
+    supportCopy: 'Best for university essays, case studies, lab reports, proposals, and coursework tasks.',
   },
 };
 
 const SUGGESTIONS: Record<ProjectType, string[]> = {
   book: [
-    'A detective realizes she committed the murder she\'s investigating',
-    'A coming-of-age story about a musician in 1970s London',
-    'First contact with aliens who communicate through mathematics',
+    'পুরান ঢাকার বুড়িগঙ্গা তীরে এক রহস্যময় পাণ্ডুলিপি ঘিরে অমর একুশে বইমেলার থ্রিলার উপন্যাস',
+    'A detective in 1990s Dhaka realizes she is connected to the cold case she is investigating',
+    'First contact with an ancient Bengal delta civilization that encoded prophecies in folk songs',
   ],
   research: [
-    'Long-term cognitive effects of remote learning on K-12 students',
-    'Machine learning approaches to early-stage Alzheimer\'s detection',
-    'Carbon capture technologies: a comparative effectiveness analysis',
+    'Impact of mobile financial services (bKash/Nagad) on SME working capital in Bangladesh',
+    'Machine learning approaches to early-stage dengue outbreak forecasting in South Asia',
+    'Long-term cognitive and academic effects of bilingual AI tutoring on university students',
   ],
   assignment: [
-    'Ethical implications of AI in hiring decisions',
-    'Netflix\'s content strategy pivot: a business analysis',
-    'Impact of minimum wage increases on small businesses',
+    'RMG supply chain sustainability and green factory transformation in Bangladesh: A case study',
+    'Ethical implications of generative AI in university assessment and academic integrity',
+    'Comparative financial analysis of Steadfast and Pathao e-commerce logistics models',
   ],
 };
 
@@ -284,7 +282,6 @@ export function BookAgentStart({
     if (!Array.isArray(chapters) || chapters.length === 0) return;
     const validChapters = chapters.filter((c): c is GeneratedChapter => Boolean(c && typeof c === 'object'));
     if (reducedMotion) {
-      // Skip animation — show all chapters immediately
       setVisibleChapters(validChapters);
       return;
     }
@@ -582,7 +579,7 @@ export function BookAgentStart({
                   </div>
                 </div>
 
-                {/* Tool tiles — clean quick access */}
+                {/* Tool & Agent tiles — clean quick access */}
                 <div className="w-full flex flex-wrap items-center justify-center gap-2 mb-5">
                   {TOOL_TILES.map((tool) => (
                     <Link
@@ -599,6 +596,22 @@ export function BookAgentStart({
                       </span>
                     </Link>
                   ))}
+
+                  {AGENT_TILES.map((agent) => {
+                    const AgentIcon = agent.Icon;
+                    return (
+                      <Link
+                        key={agent.href}
+                        href={agent.href}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-card/50 hover:bg-card border border-border/60 hover:border-indigo-500/30 transition-all no-underline group shadow-2xs"
+                      >
+                        <AgentIcon className="h-3.5 w-3.5 text-muted-foreground group-hover:text-indigo-400 transition-colors" />
+                        <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors whitespace-nowrap font-medium">
+                          {agent.label}
+                        </span>
+                      </Link>
+                    );
+                  })}
 
                   {/* 1-Click Bijoy Converter Tile */}
                   <button

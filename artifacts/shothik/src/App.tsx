@@ -278,6 +278,9 @@ function AppRoutes() {
         {/* Secondary layout routes */}
         <Route path="/pricing" component={PricingPageWithLayout} />
         <Route path="/pricing/checkout" component={PricingCheckoutPageWithLayout} />
+        <Route path="/checkout" component={PricingCheckoutPageWithLayout} />
+        <Route path="/checkout/success" component={PricingCheckoutSuccessPageWithLayout} />
+        <Route path="/checkout/cancel" component={PricingCheckoutCancelPageWithLayout} />
         <Route path="/pricing/checkout/success" component={PricingCheckoutSuccessPageWithLayout} />
         <Route path="/pricing/checkout/cancel" component={PricingCheckoutCancelPageWithLayout} />
         <Route path="/about-us" component={AboutUsPageWithLayout} />

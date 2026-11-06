@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState, useMemo } from "react";
 import { LowRamStylexOptimizerService } from "@/lib/infrastructure/low-ram-stylex-optimizer";
+import { createProject, saveProjects, getProjects } from "@/lib/projects-store";
+import { saveWritingStudioSeed } from "@/lib/writing-studio-seed";
 
 // Pre-compiled static class map matching compile-time StyleX layout rules
 const STYLEX_MAP = {
@@ -169,6 +171,40 @@ export function Transcript({
       }).catch(() => {});
     } catch {
       // noop
+    }
+  };
+
+  const handleSendToWritingStudio = (message: ChatMessage, content: string) => {
+    const rawHeading = content.match(/^#+\s+(.+)$/m)?.[1]?.trim();
+    const title = rawHeading || (message.metadata as any)?.artifactTitle || "Chat Draft in InkOS Studio";
+    const intent = agentId === "research" ? "research" : "book";
+    const created = createProject({
+      title,
+      type: intent,
+      template: null,
+      description: content.slice(0, 240),
+      settings: { agentGenerated: true },
+      researchNotes: null,
+      agentChapters: null,
+    });
+    if (created && created._id) {
+      // Persist the full draft into the created project's content
+      const allProjects = getProjects();
+      const idx = allProjects.findIndex((p: any) => p._id === created._id);
+      if (idx !== -1) {
+        allProjects[idx].content = content;
+        allProjects[idx].wordCount = content.trim().split(/\s+/).filter(Boolean).length;
+        saveProjects(allProjects);
+      }
+      saveWritingStudioSeed({
+        source: "chat",
+        title,
+        description: content.slice(0, 500),
+        intent,
+      });
+      window.location.href = `/writing-studio?projectId=${encodeURIComponent(created._id)}`;
+    } else {
+      window.location.href = "/writing-studio";
     }
   };
 
@@ -313,7 +349,7 @@ export function Transcript({
             const msgKey = message._id || (message as any).id || `msg_${idx}`;
             const isUser = message.role === "user";
             const isMsgStreaming = message.status === "streaming" || Boolean((message as any).isStreaming);
-            const isLast = idx === messages.length - 1;
+            const isLast = idx === slicedMessages.length - 1;
             const canRegenerate = message.role === "assistant" && !isMsgStreaming;
             const canStop = message.role === "assistant" && isMsgStreaming;
             const slashCommand = isUser ? getSlashCommandDisplayText(message.content) : null;
@@ -536,7 +572,6 @@ export function Transcript({
                     />
                   )}
 
-                  {/* Main content */}
                   {!message.metadata?.githubAnalysis && !displayContent.includes("[Stream Error:") && (
                     <div className="relative text-sm leading-relaxed">
                       <MarkdownMessage
@@ -674,29 +709,31 @@ export function Transcript({
 
                   {/* ── Inline Artifact Card Trigger (Only when artifact generated) ── */}
                   {Boolean((message.metadata as any)?.artifactType || (message.metadata as any)?.tab) && (
-                    <>
-                      <InlineArtifactCard
-                        type={((message.metadata as any)?.artifactType || (message.metadata as any)?.tab) as any}
-                        title={(message.metadata as any)?.artifactTitle}
-                        subtitle={(message.metadata as any)?.artifactSubtitle}
-                        onOpen={() => {
-                          const targetTab = ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab);
-                          onOpenArtifact?.(targetTab, message);
-                        }}
-                      />
-
-                      {/* ── Proactive Agentic Next Action Chips ── */}
-                      <ProactiveNextActions
-                        type={((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || "general") as any}
-                        onSelectAction={(query) => {
-                          const targetTab = ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab);
-                          onSelectPrompt?.(query, "cofounder", targetTab as any);
-                        }}
-                      />
-                    </>
+                    <InlineArtifactCard
+                      type={((message.metadata as any)?.artifactType || (message.metadata as any)?.tab) as any}
+                      title={(message.metadata as any)?.artifactTitle}
+                      subtitle={(message.metadata as any)?.artifactSubtitle}
+                      onOpen={() => {
+                        const targetTab = ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab);
+                        onOpenArtifact?.(targetTab, message);
+                      }}
+                    />
                   )}
 
-
+                  {/* ── Proactive Agentic Next Action Chips & InkOS Studio Bridge ── */}
+                  {(Boolean((message.metadata as any)?.artifactType || (message.metadata as any)?.tab) ||
+                    (isLast && !isMsgStreaming && displayContent.trim().length > 40)) && (
+                    <ProactiveNextActions
+                      type={((message.metadata as any)?.artifactType || (message.metadata as any)?.tab || "general") as any}
+                      content={displayContent}
+                      agentId={agentId}
+                      onSelectAction={(query) => {
+                        const targetTab = ((message.metadata as any)?.artifactType || (message.metadata as any)?.tab);
+                        onSelectPrompt?.(query, "cofounder", targetTab as any);
+                      }}
+                      onOpenWritingStudio={() => handleSendToWritingStudio(message, displayContent)}
+                    />
+                  )}
 
                   {/* DeerFlow / Swarm visualizers */}
                   {message.metadata?.deerflowPlan && (
@@ -866,9 +903,7 @@ export function Transcript({
                             Turn into spreadsheet
                           </button>
                           <button
-                            onClick={() => {
-                              window.location.href = "/writing-studio?projectId=default-book";
-                            }}
+                            onClick={() => handleSendToWritingStudio(message, displayContent)}
                             className="flex w-full items-center gap-2 px-3 py-2 text-xs text-foreground hover:bg-muted/60 transition cursor-pointer"
                           >
                             <BookOpen className="h-3.5 w-3.5 text-rose-400" />
@@ -955,7 +990,7 @@ export function Transcript({
           aria-label="Scroll to bottom"
         >
           <span>Scroll to bottom</span>
-          <ChevronDown className="w-3.5 h-3.5 text-brand animate-bounce" />
+          <ChevronDown className="w-3.5 w-3.5 text-brand animate-bounce" />
         </button>
       )}
     </div>

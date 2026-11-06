@@ -17,7 +17,6 @@ import {
   Pin,
   Trash2,
   Bell,
-  UserPlus,
   PanelLeft,
   Search,
   Layers,
@@ -26,7 +25,6 @@ import {
   Check,
   X,
   BookOpen,
-  Landmark,
   Store,
 } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -38,6 +36,7 @@ import {
   StoredChatSession,
   subscribeChatSessions,
 } from "@/lib/chat-sessions-store";
+import { getProjects } from "@/lib/projects-store";
 import CreateProjectModal from "@/components/tools/writing-studio/dashboard/CreateProjectModal";
 import NotificationBell from "@/components/forum/NotificationBell";
 import { cn } from "@/lib/utils";
@@ -74,11 +73,13 @@ export default function IconNavSidebar() {
   const [isSessionsOpen, setIsSessionsOpen] = useState(true);
   const [isCreateProjectOpen, setIsCreateProjectOpen] = useState(false);
   const [sessionSearch, setSessionSearch] = useState("");
+  const [savedProjects, setSavedProjects] = useState<any[]>([]);
 
   useEffect(() => {
     if (isWritingRoute) {
       setIsWritingSuiteOpen(true);
     }
+    setSavedProjects(getProjects().slice(0, 6));
   }, [pathname, isWritingRoute]);
 
   const toggleCollapse = () => {
@@ -94,6 +95,7 @@ export default function IconNavSidebar() {
   const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
   const [editingTitle, setEditingTitle] = useState("");
   const currentConvId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("conversationId") : null;
+  const currentProjectId = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("projectId") : null;
 
   const handleStartRename = (e: React.MouseEvent, chat: StoredChatSession) => {
     e.stopPropagation();
@@ -117,6 +119,7 @@ export default function IconNavSidebar() {
   useEffect(() => {
     // Initial fetch
     setSessions(getChatSessions());
+    setSavedProjects(getProjects().slice(0, 6));
 
     // Live subscription
     const unsubscribe = subscribeChatSessions((updated) => {
@@ -148,7 +151,7 @@ export default function IconNavSidebar() {
         (isCollapsed && isHovering) ? "absolute left-0 top-0 shadow-2xl w-[264px]" : 
         effectiveCollapsed ? "w-16 relative" : "w-[264px] relative"
       )}>
-        {/* â”€â”€ Top Header: Logo + Collapse Toggle â”€â”€ */}
+        {/* ── Top Header: Logo + Collapse Toggle ── */}
         <div className={cn("flex items-center h-14 pt-3 pb-2 flex-shrink-0", effectiveCollapsed ? "justify-center px-2" : "justify-between px-4")}>
           {!effectiveCollapsed && (
             <Link href="/" className="flex items-center gap-2.5 no-underline">
@@ -173,7 +176,7 @@ export default function IconNavSidebar() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-2.5 py-2 space-y-3.5 custom-scrollbar">
-          {/* â”€â”€ Primary Action: + New Chat â”€â”€ */}
+          {/* ── Primary Action: + New Chat ── */}
           <button
             type="button"
             onClick={startNewChat}
@@ -187,7 +190,7 @@ export default function IconNavSidebar() {
             {!effectiveCollapsed && <span>New Chat</span>}
           </button>
 
-          {/* â”€â”€ Core Navigation: Twin, Writing Suite, Connectors, Files, Saved Reports â”€â”€ */}
+          {/* ── Core Navigation: Twin, Writing Suite, Connectors, Files, Saved Reports ── */}
           <div className="space-y-1">
             {/* 1. Twin AI Cofounder */}
             <Link
@@ -320,7 +323,7 @@ export default function IconNavSidebar() {
             {/* 6. Emporium (Agentic Books, Standards & Creations) */}
             <Link
               href="/marketplace"
-              title="Emporium â€” Agentic Books, Standards & Creations"
+              title="Emporium — Agentic Books, Standards & Creations"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
                 effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
@@ -336,7 +339,7 @@ export default function IconNavSidebar() {
             {/* 7. Community Swarm & Discussions */}
             <Link
               href="/community"
-              title="Community â€” Developer Forums, Bounties & Agent Dispatches"
+              title="Community — Developer Forums, Bounties & Agent Dispatches"
               className={cn(
                 "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline group",
                 effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
@@ -351,7 +354,7 @@ export default function IconNavSidebar() {
 
           </div>
 
-          {/* â”€â”€ Projects Section (with Create Project Modal) â”€â”€ */}
+          {/* ── Projects Section (with Saved Projects & Create Project Modal) ── */}
           {!effectiveCollapsed && (
             <div className="space-y-2 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
               <button
@@ -359,12 +362,12 @@ export default function IconNavSidebar() {
                 onClick={() => setIsProjectsOpen(!isProjectsOpen)}
                 className="flex items-center justify-between w-full px-2 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white transition cursor-pointer"
               >
-                <span>Projects</span>
+                <span>Projects ({savedProjects.length})</span>
                 {isProjectsOpen ? <ChevronDown className="h-4 w-4 text-zinc-500" /> : <ChevronRight className="h-4 w-4 text-zinc-500" />}
               </button>
 
               {isProjectsOpen && (
-                <div className="px-1 pt-1">
+                <div className="px-1 pt-1 space-y-1">
                   <button
                     type="button"
                     onClick={() => setIsCreateProjectOpen(true)}
@@ -373,12 +376,33 @@ export default function IconNavSidebar() {
                     <FolderPlus className="h-4.5 w-4.5 shrink-0 text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-900 dark:group-hover:text-white" />
                     <span>Create project</span>
                   </button>
+
+                  {savedProjects.map((proj) => {
+                    const pid = proj._id || proj.id;
+                    const activeProj = currentProjectId === pid || pathname === `/writing-studio/${pid}`;
+                    return (
+                      <Link
+                        key={pid}
+                        href={`/writing-studio?projectId=${encodeURIComponent(pid)}`}
+                        className={cn(
+                          "flex items-center gap-2.5 w-full px-3 py-1.5 rounded-xl text-xs transition-colors no-underline truncate",
+                          activeProj
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 font-semibold border border-emerald-500/30"
+                            : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/60 dark:hover:bg-white/[0.05] hover:text-zinc-950 dark:hover:text-white"
+                        )}
+                        title={proj.title || "Untitled Project"}
+                      >
+                        <BookOpen className="h-3.5 w-3.5 shrink-0 text-emerald-500/80" />
+                        <span className="truncate">{proj.title || "Untitled Project"}</span>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
           )}
 
-          {/* â”€â”€ Sessions Section â”€â”€ */}
+          {/* ── Sessions Section ── */}
           {!effectiveCollapsed && (
             <div className="space-y-1.5 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
               <button
@@ -513,23 +537,8 @@ export default function IconNavSidebar() {
             </div>
           )}
 
-          {/* â”€â”€ Community & Settings â”€â”€ */}
+          {/* ── Settings ── */}
           <div className="space-y-1 pt-2 border-t border-zinc-300 dark:border-white/[0.08]">
-            <Link
-              href="/community"
-              title="Community"
-              className={cn(
-                "flex items-center rounded-xl text-sm font-semibold transition-colors no-underline",
-                effectiveCollapsed ? "justify-center px-0 py-2.5" : "gap-3 px-3.5 py-2.5",
-                isActive('/community')
-                  ? "bg-zinc-200/90 dark:bg-white/[0.12] text-zinc-950 dark:text-white font-bold shadow-xs"
-                  : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-white/[0.06] hover:text-zinc-950 dark:hover:text-white"
-              )}
-            >
-              <Users className="h-5 w-5 shrink-0 text-indigo-600 dark:text-indigo-400" />
-              {!effectiveCollapsed && <span>Community</span>}
-            </Link>
-
             <Link
               href="/settings"
               title="Settings"
@@ -547,7 +556,7 @@ export default function IconNavSidebar() {
           </div>
         </div>
 
-        {/* â”€â”€ Credit Wallet & Micro-Pass â”€â”€ */}
+        {/* ── Credit Wallet & Micro-Pass ── */}
         {!isCollapsed ? (
           <div className="mx-3.5 mb-2.5 p-3 rounded-xl bg-zinc-100/90 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] flex items-center justify-between shadow-xs">
             <div className="flex items-center gap-2.5">
@@ -569,14 +578,14 @@ export default function IconNavSidebar() {
         ) : (
           <Link
             href="/pricing"
-          title={`Wallet: ${userCredits} Credits (+ Top Up)`}
+            title={`Wallet: ${userCredits} Credits (+ Top Up)`}
             className="mx-auto mb-2 w-9 h-9 rounded-lg bg-zinc-100 dark:bg-white/[0.04] border border-zinc-200 dark:border-white/[0.08] flex items-center justify-center text-amber-500 dark:text-amber-400 hover:bg-zinc-200 dark:hover:bg-white/[0.08] transition"
           >
             <Zap className="w-4 h-4 fill-amber-500/30" />
           </Link>
         )}
 
-        {/* â”€â”€ Bottom Profile Section â”€â”€ */}
+        {/* ── Bottom Profile Section ── */}
         <div className={cn("border-t border-zinc-300 dark:border-white/[0.08] mt-auto", isCollapsed ? "p-2 flex flex-col items-center gap-2" : "p-3.5 space-y-2.5")}>
           <div className={cn("flex items-center w-full", effectiveCollapsed ? "justify-center" : "justify-between")}>
             <Link href="/account" title={user?.name || "Account Profile"} className={cn("flex items-center min-w-0 no-underline group cursor-pointer", effectiveCollapsed ? "justify-center" : "gap-3 flex-1")}>
@@ -589,7 +598,7 @@ export default function IconNavSidebar() {
                     {user?.email ? user.email.split("@")[0] : "ahsan91927374"}
                   </span>
                   <span className="text-xs text-zinc-600 dark:text-zinc-400 font-medium font-mono truncate">
-                    {user?.package ? `${user.package.toUpperCase()} PRO` : "Enterprise Pro"}
+                    {user?.package ? `${user.package.toUpperCase()} PRO` : "Creator Pro"}
                   </span>
                 </div>
               )}
@@ -625,24 +634,25 @@ export default function IconNavSidebar() {
         </div>
       </aside>
 
-      {/* â”€â”€ Create Project Modal â”€â”€ */}
+      {/* ── Create Project Modal ── */}
       {isCreateProjectOpen && (
         <CreateProjectModal
           onClose={() => setIsCreateProjectOpen(false)}
           createProject={async (data: any) => data}
           onProjectCreated={(project: any) => {
             setIsCreateProjectOpen(false);
-            if (project?.id) {
-              router.push(`/writing-studio?projectId=${project.id}`);
+            setSavedProjects(getProjects().slice(0, 6));
+            const pid = project?._id || project?.id;
+            if (pid) {
+              router.push(`/writing-studio?projectId=${encodeURIComponent(pid)}`);
             }
           }}
           onStartAgentFlow={(_type: any) => {
             setIsCreateProjectOpen(false);
-            router.push('/');
+            router.push('/writing-studio');
           }}
         />
       )}
-      {/* Voice Studio: access via Call button in chat */}
     </>
   );
 }

@@ -1,6 +1,5 @@
-
 import { Suspense, useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "@/lib/navigation";
+import { useSearchParams, useRouter, useParams } from "@/lib/navigation";
 import WritingHomeDashboard from "@/components/tools/writing-studio/dashboard/WritingHomeDashboard";
 import { PolishedWriteView } from "@/components/writing-studio/PolishedWriteView";
 import { UnifiedStudioHub } from "@/components/writing-studio/UnifiedStudioHub";
@@ -11,17 +10,27 @@ import { clearWritingStudioSeed, getWritingStudioSeed } from "@/lib/writing-stud
 
 function WritingStudioInner() {
   const searchParams = useSearchParams();
+  const params = useParams();
   const router = useRouter();
   const showProjects = searchParams.get("projects") === "1";
   const showChat = searchParams.get("tab") === "chat";
   const is3Fold = searchParams.get("mode") === "3fold" || searchParams.get("workspace") === "3fold";
-  const projectId = searchParams.get("projectId");
+  const routeDocumentId = params?.documentId && params.documentId !== "chat" ? params.documentId : null;
+  const projectId =
+    routeDocumentId ||
+    searchParams.get("projectId") ||
+    searchParams.get("docId") ||
+    searchParams.get("id");
   const intent = searchParams.get("intent");
   const initialProjectType =
     intent === "research" || intent === "assignment" || intent === "book" ? intent : "book";
 
-  const [view, setView] = useState(is3Fold ? "3fold" : showProjects ? "projects" : "hub");
-  const [activeProject, setActiveProject] = useState(null);
+  const [view, setView] = useState(
+    is3Fold ? "3fold" : projectId ? "editor" : showProjects ? "projects" : "hub"
+  );
+  const [activeProject, setActiveProject] = useState(() =>
+    projectId ? getProject(projectId) : null
+  );
   const [seedDescription, setSeedDescription] = useState("");
 
   useEffect(() => {
@@ -31,12 +40,12 @@ function WritingStudioInner() {
   useEffect(() => {
     if (is3Fold && view !== "3fold") {
       setView("3fold");
-    } else if (showProjects && view !== "projects" && !is3Fold) {
+    } else if (showProjects && view !== "projects" && !is3Fold && !projectId) {
       setView("projects");
-    } else if (!showProjects && !is3Fold && view === "projects") {
+    } else if (!showProjects && !is3Fold && !projectId && view === "projects") {
       setView("hub");
     }
-  }, [showProjects, is3Fold]);
+  }, [showProjects, is3Fold, projectId]);
 
   useEffect(() => {
     if (showChat) {
@@ -85,6 +94,7 @@ function WritingStudioInner() {
         onBack={() => {
           setActiveProject(null);
           setView("hub");
+          router.push("/writing-studio");
         }}
       />
     );

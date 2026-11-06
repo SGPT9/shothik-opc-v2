@@ -44,17 +44,32 @@ const USAGE_LABELS: Record<UsageLimitKey, string> = {
 
 const TIER_ICONS: Record<string, React.ReactNode> = {
   free: <Zap className="h-6 w-6" />,
+  starter: <Zap className="h-6 w-6" />,
   student: <GraduationCap className="h-6 w-6" />,
+  student_plus: <GraduationCap className="h-6 w-6" />,
   researcher: <FlaskConical className="h-6 w-6" />,
+  creator_pro: <FlaskConical className="h-6 w-6" />,
   pro: <Crown className="h-6 w-6" />,
+  studio_max: <Crown className="h-6 w-6" />,
 };
 
 const TIER_COLORS: Record<string, string> = {
   free: "text-zinc-400",
+  starter: "text-zinc-400",
   student: "text-blue-400",
+  student_plus: "text-blue-400",
   researcher: "text-violet-400",
+  creator_pro: "text-violet-400",
   pro: "text-amber-400",
+  studio_max: "text-amber-400",
 };
+
+function normalizeLegacyTierKey(tier: string): keyof typeof SUBSCRIPTION_TIERS {
+  if (tier === "studio_max" || tier === "pro") return "pro";
+  if (tier === "creator_pro" || tier === "researcher") return "researcher";
+  if (tier === "student_plus" || tier === "student") return "student";
+  return "free";
+}
 
 function UsageMeter({ label, info }: { label: string; info: UsageInfo }) {
   if (info.isUnlimited) {
@@ -131,20 +146,24 @@ export default function BillingPage() {
     );
   }
 
-  const tierConfig = SUBSCRIPTION_TIERS[subscription.tier];
+  const normalizedTier = normalizeLegacyTierKey(subscription.tier);
+  const tierConfig = SUBSCRIPTION_TIERS[normalizedTier] || SUBSCRIPTION_TIERS.free;
   const displayCredits =
     creditsBalance !== null
       ? creditsBalance
-      : subscription.tier === "pro"
+      : normalizedTier === "pro"
         ? 1500
-        : subscription.tier === "researcher"
+        : normalizedTier === "researcher"
           ? 550
-          : subscription.tier === "student"
-            ? 50
-            : 15;
+          : normalizedTier === "student"
+            ? 150
+            : 30;
 
   const handleManageBilling = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      window.location.href = "/pricing";
+      return;
+    }
 
     setPortalLoading(true);
     setPortalError(null);
@@ -158,15 +177,21 @@ export default function BillingPage() {
         body: JSON.stringify({}),
       });
 
+      if (!res.ok) {
+        // Local MFS (bKash / Nagad / SSLCommerz) users manage plans directly on /pricing
+        window.location.href = "/pricing";
+        return;
+      }
+
       const data = await res.json();
       if (data.portalUrl) {
         window.location.href = data.portalUrl;
       } else {
-        setPortalError(data.error || "Failed to open billing portal");
-        setPortalLoading(false);
+        window.location.href = "/pricing";
       }
     } catch {
-      setPortalError("Failed to connect to billing service");
+      window.location.href = "/pricing";
+    } finally {
       setPortalLoading(false);
     }
   };
@@ -195,9 +220,9 @@ export default function BillingPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ${TIER_COLORS[subscription.tier]}`}
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ${TIER_COLORS[subscription.tier] || TIER_COLORS[normalizedTier]}`}
                 >
-                  {TIER_ICONS[subscription.tier]}
+                  {TIER_ICONS[subscription.tier] || TIER_ICONS[normalizedTier]}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold">{tierConfig.name}</h3>
@@ -298,7 +323,7 @@ export default function BillingPage() {
               )}
 
               {subscription.isPaid &&
-                subscription.tier !== "pro" && (
+                normalizedTier !== "pro" && (
                   <Button
                     variant="outline"
                     className="w-full gap-2"
@@ -309,7 +334,7 @@ export default function BillingPage() {
                     {
                       SUBSCRIPTION_TIERS[
                         TIER_ORDER[
-                          TIER_ORDER.indexOf(subscription.tier) + 1
+                          TIER_ORDER.indexOf(normalizedTier) + 1
                         ] as keyof typeof SUBSCRIPTION_TIERS
                       ]?.name
                     }
@@ -442,7 +467,7 @@ export default function BillingPage() {
       <UpgradeModal
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
-        currentTier={subscription.tier}
+        currentTier={normalizedTier}
       />
     </div>
   );
