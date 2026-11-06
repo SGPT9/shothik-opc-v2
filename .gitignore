@@ -133,3 +133,7 @@ externals/
 open-duet/
 rea/
 github-prompt-reverse-engineer/
+
+# Local Graphify Knowledge Graph Cache
+graphify-out/
+

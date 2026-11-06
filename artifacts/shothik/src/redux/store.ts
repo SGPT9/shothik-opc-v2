@@ -9,7 +9,6 @@ import { humanizeHistoryApiSlice } from "./api/humanizeHistory/humanizeHistory";
 import { autoFreezeApiSlice } from "./api/paraphrase/autoFreeze";
 import { customModesApi } from "./api/paraphrase/customModesApi";
 import { presentationApiSlice } from "./api/presentation/presentationApi";
-import { pricingApiSlice } from "./api/pricing/pricingApi";
 import { researchChatApi } from "./api/research/researchChatApi";
 import { researchCoreApi } from "./api/research/researchCoreApi";
 import { shareApiSlice } from "./api/share/shareApi";
@@ -65,7 +64,6 @@ export const store = configureStore({
     [shareAiDetectorApiSlice.reducerPath]: shareAiDetectorApiSlice.reducer,
     [authApiSlice.reducerPath]: authApiSlice.reducer,
     [blogApiSlice.reducerPath]: blogApiSlice.reducer,
-    [pricingApiSlice.reducerPath]: pricingApiSlice.reducer,
     [toolsApiSlice.reducerPath]: toolsApiSlice.reducer,
     [presentationApiSlice.reducerPath]: presentationApiSlice.reducer,
     [humanizeHistoryApiSlice.reducerPath]: humanizeHistoryApiSlice.reducer,
@@ -82,7 +80,6 @@ export const store = configureStore({
     }).concat(
       authApiSlice.middleware,
       blogApiSlice.middleware,
-      pricingApiSlice.middleware,
       toolsApiSlice.middleware,
       presentationApiSlice.middleware,
       humanizeHistoryApiSlice.middleware,
