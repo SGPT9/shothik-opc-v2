@@ -1,5 +1,3 @@
-
-
 import { useSelector } from "react-redux";
 import { useGetUsesLimitQuery } from "@/redux/api/tools/toolsApi";
 import { useGetUserLimitQuery } from "@/redux/api/auth/authApi";
@@ -117,7 +115,10 @@ export function useWritingStudioLimits() {
       case "grammar":
       case "summarize":
         if (paraphraseLimits) {
-          const hasWords = paraphraseLimits.remainingWord > 0 || paraphraseLimits.totalWordLimit === 99999;
+          const hasWords =
+            paraphraseLimits.remainingWord > 0 ||
+            paraphraseLimits.totalWordLimit === -1 ||
+            paraphraseLimits.totalWordLimit === 99999;
           return {
             allowed: hasWords,
             reason: hasWords ? null : "word_limit_reached",
@@ -129,7 +130,10 @@ export function useWritingStudioLimits() {
 
       case "humanize":
         if (humanizeLimits) {
-          const hasWords = humanizeLimits.remainingWord > 0 || humanizeLimits.totalWordLimit === 99999;
+          const hasWords =
+            humanizeLimits.remainingWord > 0 ||
+            humanizeLimits.totalWordLimit === -1 ||
+            humanizeLimits.totalWordLimit === 99999;
           return {
             allowed: hasWords,
             reason: hasWords ? null : "word_limit_reached",
@@ -199,7 +203,7 @@ export function getUpgradeMessage(reason: ReasonType): string {
     case "word_limit_reached":
       return "You've reached your word limit for today";
     case "pro_required":
-      return "This feature requires an upgrade to Academic Pro";
+      return "This feature requires a Starter Pass (৳100) or Pro Operator plan";
     default:
       return "Please upgrade to continue";
   }

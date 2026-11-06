@@ -1,11 +1,8 @@
-
-
 import { useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import {
   CreditCard,
   Wallet,
-  Plus,
   CheckCircle2,
   Clock,
   XCircle,
@@ -16,13 +13,20 @@ import {
   DollarSign,
   Building2,
   Globe,
-  ChevronDown,
+  Smartphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { usePayouts, useEarnings } from "@/hooks/useEarnings";
 
 const PAYOUT_METHODS = [
+  {
+    id: "bkash_nagad",
+    name: "bKash / Nagad Instant Settlement (BDT)",
+    icon: Smartphone,
+    description: "Instant Bangladeshi royalty disbursement via bKash / Nagad wallet",
+    available: true,
+  },
   {
     id: "stripe",
     name: "Stripe",
@@ -56,7 +60,7 @@ const STATUS_CONFIG = {
 
 function PayoutRequestForm({ availableBalance, onSubmit, onCancel, isRequesting, error }) {
   const [amount, setAmount] = useState(availableBalance >= 25 ? availableBalance.toFixed(2) : "");
-  const [method, setMethod] = useState("stripe");
+  const [method, setMethod] = useState("bkash_nagad");
 
   const now = new Date();
   const periodEnd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
@@ -160,7 +164,20 @@ function PayoutRequestForm({ availableBalance, onSubmit, onCancel, isRequesting,
 
 function StripeConnectSetup({ userId, email, onAccountSaved }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [bkashNumber, setBkashNumber] = useState("");
   const [error, setError] = useState(null);
+
+  const handleSetupBkash = async () => {
+    if (!bkashNumber.trim()) return;
+    if (onAccountSaved) {
+      await onAccountSaved({
+        method: "bkash_nagad",
+        payoneerAccountEmail: `bKash/Nagad: ${bkashNumber.trim()}`,
+        isDefault: true,
+      });
+      setBkashNumber("");
+    }
+  };
 
   const handleSetupStripe = async () => {
     setIsLoading(true);
@@ -191,7 +208,9 @@ function StripeConnectSetup({ userId, email, onAccountSaved }) {
         });
       }
 
-      window.open(data.onboardingUrl, "_blank");
+      if (data.onboardingUrl) {
+        window.open(data.onboardingUrl, "_blank");
+      }
     } catch (err) {
       setError(err.message || "Connection failed");
     } finally {
@@ -200,30 +219,59 @@ function StripeConnectSetup({ userId, email, onAccountSaved }) {
   };
 
   return (
-    <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5">
-      <div className="flex items-center gap-3 mb-3">
-        <div className="size-10 bg-blue-100 dark:bg-blue-900/20 text-blue-600 rounded-lg flex items-center justify-center">
-          <CreditCard className="h-5 w-5" />
+    <div className="space-y-3">
+      <div className="bg-white dark:bg-zinc-900/50 border border-pink-500/30 rounded-xl p-5">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="size-10 bg-pink-500/15 text-pink-500 rounded-lg flex items-center justify-center">
+            <Smartphone className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-zinc-900 dark:text-white">Connect bKash / Nagad Royalty Wallet</h3>
+            <p className="text-xs text-zinc-500">Instant BDT settlement for Boi Mela & Webnovel sales</p>
+          </div>
         </div>
-        <div>
-          <h3 className="font-bold text-sm text-zinc-900 dark:text-white">Set Up Stripe Connect</h3>
-          <p className="text-xs text-zinc-500">Connect your bank account to receive payouts</p>
+        <div className="flex gap-2">
+          <input
+            type="tel"
+            value={bkashNumber}
+            onChange={(e) => setBkashNumber(e.target.value)}
+            placeholder="017XXXXXXXX (bKash / Nagad)"
+            className="flex-1 px-3 py-2 text-xs border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800"
+          />
+          <button
+            onClick={handleSetupBkash}
+            className="px-4 py-2 bg-pink-600 hover:bg-pink-500 text-white rounded-lg text-xs font-bold transition-colors"
+          >
+            Save MFS Wallet
+          </button>
         </div>
       </div>
-      {error && (
-        <div className="flex items-center gap-2 p-2 mb-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-lg text-xs text-red-600">
-          <AlertCircle className="h-3.5 w-3.5 shrink-0" />
-          {error}
+
+      <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 rounded-xl p-5">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="size-10 bg-blue-100 dark:bg-blue-900/20 text-blue-600 rounded-lg flex items-center justify-center">
+            <CreditCard className="h-5 w-5" />
+          </div>
+          <div>
+            <h3 className="font-bold text-sm text-zinc-900 dark:text-white">Set Up Stripe Connect (Global USD)</h3>
+            <p className="text-xs text-zinc-500">Connect your international bank account to receive USD payouts</p>
+          </div>
         </div>
-      )}
-      <button
-        onClick={handleSetupStripe}
-        disabled={isLoading}
-        className="w-full py-2.5 bg-brand hover:bg-[#1171d3] text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-      >
-        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
-        {isLoading ? "Setting up..." : "Connect with Stripe"}
-      </button>
+        {error && (
+          <div className="flex items-center gap-2 p-2 mb-3 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800/30 rounded-lg text-xs text-red-600">
+            <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+            {error}
+          </div>
+        )}
+        <button
+          onClick={handleSetupStripe}
+          disabled={isLoading}
+          className="w-full py-2.5 bg-brand hover:bg-[#1171d3] text-white rounded-xl text-sm font-bold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+        >
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ExternalLink className="h-4 w-4" />}
+          {isLoading ? "Setting up..." : "Connect with Stripe"}
+        </button>
+      </div>
     </div>
   );
 }
@@ -239,7 +287,6 @@ export function PayoutManager() {
   const [showRequestForm, setShowRequestForm] = useState(false);
 
   const hasStripeAccount = accounts.some((a) => a.method === "stripe" && a.stripeConnectAccountId);
-  const hasPayoneerAccount = accounts.some((a) => a.method === "payoneer" && a.payoneerAccountEmail);
 
   const handleRequestPayout = useCallback(
     async (data) => {
@@ -331,7 +378,7 @@ export function PayoutManager() {
                   </p>
                   <p className="text-xs text-zinc-500">
                     {account.method === "stripe" && account.stripeConnectAccountId && `Connected: ${account.stripeConnectAccountId.slice(0, 12)}...`}
-                    {account.method === "payoneer" && account.payoneerAccountEmail}
+                    {(account.method === "payoneer" || account.method === "bkash_nagad") && account.payoneerAccountEmail}
                     {account.method === "bank_transfer" && account.bankDetails && `${account.bankDetails.bankName} ****${account.bankDetails.lastFourDigits}`}
                   </p>
                 </div>

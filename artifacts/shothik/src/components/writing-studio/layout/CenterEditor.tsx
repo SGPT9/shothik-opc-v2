@@ -3,13 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Bold,
   Italic,
-  Quote,
-  History,
   Undo,
   Redo,
-  Search,
-  Loader2,
-  X,
   SplitSquareHorizontal,
   Mic,
   MicOff,
@@ -17,18 +12,20 @@ import {
   VolumeX,
   Languages,
   Sparkles as SparklesIcon,
+  MessageSquarePlus,
+  Command,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useCitationSuggestions, type CitationResult } from '@/hooks/useCitationSuggestions';
 import type { CitationStyle } from '@/lib/reference-list';
 import { useGhostText } from '@/hooks/useGhostText';
 import { useInlineRewrite } from '../hooks/useInlineRewrite';
 import { InlineDiffModal } from '../InlineDiffModal';
 import { useVoiceDictation } from '@/hooks/useVoiceDictation';
 import { convertBijoyToUnicode } from '@/lib/BijoyConverter';
+import type { InkOsToolId } from '../config/inkos-tool-catalog';
 
 interface CenterEditorProps {
   content?: string;
@@ -43,6 +40,9 @@ interface CenterEditorProps {
   onAppendContent?: (html: string) => void;
   onTogglePreview?: () => void;
   showPreview?: boolean;
+  onOpenInkOsTool?: (toolId: InkOsToolId, selectedText?: string) => void;
+  onAskCoWriter?: (selectedText: string) => void;
+  onOpenCommandDock?: () => void;
 }
 
 export function CenterEditor({
@@ -53,21 +53,18 @@ export function CenterEditor({
   onRedo,
   canUndo = false,
   canRedo = false,
-  onRollbackClick,
   citationStyle = 'APA',
-  onAppendContent,
   onTogglePreview,
   showPreview = false,
+  onOpenInkOsTool,
+  onAskCoWriter,
+  onOpenCommandDock,
 }: CenterEditorProps) {
-  const [showCitationPanel, setShowCitationPanel] = useState(false);
-  const [citationQuery, setCitationQuery] = useState('');
   const [voiceLang, setVoiceLang] = useState<'bn-BD' | 'en-US'>('bn-BD');
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const citationInputRef = useRef<HTMLInputElement>(null);
-  const footnoteCountRef = useRef(0);
+  const [selectedSnippet, setSelectedSnippet] = useState('');
 
-  const { suggestion, isLoading: ghostLoading, accept: acceptGhost, dismiss: dismissGhost } = useGhostText(content);
-  const { suggestions, isSearching, searchPapers, clearSuggestions } = useCitationSuggestions();
+  const { suggestion, accept: acceptGhost, dismiss: dismissGhost } = useGhostText(content);
 
   const inlineRewrite = useInlineRewrite((replacementText) => {
     if (!editor) return;
@@ -99,6 +96,15 @@ export function CenterEditor({
     },
     onUpdate: ({ editor }) => {
       onChange?.(editor.getHTML());
+    },
+    onSelectionUpdate: ({ editor }) => {
+      const { from, to } = editor.state.selection;
+      if (to - from >= 8) {
+        const text = editor.state.doc.textBetween(from, to, ' ').trim();
+        setSelectedSnippet(text);
+      } else {
+        setSelectedSnippet('');
+      }
     },
   });
 
@@ -171,7 +177,7 @@ export function CenterEditor({
       onKeyDown={(e) => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
           e.preventDefault();
-          inlineRewrite.openRewrite(editor?.getText() || '');
+          inlineRewrite.openRewrite(selectedSnippet || editor?.getText() || '');
         }
         if (e.key === 'Tab' && suggestion) {
           e.preventDefault();
@@ -262,7 +268,7 @@ export function CenterEditor({
 
           {/* AI Rewrite Button */}
           <button
-            onClick={() => inlineRewrite.openRewrite(editor?.getText() || '')}
+            onClick={() => inlineRewrite.openRewrite(selectedSnippet || editor?.getText() || '')}
             title="Inline AI Rewrite (Ctrl+K)"
             className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-brand/10 text-brand hover:bg-brand/20 transition-all border border-brand/20 shadow-xs shrink-0 cursor-pointer"
           >
@@ -270,6 +276,17 @@ export function CenterEditor({
             <span>AI Rewrite</span>
             <kbd className="text-[10px] opacity-60 font-mono px-1 py-0.5 bg-brand/15 rounded">Ctrl+K</kbd>
           </button>
+
+          {onOpenCommandDock && (
+            <button
+              onClick={onOpenCommandDock}
+              title="Open All 45+ InkOS Studio Tools (Ctrl+Shift+P)"
+              className="flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500/20 transition-all border border-indigo-500/25 shrink-0 cursor-pointer"
+            >
+              <Command className="w-3.5 h-3.5" />
+              <span>InkOS Dock</span>
+            </button>
+          )}
         </div>
 
         {/* Right Toolbar Controls */}
@@ -311,9 +328,64 @@ export function CenterEditor({
         </div>
       </div>
 
+      {/* ✨ Inline Selection Floating InkOS Pill ("Highlight-to-Tool") */}
+      <AnimatePresence>
+        {selectedSnippet && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.96 }}
+            transition={{ duration: 0.14 }}
+            data-testid="inline-selection-inkos-pill"
+            className="absolute bottom-14 left-1/2 -translate-x-1/2 z-30 flex items-center gap-1.5 bg-zinc-900/95 text-white border border-zinc-700 rounded-full px-3 py-1.5 shadow-2xl backdrop-blur-md max-w-[95%] overflow-x-auto no-scrollbar"
+          >
+            <span className="text-[10px] font-mono text-zinc-400 px-1.5 shrink-0">
+              Selection ({selectedSnippet.split(/\s+/).length}w):
+            </span>
+            <button
+              type="button"
+              onClick={() => onOpenInkOsTool?.('deslop', selectedSnippet)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 shrink-0 cursor-pointer"
+            >
+              <span>🧹</span>
+              <span>De-Slop (#3)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenInkOsTool?.('sensory-palette', selectedSnippet)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30 shrink-0 cursor-pointer"
+            >
+              <span>🎨</span>
+              <span>5 Senses (#24)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => onOpenInkOsTool?.('dialect-transpiler', selectedSnippet)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 shrink-0 cursor-pointer"
+            >
+              <span>🗣️</span>
+              <span>Dialect (#18)</span>
+            </button>
+            {onAskCoWriter && (
+              <button
+                type="button"
+                onClick={() => {
+                  onAskCoWriter(`Improve and suggest Studio actions for this passage:\n"${selectedSnippet.slice(0, 350)}"`);
+                  setSelectedSnippet('');
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-brand/30 text-cyan-200 hover:bg-brand/40 border border-brand/40 shrink-0 cursor-pointer"
+              >
+                <MessageSquarePlus className="w-3 h-3" />
+                <span>Ask Co-Writer</span>
+              </button>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Ghost Text Auto-completion Pill */}
       <AnimatePresence>
-        {suggestion && (
+        {suggestion && !selectedSnippet && (
           <motion.div
             initial={{ opacity: 0, y: 8, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

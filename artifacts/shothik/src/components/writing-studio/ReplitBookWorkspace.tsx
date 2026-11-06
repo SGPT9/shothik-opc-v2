@@ -1,15 +1,9 @@
 /**
  * FAANG-Grade Refactored ReplitBookWorkspace Orchestrator.
  * 3-Fold Book Writing & Rendering IDE (/writing-studio?mode=3fold)
- *
- * Deconstructed Responsibilities:
- *  - `useBookManuscript`: Outline, word count, active chapter state.
- *  - `useBookAgentConsole`: Sub-agent stream execution, logs, voice dictation.
- *  - `BookLeftChapterTree`: Fold 1 Chapter tree & progress metrics.
- *  - `BookCenterCanvas`: Fold 2 5-Mode Canvas (Writing Studio, Fortune Sheet, Mind Map, Marp Slides, Live Web Preview).
- *  - `BookRightConsole`: Fold 3 Sub-Agent Console & Polsia Swarm.
  */
 import React, { useState } from "react";
+import { ArrowLeft } from "lucide-react";
 import { useBookManuscript, type ChapterItem } from "./hooks/useBookManuscript";
 import { useBookAgentConsole } from "./hooks/useBookAgentConsole";
 import { BookLeftChapterTree } from "./components/BookLeftChapterTree";
@@ -20,6 +14,8 @@ import { ComponentErrorBoundary } from "@/components/agents/components/ChatError
 export interface ReplitBookWorkspaceProps {
   initialTitle?: string;
   initialChapters?: ChapterItem[];
+  initialContent?: string;
+  onContentChange?: (newContent: string) => void;
   onExport?: (format: "pdf" | "epub" | "docx") => void;
   onBack?: () => void;
 }
@@ -31,6 +27,8 @@ export function ReplitBookWorkspace({
     { id: "ch-2", title: "Chapter 2: The Core Mechanism", synopsis: "Escalation of stakes.", wordCount: 6150 },
     { id: "ch-3", title: "Chapter 3: Scaling & Autonomous Execution", synopsis: "Resolution and execution.", wordCount: 8080 },
   ],
+  initialContent,
+  onContentChange,
   onExport,
   onBack,
 }: ReplitBookWorkspaceProps) {
@@ -41,8 +39,15 @@ export function ReplitBookWorkspace({
 
   const [activeTab, setActiveTab] = useState<CanvasTab>("editor");
   const [editorText, setEditorText] = useState(
-    "# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight..."
+    initialContent
+      ? initialContent.replace(/<[^>]+>/g, "\n").trim()
+      : "# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight..."
   );
+
+  const handleEditorUpdate = (nextText: string) => {
+    setEditorText(nextText);
+    onContentChange?.(nextText);
+  };
 
   const [activeCheckpoint, setActiveCheckpoint] = useState<number>(3);
   const checkpoints = [
@@ -55,13 +60,13 @@ export function ReplitBookWorkspace({
   const handleRestoreCheckpoint = (cpId: number) => {
     setActiveCheckpoint(cpId);
     if (cpId === 1) {
-      setEditorText("# Chapter 1: The Quantum Horizon\n\n[Outline Draft] Initial conflict established.");
+      handleEditorUpdate("# Chapter 1: The Quantum Horizon\n\n[Outline Draft] Initial conflict established.");
     } else if (cpId === 2) {
-      setEditorText("# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight...");
+      handleEditorUpdate("# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight...");
     } else if (cpId === 3) {
-      setEditorText("# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight as Maya stepped past the perimeter line.");
+      handleEditorUpdate("# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight as Maya stepped past the perimeter line.");
     } else if (cpId === 4) {
-      setEditorText("# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight as Inspector Maya Sen uncovered the unmistakable serial number etched into the casing.");
+      handleEditorUpdate("# Chapter 1: The Quantum Horizon\n\nThe event horizon shimmered under the harsh starlight as Inspector Maya Sen uncovered the unmistakable serial number etched into the casing.");
     }
   };
 
@@ -70,8 +75,18 @@ export function ReplitBookWorkspace({
       {/* ── Replit Agent Top Checkpoint Scrubber Bar ── */}
       <div className="flex items-center justify-between px-4 py-1.5 border-b border-border/80 bg-muted/40 shrink-0 text-xs select-none">
         <div className="flex items-center gap-2">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-zinc-200/80 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-colors cursor-pointer mr-1"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              <span>Back to Studio</span>
+            </button>
+          )}
           <span className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
-            Replit Checkpoints:
+            {initialTitle} · Checkpoints:
           </span>
           <div className="flex items-center gap-1.5 overflow-x-auto">
             {checkpoints.map((cp) => {
@@ -128,7 +143,7 @@ export function ReplitBookWorkspace({
               activeTab={activeTab}
               onTabChange={setActiveTab}
               editorText={editorText}
-              onEditorTextChange={setEditorText}
+              onEditorTextChange={handleEditorUpdate}
               livePreviewUrl="https://yourbusiness.com"
             />
           </ComponentErrorBoundary>

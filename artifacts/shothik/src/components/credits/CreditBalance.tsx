@@ -17,15 +17,14 @@ export default function CreditBalance({ onClick, className, size = "md" }: Credi
     let mounted = true;
     const userId = user?.id || user?._id || "guest";
 
-    fetch("/api/v1/subscriptions/me", {
+    fetch("/api/v1/subscriptions/credits", {
       headers: { "x-user-id": userId },
     })
       .then((res) => res.json())
       .then((data) => {
-        if (mounted && data.success && data.data?.subscription) {
-          const tier = data.data.subscription.tier;
-          const tierCredits = tier === "team" ? 50000 : tier === "pro" ? 15000 : 500;
-          setBalance(tierCredits);
+        const credits = data?.data?.creditsBalance ?? data?.creditsBalance;
+        if (mounted && typeof credits === "number") {
+          setBalance(credits);
         }
       })
       .catch(() => {});

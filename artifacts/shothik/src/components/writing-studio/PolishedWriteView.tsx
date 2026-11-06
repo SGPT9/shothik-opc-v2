@@ -1,28 +1,25 @@
 /**
- * FAANG-Grade PolishedWriteView Orchestrator.
+ * FAANG-Grade PolishedWriteView Orchestrator — Replit-Inspired Comfort Edition.
  *
- * Full Feature Matrix:
- *  - Mode Switcher: "write" (Editor + Live Split Preview) | "format" (Typesetting Proof + Metadata) | "publish" (EPUB / PDF Preflight)
- *  - Chapter Sync: LeftSidebar chapter list with word counts & synopses.
- *  - CenterEditor: Bidirectional TipTap binding with ghost text and inline diff.
- *  - LiveDocumentPreview: Real-time 6x9 trade book rendering with zoom and page simulation.
- *  - 3-Fold Canvas Switcher: Instant jump to ReplitBookWorkspace.
+ * Ergonomic Highlights:
+ *  - Calm 44px Replit Context Bar with 4 Mode-Aware Pinned Tools + `✨ All 45+ InkOS Tools (Ctrl+Shift+P)` Dock.
+ *  - Conversational InkOS Suggestions inside `RightPanel` AI Co-Writer chat + `/slash` commands + Ambient Co-Pilot Whispers.
+ *  - Inline Selection Floating Pill in `CenterEditor` for zero-friction De-Slop, 5-Senses, Dialect, and Co-Writer queries.
+ *  - Wide Writing Canvas by default (`showPreview = false` in Write mode) + Zen Focus Mode (`Ctrl+\`).
  */
 import React, { useState, useCallback, useEffect, lazy, Suspense, useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  Download,
   FileDown,
   BookOpen,
-  Edit3,
   Sparkles,
-  X,
-  Check,
-  SplitSquareHorizontal,
   Columns3,
   Eye,
-  Sliders,
   Printer,
+  Command,
+  Maximize2,
+  Minimize2,
+  Users,
+  Zap,
 } from "lucide-react";
 import { ModeSwitcherHeader } from "./navigation/ModeSwitcherHeader";
 import { LeftSidebar } from "./layout/LeftSidebar";
@@ -91,9 +88,10 @@ import { PolyglotMatrixModal } from "./components/PolyglotMatrixModal";
 import { ReadingScalerModal } from "./components/ReadingScalerModal";
 import { RoyaltySplitModal } from "./components/RoyaltySplitModal";
 import { LegalShieldModal } from "./components/LegalShieldModal";
+import { InkOsCommandDockModal } from "./components/InkOsCommandDockModal";
+import { INKOS_TOOLS, type InkOsToolId } from "./config/inkos-tool-catalog";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import { useSubscription } from "@/hooks/subscription/useSubscription";
-import { ShieldAlert, BadgeCheck, Globe, Coins, Library, Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -116,7 +114,11 @@ export function PolishedWriteView({
   const projectType: ProjectType = projectTypeProp || project?.type || "book";
   const [mode, setMode] = useState<Mode>("write");
   const [is3FoldMode, setIs3FoldMode] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
+  // Default showPreview to false in Write mode so CenterEditor gets +440px of comfortable width
+  const [showPreview, setShowPreview] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
+  const [isCommandDockOpen, setIsCommandDockOpen] = useState(false);
+  const [externalChatPrompt, setExternalChatPrompt] = useState<string | null>(null);
   const [preview3D, setPreview3D] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNilkhetModalOpen, setIsNilkhetModalOpen] = useState(false);
@@ -197,10 +199,82 @@ export function PolishedWriteView({
         e.preventDefault();
         setIsStoryBibleModalOpen((prev) => !prev);
       }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "P" || e.key === "p")) {
+        e.preventDefault();
+        setIsCommandDockOpen((prev) => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "\\") {
+        e.preventDefault();
+        setIsZenMode((prev) => !prev);
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Unified dispatcher for opening any of the 45+ InkOS tools from Chat, Inline Selection, Context Bar, or Command Dock
+  const handleOpenInkOsTool = useCallback((toolId: InkOsToolId) => {
+    switch (toolId) {
+      case "story-bible": setIsStoryBibleModalOpen(true); break;
+      case "deslop": setIsDeslopModalOpen(true); break;
+      case "forecast": setIsForecastModalOpen(true); break;
+      case "story-graph": setIsStoryGraphModalOpen(true); break;
+      case "tabletop": setIsTabletopModalOpen(true); break;
+      case "short-fiction": setIsShortFictionModalOpen(true); break;
+      case "chekhov": setIsChekhovModalOpen(true); break;
+      case "style-dna": setIsStyleDnaModalOpen(true); break;
+      case "multiverse": setIsMultiverseModalOpen(true); break;
+      case "autopilot": setIsAutopilotModalOpen(true); break;
+      case "voice-casting": setIsVoiceCastingModalOpen(true); break;
+      case "phoneme-tuner": setIsPhonemeModalOpen(true); break;
+      case "soundscape": setIsSoundscapeModalOpen(true); break;
+      case "booktok": setIsBookTokModalOpen(true); break;
+      case "room-blocking": setIsRoomBlockingModalOpen(true); break;
+      case "storyboard": setIsScriptStoryboardModalOpen(true); break;
+      case "retention-radar": setIsRetentionRadarModalOpen(true); break;
+      case "tension-ekg": setIsTensionEkgModalOpen(true); break;
+      case "relations": setIsRelationshipGraphModalOpen(true); break;
+      case "dialect-transpiler": setIsDialectTranspilerModalOpen(true); break;
+      case "showrunners": setIsShowrunnersModalOpen(true); break;
+      case "char-messenger": setIsCharacterMessengerModalOpen(true); break;
+      case "beta-readers": setIsBetaReadersModalOpen(true); break;
+      case "character-duet": setIsCharacterDuetModalOpen(true); break;
+      case "block-catalyzer": setIsBlockCatalyzerModalOpen(true); break;
+      case "sensory-palette": setIsSensoryPaletteModalOpen(true); break;
+      case "mfa-workshop": setIsMfaWorkshopModalOpen(true); break;
+      case "streamer-mode": setIsStreamerModeModalOpen(true); break;
+      case "cognitive-friction": setIsCognitiveFrictionModalOpen(true); break;
+      case "dreamscape": setIsSurrealistModalOpen(true); break;
+      case "lore-wiki": setIsLoreWikiModalOpen(true); break;
+      case "chrono-braider": setIsChronoBraiderModalOpen(true); break;
+      case "plot-divergence": setIsPlotDivergenceModalOpen(true); break;
+      case "spatial-gps": setIsSpatialGpsModalOpen(true); break;
+      case "item-ledger": setIsItemLedgerModalOpen(true); break;
+      case "living-epilogue": setIsLivingEpilogueModalOpen(true); break;
+      case "folk-scorer": setIsCulturalOriginalityModalOpen(true); break;
+      case "print-preflight": setIsPrintPreflightModalOpen(true); break;
+      case "book-jacket": setIsBookJacketModalOpen(true); break;
+      case "cip-barcode": setIsCipBarcodeModalOpen(true); break;
+      case "webnovel-paywall": setIsWebnovelPaywallModalOpen(true); break;
+      case "polyglot-matrix": setIsPolyglotMatrixModalOpen(true); break;
+      case "reading-scaler": setIsReadingScalerModalOpen(true); break;
+      case "royalty-split": setIsRoyaltySplitModalOpen(true); break;
+      case "legal-shield": setIsLegalShieldModalOpen(true); break;
+      case "bilingual-split": setIsBilingualModalOpen(true); break;
+      case "branches": setIsBranchModalOpen(true); break;
+      case "copyright": setIsCertificateModalOpen(true); break;
+      case "podcast": setIsPodcastModalOpen(true); break;
+      case "share": setIsShareModalOpen(true); break;
+      case "upload": setIsResumableModalOpen(true); break;
+      case "import-manuscript": setIsImportOpen(true); break;
+    }
+  }, []);
+
+  // Pinned mode-aware tools (only 4 relevant tools shown in the top bar per mode!)
+  const pinnedModeTools = useMemo(
+    () => INKOS_TOOLS.filter((t) => t.pinnedInModes?.includes(mode)).slice(0, 4),
+    [mode]
+  );
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -259,13 +333,7 @@ export function PolishedWriteView({
     isSaving,
     lastSaved,
     wordCount,
-    citationCount,
-    readinessScore,
-    referenceList,
     setContent,
-    setCitationStyle,
-    setIsSaving,
-    setLastSaved,
   } = useWritingEditor(initialContent, project?.title || bookTitle);
 
   const { pushHistory, undo, redo, canUndo, canRedo } = useWritingHistory(initialContent);
@@ -319,7 +387,7 @@ export function PolishedWriteView({
     [setContent]
   );
 
-  // If user switches to full 3-Fold 5-Mode Workspace
+  // If user switches to full 3-Fold 5-Mode Workspace (now synced with live content!)
   if (is3FoldMode) {
     return (
       <ReplitBookWorkspace
@@ -330,6 +398,8 @@ export function PolishedWriteView({
           synopsis: c.synopsis || "",
           wordCount: c.wordCount || 0,
         }))}
+        initialContent={content}
+        onContentChange={handleContentChange}
         onBack={() => setIs3FoldMode(false)}
       />
     );
@@ -337,9 +407,9 @@ export function PolishedWriteView({
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
-      {/* Top Header Mode Switcher */}
+      {/* ── Calm 44px Replit-Inspired Context Header ── */}
       <ComponentErrorBoundary title="Header Navigation Error">
-        <div className="flex items-center justify-between border-b border-border bg-background px-4 py-2">
+        <div className="flex items-center justify-between border-b border-border bg-background px-4 py-1.5 gap-2">
           <ModeSwitcherHeader
             projectName={title}
             currentMode={mode}
@@ -347,7 +417,42 @@ export function PolishedWriteView({
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-          <div className="flex items-center gap-1.5 flex-wrap">
+
+          {/* Center: Mode-Aware Pinned Tools (4 Context Pills) + ✨ All 45+ InkOS Tools Dock */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {pinnedModeTools.map((tool) => (
+              <Button
+                key={tool.id}
+                size="sm"
+                variant="outline"
+                data-testid={`pinned-tool-${tool.id}`}
+                onClick={() => handleOpenInkOsTool(tool.id)}
+                className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-zinc-200 dark:border-zinc-800 hover:border-brand/50 hover:bg-brand/5 shrink-0 cursor-pointer"
+                title={`${tool.title} (${tool.titleBn}) — ${tool.description}`}
+              >
+                <span>{tool.emoji}</span>
+                <span>{tool.shortLabel}</span>
+              </Button>
+            ))}
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-open-inkos-dock"
+              onClick={() => setIsCommandDockOpen(true)}
+              className="h-7 px-3 text-xs font-bold gap-1.5 border-brand/40 bg-brand/10 text-brand hover:bg-brand/20 shrink-0 cursor-pointer"
+              title="Browse & Search All 45+ InkOS Studio Tools (Ctrl+Shift+P)"
+            >
+              <Command className="h-3.5 w-3.5" />
+              <span>✨ All 45 InkOS Tools</span>
+              <kbd className="hidden md:inline text-[10px] font-mono opacity-75 px-1 bg-brand/15 rounded">
+                ⌃⇧P
+              </kbd>
+            </Button>
+          </div>
+
+          {/* Right: Credits HUD, Presence, Share, Live Preview, 3-Fold IDE & Zen Mode */}
+          <div className="flex items-center gap-1.5 shrink-0">
             <Button
               size="sm"
               variant="outline"
@@ -357,12 +462,14 @@ export function PolishedWriteView({
               title="Universal Shothik Wallet · 0 Credits for Writing & Story Bible (#10), 1-3 Credits for AI/Audio/Print Checkpoints"
             >
               <Zap className="h-3.5 w-3.5 text-amber-400" />
-              <span>⚡ {studioCredits} Credits · InkOS Studio</span>
+              <span>⚡ {studioCredits} Credits</span>
             </Button>
+
             <CollaborativePresence
               bookId={project?._id || project?.id || "default"}
               currentChapterTitle={activeChapter?.title}
             />
+
             <Button
               size="sm"
               variant="outline"
@@ -371,524 +478,25 @@ export function PolishedWriteView({
               title="Share Room with Live Presence & Passcode"
             >
               <Users className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Share</span>
+              <span className="hidden xl:inline">Share</span>
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsBranchModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/30 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
-              title="Git for Writers: Plot Branching & Alternative Endings"
-            >
-              <GitBranch className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Branches</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsCertificateModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/30 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Cryptographic Proof of Authorship Certificate"
-            >
-              <Award className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Copyright</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsPodcastModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-              title="Audiobook Podcast RSS Feed & Waveform Player"
-            >
-              <Radio className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Podcast</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsResumableModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
-              title="TUS Resumable Upload for Large Audio & Thesis PDFs"
-            >
-              <UploadCloud className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Upload</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsBilingualModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-teal-500/30 text-teal-400 hover:bg-teal-500/10 cursor-pointer"
-              title="Synchronized Dual-Language Split Screen (Bengali & English)"
-            >
-              <Languages className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Bilingual</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsForecastModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
-              title="Multi-Branch Narrative Forecast Engine (InkOS 3-Trajectory Simulation)"
-            >
-              <Compass className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Forecast</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsStoryGraphModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
-              title="Interactive Story Graph & Gamebook Studio (Inkle .ink + HTML)"
-            >
-              <Network className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Story Graph</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsDeslopModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Semantic Prose De-Slopper (7-Point AI Tropes & Cliché Cleaner)"
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">De-Slop</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsTabletopModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-red-500/40 text-red-400 hover:bg-red-500/10 cursor-pointer"
-              title="Live Director's Tabletop Scene Simulator (InkOS Play)"
-            >
-              <Clapperboard className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Tabletop Play</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsShortFictionModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
-              title="Automated Commercial Short-Fiction Package Studio (12-Chapter Generator & Sales Pitch)"
-            >
-              <BookCopy className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Short Fiction</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsChekhovModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-orange-500/40 text-orange-400 hover:bg-orange-500/10 cursor-pointer"
-              title="Chekhov’s Gun & Plot Foreshadowing Lifecycle Tracker (4-Stage State Machine)"
-            >
-              <Crosshair className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Chekhov's Gun</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsStyleDnaModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
-              title="Literary Style DNA & Author Voice Fingerprint (Cadence, Lexicon & Voice Lock)"
-            >
-              <Fingerprint className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Style DNA</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsMultiverseModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
-              title="What-If? Multi-Verse & Canon Sandbox (AU, OOC & Relationship Branches)"
-            >
-              <GitFork className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Multi-Verse</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsAutopilotModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
-              title="Autopilot Chapter Daemon & Mobile Push Dispatch (Overnight Checks & Telegram Approval Cards)"
-            >
-              <Moon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Autopilot</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsStoryBibleModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Sub-Millisecond Offline Story Bible HUD (Ctrl+Shift+B: Instant Character, Location & Lore Reference)"
-            >
-              <BookMarked className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Story Bible</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsVoiceCastingModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
-              title="Multi-Cast Voice Casting & Dialect Director (Local 24kHz Neural Voice AI Engine :8001)"
-            >
-              <Mic className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Voice Casting</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsPhonemeModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-pink-500/40 text-pink-400 hover:bg-pink-500/10 cursor-pointer"
-              title="Custom Phoneme & Diacritic Pronunciation Tuner (IPA, SSML & Syllabification Engine)"
-            >
-              <SpellCheck className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Phoneme Tuner</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsSoundscapeModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-teal-500/40 text-teal-400 hover:bg-teal-500/10 cursor-pointer"
-              title="Immersive 3D Binaural Soundscape & Audio Foley Engine (HRTF Spatial Rain, River, Traffic & Nature)"
-            >
-              <Headphones className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">3D Soundscape</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsBookTokModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-              title="2D Talking-Head Lip-Sync Video & BookTok Teaser Generator (9:16 Vertical Reel & Viseme Sync)"
-            >
-              <Clapperboard className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">BookTok Teaser</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsRoomBlockingModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-              title="3D Spatial Room Blocking & Line-of-Sight Canvas (Raycast Sightlines & Physical Staging Audit)"
-            >
-              <Grid className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Room Blocking</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsScriptStoryboardModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Novel-to-Screenplay & Comic Storyboard Transmuter (Fountain Script & 6-Panel Comic Layouts)"
-            >
-              <Film className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Script / Comic</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsRetentionRadarModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-              title="Market Trend & Reader Retention Radar (Cliffhanger Pacing & Commercial Trope Momentum)"
-            >
-              <TrendingUp className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Retention Radar</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsTensionEkgModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-              title="Narrative Tension Heartbeat & Pacing Velocity EKG (Oscilloscope Waveform & Conflict Velocity)"
-            >
-              <Activity className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Tension EKG</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsRelationshipGraphModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
-              title="Dynamic Character Relationship & Social Topology Graph (Trust, Rivalry & Betrayal Vectors)"
-            >
-              <Network className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Relations</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsDialectTranspilerModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Vernacular Dialect & Historical Register Transpiler (Sadhu, Dhakaiya, Sylheti, Barisali, 1971)"
-            >
-              <Languages className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Dialects</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsShowrunnersModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 cursor-pointer"
-              title="Virtual 'Showrunner's Table' Multi-Agent Brainstorm Crucible (Architect, Psychologist, Geometer, Contrarian)"
-            >
-              <Users className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Showrunners</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsCharacterMessengerModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
-              title="Direct Character Messenger & Voice-Note Lore Chat (Text & Voice Notes with Himu, Badal, Rupa, OC Rafiq)"
-            >
-              <Mic className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Char Chat</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsBetaReadersModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Simulated AI Beta Reader Focus Group (5 Personas: Farhan, Nabila, Tahsin, Samira, Kabir • DNF Risk & Margin Critique)"
-            >
-              <Users className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Beta Readers</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsCharacterDuetModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-              title="Live Character Duet Mode 'Sentence Tennis' (Interactive Sentence-by-Sentence Ping-Pong Co-Authoring with Himu, Badal, Rupa, OC Rafiq, Misir Ali)"
-            >
-              <Zap className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Duet Tennis</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsBlockCatalyzerModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-              title="Beat the Block Flow-State Catalyzer & Reverse Outliner (Intrusion, Revelation, Hazard Sparks & 6-Beat Reverse Beat Sheet)"
-            >
-              <Flame className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Catalyzer</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsSensoryPaletteModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-              title="Sensory Palette & 5-Sense Immersion Painter (Sight, Sound, Smell, Touch, Taste Distribution & Anti-Talking Heads Engine)"
-            >
-              <Palette className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Sensory</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsMfaWorkshopModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="MFA Creative Writing Classroom & Workshop Crucible (Custom Role Claims, Blind Peer Reviews & 5-Point Craft Rubrics)"
-            >
-              <GraduationCap className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">MFA Workshop</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsStreamerModeModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-purple-500/40 text-purple-400 hover:bg-purple-500/10 cursor-pointer"
-              title="Live Audience 'Streamer Mode' & Interactive Co-Writing (Twitch/YouTube Polls, Real-Time Chat & Plot Branch Voting)"
-            >
-              <Tv className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Streamer</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsCognitiveFrictionModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-              title="Cognitive Flow & Reading Friction Heatmap (Green to Crimson Syntactic Tangles & Clause-Stacking Auditor)"
-            >
-              <Brain className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Friction Map</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsSurrealistModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
-              title="Surrealist Dreamscape & Unreliable Narrator Mode (Non-Linear Cognitive Generation & Hidden True-State Ledger)"
-            >
-              <CloudMoon className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Dreamscape</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsLoreWikiModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 cursor-pointer"
-              title="Autonomous World Lore Wiki & Encyclopedia Engine (Searchable Lore Bible, Cross-References & IP Pitch Deck)"
-            >
-              <BookOpen className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Lore Wiki</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsChronoBraiderModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Multi-Tier Chrono-Braider (Non-Linear Flashback Alignment, Diegetic Chronology & Temporal Paradox Audit)"
-            >
-              <GitFork className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Chrono Braid</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsPlotDivergenceModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
-              title="Semantic Time-Travel & Plot Divergence Replay (What-If Narrative Branches & Causal Ripple Diff)"
-            >
-              <GitPullRequest className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Divergence</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsSpatialGpsModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
-              title="Interactive Map & Spatial Timeline GPS (Transit Physics & Day/Night Auditor)"
-            >
-              <MapPin className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Spatial GPS</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsItemLedgerModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Strict Physical Item Economy & Ammunition Ledger (Physical Conservation & Ammo Auditor)"
-            >
-              <PackageCheck className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Item Ledger</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsLivingEpilogueModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-              title="Interactive 'Living Epilogue' Reader App (Vintage Radio Bulletins, Newspaper Clippings & Seasonal Lore)"
-            >
-              <Radio className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Living Epilogue</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsCulturalOriginalityModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-teal-500/40 text-teal-400 hover:bg-teal-500/10 cursor-pointer"
-              title="Cultural Folk Idiom & Regional Originality Scorer (Zero IP Risk Cultural Scanner)"
-            >
-              <Award className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">Folk Scorer</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsPrintPreflightModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="One-Click Print Preflight & 6x9 Layout Typesetter (Nilkhet & Bangla Academy PDF/X-1a)"
-            >
-              <Printer className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">প্রিন্ট প্রিফ্লাইট</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsBookJacketModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-              title="Precision 3D Book Jacket & Character Face-Lock Studio (Full French Flap Wrap & Biometrics)"
-            >
-              <BookMarked className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">বুক জ্যাকেট</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsCipBarcodeModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
-              title="Autonomous National Library Cataloging (CIP) & ISBN Barcode Engine (NLB DDC 891.443 & EAN-13)"
-            >
-              <Library className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">CIP ও বারকোড</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsWebnovelPaywallModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-amber-500/40 text-amber-400 hover:bg-amber-500/10 cursor-pointer"
-              title="Webnovel Paywall & Cliffhanger Monetization Slicer (InkOS #41)"
-            >
-              <Coins className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">পেওয়াল স্লাইসার</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsPolyglotMatrixModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-teal-500/40 text-teal-400 hover:bg-teal-500/10 cursor-pointer"
-              title="Polyglot Cultural Localization Matrix (InkOS #42)"
-            >
-              <Globe className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">পলিগ্লট ম্যাট্রিক্স</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsReadingScalerModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-cyan-500/40 text-cyan-400 hover:bg-cyan-500/10 cursor-pointer"
-              title="Adaptive Reading Level & Vocabulary Scaler (InkOS #43)"
-            >
-              <Sliders className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">রিডিং স্কেলার</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsRoyaltySplitModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-violet-500/40 text-violet-400 hover:bg-violet-500/10 cursor-pointer"
-              title="Cryptographic Royalty Split & Digital First Editions (InkOS #44)"
-            >
-              <BadgeCheck className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">রয়্যালটি ও ফার্স্ট এডিশন</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setIsLegalShieldModalOpen(true)}
-              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
-              title="Legal Defamation & Trademark Preflight Shield (InkOS #45)"
-            >
-              <ShieldAlert className="h-3.5 w-3.5" />
-              <span className="hidden sm:inline">লিগ্যাল শিল্ড</span>
-            </Button>
+
             <Button
               size="sm"
               variant="outline"
               onClick={() => setIsImportOpen(true)}
-              className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-border text-muted-foreground hover:text-foreground cursor-pointer"
-              title="Import Word, PDF, Text, or Bijoy Manuscript"
+              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              title="Import DOCX / Markdown / TXT Manuscript"
             >
-              <FileDown className="h-3.5 w-3.5 text-indigo-400" />
-              <span>Import Manuscript</span>
+              <FileDown className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Import</span>
             </Button>
 
             <Button
               size="sm"
               variant="outline"
               onClick={() => setShowPreview((p) => !p)}
-              className={`h-7 px-2.5 text-xs font-semibold gap-1.5 cursor-pointer ${
+              className={`h-7 px-2 text-xs font-semibold gap-1 cursor-pointer ${
                 showPreview
                   ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/40"
                   : "text-muted-foreground border-border"
@@ -896,18 +504,34 @@ export function PolishedWriteView({
               title="Toggle Live 6x9 Book Render Split Screen"
             >
               <Eye className="h-3.5 w-3.5" />
-              <span>Live Book Render</span>
+              <span className="hidden xl:inline">6×9 Proof</span>
             </Button>
 
             <Button
               size="sm"
               variant="outline"
               onClick={() => setIs3FoldMode(true)}
-              className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
               title="Open 3-Fold IDE with Fortune Sheet, Mindmap, and Slide Pitch"
             >
               <Columns3 className="h-3.5 w-3.5" />
-              <span>3-Fold IDE Canvas</span>
+              <span className="hidden xl:inline">3-Fold IDE</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-zen-mode"
+              onClick={() => setIsZenMode((z) => !z)}
+              className={`h-7 px-2 text-xs font-semibold gap-1 cursor-pointer ${
+                isZenMode
+                  ? "bg-amber-500/15 text-amber-400 border-amber-500/40"
+                  : "text-muted-foreground border-border"
+              }`}
+              title="Toggle Zen Distraction-Free Writing Mode (Ctrl+\)"
+            >
+              {isZenMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              <span className="hidden 2xl:inline">{isZenMode ? "Exit Zen" : "Zen"}</span>
             </Button>
           </div>
         </div>
@@ -915,8 +539,8 @@ export function PolishedWriteView({
 
       {/* Main Workspace Layout */}
       <div className="flex flex-1 min-h-0 w-full overflow-hidden">
-        {/* Left Sidebar Chapter Tree (Visible in Write & Format Modes) */}
-        {mode !== "publish" && (
+        {/* Left Sidebar Chapter Tree (Hidden in Publish or Zen Mode) */}
+        {mode !== "publish" && !isZenMode && (
           <ComponentErrorBoundary title="Left Sidebar Error">
             <LeftSidebar
               chapters={chapters as any}
@@ -930,7 +554,7 @@ export function PolishedWriteView({
           </ComponentErrorBoundary>
         )}
 
-        {/* ── Mode 1: Write (Editor + Optional Live Split Preview) ── */}
+        {/* ── Mode 1: Write (Editor + Optional Live Split Preview + Conversational Co-Writer) ── */}
         {mode === "write" && (
           <div className="flex flex-1 min-w-0 h-full overflow-hidden">
             {/* Center Rich Text Editor */}
@@ -945,6 +569,12 @@ export function PolishedWriteView({
                   citationStyle={citationStyle as any}
                   showPreview={showPreview}
                   onTogglePreview={() => setShowPreview((p) => !p)}
+                  onOpenInkOsTool={(toolId) => handleOpenInkOsTool(toolId)}
+                  onAskCoWriter={(promptText) => {
+                    if (isZenMode) setIsZenMode(false);
+                    setExternalChatPrompt(promptText);
+                  }}
+                  onOpenCommandDock={() => setIsCommandDockOpen(true)}
                   onUndo={() => {
                     const prev = undo();
                     if (prev !== null) setContent(prev);
@@ -957,9 +587,9 @@ export function PolishedWriteView({
               </ComponentErrorBoundary>
             </div>
 
-            {/* Live 6x9 Book Render Split View */}
-            {showPreview && (
-              <div className="w-[440px] shrink-0 h-full border-l border-border bg-muted/20 overflow-hidden hidden lg:block">
+            {/* Live 6x9 Book Render Split View (Opt-in so Editor stays wide by default) */}
+            {showPreview && !isZenMode && (
+              <div className="w-[420px] shrink-0 h-full border-l border-border bg-muted/20 overflow-hidden hidden lg:block">
                 <ComponentErrorBoundary title="Live Document Preview Error">
                   <LiveDocumentPreview
                     content={content}
@@ -970,15 +600,23 @@ export function PolishedWriteView({
               </div>
             )}
 
-            {/* Right Panel AI Auditor & Co-writer */}
-            <ComponentErrorBoundary title="Auditor Panel Error">
-              <RightPanel
-                content={content}
-                projectId={project?._id || "default"}
-                projectTitle={title}
-                projectType={projectType}
-              />
-            </ComponentErrorBoundary>
+            {/* Right Panel AI Auditor & Co-writer with Embedded InkOS Action Chips */}
+            {!isZenMode && (
+              <ComponentErrorBoundary title="Auditor Panel Error">
+                <RightPanel
+                  content={content}
+                  projectId={project?._id || "default"}
+                  projectTitle={title}
+                  projectType={projectType}
+                  onOpenInkOsTool={(toolId) => handleOpenInkOsTool(toolId)}
+                  onInsertToEditor={(snippet) =>
+                    handleContentChange(content ? `${content}\n\n<p>${snippet}</p>` : `<p>${snippet}</p>`)
+                  }
+                  externalChatPrompt={externalChatPrompt}
+                  onClearExternalChatPrompt={() => setExternalChatPrompt(null)}
+                />
+              </ComponentErrorBoundary>
+            )}
           </div>
         )}
 
@@ -1140,6 +778,14 @@ export function PolishedWriteView({
       {/* Status Bar Footer */}
       <StatusBar wordCount={wordCount} />
 
+      {/* ✨ Categorized 5-Pillar InkOS Command Dock Modal (Ctrl+Shift+P) */}
+      <InkOsCommandDockModal
+        isOpen={isCommandDockOpen}
+        onClose={() => setIsCommandDockOpen(false)}
+        onSelectTool={(toolId) => handleOpenInkOsTool(toolId)}
+        studioCredits={studioCredits}
+      />
+
       {/* Manuscript Import Modal */}
       <ManuscriptImportModal
         isOpen={isImportOpen}
@@ -1271,9 +917,7 @@ export function PolishedWriteView({
         onClose={() => setIsStoryBibleModalOpen(false)}
         projectId={project?._id || project?.id || "default"}
         projectTitle={title}
-        onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}
-
-${prose}` : prose))}
+        onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
       />
       <VoiceCastingModal
         isOpen={isVoiceCastingModalOpen}

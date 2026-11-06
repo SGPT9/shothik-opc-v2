@@ -79,7 +79,7 @@ const Navigations = ({
 
       {userLimit && (
         <div className="w-[235px] pl-2 sm:pl-0">
-          {userLimit?.totalWordLimit === 99999 ? (
+          {userLimit?.totalWordLimit === -1 || userLimit?.totalWordLimit === 99999 ? (
             <>
               <Progress value={100} className="h-2" />
               <p className="text-primary text-sm">Unlimited</p>
