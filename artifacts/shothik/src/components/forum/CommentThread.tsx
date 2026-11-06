@@ -55,7 +55,7 @@ export default function CommentThread({
   if (isCollapsed) {
     return (
       <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground cursor-pointer" onClick={() => setIsCollapsed(false)}>
-        <button className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold">+</button>
+        <button aria-label="Expand comment" className="flex h-4 w-4 items-center justify-center rounded bg-muted text-[10px] font-bold">+</button>
         <span className="font-medium">{comment.authorName}</span>
         <span>·</span>
         <span>{timeAgo(comment.createdAt)}</span>
@@ -95,7 +95,7 @@ export default function CommentThread({
             </span>
           )}
           <span className="text-xs text-muted-foreground">{timeAgo(comment.createdAt)}</span>
-          <button onClick={() => setIsCollapsed(true)} className="ml-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+          <button aria-label="Collapse comment" onClick={() => setIsCollapsed(true)} className="ml-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
             [–]
           </button>
         </div>
@@ -114,7 +114,7 @@ export default function CommentThread({
             <MessageSquare className="h-3.5 w-3.5" />
             Reply
           </button>
-          <button className="flex items-center gap-1.5 hover:text-foreground transition-colors">
+          <button aria-label="More options" className="flex items-center gap-1.5 hover:text-foreground transition-colors">
             <MoreHorizontal className="h-3.5 w-3.5" />
           </button>
         </div>
