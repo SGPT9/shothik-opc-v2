@@ -21,10 +21,20 @@ const FALLBACK_PACKAGES: Record<string, any> = {
     price: { USD: 0.85, BDT: 100 },
     plans: [
       {
+        _id: "plan_starter_monthly",
         plan: { _id: "monthly", name: "Monthly", duration: 30 },
         price: { USD: 0.85, BDT: 100 },
         token: 50,
         is_initial: true,
+        is_active: true,
+      },
+      {
+        _id: "plan_starter_yearly",
+        plan: { _id: "yearly", name: "Yearly (Save 20%)", duration: 365 },
+        price: { USD: 8.16, BDT: 960 },
+        token: 1200,
+        is_initial: false,
+        is_active: true,
       },
     ],
   },
@@ -36,10 +46,20 @@ const FALLBACK_PACKAGES: Record<string, any> = {
     price: { USD: 8.50, BDT: 990 },
     plans: [
       {
+        _id: "plan_pro_monthly",
         plan: { _id: "monthly", name: "Monthly", duration: 30 },
         price: { USD: 8.50, BDT: 990 },
         token: 550,
         is_initial: true,
+        is_active: true,
+      },
+      {
+        _id: "plan_pro_yearly",
+        plan: { _id: "yearly", name: "Yearly (Save 20%)", duration: 365 },
+        price: { USD: 81.60, BDT: 9500 },
+        token: 7200,
+        is_initial: false,
+        is_active: true,
       },
     ],
   },
@@ -51,25 +71,45 @@ const FALLBACK_PACKAGES: Record<string, any> = {
     price: { USD: 19.99, BDT: 2400 },
     plans: [
       {
+        _id: "plan_venture_monthly",
         plan: { _id: "monthly", name: "Monthly", duration: 30 },
         price: { USD: 19.99, BDT: 2400 },
         token: 1500,
         is_initial: true,
+        is_active: true,
+      },
+      {
+        _id: "plan_venture_yearly",
+        plan: { _id: "yearly", name: "Yearly (Save 20%)", duration: 365 },
+        price: { USD: 191.90, BDT: 23040 },
+        token: 21600,
+        is_initial: false,
+        is_active: true,
       },
     ],
   },
   "agency-scale": {
     _id: "agency-scale",
-    name: "Agency & Enterprise",
-    description: "High-throughput AI infrastructure, unlimited team members, and priority DeepSeek R1 nodes.",
+    name: "Agency & Publisher Enterprise",
+    description: "Multi-brand Venture Twin orchestration, unlimited Nilkhet publishing runs, and Bangladesh Industrial ERP.",
     package_for: "User",
     price: { USD: 49.99, BDT: 6000 },
     plans: [
       {
+        _id: "plan_agency_monthly",
         plan: { _id: "monthly", name: "Monthly", duration: 30 },
         price: { USD: 49.99, BDT: 6000 },
         token: 5000,
         is_initial: true,
+        is_active: true,
+      },
+      {
+        _id: "plan_agency_yearly",
+        plan: { _id: "yearly", name: "Yearly (Save 20%)", duration: 365 },
+        price: { USD: 479.90, BDT: 57600 },
+        token: 60000,
+        is_initial: false,
+        is_active: true,
       },
     ],
   },
@@ -105,7 +145,10 @@ export const useCheckoutData = (
       fetchPublicPaymentMethods({ is_active: true, sort: "sequence" }),
   });
 
-  const currentPackage = packageResponse?.data?.[0] || (packageId ? FALLBACK_PACKAGES[packageId] || FALLBACK_PACKAGES["starter-pass"] : FALLBACK_PACKAGES["starter-pass"]);
+  const currentPackage =
+    packageResponse?.data?.find((p: any) => p._id === packageId) ||
+    packageResponse?.data?.[0] ||
+    (packageId ? FALLBACK_PACKAGES[packageId] || FALLBACK_PACKAGES["starter-pass"] : FALLBACK_PACKAGES["starter-pass"]);
   const allPaymentMethods = (paymentMethodsResponse?.data && paymentMethodsResponse.data.length > 0) ? paymentMethodsResponse.data : FALLBACK_PAYMENT_METHODS;
 
   // Filter payment methods based on location

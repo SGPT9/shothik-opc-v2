@@ -797,8 +797,10 @@ router.get(["/plans/public", "/v1/plans/public"], (_req: Request, res: Response)
   res.status(200).json({ success: true, data: PUBLIC_PLANS });
 });
 
-router.get(["/packages/public", "/v1/packages/public"], (_req: Request, res: Response) => {
-  res.status(200).json({ success: true, data: PUBLIC_PACKAGES });
+router.get(["/packages/public", "/v1/packages/public"], (req: Request, res: Response) => {
+  const pkgId = typeof req.query._id === "string" ? req.query._id : undefined;
+  const data = pkgId ? PUBLIC_PACKAGES.filter((p) => p._id === pkgId) : PUBLIC_PACKAGES;
+  res.status(200).json({ success: true, data: data.length > 0 ? data : PUBLIC_PACKAGES });
 });
 
 router.get(["/packages/public/:id", "/v1/packages/public/:id"], (req: Request, res: Response) => {
