@@ -91,6 +91,8 @@ import { PolyglotMatrixModal } from "./components/PolyglotMatrixModal";
 import { ReadingScalerModal } from "./components/ReadingScalerModal";
 import { RoyaltySplitModal } from "./components/RoyaltySplitModal";
 import { LegalShieldModal } from "./components/LegalShieldModal";
+import UpgradeModal from "@/components/subscription/UpgradeModal";
+import { useSubscription } from "@/hooks/subscription/useSubscription";
 import { ShieldAlert, BadgeCheck, Globe, Coins, Library, Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
@@ -169,6 +171,25 @@ export function PolishedWriteView({
   const [isReadingScalerModalOpen, setIsReadingScalerModalOpen] = useState(false);
   const [isRoyaltySplitModalOpen, setIsRoyaltySplitModalOpen] = useState(false);
   const [isLegalShieldModalOpen, setIsLegalShieldModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [studioCredits, setStudioCredits] = useState<number>(550);
+  const subscription = useSubscription();
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/v1/subscriptions/credits")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        const bal = json?.data?.creditsBalance ?? json?.creditsBalance;
+        if (active && typeof bal === "number") {
+          setStudioCredits(bal);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -327,6 +348,17 @@ export function PolishedWriteView({
             lastSaved={lastSaved}
           />
           <div className="flex items-center gap-1.5 flex-wrap">
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-studio-credit-hud"
+              onClick={() => setIsUpgradeModalOpen(true)}
+              className="h-7 px-2.5 text-xs font-bold gap-1.5 border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 cursor-pointer"
+              title="Universal Shothik Wallet · 0 Credits for Writing & Story Bible (#10), 1-3 Credits for AI/Audio/Print Checkpoints"
+            >
+              <Zap className="h-3.5 w-3.5 text-amber-400" />
+              <span>⚡ {studioCredits} Credits · InkOS Studio</span>
+            </Button>
             <CollaborativePresence
               bookId={project?._id || project?.id || "default"}
               currentChapterTitle={activeChapter?.title}
@@ -1480,6 +1512,11 @@ ${prose}` : prose))}
         onClose={() => setIsLegalShieldModalOpen(false)}
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
+      />
+      <UpgradeModal
+        open={isUpgradeModalOpen}
+        onOpenChange={setIsUpgradeModalOpen}
+        currentTier={subscription.tier}
       />
     </div>
   );
