@@ -84,13 +84,12 @@ import {
 } from "./paraphraseUtils";
 
 const ParaphraseContend = () => {
-  const { paraphraseQuotations, automaticStartParaphrasing } = useSelector(
-    (state) => state.settings.paraphraseOptions,
-  );
-
-  const { useYellowHighlight } = useSelector(
-    (state) => state.settings.interfaceOptions,
-  );
+  // ⚡ Bolt Performance Optimization:
+  // Replaced destructuring of objects from `useSelector` with specific property
+  // selectors to avoid unnecessary re-renders when other unused properties change.
+  const paraphraseQuotations = useSelector((state) => state.settings.paraphraseOptions?.paraphraseQuotations);
+  const automaticStartParaphrasing = useSelector((state) => state.settings.paraphraseOptions?.automaticStartParaphrasing);
+  const useYellowHighlight = useSelector((state) => state.settings.interfaceOptions?.useYellowHighlight);
 
   const [showDemo, setShowDemo] = useState(false);
   useEffect(() => {
@@ -110,7 +109,7 @@ const ParaphraseContend = () => {
   };
 
   const [showLanguageDetect, setShowLanguageDetect] = useState(false);
-  const { accessToken } = useSelector((state) => state.auth);
+  const accessToken = useSelector((state) => state.auth.accessToken);
   const [outputHistoryIndex, setOutputHistoryIndex] = useState(0);
   const [highlightSentence, setHighlightSentence] = useState(0);
   const [selectedMode, setSelectedModeState] = useState("Standard");
@@ -123,7 +122,7 @@ const ParaphraseContend = () => {
   const [outputWordCount, setOutputWordCount] = useState(0);
   const [outputHistory, setOutputHistory] = useState([]);
   const [outputContend, setOutputContend] = useState("");
-  const { user } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth.user);
   const frozenWords = useSetState(initialFrozenWords);
   const frozenPhrases = useSetState(initialFrozenPhrase);
   const [recommendedFreezeWords, setRecommendedFreezeWords] = useState([]);
@@ -199,19 +198,18 @@ const ParaphraseContend = () => {
     action: null, // Will store the function to execute on confirm
   }); // this is for freezing word confirmation
 
-  const {
-    activeHistory,
-    isUpdatedHistory,
-    isUpdatedFileHistory,
-    fileHistories,
-  } = useSelector((state) => state.paraphraseHistory);
+  const activeHistory = useSelector((state) => state.paraphraseHistory.activeHistory);
+  const isUpdatedHistory = useSelector((state) => state.paraphraseHistory.isUpdatedHistory);
+  const isUpdatedFileHistory = useSelector((state) => state.paraphraseHistory.isUpdatedFileHistory);
+  const fileHistories = useSelector((state) => state.paraphraseHistory.fileHistories);
 
   const paidUser =
     user?.package === "pro_plan" ||
     user?.package === "value_plan" ||
     user?.package === "unlimited";
 
-  const { paraphraseOptions } = useSelector((state) => state.settings);
+  const paraphraseOptions = useSelector((state) => state.settings.paraphraseOptions);
+  const shouldAutoFreeze = useSelector((state) => state.settings.paraphraseOptions.autoFreeze);
 
   const {
     autoFrozenTerms,
@@ -245,7 +243,7 @@ const ParaphraseContend = () => {
     },
     debounceMs: 2500,
     enableLLM: paidUser, // Only using LLM for paid users
-    shouldAutoFreeze: paraphraseOptions.autoFreeze, // checks if auto freeze should be enabled or not.
+    shouldAutoFreeze, // checks if auto freeze should be enabled or not.
   });
 
   const {
