@@ -433,7 +433,7 @@ export const OUTCOME_MICRO_PASSES: OutcomeMicroPass[] = [
     name: "Thesis Defense & Plagiarism Pass",
     priceBdt: 49,
     priceUsd: 0.5,
-    credits: 25,
+    credits: 50,
     outcome:
       "1 Full Thesis Turnitin-Style Plagiarism Audit + AI Detector Scan + Citation Fix",
     badge: "🎓 Academic Bestseller",
@@ -444,7 +444,7 @@ export const OUTCOME_MICRO_PASSES: OutcomeMicroPass[] = [
     name: "Audiobook & Viral BookTok Pass",
     priceBdt: 149,
     priceUsd: 1.35,
-    credits: 80,
+    credits: 150,
     outcome:
       "24kHz Multi-Character Bangla Voice Chapter (#11) + 3D Soundscape (#13) + 9:16 BookTok Reel (#14)",
     badge: "🎧 Creator Favorite",
@@ -455,7 +455,7 @@ export const OUTCOME_MICRO_PASSES: OutcomeMicroPass[] = [
     name: "Ekushey Boi Mela Print-Ready Pass",
     priceBdt: 199,
     priceUsd: 1.8,
-    credits: 110,
+    credits: 200,
     outcome:
       "6x9 Nilkhet/Boi Mela Print PDF Preflight (#38) + 3D Book Jacket (#39) + ISBN/CIP Barcode (#40)",
     badge: "📕 Boi Mela Special",
@@ -466,9 +466,9 @@ export const OUTCOME_MICRO_PASSES: OutcomeMicroPass[] = [
     name: "Startup Pitch & Venture Stress-Test Pass",
     priceBdt: 299,
     priceUsd: 2.7,
-    credits: 160,
+    credits: 300,
     outcome:
-      "16:9 Investor Slide Deck + 30-Scenario Financial Stress Lab + Unit Economics Audit",
+      "16:9 Investor Slide Deck + 40-Scenario Financial Stress Lab + Unit Economics Audit",
     badge: "🚀 Founder Pack",
     packageId: "starter-pass",
   },
@@ -477,7 +477,7 @@ export const OUTCOME_MICRO_PASSES: OutcomeMicroPass[] = [
     name: "F-Commerce & Steadfast Auto-Pilot Pass",
     priceBdt: 999,
     priceUsd: 8.5,
-    credits: 550,
+    credits: 1200,
     outcome:
       "30-Day Pro Operator Access + Steadfast/Pathao Dispatch + bKash/Nagad SMS Reconciliation",
     badge: "⚡ Full Month Pro",

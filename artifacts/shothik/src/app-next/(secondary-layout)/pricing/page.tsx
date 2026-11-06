@@ -55,7 +55,7 @@ const FALLBACK_PACKAGES: TPackage[] = [
       },
       {
         plan: { _id: "yearly", name: "Yearly (Save 20%)", duration: 365 },
-        price: { USD: 8.5, BDT: 960 },
+        price: { USD: 8.16, BDT: 960 },
         is_initial: false,
       },
     ],
@@ -110,7 +110,7 @@ const FALLBACK_PACKAGES: TPackage[] = [
       },
       {
         plan: { _id: "yearly", name: "Yearly (Save 20%)", duration: 365 },
-        price: { USD: 191.9, BDT: 23000 },
+        price: { USD: 191.9, BDT: 23040 },
         is_initial: false,
       },
     ],
