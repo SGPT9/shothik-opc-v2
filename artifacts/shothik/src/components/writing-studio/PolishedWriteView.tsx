@@ -90,7 +90,8 @@ import { WebnovelPaywallModal } from "./components/WebnovelPaywallModal";
 import { PolyglotMatrixModal } from "./components/PolyglotMatrixModal";
 import { ReadingScalerModal } from "./components/ReadingScalerModal";
 import { RoyaltySplitModal } from "./components/RoyaltySplitModal";
-import { BadgeCheck, Globe, Coins, Library, Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
+import { LegalShieldModal } from "./components/LegalShieldModal";
+import { ShieldAlert, BadgeCheck, Globe, Coins, Library, Users, Zap, Flame, Palette, GraduationCap, Tv, Brain, CloudMoon, GitPullRequest, GitBranch, Award, Radio, UploadCloud, Languages, Compass, Network, Clapperboard, BookCopy, Crosshair, Fingerprint, GitFork, Moon, BookMarked, Mic, SpellCheck, Headphones, Grid, Film, TrendingUp, Activity, MapPin, PackageCheck } from "lucide-react";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -167,6 +168,7 @@ export function PolishedWriteView({
   const [isPolyglotMatrixModalOpen, setIsPolyglotMatrixModalOpen] = useState(false);
   const [isReadingScalerModalOpen, setIsReadingScalerModalOpen] = useState(false);
   const [isRoyaltySplitModalOpen, setIsRoyaltySplitModalOpen] = useState(false);
+  const [isLegalShieldModalOpen, setIsLegalShieldModalOpen] = useState(false);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -832,6 +834,16 @@ export function PolishedWriteView({
             <Button
               size="sm"
               variant="outline"
+              onClick={() => setIsLegalShieldModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-rose-500/40 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+              title="Legal Defamation & Trademark Preflight Shield (InkOS #45)"
+            >
+              <ShieldAlert className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">লিগ্যাল শিল্ড</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
               onClick={() => setIsImportOpen(true)}
               className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-border text-muted-foreground hover:text-foreground cursor-pointer"
               title="Import Word, PDF, Text, or Bijoy Manuscript"
@@ -1460,6 +1472,12 @@ ${prose}` : prose))}
       <RoyaltySplitModal
         isOpen={isRoyaltySplitModalOpen}
         onClose={() => setIsRoyaltySplitModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <LegalShieldModal
+        isOpen={isLegalShieldModalOpen}
+        onClose={() => setIsLegalShieldModalOpen(false)}
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
