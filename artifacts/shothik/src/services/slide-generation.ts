@@ -5,7 +5,7 @@ const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || (import.meta.e
 
 const insforge = createClient(supabaseUrl, supabaseAnonKey);
 
-const SLIDE_API_URL = import.meta.env.VITE_SLIDE_API_URL || "http://localhost:3004";
+const SLIDE_API_URL = import.meta.env.VITE_SLIDE_API_URL || "/api";
 
 export interface CreateSlideRequest {
   topic: string;
@@ -148,12 +148,19 @@ export const cancelSlideJob = async (jobId: string): Promise<boolean> => {
   }
 };
 
-// Supabase / InsForge PostgreSQL DB Sync
+// Supabase / InsForge PostgreSQL DB Sync (persists slide decks into public.canvas_artifacts)
 export const syncJobToInsForgePostgres = async (job: SlideJob): Promise<boolean> => {
   try {
-    const { data, error } = await (insforge as any)
-      .from("slide_jobs")
-      .insert([{ id: job.id, status: job.status, progress: job.progress, created_at: new Date().toISOString() }]);
+    const { error } = await (insforge as any)
+      .from("canvas_artifacts")
+      .insert([{
+        type: "slides",
+        title: `Slide Deck (${job.id})`,
+        content: { jobId: job.id, status: job.status, progress: job.progress, slides: job.slides || [] },
+        version: 1,
+        is_public: false,
+        created_by: "usr_default",
+      }]);
 
     if (error) {
       console.warn("DB insert warning (fallback active):", error.message);
@@ -178,4 +185,3 @@ export const subscribeToInsForgeRealtimeSlideUpdates = (
   }
   return () => {};
 };
-
