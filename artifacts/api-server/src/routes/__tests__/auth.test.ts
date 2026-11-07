@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import crypto from "node:crypto";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import app from "../../app";
@@ -95,7 +96,7 @@ describe("Unified Authentication Endpoints", { timeout: 25000 }, () => {
   });
 
   it("GET /api/auth/oauth/google sanitizes malicious next redirect parameter against XSS and open redirects", async () => {
-    const res = await fetch(`${baseUrl}/api/auth/oauth/google?next=${encodeURIComponent('javascript:alert(1)//')}`);
+    const res = await fetch(`${baseUrl}/api/auth/oauth/google?next=${encodeURIComponent("javascript:alert(1)//")}`);
     expect(res.status).toBe(200);
     const html = await res.text();
     expect(html).not.toContain("javascript:alert(1)");
@@ -109,5 +110,53 @@ describe("Unified Authentication Endpoints", { timeout: 25000 }, () => {
     expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.success).toBe(true);
+  });
+
+  it("Dual-Verify Bridge: verifies standard 3-part RFC 7519 Supabase Auth JWTs on /api/auth/session and /api/auth/supabase-sync", async () => {
+    const supabaseSecret = process.env.SUPABASE_JWT_SECRET || "super-secret-jwt-token-with-at-least-32-characters-long";
+    const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+    const subUuid = crypto.randomUUID();
+    const email = `supabase_${Date.now()}@shothik.ai`;
+    const payload = Buffer.from(
+      JSON.stringify({
+        iss: "http://127.0.0.1:54321/auth/v1",
+        sub: subUuid,
+        aud: "authenticated",
+        role: "authenticated",
+        email,
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        user_metadata: {
+          name: "Supabase Native Author",
+          country: "BD",
+        },
+      }),
+    ).toString("base64url");
+    const sig = crypto.createHmac("sha256", supabaseSecret).update(`${header}.${payload}`).digest("base64url");
+    const supabaseJwt = `${header}.${payload}.${sig}`;
+
+    // 1. Verify GET /api/auth/session accepts the 3-part Supabase JWT and hydrates the user
+    const sessionRes = await fetch(`${baseUrl}/api/auth/session`, {
+      headers: { Authorization: `Bearer ${supabaseJwt}` },
+    });
+    expect(sessionRes.status).toBe(200);
+    const sessionJson = await sessionRes.json();
+    expect(sessionJson.user.id).toBe(subUuid);
+    expect(sessionJson.user.email).toBe(email);
+    expect(sessionJson.user.name).toBe("Supabase Native Author");
+    expect(sessionJson.user.authProvider).toBe("supabase");
+
+    // 2. Verify POST /api/auth/supabase-sync returns synced profile
+    const syncRes = await fetch(`${baseUrl}/api/auth/supabase-sync`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${supabaseJwt}`,
+      },
+      body: JSON.stringify({ userMetadata: { name: "Supabase Native Author", country: "BD" } }),
+    });
+    expect(syncRes.status).toBe(200);
+    const syncJson = await syncRes.json();
+    expect(syncJson.success).toBe(true);
+    expect(syncJson.user.id).toBe(subUuid);
   });
 });

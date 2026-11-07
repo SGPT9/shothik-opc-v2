@@ -158,3 +158,191 @@ export const authorshipCertificatesTable = pgTable("authorship_certificates", {
 });
 
 export type AuthorshipCertificateRow = typeof authorshipCertificatesTable.$inferSelect;
+
+/**
+ * 7. Unified User Profiles (Synced with Supabase auth.users + Dual-Verify Bridge)
+ */
+export const userProfilesTable = pgTable(
+  "user_profiles",
+  {
+    id: text("id").primaryKey(),
+    email: text("email").notNull(),
+    name: text("name").notNull(),
+    role: text("role").notNull().default("user"),
+    country: text("country").notNull().default("BD"),
+    credits: integer("credits").notNull().default(500),
+    tier: text("tier").notNull().default("starter"),
+    authProvider: text("auth_provider").notNull().default("supabase"),
+    passwordHash: text("password_hash"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("user_profiles_email_idx").on(t.email)],
+);
+
+export type UserProfileRow = typeof userProfilesTable.$inferSelect;
+
+/**
+ * 8. Migrated InsForge Multi-Tenant Organizations, Workspaces, Canvas & OPC Tasks
+ */
+export const organizationsTable = pgTable("organizations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull(),
+  ownerId: text("owner_id").notNull(),
+  tier: text("tier").notNull().default("FREE"),
+  creditsPool: integer("credits_pool").notNull().default(550),
+  mfsPhone: text("mfs_phone"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const organizationMembersTable = pgTable("organization_members", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").notNull().references(() => organizationsTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(),
+  role: text("role").notNull().default("MEMBER"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const workspacesTable = pgTable("workspaces", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").references(() => organizationsTable.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  isPrivate: boolean("is_private").notNull().default(false),
+  createdBy: text("created_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const canvasArtifactsTable = pgTable("canvas_artifacts", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  organizationId: uuid("organization_id").references(() => organizationsTable.id, { onDelete: "cascade" }),
+  workspaceId: uuid("workspace_id").references(() => workspacesTable.id, { onDelete: "set null" }),
+  type: text("type").notNull().default("doc"),
+  title: text("title").notNull(),
+  content: jsonb("content").$type<Record<string, unknown>>().notNull().default({}),
+  version: integer("version").notNull().default(1),
+  isPublic: boolean("is_public").notNull().default(false),
+  createdBy: text("created_by").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const opcTasksTable = pgTable("opc_tasks", {
+  id: text("id").primaryKey(),
+  companyId: text("company_id").notNull().default("comp_verifiq"),
+  title: text("title").notNull(),
+  description: text("description"),
+  status: text("status").notNull().default("pending"),
+  priority: text("priority").default("medium"),
+  assignedAgent: text("assigned_agent"),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * 9. Migrated Convex & InsForge AI Twin Tables
+ */
+export const twinProfilesTable = pgTable("twin_profiles", {
+  id: text("id").primaryKey(),
+  masterId: text("master_id"),
+  name: text("name").notNull(),
+  specialization: text("specialization").default("General"),
+  persona: text("persona"),
+  expertiseAreas: jsonb("expertise_areas").$type<string[]>().notNull().default([]),
+  communicationStyle: text("communication_style"),
+  goals: jsonb("goals").$type<string[]>().notNull().default([]),
+  languages: jsonb("languages").$type<string[]>().notNull().default(["en", "bn"]),
+  bio: text("bio"),
+  sourcePlatform: text("source_platform").notNull().default("shothik"),
+  trainingStatus: text("training_status").notNull().default("ready"),
+  knowledgeScore: integer("knowledge_score").notNull().default(10),
+  isActive: boolean("is_active").notNull().default(true),
+  taskCount: integer("task_count").notNull().default(0),
+  lifecycleState: text("lifecycle_state").notNull().default("active"),
+  verificationBadge: boolean("verification_badge").notNull().default(false),
+  trustScore: integer("trust_score").notNull().default(100),
+  publishedCount: integer("published_count").notNull().default(0),
+  followersCount: integer("followers_count").notNull().default(0),
+  allowedSkills: jsonb("allowed_skills").$type<string[]>().notNull().default([]),
+  blockedSkills: jsonb("blocked_skills").$type<string[]>().notNull().default([]),
+  approvalRequiredActions: jsonb("approval_required_actions").$type<string[]>().notNull().default([]),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const twinKnowledgeVectorsTable = pgTable("twin_knowledge_vectors", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  twinId: text("twin_id").notNull(),
+  documentId: text("document_id").notNull(),
+  contentType: text("content_type").notNull().default("manuscript"),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/**
+ * 10. Migrated Convex Publishing Books, Chapters, Earnings & Chat Conversations
+ */
+export const publishingBooksTable = pgTable("publishing_books", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().default("guest"),
+  projectId: text("project_id"),
+  title: text("title").notNull().default("Untitled Book"),
+  subtitle: text("subtitle"),
+  description: text("description"),
+  language: text("language").notNull().default("bn"),
+  category: text("category"),
+  subcategory: text("subcategory"),
+  keywords: jsonb("keywords").$type<string[]>().notNull().default([]),
+  listPrice: text("list_price").default("250"),
+  currency: text("currency").notNull().default("BDT"),
+  status: text("status").notNull().default("draft"),
+  targetWordCount: integer("target_word_count").notNull().default(50000),
+  currentRunId: text("current_run_id"),
+  manuscriptStorageId: text("manuscript_storage_id"),
+  manuscriptName: text("manuscript_name"),
+  manuscriptSize: integer("manuscript_size"),
+  manuscriptFormat: text("manuscript_format"),
+  coverStorageId: text("cover_storage_id"),
+  coverDimensions: jsonb("cover_dimensions").$type<{ width: number; height: number }>(),
+  reviewerName: text("reviewer_name"),
+  reviewNotes: text("review_notes"),
+  rejectionReason: text("rejection_reason"),
+  rejectionCategory: text("rejection_category"),
+  isbn: text("isbn"),
+  googlePlayUrl: text("google_play_url"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const bookChaptersTable = pgTable("book_chapters", {
+  id: text("id").primaryKey(),
+  bookId: text("book_id").notNull().references(() => publishingBooksTable.id, { onDelete: "cascade" }),
+  chapterIndex: integer("chapter_index").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull().default(""),
+  acceptedAt: timestamp("accepted_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const chatConversationsTable = pgTable("chat_conversations", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  surface: text("surface").notNull().default("flagship"),
+  title: text("title").notNull().default("New Conversation"),
+  modelHandle: text("model_handle"),
+  status: text("status").notNull().default("active"),
+  pinned: boolean("pinned").notNull().default(false),
+  archived: boolean("archived").notNull().default(false),
+  temporary: boolean("temporary").notNull().default(false),
+  contextRef: jsonb("context_ref").$type<Record<string, unknown>>().notNull().default({}),
+  lastMessagePreview: text("last_message_preview"),
+  messageCount: integer("message_count").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+

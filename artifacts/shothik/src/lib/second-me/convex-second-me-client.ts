@@ -1,8 +1,10 @@
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
+
 /**
- * Second Me persistence adapter — migrated from Convex to PostgreSQL / Local Storage.
+ * Second Me persistence adapter — migrated from Convex to Supabase PostgreSQL (`key_custody`, `writing_profiles`) + Local Store.
  *
  * Keeps the mockable `runSecondMeQuery` and `runSecondMeMutation` interface intact
- * so `key-custody.ts`, `writingProfile.ts`, and their test suites work seamlessly.
+ * while replicating writes to Supabase.
  */
 
 interface KeyCustodyRecord {
@@ -22,7 +24,6 @@ interface WritingProfileRecord {
   lastSyncedAt?: number;
 }
 
-// In-memory / process-level store with local persistence fallback
 const memoryKeyCustody = new Map<string, KeyCustodyRecord>();
 const memoryWritingProfiles = new Map<string, WritingProfileRecord>();
 
@@ -68,6 +69,7 @@ export async function runSecondMeMutation<T = unknown>(
   args: Record<string, unknown>
 ): Promise<T> {
   const userId = (args.userId as string) || "";
+  const supabase = getInsforgeBrowserClient();
 
   switch (functionPath) {
     case "secondMePersistence:upsertKeyCustody": {
@@ -80,12 +82,28 @@ export async function runSecondMeMutation<T = unknown>(
         createdAt: Date.now(),
       };
       memoryKeyCustody.set(custodyKey(userId, purpose), record);
+      if (supabase) {
+        void Promise.resolve(supabase.from("key_custody").upsert({
+          user_id: userId,
+          purpose,
+          provider: record.provider || null,
+          sealed_key: record.sealedKey,
+          updated_at: new Date().toISOString(),
+        })).catch(() => {});
+      }
       return record as unknown as T;
     }
 
     case "secondMePersistence:deleteKeyCustody": {
       const purpose = (args.purpose as string) || "";
       const deleted = memoryKeyCustody.delete(custodyKey(userId, purpose));
+      if (supabase) {
+        void Promise.resolve(supabase
+          .from("key_custody")
+          .delete()
+          .eq("user_id", userId)
+          .eq("purpose", purpose)).catch(() => {});
+      }
       return { deleted } as unknown as T;
     }
 
@@ -99,6 +117,16 @@ export async function runSecondMeMutation<T = unknown>(
         lastSyncedAt: Date.now(),
       };
       memoryWritingProfiles.set(userId, record);
+      if (supabase) {
+        void Promise.resolve(supabase.from("writing_profiles").upsert({
+          user_id: userId,
+          letta_agent_id: record.lettaAgentId,
+          block_label: record.blockLabel,
+          model_handle: record.modelHandle || null,
+          last_content_length: record.lastContentLength || 0,
+          last_synced_at: new Date().toISOString(),
+        })).catch(() => {});
+      }
       return record as unknown as T;
     }
 

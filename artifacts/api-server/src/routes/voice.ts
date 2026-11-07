@@ -134,7 +134,7 @@ router.post("/v1/voice/synthesize", async (req: Request, res: Response) => {
           emotion,
           include_breaths: includeBreaths,
         }),
-        signal: AbortSignal.timeout(400),
+        signal: AbortSignal.timeout(2500),
       });
       if (upstreamRes.ok) {
         const upstreamJson = (await upstreamRes.json()) as any;

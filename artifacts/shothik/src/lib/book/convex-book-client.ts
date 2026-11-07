@@ -1,8 +1,10 @@
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
+
 /**
- * Server-side Book transport adapter — migrated from Convex to Local/PostgreSQL store.
+ * Server-side Book transport adapter — migrated from Convex to Supabase PostgreSQL + In-Memory Store.
  *
- * Implements `runBookQuery` and `runBookMutation` to provide the exact same contract
- * for `book-service.ts` and its test suite without external Convex dependencies.
+ * Implements `runBookQuery` and `runBookMutation` with write-through replication to
+ * `public.publishing_books`, `public.book_chapters`, and `public.book_chapter_attempts`.
  */
 
 interface BookRecord {
@@ -71,6 +73,8 @@ export async function runBookMutation<T = unknown>(
   functionPath: string,
   args: Record<string, unknown>
 ): Promise<T> {
+  const supabase = getInsforgeBrowserClient();
+
   switch (functionPath) {
     case "bookService:createBook": {
       const id = `book_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
@@ -84,6 +88,15 @@ export async function runBookMutation<T = unknown>(
         updatedAt: Date.now(),
       };
       booksMap.set(id, book);
+      if (supabase) {
+        void Promise.resolve(supabase.from("publishing_books").upsert({
+          id,
+          user_id: book.userId,
+          title: book.title,
+          target_word_count: book.targetWordCount,
+          status: book.status,
+        })).catch(() => {});
+      }
       return book as unknown as T;
     }
     case "bookService:claimBookForRun": {
@@ -94,6 +107,12 @@ export async function runBookMutation<T = unknown>(
       book.status = "generating";
       book.currentRunId = runId;
       book.updatedAt = Date.now();
+      if (supabase) {
+        void Promise.resolve(supabase
+          .from("publishing_books")
+          .update({ status: "generating", current_run_id: runId, updated_at: new Date().toISOString() })
+          .eq("id", bookId)).catch(() => {});
+      }
       return book as unknown as T;
     }
     case "bookService:resetBookToDraft": {
@@ -103,6 +122,12 @@ export async function runBookMutation<T = unknown>(
       book.status = "draft";
       book.currentRunId = undefined;
       book.updatedAt = Date.now();
+      if (supabase) {
+        void Promise.resolve(supabase
+          .from("publishing_books")
+          .update({ status: "draft", current_run_id: null, updated_at: new Date().toISOString() })
+          .eq("id", bookId)).catch(() => {});
+      }
       return book as unknown as T;
     }
     case "bookService:saveChapterRecord": {
@@ -118,6 +143,15 @@ export async function runBookMutation<T = unknown>(
       };
       existing.push(chapter);
       chaptersMap.set(bookId, existing);
+      if (supabase) {
+        void Promise.resolve(supabase.from("book_chapters").insert({
+          id: chapter.id,
+          book_id: chapter.bookId,
+          chapter_index: chapter.chapterIndex,
+          title: chapter.title,
+          content: chapter.content,
+        })).catch(() => {});
+      }
       return chapter as unknown as T;
     }
     case "bookService:recordChapterAttempt": {
@@ -135,6 +169,17 @@ export async function runBookMutation<T = unknown>(
       };
       existing.push(attempt);
       attemptsMap.set(bookId, existing);
+      if (supabase) {
+        void Promise.resolve(supabase.from("book_chapter_attempts").insert({
+          id: attempt.id,
+          book_id: attempt.bookId,
+          chapter_index: attempt.chapterIndex,
+          attempt_number: attempt.attemptNumber,
+          content: attempt.content,
+          passed_validation: attempt.passedValidation,
+          validation_report: (attempt.validationReport as any) || {},
+        })).catch(() => {});
+      }
       return attempt as unknown as T;
     }
     case "bookService:setBookStatus": {
@@ -144,6 +189,12 @@ export async function runBookMutation<T = unknown>(
       if (!book) throw new Error("Book not found");
       book.status = status;
       book.updatedAt = Date.now();
+      if (supabase) {
+        void Promise.resolve(supabase
+          .from("publishing_books")
+          .update({ status, updated_at: new Date().toISOString() })
+          .eq("id", bookId)).catch(() => {});
+      }
       return book as unknown as T;
     }
     default:

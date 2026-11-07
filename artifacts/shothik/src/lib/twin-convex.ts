@@ -1,8 +1,11 @@
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
+
 /**
- * Twin client adapter — migrated from Convex to PostgreSQL / In-Memory Store.
+ * Twin client adapter — migrated from Convex/InsForge to Supabase PostgreSQL + In-Memory Store.
  *
- * Provides the same query / mutation API contract so twin route guards,
- * twin tools, and twin API routes function without Convex dependencies.
+ * Provides the exact same query / mutation API contract while replicating writes
+ * to `public.twin_profiles`, `public.twin_tasks`, `public.twin_knowledge_vectors`,
+ * `public.twin_activity_logs`, and `public.twin_approvals` in Supabase.
  */
 
 export interface TwinRecord {
@@ -87,7 +90,6 @@ export interface TwinApproval {
   resolvedAt?: number;
 }
 
-// In-memory twin state store
 const twinsMap = new Map<string, TwinRecord>();
 const tasksMap = new Map<string, TwinTask>();
 const activityLogs: TwinActivityLogEntry[] = [];
@@ -200,6 +202,7 @@ export class LocalTwinClient {
 
   async mutation(ref: any, args: any = {}): Promise<any> {
     const fnName = typeof ref === "string" ? ref : ref?.name || String(ref);
+    const supabase = getInsforgeBrowserClient();
 
     switch (fnName) {
       case "twin:createOrUpdate": {
@@ -226,6 +229,19 @@ export class LocalTwinClient {
           ...args,
         };
         twinsMap.set(id, record);
+        if (supabase) {
+          void Promise.resolve(supabase.from("twin_profiles").upsert({
+            id,
+            master_id: record.masterId || null,
+            name: record.name,
+            specialization: record.specialization,
+            source_platform: record.sourcePlatform,
+            training_status: record.trainingStatus,
+            knowledge_score: record.knowledgeScore,
+            is_active: record.isActive,
+            updated_at: new Date().toISOString(),
+          })).catch(() => {});
+        }
         return id;
       }
       case "twin:logActivity": {
@@ -239,6 +255,16 @@ export class LocalTwinClient {
           timestamp: Date.now(),
         };
         activityLogs.push(entry);
+        if (supabase) {
+          void Promise.resolve(supabase.from("twin_activity_logs").insert({
+            id: entry._id,
+            twin_id: entry.twinId,
+            master_id: entry.masterId || null,
+            action: entry.action,
+            target_resource: entry.targetResource,
+            metadata: entry.metadata,
+          })).catch(() => {});
+        }
         return entry;
       }
       case "twin:createTask": {
@@ -254,17 +280,38 @@ export class LocalTwinClient {
           createdAt: Date.now(),
         };
         tasksMap.set(id, task);
+        if (supabase) {
+          void Promise.resolve(supabase.from("twin_tasks").insert({
+            id,
+            twin_id: task.twinId,
+            user_id: task.userId,
+            title: task.title,
+            description: task.description,
+            task_type: task.taskType,
+            status: task.status,
+          })).catch(() => {});
+        }
         return id;
       }
       case "twin:addKnowledge": {
         const userId = args.userId;
         const current = knowledgeMap.get(userId) || [];
+        const docId = `kn_${Date.now()}`;
         current.push({
-          id: `kn_${Date.now()}`,
+          id: docId,
           title: args.title || "Knowledge item",
           content: args.content || "",
         });
         knowledgeMap.set(userId, current);
+        if (supabase) {
+          void Promise.resolve(supabase.from("twin_knowledge_vectors").insert({
+            twin_id: args.twinId || userId || "default_twin",
+            document_id: docId,
+            content_type: "manuscript",
+            title: args.title || "Knowledge item",
+            content: args.content || "",
+          })).catch(() => {});
+        }
         return { success: true };
       }
       case "twin:createPendingApproval": {
@@ -279,6 +326,16 @@ export class LocalTwinClient {
           requestedAt: Date.now(),
         };
         approvalsMap.set(id, approval);
+        if (supabase) {
+          void Promise.resolve(supabase.from("twin_approvals").insert({
+            id,
+            twin_id: approval.twinId,
+            master_id: approval.masterId,
+            action: approval.action,
+            payload: (approval.payload as any) || {},
+            status: approval.status,
+          })).catch(() => {});
+        }
         return id;
       }
       default:

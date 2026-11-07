@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "../lib/logger";
-import { db, userCreditsTable, userSubscriptionsTable } from "@workspace/db";
+import { db, userCreditsTable, userProfilesTable, userSubscriptionsTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -49,6 +49,98 @@ if (isProduction && !process.env.JWT_SECRET) {
   throw new Error("[Auth Security] CRITICAL: JWT_SECRET environment variable must be explicitly configured when NODE_ENV=production.");
 }
 const JWT_SECRET = process.env.JWT_SECRET || "shothik_dev_only_ephemeral_jwt_secret";
+const SUPABASE_JWT_SECRET =
+  process.env.SUPABASE_JWT_SECRET ||
+  "super-secret-jwt-token-with-at-least-32-characters-long";
+const TRUSTED_SUPABASE_ISSUERS = new Set([
+  "https://xgnzsikvguswhtozvokx.supabase.co/auth/v1",
+  "http://127.0.0.1:54321/auth/v1",
+  "http://localhost:54321/auth/v1",
+]);
+
+function syncUserToPostgres(user: StoredUser): void {
+  try {
+    db.insert(userProfilesTable)
+      .values({
+        id: user.id,
+        email: user.email.toLowerCase(),
+        name: user.name,
+        role: user.role || "user",
+        country: user.country || "BD",
+        credits: user.credits ?? 500,
+        tier: user.tier || "starter",
+        authProvider: user.authProvider || "supabase",
+        passwordHash: user.passwordHash || null,
+      })
+      .onConflictDoUpdate({
+        target: userProfilesTable.id,
+        set: {
+          email: user.email.toLowerCase(),
+          name: user.name,
+          role: user.role || "user",
+          country: user.country || "BD",
+          credits: user.credits ?? 500,
+          tier: user.tier || "starter",
+          updatedAt: new Date(),
+        },
+      })
+      .catch(() => {});
+
+    db.insert(userCreditsTable)
+      .values({
+        userId: user.id,
+        balance: user.credits ?? 500,
+        lifetimeEarned: user.credits ?? 500,
+        lifetimeSpent: 0,
+      })
+      .onConflictDoNothing()
+      .catch(() => {});
+
+    db.insert(userSubscriptionsTable)
+      .values({
+        userId: user.id,
+        tier: user.tier || "starter",
+        status: "active",
+      })
+      .onConflictDoNothing()
+      .catch(() => {});
+  } catch {
+    // non-blocking write-through
+  }
+}
+
+function ensureSupabaseUserHydrated(claims: {
+  sub: string;
+  email: string;
+  user_metadata?: Record<string, any>;
+  role?: string;
+}): StoredUser {
+  const normalizedEmail = claims.email.toLowerCase();
+  const existing = usersById.get(claims.sub) || usersByEmail.get(normalizedEmail);
+  if (existing) {
+    return existing;
+  }
+
+  const meta = claims.user_metadata || {};
+  const hydrated: StoredUser = {
+    id: claims.sub,
+    _id: claims.sub,
+    name: meta.name || meta.full_name || normalizedEmail.split("@")[0] || "Shothik User",
+    email: normalizedEmail,
+    role: meta.role || (claims.role === "service_role" ? "admin" : "user"),
+    country: meta.country || "BD",
+    credits: typeof meta.credits === "number" ? meta.credits : 500,
+    tier: meta.tier || "starter",
+    authProvider: "supabase",
+    createdAt: new Date().toISOString(),
+  };
+
+  usersById.set(hydrated.id, hydrated);
+  usersByEmail.set(hydrated.email, hydrated);
+  persistUsers();
+  syncUserToPostgres(hydrated);
+  return hydrated;
+}
 
 function generateToken(userId: string, email: string): string {
   const payload = Buffer.from(
@@ -62,9 +154,75 @@ function generateToken(userId: string, email: string): string {
   return `${payload}.${signature}`;
 }
 
+function verifySupabaseJwt(parts: [string, string, string]): { userId: string; email: string } | null {
+  try {
+    const [headerB64, payloadB64, signatureB64] = parts;
+    const header = JSON.parse(Buffer.from(headerB64, "base64url").toString("utf-8"));
+    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8"));
+
+    const userId = payload.sub || payload.userId;
+    const email = payload.email || (userId ? `${userId}@shothik.local` : "");
+    if (!userId || typeof userId !== "string") return null;
+
+    // Check expiration (Supabase exp is in seconds; handle ms if > 1e11)
+    if (typeof payload.exp === "number") {
+      const expMs = payload.exp > 1e11 ? payload.exp : payload.exp * 1000;
+      if (expMs < Date.now()) return null;
+    }
+
+    const signingInput = `${headerB64}.${payloadB64}`;
+    let signatureVerified = false;
+
+    if (header.alg === "HS256") {
+      for (const secret of [SUPABASE_JWT_SECRET, JWT_SECRET]) {
+        if (!secret) continue;
+        const expectedSig = crypto.createHmac("sha256", secret).update(signingInput).digest("base64url");
+        const sigBuf = Buffer.from(signatureB64);
+        const expectedBuf = Buffer.from(expectedSig);
+        if (sigBuf.length === expectedBuf.length && crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+          signatureVerified = true;
+          break;
+        }
+      }
+    }
+
+    // In non-production or trusted Supabase Cloud/Local issuer bridge (e.g., ES256 asymmetric tokens or unconfigured cloud secret)
+    if (
+      !signatureVerified &&
+      !isProduction &&
+      typeof payload.iss === "string" &&
+      TRUSTED_SUPABASE_ISSUERS.has(payload.iss) &&
+      payload.aud === "authenticated" &&
+      signatureB64.length >= 32
+    ) {
+      signatureVerified = true;
+    }
+
+    if (!signatureVerified) return null;
+
+    ensureSupabaseUserHydrated({
+      sub: userId,
+      email,
+      user_metadata: payload.user_metadata,
+      role: payload.role,
+    });
+
+    return { userId, email };
+  } catch {
+    return null;
+  }
+}
+
 export function verifyToken(token: string): { userId: string; email: string } | null {
   try {
-    const [payload, signature] = token.split(".");
+    const parts = token.split(".");
+    // 1. Standard 3-part RFC 7519 JWT (Supabase Auth)
+    if (parts.length === 3) {
+      return verifySupabaseJwt(parts as [string, string, string]);
+    }
+
+    // 2. Legacy 2-part HMAC token (Backward-compatible bridge & Vitest suite)
+    const [payload, signature] = parts;
     if (!payload || !signature) return null;
     const expectedSig = crypto.createHmac("sha256", JWT_SECRET).update(payload).digest("base64url");
     const sigBuf = Buffer.from(signature);
@@ -161,6 +319,37 @@ function loadUsers(): void {
 
     persistUsers();
   }
+
+  // Hydrate existing user profiles from PostgreSQL (public.user_profiles) asynchronously
+  try {
+    db.select()
+      .from(userProfilesTable)
+      .limit(500)
+      .then((rows) => {
+        for (const r of rows) {
+          if (!usersById.has(r.id)) {
+            const hydrated: StoredUser = {
+              id: r.id,
+              _id: r.id,
+              name: r.name,
+              email: r.email.toLowerCase(),
+              passwordHash: r.passwordHash || undefined,
+              role: r.role || "user",
+              country: r.country || "BD",
+              credits: r.credits ?? 500,
+              tier: r.tier || "starter",
+              authProvider: r.authProvider || "supabase",
+              createdAt: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
+            };
+            usersById.set(hydrated.id, hydrated);
+            usersByEmail.set(hydrated.email, hydrated);
+          }
+        }
+      })
+      .catch(() => {});
+  } catch {
+    // ignore if db not ready during unit test boot
+  }
 }
 
 // Initialize users on boot
@@ -244,24 +433,7 @@ router.post(["/auth/sign-up", "/v1/auth/sign-up", "/sign-up"], (req: Request, re
     usersByEmail.set(normalizedEmail, newUser);
     usersById.set(userId, newUser);
     persistUsers();
-
-    // Replicate new account credits & subscription to PostgreSQL
-    try {
-      db.insert(userCreditsTable).values({
-        userId,
-        balance: 500,
-        lifetimeEarned: 500,
-        lifetimeSpent: 0,
-      }).onConflictDoNothing().catch(() => {});
-
-      db.insert(userSubscriptionsTable).values({
-        userId,
-        tier: "starter",
-        status: "active",
-      }).onConflictDoNothing().catch(() => {});
-    } catch {
-      // ignore
-    }
+    syncUserToPostgres(newUser);
 
     const token = generateToken(userId, normalizedEmail);
 
@@ -672,11 +844,40 @@ router.post(["/user/profile-update", "/v1/user/profile-update"], (req: Request, 
   if (name && typeof name === "string") user.name = name.trim();
   if (country && typeof country === "string") user.country = country.trim();
   persistUsers();
+  syncUserToPostgres(user);
 
   return res.status(200).json({
     success: true,
     message: "Profile updated successfully.",
     data: sanitizeUser(user),
+    user: sanitizeUser(user),
+  });
+});
+
+/**
+ * POST /api/auth/supabase-sync
+ * Synchronizes a verified Supabase Auth session token with the backend profile & starter credits
+ */
+router.post(["/auth/supabase-sync", "/v1/auth/supabase-sync"], (req: Request, res: Response) => {
+  const token = extractToken(req) || req.body?.accessToken;
+  if (!token || typeof token !== "string") {
+    return res.status(401).json({ success: false, message: "Missing Supabase access token." });
+  }
+
+  const verified = verifyToken(token);
+  if (!verified) {
+    return res.status(401).json({ success: false, message: "Invalid or expired Supabase token." });
+  }
+
+  const user = ensureSupabaseUserHydrated({
+    sub: verified.userId,
+    email: verified.email,
+    user_metadata: req.body?.userMetadata || req.body?.user_metadata,
+  });
+
+  return res.status(200).json({
+    success: true,
+    token,
     user: sanitizeUser(user),
   });
 });
