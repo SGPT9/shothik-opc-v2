@@ -20,6 +20,7 @@ import {
   Minimize2,
   Users,
   Zap,
+  Volume2,
 } from "lucide-react";
 import { ModeSwitcherHeader } from "./navigation/ModeSwitcherHeader";
 import { LeftSidebar } from "./layout/LeftSidebar";
@@ -36,6 +37,8 @@ import { ManuscriptImportModal } from "./ManuscriptImportModal";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
 import { NilkhetOrderModal } from "@/components/books/NilkhetOrderModal";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AudioNarrationPlayer } from "@/components/audio/AudioNarrationPlayer";
 import { CollaborativePresence } from "./CollaborativePresence";
 const RoomShareModal = lazy(() => import("./components/RoomShareModal").then((mod) => ({ default: mod.RoomShareModal })));
 const PlotBranchModal = lazy(() => import("./components/PlotBranchModal").then((mod) => ({ default: mod.PlotBranchModal })));
@@ -120,6 +123,7 @@ export function PolishedWriteView({
   const [isZenMode, setIsZenMode] = useState(false);
   const [isCommandDockOpen, setIsCommandDockOpen] = useState(false);
   const [isDeepResearchModalOpen, setIsDeepResearchModalOpen] = useState(false);
+  const [isNarrationModalOpen, setIsNarrationModalOpen] = useState(false);
   const [externalChatPrompt, setExternalChatPrompt] = useState<string | null>(null);
   const [preview3D, setPreview3D] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -462,6 +466,18 @@ export function PolishedWriteView({
             >
               <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
               <span>🔬 Deep Research</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-narrate-studio"
+              onClick={() => setIsNarrationModalOpen(true)}
+              className="h-7 px-2.5 text-xs font-bold gap-1.5 border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 shrink-0 cursor-pointer"
+              title="Narrate chapter with Bangla Voice AI"
+            >
+              <Volume2 className="h-3.5 w-3.5 text-purple-500" />
+              <span>🔊 Voice Narration</span>
             </Button>
           </div>
 
@@ -1172,6 +1188,21 @@ export function PolishedWriteView({
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
+      <Dialog open={isNarrationModalOpen} onOpenChange={setIsNarrationModalOpen}>
+        <DialogContent className="sm:max-w-xl p-4 bg-background">
+          <AudioNarrationPlayer
+            text={content}
+            title={title || "Chapter Narration"}
+          />
+        </DialogContent>
+      </Dialog>
+      {isDeepResearchModalOpen && (
+        <DeepResearchStudioModal
+          isOpen={isDeepResearchModalOpen}
+          onClose={() => setIsDeepResearchModalOpen(false)}
+          onInsertContent={(md) => setContent(content + "\n\n" + md)}
+        />
+      )}
       </Suspense>
       <UpgradeModal
         open={isUpgradeModalOpen}

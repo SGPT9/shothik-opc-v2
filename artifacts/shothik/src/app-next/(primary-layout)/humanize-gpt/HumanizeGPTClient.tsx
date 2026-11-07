@@ -25,6 +25,7 @@ import {
   Cpu,
   BarChart3,
   Zap,
+  Volume2,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { cn } from "@/lib/utils";
@@ -32,6 +33,7 @@ import ButtonPasteText from "@/components/buttons/ButtonPasteText";
 import ButtonSampleText from "@/components/buttons/ButtonSampleText";
 import ButtonInsertDocumentText from "@/components/buttons/ButtonInsertDocumentText";
 import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
+import { AudioNarrationPlayer } from "@/components/audio/AudioNarrationPlayer";
 import useScreenSize from "@/hooks/ui/useScreenSize";
 import { trySamples } from "@/_mock/trySamples";
 
@@ -98,6 +100,7 @@ export default function HumanizeGPTClient() {
 
   const [enableEdit, setEnableEdit] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [showNarration, setShowNarration] = useState(false);
   const [mobileTab, setMobileTab] = useState<"editor" | "result">("editor");
 
   const { width } = useScreenSize();
@@ -653,8 +656,19 @@ export default function HumanizeGPTClient() {
                     </button>
                   </div>
 
-                  {/* Actions: Copy & Send to Writing Studio */}
+                  {/* Actions: Copy, Listen & Send to Writing Studio */}
                   <div className="flex items-center gap-1.5">
+                    <Button
+                      variant={showNarration ? "secondary" : "ghost"}
+                      size="sm"
+                      onClick={() => setShowNarration(!showNarration)}
+                      data-testid="button-voice-narration"
+                      className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                      title="Listen with Bangla Voice AI Narration"
+                    >
+                      <Volume2 className={cn("h-3.5 w-3.5 mr-1", showNarration ? "text-emerald-500" : "")} />
+                      <span>{showNarration ? "Close Audio" : "🔊 Listen (Voice AI)"}</span>
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -674,6 +688,16 @@ export default function HumanizeGPTClient() {
                     />
                   </div>
                 </div>
+
+                {/* ── Optional Voice AI Narration Player ── */}
+                {showNarration && (
+                  <div className="mb-2">
+                    <AudioNarrationPlayer
+                      text={result.humanizedText}
+                      title="Humanized Manuscript Narration"
+                    />
+                  </div>
+                )}
 
                 {/* ── Content Surface: State 1 (Scrapbook), State 2 (Clean), State 3 (Risk) ── */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar p-3 rounded-xl border border-border/40 bg-background/80 relative">
