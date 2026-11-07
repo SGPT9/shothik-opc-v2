@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { logger } from "../lib/logger";
 import { crdtMeshEngine } from "../lib/crdt-mesh-engine.js";
 import { wasmCrdtEngine } from "../lib/wasm-crdt-bindings.js";
+import { persistEngineSnapshot } from "../lib/novel-engine/suite-manifest-store.js";
 
 export interface CRDTOperationPayload {
   id: string;
@@ -111,6 +112,8 @@ crdtRouter.post("/v1/crdt/delta", (req: Request, res: Response): void => {
   }
 
   safeSetNestedPath(currentDoc, op.path, op.value, op.type === "delete");
+  void persistEngineSnapshot("crdt_snapshots", op.docId, currentDoc);
+  void persistEngineSnapshot("crdt_snapshots", op.docId, currentDoc);
 
   // Track in multi-master mesh vector engine
   const meshResult = crdtMeshEngine.applyLocalOperation(

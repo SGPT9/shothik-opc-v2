@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const soundscapeEngineRouter = Router();
 
@@ -295,6 +296,7 @@ soundscapeEngineRouter.post(
       };
 
       mixStores.set(projectId, mix);
+      void persistSuiteManifest(projectId, "soundscape", mix);
 
       return res.json({
         success: true,
@@ -339,6 +341,7 @@ soundscapeEngineRouter.post(
       mix.layers = body.layers;
       mix.updatedAt = new Date().toISOString();
       mixStores.set(projectId, mix);
+      void persistSuiteManifest(projectId, "soundscape", mix);
 
       return res.json({ success: true, data: mix });
     } catch (err: any) {

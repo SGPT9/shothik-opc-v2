@@ -7,6 +7,8 @@ import {
   EscPosReceiptOptions
 } from '../lib/pos/field-agent-pos-engine.js';
 
+import { persistEngineSnapshot } from '../lib/novel-engine/suite-manifest-store.js';
+
 export const posRouter = Router();
 
 // In-memory synced transaction cache for idempotency & metrics
@@ -207,6 +209,8 @@ posRouter.post('/v1/pos/transactions/sync', (req: Request, res: Response): void 
     // Save newly synced items to memory store
     for (const tx of syncResult.syncedTransactions) {
       syncedTransactionStore.set(tx.transactionId, tx);
+      void persistEngineSnapshot('pos_transactions', tx.transactionId, tx);
+      void persistEngineSnapshot('pos_transactions', tx.transactionId, tx);
     }
 
     res.json({

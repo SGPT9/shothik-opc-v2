@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { logger } from "../lib/logger";
 import { createApiCanonicalizer } from "../lib/middleware/deprecation-canonicalizer";
 import { inferenceGateway } from "../lib/inference-gateway";
+import { persistEngineSnapshot } from "../lib/novel-engine/suite-manifest-store";
 
 const router = Router();
 
@@ -1229,6 +1230,8 @@ router.post(["/api/modes/custom-modes", "/modes/custom-modes"], (req: Request, r
   const userModes = customModesStore.get(userId) || [];
   userModes.push(newMode);
   customModesStore.set(userId, userModes);
+  void persistEngineSnapshot("custom_paraphrase_modes", userId, { modes: userModes }, userId);
+  void persistEngineSnapshot("custom_paraphrase_modes", userId, { modes: userModes }, userId);
 
   res.status(201).json({
     success: true,

@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const voiceCastingRouter = Router();
 
@@ -305,6 +306,8 @@ voiceCastingRouter.post(
 
       roster.updatedAt = new Date().toISOString();
       castStores.set(projectId, roster);
+      void persistSuiteManifest(projectId, "voice_casting", roster);
+      void persistSuiteManifest(projectId, "voice_casting", roster);
 
       return res.json({ success: true, data: updatedProfile });
     } catch (err: any) {

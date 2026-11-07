@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
 import { synthesizeDialogueLine } from "./voice-casting";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const phonemeTunerRouter = Router();
 
@@ -398,6 +399,8 @@ phonemeTunerRouter.post(
 
       store.updatedAt = new Date().toISOString();
       dictionaryStores.set(projectId, store);
+      void persistSuiteManifest(projectId, "phoneme_tuner", store);
+      void persistSuiteManifest(projectId, "phoneme_tuner", store);
 
       return res.json({ success: true, data: entry });
     } catch (err: any) {
@@ -422,6 +425,8 @@ phonemeTunerRouter.delete(
       store.entries = store.entries.filter(e => e.id !== entryId);
       store.updatedAt = new Date().toISOString();
       dictionaryStores.set(projectId, store);
+      void persistSuiteManifest(projectId, "phoneme_tuner", store);
+      void persistSuiteManifest(projectId, "phoneme_tuner", store);
 
       return res.json({ success: true, message: `Phoneme entry ${entryId} deleted` });
     } catch (err: any) {

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { db, mushak63ChallansTable } from "@workspace/db";
 
 export interface MushakItem {
   itemDescription: string;
@@ -112,6 +113,24 @@ export class Mushak63Engine {
     // NBR Standard QR Payload: BIN|ChallanNo|TotalVAT|GrandTotal|IssueDate
     const qrCodePayload = `NBR-VAT|BIN:${input.sellerBIN}|CHALLAN:${challanNumber}|VAT:${totalVAT}|TOTAL:${grandTotal}|DATE:${issueDateTime.split("T")[0]}`;
     const nbrVerificationHashSha256 = createHash("sha256").update(qrCodePayload).digest("hex");
+
+    try {
+      db.insert(mushak63ChallansTable)
+        .values({
+          challanNumber,
+          sellerBin: input.sellerBIN,
+          buyerBin: input.buyerBIN || null,
+          buyerName: input.buyerName,
+          totalTaxableAmountBDT: String(totalExVat + totalSD),
+          totalVatBDT: String(totalVAT),
+          totalPayableBDT: String(grandTotal),
+          verificationSealSha256: nbrVerificationHashSha256,
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     return {
       challanNumber,

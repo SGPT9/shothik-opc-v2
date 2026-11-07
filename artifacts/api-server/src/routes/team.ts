@@ -1,6 +1,7 @@
 // src/routes/team.ts
 import { Router, Request, Response } from "express";
 import { logger } from "../lib/logger";
+import { persistEngineSnapshot } from "../lib/novel-engine/suite-manifest-store";
 
 // Simple in‑memory storage for demonstration – replace with DB in production
 interface AgentSpec {
@@ -28,6 +29,7 @@ router.post("/team/create", (req: Request, res: Response) => {
   const id = `team_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
   const team: Team = { id, name, agents: [], tasks: {} };
   teams.set(id, team);
+  void persistEngineSnapshot("team_workspaces", id, team);
   logger.info({ teamId: id }, "[Team] Created new team");
   return res.status(201).json({ success: true, team });
 });
@@ -51,6 +53,7 @@ router.post("/team/:teamId/agent", (req: Request, res: Response) => {
     role,
   };
   team.agents.push(agent);
+  void persistEngineSnapshot("team_workspaces", teamId, team);
   logger.info({ teamId, agentId: agent.id }, "[Team] Added agent");
   return res.status(200).json({ success: true, agent, team });
 });
@@ -70,6 +73,7 @@ router.post("/team/:teamId/delegate", (req: Request, res: Response) => {
   }
   // In a real system this would trigger asynchronous execution. Here we store payload.
   team.tasks[taskId] = { status: "queued", payload };
+  void persistEngineSnapshot("team_workspaces", teamId, team);
   logger.info({ teamId, taskId }, "[Team] Task delegated");
   return res.status(202).json({ success: true, taskId, status: "queued" });
 });

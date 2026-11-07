@@ -1,4 +1,4 @@
-import { boolean, integer, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, integer, jsonb, numeric, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -448,6 +448,75 @@ export const engineKvSnapshotsTable = pgTable(
   },
   (t) => [uniqueIndex("engine_kv_snapshots_ns_entity_idx").on(t.namespace, t.entityId)],
 );
+
+export const twinActivityLogsTable = pgTable("twin_activity_logs", {
+  id: text("id").primaryKey(),
+  twinId: text("twin_id").notNull(),
+  masterId: text("master_id"),
+  action: text("action").notNull(),
+  targetResource: text("target_resource").notNull().default(""),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const twinApprovalsTable = pgTable("twin_approvals", {
+  id: text("id").primaryKey(),
+  twinId: text("twin_id").notNull(),
+  masterId: text("master_id").notNull(),
+  action: text("action").notNull(),
+  payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+  status: text("status").notNull().default("pending"),
+  requestedAt: timestamp("requested_at", { withTimezone: true }).notNull().defaultNow(),
+  resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+});
+
+export const bookChapterAttemptsTable = pgTable("book_chapter_attempts", {
+  id: text("id").primaryKey(),
+  bookId: text("book_id").notNull().references(() => publishingBooksTable.id, { onDelete: "cascade" }),
+  chapterIndex: integer("chapter_index").notNull(),
+  attemptNumber: integer("attempt_number").notNull().default(1),
+  content: text("content").notNull().default(""),
+  passedValidation: boolean("passed_validation").notNull().default(false),
+  validationReport: jsonb("validation_report").$type<Record<string, unknown>>(),
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const authorEarningsTable = pgTable("author_earnings", {
+  userId: text("user_id").primaryKey(),
+  totalEarnings: numeric("total_earnings", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalUnitsSold: integer("total_units_sold").notNull().default(0),
+  lifetimeRevenue: numeric("lifetime_revenue", { precision: 12, scale: 2 }).notNull().default("0"),
+  availableBalance: numeric("available_balance", { precision: 12, scale: 2 }).notNull().default("0"),
+  totalPaidOut: numeric("total_paid_out", { precision: 12, scale: 2 }).notNull().default("0"),
+  pendingPayouts: numeric("pending_payouts", { precision: 12, scale: 2 }).notNull().default("0"),
+  publishedBooksCount: integer("published_books_count").notNull().default(0),
+  monthlyBreakdown: jsonb("monthly_breakdown").$type<unknown[]>().notNull().default([]),
+  perBookEarnings: jsonb("per_book_earnings").$type<unknown[]>().notNull().default([]),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const authorPayoutsTable = pgTable("author_payouts", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  amount: numeric("amount", { precision: 12, scale: 2 }).notNull(),
+  method: text("method").notNull().default("bKash"),
+  status: text("status").notNull().default("pending"),
+  periodStart: text("period_start"),
+  periodEnd: text("period_end"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const authorPayoutAccountsTable = pgTable("author_payout_accounts", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  method: text("method").notNull().default("bKash"),
+  accountName: text("account_name").notNull(),
+  accountNumber: text("account_number").notNull(),
+  bankName: text("bank_name"),
+  routingNumber: text("routing_number"),
+  isDefault: boolean("is_default").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 
 

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { db, factoringOffersTable } from "@workspace/db";
 
 export type CreditTier = "AAA" | "AA" | "A" | "BBB" | "HIGH_RISK";
 
@@ -307,6 +308,29 @@ Discount APR: ${apr}% per annum for ${tenureDays} days tenure.`;
     });
 
     const verificationSealSha256 = createHash("sha256").update(sealPayload).digest("hex");
+
+    try {
+      db.insert(factoringOffersTable)
+        .values({
+          offerId,
+          invoiceId: invoice.invoiceId,
+          buyerId: buyer.buyerId,
+          buyerName: buyer.name,
+          invoiceFaceValueBDT: String(invoice.invoiceAmountBDT),
+          advanceRatePercent: Math.round(effectiveAdvanceRate * 100),
+          grossAdvanceBDT: String(grossAdvanceAmountBDT),
+          discountFeeBDT: String(factoringDiscountFeeBDT),
+          netPayoutBDT: String(netMerchantPayoutBDT),
+          annualizedApr: String(apr),
+          disbursementChannel: channel,
+          status: "offered",
+          verificationSealSha256,
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     return {
       offerId,

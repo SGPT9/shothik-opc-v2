@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const roomBlockingRouter = Router();
 
@@ -294,6 +295,8 @@ roomBlockingRouter.post(
 
       layout.updatedAt = new Date().toISOString();
       roomStores.set(projectId, layout);
+      void persistSuiteManifest(projectId, "room_blocking", layout);
+      void persistSuiteManifest(projectId, "room_blocking", layout);
 
       const sightlines = computeCharacterSightlines(layout);
 

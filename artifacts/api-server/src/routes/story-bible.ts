@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const storyBibleRouter = Router();
 
@@ -286,6 +287,8 @@ storyBibleRouter.post(
 
       store.updatedAt = new Date().toISOString();
       bibleStores.set(projectId, store);
+      void persistSuiteManifest(projectId, "story_bible", store);
+      void persistSuiteManifest(projectId, "story_bible", store);
 
       logger.info({ projectId, entityId, name: body.name }, "[StoryBible] Upserted entity");
 
@@ -312,6 +315,8 @@ storyBibleRouter.delete(
       store.entities = store.entities.filter(e => e.id !== entityId);
       store.updatedAt = new Date().toISOString();
       bibleStores.set(projectId, store);
+      void persistSuiteManifest(projectId, "story_bible", store);
+      void persistSuiteManifest(projectId, "story_bible", store);
 
       return res.json({ success: true, message: `Entity ${entityId} deleted.` });
     } catch (err: any) {

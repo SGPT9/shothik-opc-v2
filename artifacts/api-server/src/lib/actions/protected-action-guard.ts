@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { db, protectedActionAuditTable } from "@workspace/db";
 
 export interface ProtectedActionRequest {
   actionId: string;
@@ -67,6 +68,22 @@ export class ProtectedActionGuard {
     });
 
     action.auditSealSha256 = createHash("sha256").update(sealData).digest("hex");
+    try {
+      db.insert(protectedActionAuditTable)
+        .values({
+          actionId,
+          actionType: action.actionType,
+          actorId: action.actorPhone,
+          payload: action.payload,
+          otpVerified: "true",
+          approverMfsPhone: action.actorPhone,
+          stateSealSha256: action.auditSealSha256,
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
     return { success: true, auditSealSha256: action.auditSealSha256 };
   }
 

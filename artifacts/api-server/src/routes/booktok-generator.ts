@@ -2,6 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
 import { synthesizeDialogueLine } from "./voice-casting";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const bookTokGeneratorRouter = Router();
 
@@ -316,6 +317,7 @@ bookTokGeneratorRouter.post(
       };
 
       teaserStores.set(projectId, manifest);
+      void persistSuiteManifest(projectId, "booktok", manifest);
 
       return res.json({
         success: true,

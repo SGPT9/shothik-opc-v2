@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import crypto from "crypto";
 import { logger } from "../lib/logger.js";
+import { persistEngineSnapshot } from "../lib/novel-engine/suite-manifest-store.js";
 import { analyzeCustomerMessage, type NlpAnalysisResult } from "../lib/whatsapp/banglish-nlp.js";
 import { whatsAppCommerceEngine, type DialectCode, type CartItem } from "../lib/whatsapp/whatsapp-commerce-engine.js";
 import {
@@ -197,6 +198,8 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
             };
 
             activeSessions.set(sessionKey, managedSession);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, managedSession);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, managedSession);
 
             responses.push({
               recipientPhone: senderPhone,
@@ -293,6 +296,8 @@ router.post("/v1/whatsapp/orders/approve", (req: Request, res: Response) => {
     });
 
     activeSessions.set(sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
 
     return res.status(200).json({
       success: true,
@@ -343,6 +348,8 @@ router.post("/v1/whatsapp/interactive/reply", (req: Request, res: Response) => {
     });
 
     activeSessions.set(sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
 
     return res.status(200).json({
       success: true,
