@@ -949,4 +949,107 @@ router.get(["/v1/telemetry/traces", "/api/v1/telemetry/traces", "/telemetry/trac
   }
 });
 
+// --- 10. Voice AI GPU Daemon Proxy Endpoints (Wave A) ---
+const VOICE_AI_DAEMON_URL = process.env.BANGLA_AUDIO_AI_URL || "http://127.0.0.1:8001";
+
+const FALLBACK_VOICE_PERSONAS = {
+  ayesha_sales: { name: "Ayesha (Sales & Commerce)", dialect: "Standard Dhaka Bangla", pitch_hz: 215, default_emotion: "empathetic" },
+  nusrat_banking: { name: "Nusrat (Banking & FinTech)", dialect: "Formal Pramit Bangla", pitch_hz: 205, default_emotion: "reassuring" },
+  zara_corporate: { name: "Zara (Enterprise Executive)", dialect: "Bilingual Bangla-English", pitch_hz: 198, default_emotion: "professional" },
+  tania_casual: { name: "Tania (Conversational Companion)", dialect: "Colloquial Dhakaiya", pitch_hz: 225, default_emotion: "warm" },
+};
+
+router.get(
+  ["/v1/voice/personas", "/api/v1/voice/personas", "/voice/personas", "/api/voice/personas"],
+  async (_req: Request, res: Response): Promise<void> => {
+    try {
+      const upstreamRes = await fetch(`${VOICE_AI_DAEMON_URL}/api/v1/personas`, {
+        signal: AbortSignal.timeout(2000),
+      });
+
+      if (upstreamRes.ok) {
+        const data = await upstreamRes.json();
+        res.status(200).json(data);
+        return;
+      }
+    } catch (err: any) {
+      logger.warn({ err: err.message }, "[voice-proxy] Voice daemon unreachable for personas, using fallback");
+    }
+
+    res.status(200).json({
+      success: true,
+      personas: FALLBACK_VOICE_PERSONAS,
+    });
+  }
+);
+
+router.post(
+  ["/v1/voice/synthesize", "/api/v1/voice/synthesize", "/voice/synthesize", "/api/voice/synthesize"],
+  async (req: Request, res: Response): Promise<void> => {
+    try {
+      const { text = "", persona = "ayesha_sales", speed = 1.0 } = req.body || {};
+
+      if (!text || typeof text !== "string" || text.trim().length === 0) {
+        res.status(400).json({ success: false, error: "Text is required for voice synthesis" });
+        return;
+      }
+
+      const startTime = Date.now();
+      let daemonData: any = null;
+
+      try {
+        const upstreamRes = await fetch(`${VOICE_AI_DAEMON_URL}/api/v1/synthesize`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text,
+            persona,
+            speed,
+          }),
+          signal: AbortSignal.timeout(5000),
+        });
+
+        if (upstreamRes.ok) {
+          daemonData = await upstreamRes.json();
+        }
+      } catch (err: any) {
+        logger.warn({ err: err.message }, "[voice-proxy] Upstream Voice AI synthesis call failed");
+      }
+
+      if (!daemonData || !daemonData.audio_base64) {
+        res.status(503).json({
+          success: false,
+          error: "Bangla Voice AI engine temporarily unreachable",
+        });
+        return;
+      }
+
+      const latencyMs = daemonData.latency_ms || Date.now() - startTime;
+      const sampleRate = daemonData.sample_rate || 24000;
+      const audioBase64 = daemonData.audio_base64;
+      const audioUrl = `data:audio/wav;base64,${audioBase64}`;
+
+      // Langfuse telemetry
+      langfuseTracer.traceSpan({
+        name: "voice-synthesis",
+        input: { text: text.slice(0, 100), persona, speed },
+        output: { sampleRate, latencyMs, persona },
+        durationMs: latencyMs,
+      });
+
+      res.status(200).json({
+        success: true,
+        audioBase64,
+        audioUrl,
+        sampleRate,
+        latencyMs,
+        persona,
+      });
+    } catch (err: any) {
+      logger.error({ err }, "[voice-proxy] Error in voice synthesis proxy");
+      res.status(500).json({ success: false, error: err.message });
+    }
+  }
+);
+
 export default router;
