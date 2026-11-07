@@ -789,7 +789,7 @@ export function Transcript({
                   {!isMsgStreaming && displayContent && (
                     <PerplexityRelatedQueries
                       messageContent={displayContent}
-                      onSelectQuery={(query) => onSelectPrompt?.(query, "cofounder")}
+                      onSelectQuery={(query) => onSelectPrompt?.(query, (agentId as any) || "cofounder")}
                     />
                   )}
 

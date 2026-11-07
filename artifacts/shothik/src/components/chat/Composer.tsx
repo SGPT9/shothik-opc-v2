@@ -45,16 +45,18 @@ import {
   useRef,
   useState,
   useCallback,
+  lazy,
+  Suspense,
 } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
 import type { ChatPersona } from "@/lib/chat/types";
-import { RagKnowledgeVaultModal } from "./RagKnowledgeVaultModal";
-import { CourierTrackingModal } from "@/components/common/CourierTrackingModal";
-import { ScenarioLabModal } from "@/components/scenariolab/ScenarioLabModal";
-import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
-import { TeamModal } from "@/components/team/TeamModal";
+const RagKnowledgeVaultModal = lazy(() => import("./RagKnowledgeVaultModal").then((mod) => ({ default: (mod as any).RagKnowledgeVaultModal || (mod as any).default })));
+const CourierTrackingModal = lazy(() => import("@/components/common/CourierTrackingModal").then((mod) => ({ default: (mod as any).CourierTrackingModal || (mod as any).default })));
+const ScenarioLabModal = lazy(() => import("@/components/scenariolab/ScenarioLabModal").then((mod) => ({ default: (mod as any).ScenarioLabModal || (mod as any).default })));
+const UnifiedVoiceStudioModal = lazy(() => import("@/components/voice/UnifiedVoiceStudioModal").then((mod) => ({ default: (mod as any).UnifiedVoiceStudioModal || (mod as any).default })));
+const TeamModal = lazy(() => import("@/components/team/TeamModal").then((mod) => ({ default: (mod as any).TeamModal || (mod as any).default })));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1098,6 +1100,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
         {footer && <p className="text-center text-[10px] text-muted-foreground/70 mt-1">{footer}</p>}
 
         {/* Knowledge & Logistics Modals */}
+        <Suspense fallback={null}>
         <RagKnowledgeVaultModal
           isOpen={isVaultOpen}
           onClose={() => setIsVaultOpen(false)}
@@ -1125,6 +1128,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             initialTab={teamModalTab}
           />
         )}
+        </Suspense>
       </div>
     );
   }

@@ -42,6 +42,12 @@ export const pool = new Pool({
   connectionTimeoutMillis: 5000,
   keepAlive: true,
 });
+
+pool.on("error", (err: Error) => {
+  // Prevent unhandled error event from crashing the Node.js process on idle client drop
+  console.warn("[PostgresPool] Unexpected idle client error:", err.message);
+});
+
 export const db = drizzle(pool, { schema });
 
 export * from "./sqlite";

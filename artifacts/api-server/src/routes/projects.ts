@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import crypto from "crypto";
-import { eq, desc, or } from "drizzle-orm";
+import { eq, desc, or, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { projectsTable, writingAutosaveTable } from "@workspace/db";
 import { logger } from "../lib/logger";
@@ -43,11 +43,12 @@ router.get("/v1/projects", async (req: Request, res: Response) => {
  */
 router.get("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
+    const userId = resolveUserId(req);
     const id = String(req.params.id);
     const [project] = await db
       .select()
       .from(projectsTable)
-      .where(eq(projectsTable.id, id));
+      .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)));
 
     if (!project) {
       res.status(404).json({ success: false, error: "Project not found" });
@@ -123,7 +124,7 @@ router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
     const [updated] = await db
       .update(projectsTable)
       .set(updates)
-      .where(eq(projectsTable.id, id))
+      .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)))
       .returning();
 
     if (!updated) {
@@ -144,11 +145,12 @@ router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
  */
 router.delete("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
+    const userId = resolveUserId(req);
     const id = String(req.params.id);
 
     const [deleted] = await db
       .delete(projectsTable)
-      .where(eq(projectsTable.id, id))
+      .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)))
       .returning();
 
     if (!deleted) {

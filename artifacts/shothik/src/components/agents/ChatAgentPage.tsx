@@ -1284,6 +1284,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
                     onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
+                      if (mode) {
+                        setPersona(mode);
+                      }
                       handleSendMessage(prompt);
                       if (tab) {
                         handleOpenArtifact(tab);
@@ -1354,6 +1357,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 isArtifactOpen={artifactOpen}
                 onToggleArtifact={setArtifactOpen}
                 onSelectPrompt={(prompt, mode, tab) => {
+                  if (mode) {
+                    setPersona(mode);
+                  }
                   handleSendMessage(prompt);
                   if (tab) {
                     handleOpenArtifact(tab);
@@ -1392,6 +1398,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
                     onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
+                      if (mode) {
+                        setPersona(mode);
+                      }
                       handleSendMessage(prompt);
                       if (tab) {
                         handleOpenArtifact(tab);

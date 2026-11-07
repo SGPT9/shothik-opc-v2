@@ -550,6 +550,20 @@ router.post(
   idempotencyMiddleware,
   async (req: Request, res: Response) => {
     try {
+      // Security Gate: Direct credit ledger top-up requires admin or verified internal secret in production (Finding 3)
+      const isDevOrTest = process.env.NODE_ENV !== "production";
+      const internalKey = req.headers["x-internal-secret"] || req.headers["x-admin-key"];
+      const expectedSecret = process.env.INTERNAL_SERVICE_SECRET || process.env.ADMIN_API_KEY;
+      const authorized = isDevOrTest || (expectedSecret && internalKey === expectedSecret) || (req as any).user?.role === "admin";
+
+      if (!authorized) {
+        return res.status(403).json({
+          success: false,
+          error: "Forbidden",
+          message: "Direct credit ledger top-up requires administrative or verified payment webhook authorization.",
+        });
+      }
+
       const userId = resolveUserId(req, req.body?.userId || "usr_default");
       const { amount = 500, trxId, paymentMethod = "bkash" } = req.body;
       const addedCredits = Math.max(1, Number(amount) || 500);
@@ -899,6 +913,22 @@ router.post(["/payment-transactions/:id/verify", "/v1/payment-transactions/:id/v
         verified: true,
       },
     });
+  }
+
+  // Security Gate: Verify upstream MFS settlement status in production (Finding 4)
+  const isDevOrTest = process.env.NODE_ENV !== "production";
+  const gatewaySignature = req.headers["x-gateway-signature"] || req.body?.gatewaySignature;
+  
+  if (!isDevOrTest && !gatewaySignature && txRecord.payment_method !== "stripe") {
+    // In production, reject unconfirmed manual verify requests without upstream gateway confirmation
+    const isMockBypass = process.env.ALLOW_MOCK_PAYMENT_VERIFY === "true";
+    if (!isMockBypass) {
+      return res.status(402).json({
+        success: false,
+        error: "PaymentRequired",
+        message: "Payment provider verification pending or unconfirmed by upstream MFS gateway.",
+      });
+    }
   }
 
   // Settle transaction and credit exact tier tokens

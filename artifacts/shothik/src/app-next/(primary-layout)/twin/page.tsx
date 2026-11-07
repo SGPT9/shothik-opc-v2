@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { Link } from "wouter";
-import dynamic from "next/dynamic";
 import type { DocumentItem } from "@/components/twin/DocumentsListModal";
 import type { VersionCommit } from "@/components/twin/VersionsModal";
 import { LiveTerminalTicker } from "@/components/twin/LiveTerminalTicker";
@@ -8,93 +7,93 @@ import { TwinFloatingCapsuleOverlay } from "@/components/twin/TwinFloatingCapsul
 import { TwinCommandPalette } from "@/components/twin/TwinCommandPalette";
 import { toast } from "react-toastify";
 
-const AutoModeModal = dynamic(() => import("@/components/twin/AutoModeModal").then((m) => m.AutoModeModal), { ssr: false });
-const NightshiftModal = dynamic(() => import("@/components/twin/NightshiftModal").then((m) => m.NightshiftModal), { ssr: false });
-const AddCreditsModal = dynamic(() => import("@/components/twin/AddCreditsModal").then((m) => m.AddCreditsModal), { ssr: false });
-const DocumentsListModal = dynamic(() => import("@/components/twin/DocumentsListModal").then((m) => m.DocumentsListModal), { ssr: false });
-const CompanyLimitModal = dynamic(() => import("@/components/twin/CompanyLimitModal").then((m) => m.CompanyLimitModal), { ssr: false });
-const CompanySettingsModal = dynamic(() => import("@/components/twin/CompanySettingsModal").then((m) => m.CompanySettingsModal), { ssr: false });
-const ManageDomainsModal = dynamic(() => import("@/components/twin/ManageDomainsModal").then((m) => m.ManageDomainsModal), { ssr: false });
-const VersionsModal = dynamic(() => import("@/components/twin/VersionsModal").then((m) => m.VersionsModal), { ssr: false });
-const WebsiteHubModal = dynamic(() => import("@/components/twin/WebsiteHubModal").then((m) => m.WebsiteHubModal), { ssr: false });
-const AppSecretsModal = dynamic(() => import("@/components/twin/AppSecretsModal").then((m) => m.AppSecretsModal), { ssr: false });
-const RedeployModal = dynamic(() => import("@/components/twin/RedeployModal").then((m) => m.RedeployModal), { ssr: false });
-const AutoColdOutreachModal = dynamic(() => import("@/components/twin/AutoColdOutreachModal").then((m) => m.AutoColdOutreachModal), { ssr: false });
-const DailyDigestModal = dynamic(() => import("@/components/twin/DailyDigestModal").then((m) => m.DailyDigestModal), { ssr: false });
-const ConnectExistingCompanyModal = dynamic(() => import("@/components/twin/ConnectExistingCompanyModal").then((m) => m.ConnectExistingCompanyModal), { ssr: false });
-const MfsGatewayModal = dynamic(() => import("@/components/twin/MfsGatewayModal").then((m) => m.MfsGatewayModal), { ssr: false });
-const VoiceCommanderModal = dynamic(() => import("@/components/twin/VoiceCommanderModal").then((m) => m.VoiceCommanderModal), { ssr: false });
-const DokployMicroContainersModal = dynamic(() => import("@/components/twin/DokployMicroContainersModal").then((m) => m.DokployMicroContainersModal), { ssr: false });
-const SecondMeMemoryModal = dynamic(() => import("@/components/twin/SecondMeMemoryModal").then((m) => m.SecondMeMemoryModal), { ssr: false });
-const TwinVideoStudioModal = dynamic(() => import("@/components/twin/TwinVideoStudioModal").then((m) => m.TwinVideoStudioModal), { ssr: false });
-const SpecializedTwinsModal = dynamic(() => import("@/components/twin/SpecializedTwinsModal").then((m) => m.SpecializedTwinsModal), { ssr: false });
-const EmailOutreachModal = dynamic(() => import("@/components/twin/EmailOutreachModal").then((m) => m.EmailOutreachModal), { ssr: false });
-const LeadCrmDrawer = dynamic(() => import("@/components/twin/LeadCrmDrawer").then((m) => m.LeadCrmDrawer), { ssr: false });
-const CompetitorAdSpyModal = dynamic(() => import("@/components/twin/CompetitorAdSpyModal").then((m) => m.CompetitorAdSpyModal), { ssr: false });
-const CroTunerModal = dynamic(() => import("@/components/twin/CroTunerModal").then((m) => m.CroTunerModal), { ssr: false });
-const VisualStorefrontBuilderModal = dynamic(() => import("@/components/twin/VisualStorefrontBuilderModal").then((m) => m.VisualStorefrontBuilderModal), { ssr: false });
-const BookReaderStorefrontModal = dynamic(() => import("@/components/twin/BookReaderStorefrontModal").then((m) => m.BookReaderStorefrontModal), { ssr: false });
-const SteadfastCourierModal = dynamic(() => import("@/components/twin/SteadfastCourierModal").then((m) => m.SteadfastCourierModal), { ssr: false });
-const StartupBuildsModal = dynamic(() => import("@/components/twin/StartupBuildsModal").then((m) => m.StartupBuildsModal), { ssr: false });
-const NilkhetPodModal = dynamic(() => import("@/components/twin/NilkhetPodModal").then((m) => m.NilkhetPodModal), { ssr: false });
-const MultiDialectVoiceTwinModal = dynamic(() => import("@/components/twin/MultiDialectVoiceTwinModal").then((m) => m.MultiDialectVoiceTwinModal), { ssr: false });
-const SwarmGraphStudioModal = dynamic(() => import("@/components/twin/SwarmGraphStudioModal").then((m) => m.SwarmGraphStudioModal), { ssr: false });
-const VastSpotGpuModal = dynamic(() => import("@/components/twin/VastSpotGpuModal").then((m) => m.VastSpotGpuModal), { ssr: false });
-const EdgeMeshStudioModal = dynamic(() => import("@/components/twin/EdgeMeshStudioModal").then((m) => m.EdgeMeshStudioModal), { ssr: false });
-const CanaryTrafficDirectorModal = dynamic(() => import("@/components/twin/CanaryTrafficDirectorModal").then((m) => m.CanaryTrafficDirectorModal), { ssr: false });
-const VulnerabilityImmunityModal = dynamic(() => import("@/components/twin/VulnerabilityImmunityModal").then((m) => m.VulnerabilityImmunityModal), { ssr: false });
-const MultiModelParetoModal = dynamic(() => import("@/components/twin/MultiModelParetoModal").then((m) => m.MultiModelParetoModal), { ssr: false });
-const EpistemicConsensusModal = dynamic(() => import("@/components/twin/EpistemicConsensusModal").then((m) => m.EpistemicConsensusModal), { ssr: false });
-const WebGpuEmbeddingModal = dynamic(() => import("@/components/twin/WebGpuEmbeddingModal").then((m) => m.WebGpuEmbeddingModal), { ssr: false });
-const ZkSnarkProverModal = dynamic(() => import("@/components/twin/ZkSnarkProverModal").then((m) => m.ZkSnarkProverModal), { ssr: false });
-const WasmVectorIndexModal = dynamic(() => import("@/components/twin/WasmVectorIndexModal").then((m) => m.WasmVectorIndexModal), { ssr: false });
-const DeveloperTwinModal = dynamic(() => import("@/components/twin/DeveloperTwinModal").then((m) => m.DeveloperTwinModal), { ssr: false });
-const PlatformServicesModal = dynamic(() => import("@/components/twin/PlatformServicesModal").then((m) => m.PlatformServicesModal), { ssr: false });
-const WhatsAppCommerceModal = dynamic(() => import("@/components/twin/WhatsAppCommerceModal").then((m) => m.WhatsAppCommerceModal), { ssr: false });
-const MushakTaxStudioModal = dynamic(() => import("@/components/twin/MushakTaxStudioModal").then((m) => m.MushakTaxStudioModal), { ssr: false });
-const OutboundCallVerificationModal = dynamic(() => import("@/components/twin/OutboundCallVerificationModal").then((m) => m.OutboundCallVerificationModal), { ssr: false });
-const CrossBorderCustomsModal = dynamic(() => import("@/components/twin/CrossBorderCustomsModal").then((m) => m.CrossBorderCustomsModal), { ssr: false });
-const PlatformElevatorsViralModal = dynamic(() => import("@/components/twin/PlatformElevatorsViralModal").then((m) => m.PlatformElevatorsViralModal), { ssr: false });
-const FranchiseMultiBranchModal = dynamic(() => import("@/components/twin/FranchiseMultiBranchModal").then((m) => m.FranchiseMultiBranchModal), { ssr: false });
-const LiveSellingStudioModal = dynamic(() => import("@/components/twin/LiveSellingStudioModal").then((m) => m.LiveSellingStudioModal), { ssr: false });
-const AuditLedgerStudioModal = dynamic(() => import("@/components/twin/AuditLedgerStudioModal").then((m) => m.AuditLedgerStudioModal), { ssr: false });
-const CourierArbitrageModal = dynamic(() => import("@/components/twin/CourierArbitrageModal").then((m) => m.CourierArbitrageModal), { ssr: false });
-const FreelancerRemittanceModal = dynamic(() => import("@/components/twin/FreelancerRemittanceModal").then((m) => m.FreelancerRemittanceModal), { ssr: false });
-const DarkHubFulfillmentModal = dynamic(() => import("@/components/twin/DarkHubFulfillmentModal").then((m) => m.DarkHubFulfillmentModal), { ssr: false });
-const MultiChannelCashflowModal = dynamic(() => import("@/components/twin/MultiChannelCashflowModal").then((m) => m.MultiChannelCashflowModal), { ssr: false });
-const WholesaleRfqEscrowModal = dynamic(() => import("@/components/twin/WholesaleRfqEscrowModal").then((m) => m.WholesaleRfqEscrowModal), { ssr: false });
-const AgriMandiRadarModal = dynamic(() => import("@/components/twin/AgriMandiRadarModal").then((m) => m.AgriMandiRadarModal), { ssr: false });
-const FieldAgentPosModal = dynamic(() => import("@/components/twin/FieldAgentPosModal").then((m) => m.FieldAgentPosModal), { ssr: false });
-const Mushak43DeclarationModal = dynamic(() => import("@/components/twin/Mushak43DeclarationModal").then((m) => m.Mushak43DeclarationModal), { ssr: false });
-const MultiCarrierWebhookModal = dynamic(() => import("@/components/twin/MultiCarrierWebhookModal").then((m) => m.MultiCarrierWebhookModal), { ssr: false });
-const ExportComplianceModal = dynamic(() => import("@/components/twin/ExportComplianceModal").then((m) => m.ExportComplianceModal), { ssr: false });
-const FxHedgingModal = dynamic(() => import("@/components/twin/FxHedgingModal").then((m) => m.FxHedgingModal), { ssr: false });
-const PayrollTaxModal = dynamic(() => import("@/components/twin/PayrollTaxModal").then((m) => m.PayrollTaxModal), { ssr: false });
-const CorporateTaxModal = dynamic(() => import("@/components/twin/CorporateTaxModal").then((m) => m.CorporateTaxModal), { ssr: false });
-const InvoiceFactoringModal = dynamic(() => import("@/components/twin/InvoiceFactoringModal").then((m) => m.InvoiceFactoringModal), { ssr: false });
-const DebtRecoveryModal = dynamic(() => import("@/components/twin/DebtRecoveryModal").then((m) => m.DebtRecoveryModal), { ssr: false });
-const VoiceCommerceModal = dynamic(() => import("@/components/twin/VoiceCommerceModal").then((m) => m.VoiceCommerceModal), { ssr: false });
-const LegalContractsModal = dynamic(() => import("@/components/twin/LegalContractsModal").then((m) => m.LegalContractsModal), { ssr: false });
-const DutyDrawbackModal = dynamic(() => import("@/components/twin/DutyDrawbackModal").then((m) => m.DutyDrawbackModal), { ssr: false });
-const HalalGovernanceModal = dynamic(() => import("@/components/twin/HalalGovernanceModal").then((m) => m.HalalGovernanceModal), { ssr: false });
-const CollectiveBuyingModal = dynamic(() => import("@/components/twin/CollectiveBuyingModal").then((m) => m.CollectiveBuyingModal), { ssr: false });
-const TenderBidModal = dynamic(() => import("@/components/twin/TenderBidModal").then((m) => m.TenderBidModal), { ssr: false });
-const AgentComputerModal = dynamic(() => import("@/components/twin/AgentComputerModal").then((m) => m.AgentComputerModal), { ssr: false });
-const CustomsTariffModal = dynamic(() => import("@/components/twin/CustomsTariffModal").then((m) => m.CustomsTariffModal), { ssr: false });
-const InventoryMatrixModal = dynamic(() => import("@/components/twin/InventoryMatrixModal").then((m) => m.InventoryMatrixModal), { ssr: false });
-const CodIvrModal = dynamic(() => import("@/components/twin/CodIvrModal").then((m) => m.CodIvrModal), { ssr: false });
-const EarlyLiquidityModal = dynamic(() => import("@/components/twin/EarlyLiquidityModal").then((m) => m.EarlyLiquidityModal), { ssr: false });
-const MetaCapiModal = dynamic(() => import("@/components/twin/MetaCapiModal").then((m) => m.MetaCapiModal), { ssr: false });
-const KycOcrModal = dynamic(() => import("@/components/twin/KycOcrModal").then((m) => m.KycOcrModal), { ssr: false });
-const RtoFraudShieldModal = dynamic(() => import("@/components/twin/RtoFraudShieldModal").then((m) => m.RtoFraudShieldModal), { ssr: false });
-const FlashSaleInventoryModal = dynamic(() => import("@/components/twin/FlashSaleInventoryModal").then((m) => m.FlashSaleInventoryModal), { ssr: false });
-const LandRegistryModal = dynamic(() => import("@/components/twin/LandRegistryModal").then((m) => m.LandRegistryModal), { ssr: false });
+const AutoModeModal = lazy(() => import("@/components/twin/AutoModeModal").then((m) => ({ default: m.AutoModeModal })));
+const NightshiftModal = lazy(() => import("@/components/twin/NightshiftModal").then((m) => ({ default: m.NightshiftModal })));
+const AddCreditsModal = lazy(() => import("@/components/twin/AddCreditsModal").then((m) => ({ default: m.AddCreditsModal })));
+const DocumentsListModal = lazy(() => import("@/components/twin/DocumentsListModal").then((m) => ({ default: m.DocumentsListModal })));
+const CompanyLimitModal = lazy(() => import("@/components/twin/CompanyLimitModal").then((m) => ({ default: m.CompanyLimitModal })));
+const CompanySettingsModal = lazy(() => import("@/components/twin/CompanySettingsModal").then((m) => ({ default: m.CompanySettingsModal })));
+const ManageDomainsModal = lazy(() => import("@/components/twin/ManageDomainsModal").then((m) => ({ default: m.ManageDomainsModal })));
+const VersionsModal = lazy(() => import("@/components/twin/VersionsModal").then((m) => ({ default: m.VersionsModal })));
+const WebsiteHubModal = lazy(() => import("@/components/twin/WebsiteHubModal").then((m) => ({ default: m.WebsiteHubModal })));
+const AppSecretsModal = lazy(() => import("@/components/twin/AppSecretsModal").then((m) => ({ default: m.AppSecretsModal })));
+const RedeployModal = lazy(() => import("@/components/twin/RedeployModal").then((m) => ({ default: m.RedeployModal })));
+const AutoColdOutreachModal = lazy(() => import("@/components/twin/AutoColdOutreachModal").then((m) => ({ default: m.AutoColdOutreachModal })));
+const DailyDigestModal = lazy(() => import("@/components/twin/DailyDigestModal").then((m) => ({ default: m.DailyDigestModal })));
+const ConnectExistingCompanyModal = lazy(() => import("@/components/twin/ConnectExistingCompanyModal").then((m) => ({ default: m.ConnectExistingCompanyModal })));
+const MfsGatewayModal = lazy(() => import("@/components/twin/MfsGatewayModal").then((m) => ({ default: m.MfsGatewayModal })));
+const VoiceCommanderModal = lazy(() => import("@/components/twin/VoiceCommanderModal").then((m) => ({ default: m.VoiceCommanderModal })));
+const DokployMicroContainersModal = lazy(() => import("@/components/twin/DokployMicroContainersModal").then((m) => ({ default: m.DokployMicroContainersModal })));
+const SecondMeMemoryModal = lazy(() => import("@/components/twin/SecondMeMemoryModal").then((m) => ({ default: m.SecondMeMemoryModal })));
+const TwinVideoStudioModal = lazy(() => import("@/components/twin/TwinVideoStudioModal").then((m) => ({ default: m.TwinVideoStudioModal })));
+const SpecializedTwinsModal = lazy(() => import("@/components/twin/SpecializedTwinsModal").then((m) => ({ default: m.SpecializedTwinsModal })));
+const EmailOutreachModal = lazy(() => import("@/components/twin/EmailOutreachModal").then((m) => ({ default: m.EmailOutreachModal })));
+const LeadCrmDrawer = lazy(() => import("@/components/twin/LeadCrmDrawer").then((m) => ({ default: m.LeadCrmDrawer })));
+const CompetitorAdSpyModal = lazy(() => import("@/components/twin/CompetitorAdSpyModal").then((m) => ({ default: m.CompetitorAdSpyModal })));
+const CroTunerModal = lazy(() => import("@/components/twin/CroTunerModal").then((m) => ({ default: m.CroTunerModal })));
+const VisualStorefrontBuilderModal = lazy(() => import("@/components/twin/VisualStorefrontBuilderModal").then((m) => ({ default: m.VisualStorefrontBuilderModal })));
+const BookReaderStorefrontModal = lazy(() => import("@/components/twin/BookReaderStorefrontModal").then((m) => ({ default: m.BookReaderStorefrontModal })));
+const SteadfastCourierModal = lazy(() => import("@/components/twin/SteadfastCourierModal").then((m) => ({ default: m.SteadfastCourierModal })));
+const StartupBuildsModal = lazy(() => import("@/components/twin/StartupBuildsModal").then((m) => ({ default: m.StartupBuildsModal })));
+const NilkhetPodModal = lazy(() => import("@/components/twin/NilkhetPodModal").then((m) => ({ default: m.NilkhetPodModal })));
+const MultiDialectVoiceTwinModal = lazy(() => import("@/components/twin/MultiDialectVoiceTwinModal").then((m) => ({ default: m.MultiDialectVoiceTwinModal })));
+const SwarmGraphStudioModal = lazy(() => import("@/components/twin/SwarmGraphStudioModal").then((m) => ({ default: m.SwarmGraphStudioModal })));
+const VastSpotGpuModal = lazy(() => import("@/components/twin/VastSpotGpuModal").then((m) => ({ default: m.VastSpotGpuModal })));
+const EdgeMeshStudioModal = lazy(() => import("@/components/twin/EdgeMeshStudioModal").then((m) => ({ default: m.EdgeMeshStudioModal })));
+const CanaryTrafficDirectorModal = lazy(() => import("@/components/twin/CanaryTrafficDirectorModal").then((m) => ({ default: m.CanaryTrafficDirectorModal })));
+const VulnerabilityImmunityModal = lazy(() => import("@/components/twin/VulnerabilityImmunityModal").then((m) => ({ default: m.VulnerabilityImmunityModal })));
+const MultiModelParetoModal = lazy(() => import("@/components/twin/MultiModelParetoModal").then((m) => ({ default: m.MultiModelParetoModal })));
+const EpistemicConsensusModal = lazy(() => import("@/components/twin/EpistemicConsensusModal").then((m) => ({ default: m.EpistemicConsensusModal })));
+const WebGpuEmbeddingModal = lazy(() => import("@/components/twin/WebGpuEmbeddingModal").then((m) => ({ default: m.WebGpuEmbeddingModal })));
+const ZkSnarkProverModal = lazy(() => import("@/components/twin/ZkSnarkProverModal").then((m) => ({ default: m.ZkSnarkProverModal })));
+const WasmVectorIndexModal = lazy(() => import("@/components/twin/WasmVectorIndexModal").then((m) => ({ default: m.WasmVectorIndexModal })));
+const DeveloperTwinModal = lazy(() => import("@/components/twin/DeveloperTwinModal").then((m) => ({ default: m.DeveloperTwinModal })));
+const PlatformServicesModal = lazy(() => import("@/components/twin/PlatformServicesModal").then((m) => ({ default: m.PlatformServicesModal })));
+const WhatsAppCommerceModal = lazy(() => import("@/components/twin/WhatsAppCommerceModal").then((m) => ({ default: m.WhatsAppCommerceModal })));
+const MushakTaxStudioModal = lazy(() => import("@/components/twin/MushakTaxStudioModal").then((m) => ({ default: m.MushakTaxStudioModal })));
+const OutboundCallVerificationModal = lazy(() => import("@/components/twin/OutboundCallVerificationModal").then((m) => ({ default: m.OutboundCallVerificationModal })));
+const CrossBorderCustomsModal = lazy(() => import("@/components/twin/CrossBorderCustomsModal").then((m) => ({ default: m.CrossBorderCustomsModal })));
+const PlatformElevatorsViralModal = lazy(() => import("@/components/twin/PlatformElevatorsViralModal").then((m) => ({ default: m.PlatformElevatorsViralModal })));
+const FranchiseMultiBranchModal = lazy(() => import("@/components/twin/FranchiseMultiBranchModal").then((m) => ({ default: m.FranchiseMultiBranchModal })));
+const LiveSellingStudioModal = lazy(() => import("@/components/twin/LiveSellingStudioModal").then((m) => ({ default: m.LiveSellingStudioModal })));
+const AuditLedgerStudioModal = lazy(() => import("@/components/twin/AuditLedgerStudioModal").then((m) => ({ default: m.AuditLedgerStudioModal })));
+const CourierArbitrageModal = lazy(() => import("@/components/twin/CourierArbitrageModal").then((m) => ({ default: m.CourierArbitrageModal })));
+const FreelancerRemittanceModal = lazy(() => import("@/components/twin/FreelancerRemittanceModal").then((m) => ({ default: m.FreelancerRemittanceModal })));
+const DarkHubFulfillmentModal = lazy(() => import("@/components/twin/DarkHubFulfillmentModal").then((m) => ({ default: m.DarkHubFulfillmentModal })));
+const MultiChannelCashflowModal = lazy(() => import("@/components/twin/MultiChannelCashflowModal").then((m) => ({ default: m.MultiChannelCashflowModal })));
+const WholesaleRfqEscrowModal = lazy(() => import("@/components/twin/WholesaleRfqEscrowModal").then((m) => ({ default: m.WholesaleRfqEscrowModal })));
+const AgriMandiRadarModal = lazy(() => import("@/components/twin/AgriMandiRadarModal").then((m) => ({ default: m.AgriMandiRadarModal })));
+const FieldAgentPosModal = lazy(() => import("@/components/twin/FieldAgentPosModal").then((m) => ({ default: m.FieldAgentPosModal })));
+const Mushak43DeclarationModal = lazy(() => import("@/components/twin/Mushak43DeclarationModal").then((m) => ({ default: m.Mushak43DeclarationModal })));
+const MultiCarrierWebhookModal = lazy(() => import("@/components/twin/MultiCarrierWebhookModal").then((m) => ({ default: m.MultiCarrierWebhookModal })));
+const ExportComplianceModal = lazy(() => import("@/components/twin/ExportComplianceModal").then((m) => ({ default: m.ExportComplianceModal })));
+const FxHedgingModal = lazy(() => import("@/components/twin/FxHedgingModal").then((m) => ({ default: m.FxHedgingModal })));
+const PayrollTaxModal = lazy(() => import("@/components/twin/PayrollTaxModal").then((m) => ({ default: m.PayrollTaxModal })));
+const CorporateTaxModal = lazy(() => import("@/components/twin/CorporateTaxModal").then((m) => ({ default: m.CorporateTaxModal })));
+const InvoiceFactoringModal = lazy(() => import("@/components/twin/InvoiceFactoringModal").then((m) => ({ default: m.InvoiceFactoringModal })));
+const DebtRecoveryModal = lazy(() => import("@/components/twin/DebtRecoveryModal").then((m) => ({ default: m.DebtRecoveryModal })));
+const VoiceCommerceModal = lazy(() => import("@/components/twin/VoiceCommerceModal").then((m) => ({ default: m.VoiceCommerceModal })));
+const LegalContractsModal = lazy(() => import("@/components/twin/LegalContractsModal").then((m) => ({ default: m.LegalContractsModal })));
+const DutyDrawbackModal = lazy(() => import("@/components/twin/DutyDrawbackModal").then((m) => ({ default: m.DutyDrawbackModal })));
+const HalalGovernanceModal = lazy(() => import("@/components/twin/HalalGovernanceModal").then((m) => ({ default: m.HalalGovernanceModal })));
+const CollectiveBuyingModal = lazy(() => import("@/components/twin/CollectiveBuyingModal").then((m) => ({ default: m.CollectiveBuyingModal })));
+const TenderBidModal = lazy(() => import("@/components/twin/TenderBidModal").then((m) => ({ default: m.TenderBidModal })));
+const AgentComputerModal = lazy(() => import("@/components/twin/AgentComputerModal").then((m) => ({ default: m.AgentComputerModal })));
+const CustomsTariffModal = lazy(() => import("@/components/twin/CustomsTariffModal").then((m) => ({ default: m.CustomsTariffModal })));
+const InventoryMatrixModal = lazy(() => import("@/components/twin/InventoryMatrixModal").then((m) => ({ default: m.InventoryMatrixModal })));
+const CodIvrModal = lazy(() => import("@/components/twin/CodIvrModal").then((m) => ({ default: m.CodIvrModal })));
+const EarlyLiquidityModal = lazy(() => import("@/components/twin/EarlyLiquidityModal").then((m) => ({ default: m.EarlyLiquidityModal })));
+const MetaCapiModal = lazy(() => import("@/components/twin/MetaCapiModal").then((m) => ({ default: m.MetaCapiModal })));
+const KycOcrModal = lazy(() => import("@/components/twin/KycOcrModal").then((m) => ({ default: m.KycOcrModal })));
+const RtoFraudShieldModal = lazy(() => import("@/components/twin/RtoFraudShieldModal").then((m) => ({ default: m.RtoFraudShieldModal })));
+const FlashSaleInventoryModal = lazy(() => import("@/components/twin/FlashSaleInventoryModal").then((m) => ({ default: m.FlashSaleInventoryModal })));
+const LandRegistryModal = lazy(() => import("@/components/twin/LandRegistryModal").then((m) => ({ default: m.LandRegistryModal })));
 const CreatorCashoutModal = dynamic(() => import("@/components/credits/CreatorCashoutModal"), { ssr: false });
-const ScenarioLabModal = dynamic(() => import("@/components/scenariolab/ScenarioLabModal").then((m) => m.ScenarioLabModal), { ssr: false });
-const UnifiedVoiceStudioModal = dynamic(() => import("@/components/voice/UnifiedVoiceStudioModal").then((m) => m.UnifiedVoiceStudioModal), { ssr: false });
-const AgentMarketplaceModal = dynamic(() => import("@/components/marketplace/AgentMarketplaceModal").then((m) => m.AgentMarketplaceModal), { ssr: false });
-const JuteExportModal = dynamic(() => import("@/components/twin/JuteExportModal").then((m) => m.JuteExportModal), { ssr: false });
-const TeamModal = dynamic(() => import("@/components/team/TeamModal").then((m) => m.TeamModal), { ssr: false });
+const ScenarioLabModal = lazy(() => import("@/components/scenariolab/ScenarioLabModal").then((m) => ({ default: m.ScenarioLabModal })));
+const UnifiedVoiceStudioModal = lazy(() => import("@/components/voice/UnifiedVoiceStudioModal").then((m) => ({ default: m.UnifiedVoiceStudioModal })));
+const AgentMarketplaceModal = lazy(() => import("@/components/marketplace/AgentMarketplaceModal").then((m) => ({ default: m.AgentMarketplaceModal })));
+const JuteExportModal = lazy(() => import("@/components/twin/JuteExportModal").then((m) => ({ default: m.JuteExportModal })));
+const TeamModal = lazy(() => import("@/components/team/TeamModal").then((m) => ({ default: m.TeamModal })));
 import { TeamPanel } from "@/components/team/TeamPanel";
 import { MemoryViewer } from "@/components/memory/MemoryViewer";
 import { SchedulePanel } from "@/components/schedule/SchedulePanel";
@@ -2087,7 +2086,8 @@ export default function TwinPage() {
         </button>
       )}
 
-      {/* ── Modals ── */}
+      {/* ── Modals (React.lazy + Suspense) */}
+      <Suspense fallback={null}>
       {autoModeOpen && (
         <AutoModeModal
           open={autoModeOpen}
@@ -3279,6 +3279,8 @@ export default function TwinPage() {
       {emporiumOpen && <AgentMarketplaceModal isOpen={emporiumOpen} onClose={() => setEmporiumOpen(false)} />}
       {juteExportOpen && <JuteExportModal isOpen={juteExportOpen} onClose={() => setJuteExportOpen(false)} />}
       {teamModalOpen && <TeamModal isOpen={teamModalOpen} onClose={() => setTeamModalOpen(false)} />}
+
+            </Suspense>
 
       {/* Apple-Inspired Floating Agent Capsule Overlay */}
       <TwinFloatingCapsuleOverlay

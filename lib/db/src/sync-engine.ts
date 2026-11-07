@@ -12,7 +12,7 @@ import {
   parcelsTable,
   writingAutosaveTable,
 } from "./schema";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 
 export interface SyncEngineStatus {
   isPostgresConnected: boolean;
@@ -96,50 +96,56 @@ export class OfflineSyncEngine {
         } catch {}
       }
 
-      // 2. Sync Offline Parcels
+      // 2. Sync Offline Parcels (Batched Network Writes)
       const localParcels = await sqliteDb.select().from(offlineParcelsTable);
-      for (const parcel of localParcels) {
+      if (localParcels.length > 0) {
         try {
           await db
             .insert(parcelsTable)
-            .values({
-              trackingCode: parcel.trackingCode,
-              consignmentId: parcel.consignmentId,
-              provider: parcel.provider,
-              recipientName: parcel.recipientName,
-              recipientPhone: parcel.recipientPhone,
-              city: parcel.city,
-              address: parcel.address,
-              codAmountBdt: parcel.codAmountBdt,
-              status: parcel.status,
-            } as any)
+            .values(
+              localParcels.map((parcel) => ({
+                trackingCode: parcel.trackingCode,
+                consignmentId: parcel.consignmentId,
+                provider: parcel.provider,
+                recipientName: parcel.recipientName,
+                recipientPhone: parcel.recipientPhone,
+                city: parcel.city,
+                address: parcel.address,
+                codAmountBdt: parcel.codAmountBdt,
+                status: parcel.status,
+              } as any))
+            )
             .onConflictDoNothing();
-          await sqliteDb.delete(offlineParcelsTable).where(eq(offlineParcelsTable.trackingCode, parcel.trackingCode));
-          this.status.syncedParcelsCount++;
+          const codes = localParcels.map((p) => p.trackingCode);
+          await sqliteDb.delete(offlineParcelsTable).where(inArray(offlineParcelsTable.trackingCode, codes));
+          this.status.syncedParcelsCount += localParcels.length;
         } catch {}
       }
 
-      // 3. Sync Offline Nilkhet Orders
+      // 3. Sync Offline Nilkhet Orders (Batched Network Writes)
       const localOrders = await sqliteDb.select().from(offlineNilkhetOrdersTable);
-      for (const o of localOrders) {
+      if (localOrders.length > 0) {
         try {
           await db
             .insert(nilkhetOrdersTable)
-            .values({
-              id: o.orderId,
-              userId: o.userId,
-              bookTitle: o.bookTitle,
-              pageCount: o.pageCount,
-              copies: o.copies,
-              spineThicknessMm: o.spineThicknessMm,
-              totalCostBdt: o.totalCostBdt,
-              deliveryAddress: o.deliveryAddress,
-              recipientPhone: o.recipientPhone,
-              status: o.status,
-            } as any)
+            .values(
+              localOrders.map((o) => ({
+                id: o.orderId,
+                userId: o.userId,
+                bookTitle: o.bookTitle,
+                pageCount: o.pageCount,
+                copies: o.copies,
+                spineThicknessMm: o.spineThicknessMm,
+                totalCostBdt: o.totalCostBdt,
+                deliveryAddress: o.deliveryAddress,
+                recipientPhone: o.recipientPhone,
+                status: o.status,
+              } as any))
+            )
             .onConflictDoNothing();
-          await sqliteDb.delete(offlineNilkhetOrdersTable).where(eq(offlineNilkhetOrdersTable.orderId, o.orderId));
-          this.status.syncedOrdersCount++;
+          const orderIds = localOrders.map((o) => o.orderId);
+          await sqliteDb.delete(offlineNilkhetOrdersTable).where(inArray(offlineNilkhetOrdersTable.orderId, orderIds));
+          this.status.syncedOrdersCount += localOrders.length;
         } catch {}
       }
 

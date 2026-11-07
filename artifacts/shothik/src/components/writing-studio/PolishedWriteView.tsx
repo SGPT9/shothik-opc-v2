@@ -37,58 +37,58 @@ import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPr
 import { NilkhetOrderModal } from "@/components/books/NilkhetOrderModal";
 import { Button } from "@/components/ui/button";
 import { CollaborativePresence } from "./CollaborativePresence";
-import { RoomShareModal } from "./components/RoomShareModal";
-import { PlotBranchModal } from "./components/PlotBranchModal";
-import { AuthorshipCertificateModal } from "./components/AuthorshipCertificateModal";
-import { PodcastAudioModal } from "./components/PodcastAudioModal";
-import { ResumableUploadModal } from "./components/ResumableUploadModal";
-import { BilingualSplitModal } from "./components/BilingualSplitModal";
-import { NarrativeForecastModal } from "./components/NarrativeForecastModal";
-import { InteractiveStoryGraphModal } from "./components/InteractiveStoryGraphModal";
-import { SemanticDeslopModal } from "./components/SemanticDeslopModal";
-import { DirectorsTabletopModal } from "./components/DirectorsTabletopModal";
-import { ShortFictionPackageModal } from "./components/ShortFictionPackageModal";
-import { ChekhovGunModal } from "./components/ChekhovGunModal";
-import { LiteraryStyleDnaModal } from "./components/LiteraryStyleDnaModal";
-import { MultiverseSandboxModal } from "./components/MultiverseSandboxModal";
-import { AutopilotDaemonModal } from "./components/AutopilotDaemonModal";
-import { StoryBibleHudModal } from "./components/StoryBibleHudModal";
-import { VoiceCastingModal } from "./components/VoiceCastingModal";
-import { PhonemeTunerModal } from "./components/PhonemeTunerModal";
-import { BinauralSoundscapeModal } from "./components/BinauralSoundscapeModal";
-import { BookTokTeaserModal } from "./components/BookTokTeaserModal";
-import { RoomBlockingModal } from "./components/RoomBlockingModal";
-import { ScriptStoryboardModal } from "./components/ScriptStoryboardModal";
-import { RetentionRadarModal } from "./components/RetentionRadarModal";
-import { TensionEkgModal } from "./components/TensionEkgModal";
-import { RelationshipGraphModal } from "./components/RelationshipGraphModal";
-import { DialectTranspilerModal } from "./components/DialectTranspilerModal";
-import { ShowrunnersTableModal } from "./components/ShowrunnersTableModal";
-import { CharacterMessengerModal } from "./components/CharacterMessengerModal";
-import { BetaReadersModal } from "./components/BetaReadersModal";
-import { CharacterDuetModal } from "./components/CharacterDuetModal";
-import { BlockCatalyzerModal } from "./components/BlockCatalyzerModal";
-import { SensoryPaletteModal } from "./components/SensoryPaletteModal";
-import { MfaWorkshopModal } from "./components/MfaWorkshopModal";
-import { StreamerModeModal } from "./components/StreamerModeModal";
-import { CognitiveFrictionModal } from "./components/CognitiveFrictionModal";
-import { SurrealistDreamscapeModal } from "./components/SurrealistDreamscapeModal";
-import { LoreWikiModal } from "./components/LoreWikiModal";
-import { ChronoBraiderModal } from "./components/ChronoBraiderModal";
-import { PlotDivergenceModal } from "./components/PlotDivergenceModal";
-import { SpatialGpsModal } from "./components/SpatialGpsModal";
-import { ItemLedgerModal } from "./components/ItemLedgerModal";
-import { LivingEpilogueModal } from "./components/LivingEpilogueModal";
-import { CulturalOriginalityModal } from "./components/CulturalOriginalityModal";
-import { PrintPreflightModal } from "./components/PrintPreflightModal";
-import { BookJacketModal } from "./components/BookJacketModal";
-import { CipBarcodeModal } from "./components/CipBarcodeModal";
-import { WebnovelPaywallModal } from "./components/WebnovelPaywallModal";
-import { PolyglotMatrixModal } from "./components/PolyglotMatrixModal";
-import { ReadingScalerModal } from "./components/ReadingScalerModal";
-import { RoyaltySplitModal } from "./components/RoyaltySplitModal";
-import { LegalShieldModal } from "./components/LegalShieldModal";
-import { InkOsCommandDockModal } from "./components/InkOsCommandDockModal";
+const RoomShareModal = lazy(() => import("./components/RoomShareModal").then((mod) => ({ default: mod.RoomShareModal })));
+const PlotBranchModal = lazy(() => import("./components/PlotBranchModal").then((mod) => ({ default: mod.PlotBranchModal })));
+const AuthorshipCertificateModal = lazy(() => import("./components/AuthorshipCertificateModal").then((mod) => ({ default: mod.AuthorshipCertificateModal })));
+const PodcastAudioModal = lazy(() => import("./components/PodcastAudioModal").then((mod) => ({ default: mod.PodcastAudioModal })));
+const ResumableUploadModal = lazy(() => import("./components/ResumableUploadModal").then((mod) => ({ default: mod.ResumableUploadModal })));
+const BilingualSplitModal = lazy(() => import("./components/BilingualSplitModal").then((mod) => ({ default: mod.BilingualSplitModal })));
+const NarrativeForecastModal = lazy(() => import("./components/NarrativeForecastModal").then((mod) => ({ default: mod.NarrativeForecastModal })));
+const InteractiveStoryGraphModal = lazy(() => import("./components/InteractiveStoryGraphModal").then((mod) => ({ default: mod.InteractiveStoryGraphModal })));
+const SemanticDeslopModal = lazy(() => import("./components/SemanticDeslopModal").then((mod) => ({ default: mod.SemanticDeslopModal })));
+const DirectorsTabletopModal = lazy(() => import("./components/DirectorsTabletopModal").then((mod) => ({ default: mod.DirectorsTabletopModal })));
+const ShortFictionPackageModal = lazy(() => import("./components/ShortFictionPackageModal").then((mod) => ({ default: mod.ShortFictionPackageModal })));
+const ChekhovGunModal = lazy(() => import("./components/ChekhovGunModal").then((mod) => ({ default: mod.ChekhovGunModal })));
+const LiteraryStyleDnaModal = lazy(() => import("./components/LiteraryStyleDnaModal").then((mod) => ({ default: mod.LiteraryStyleDnaModal })));
+const MultiverseSandboxModal = lazy(() => import("./components/MultiverseSandboxModal").then((mod) => ({ default: mod.MultiverseSandboxModal })));
+const AutopilotDaemonModal = lazy(() => import("./components/AutopilotDaemonModal").then((mod) => ({ default: mod.AutopilotDaemonModal })));
+const StoryBibleHudModal = lazy(() => import("./components/StoryBibleHudModal").then((mod) => ({ default: mod.StoryBibleHudModal })));
+const VoiceCastingModal = lazy(() => import("./components/VoiceCastingModal").then((mod) => ({ default: mod.VoiceCastingModal })));
+const PhonemeTunerModal = lazy(() => import("./components/PhonemeTunerModal").then((mod) => ({ default: mod.PhonemeTunerModal })));
+const BinauralSoundscapeModal = lazy(() => import("./components/BinauralSoundscapeModal").then((mod) => ({ default: mod.BinauralSoundscapeModal })));
+const BookTokTeaserModal = lazy(() => import("./components/BookTokTeaserModal").then((mod) => ({ default: mod.BookTokTeaserModal })));
+const RoomBlockingModal = lazy(() => import("./components/RoomBlockingModal").then((mod) => ({ default: mod.RoomBlockingModal })));
+const ScriptStoryboardModal = lazy(() => import("./components/ScriptStoryboardModal").then((mod) => ({ default: mod.ScriptStoryboardModal })));
+const RetentionRadarModal = lazy(() => import("./components/RetentionRadarModal").then((mod) => ({ default: mod.RetentionRadarModal })));
+const TensionEkgModal = lazy(() => import("./components/TensionEkgModal").then((mod) => ({ default: mod.TensionEkgModal })));
+const RelationshipGraphModal = lazy(() => import("./components/RelationshipGraphModal").then((mod) => ({ default: mod.RelationshipGraphModal })));
+const DialectTranspilerModal = lazy(() => import("./components/DialectTranspilerModal").then((mod) => ({ default: mod.DialectTranspilerModal })));
+const ShowrunnersTableModal = lazy(() => import("./components/ShowrunnersTableModal").then((mod) => ({ default: mod.ShowrunnersTableModal })));
+const CharacterMessengerModal = lazy(() => import("./components/CharacterMessengerModal").then((mod) => ({ default: mod.CharacterMessengerModal })));
+const BetaReadersModal = lazy(() => import("./components/BetaReadersModal").then((mod) => ({ default: mod.BetaReadersModal })));
+const CharacterDuetModal = lazy(() => import("./components/CharacterDuetModal").then((mod) => ({ default: mod.CharacterDuetModal })));
+const BlockCatalyzerModal = lazy(() => import("./components/BlockCatalyzerModal").then((mod) => ({ default: mod.BlockCatalyzerModal })));
+const SensoryPaletteModal = lazy(() => import("./components/SensoryPaletteModal").then((mod) => ({ default: mod.SensoryPaletteModal })));
+const MfaWorkshopModal = lazy(() => import("./components/MfaWorkshopModal").then((mod) => ({ default: mod.MfaWorkshopModal })));
+const StreamerModeModal = lazy(() => import("./components/StreamerModeModal").then((mod) => ({ default: mod.StreamerModeModal })));
+const CognitiveFrictionModal = lazy(() => import("./components/CognitiveFrictionModal").then((mod) => ({ default: mod.CognitiveFrictionModal })));
+const SurrealistDreamscapeModal = lazy(() => import("./components/SurrealistDreamscapeModal").then((mod) => ({ default: mod.SurrealistDreamscapeModal })));
+const LoreWikiModal = lazy(() => import("./components/LoreWikiModal").then((mod) => ({ default: mod.LoreWikiModal })));
+const ChronoBraiderModal = lazy(() => import("./components/ChronoBraiderModal").then((mod) => ({ default: mod.ChronoBraiderModal })));
+const PlotDivergenceModal = lazy(() => import("./components/PlotDivergenceModal").then((mod) => ({ default: mod.PlotDivergenceModal })));
+const SpatialGpsModal = lazy(() => import("./components/SpatialGpsModal").then((mod) => ({ default: mod.SpatialGpsModal })));
+const ItemLedgerModal = lazy(() => import("./components/ItemLedgerModal").then((mod) => ({ default: mod.ItemLedgerModal })));
+const LivingEpilogueModal = lazy(() => import("./components/LivingEpilogueModal").then((mod) => ({ default: mod.LivingEpilogueModal })));
+const CulturalOriginalityModal = lazy(() => import("./components/CulturalOriginalityModal").then((mod) => ({ default: mod.CulturalOriginalityModal })));
+const PrintPreflightModal = lazy(() => import("./components/PrintPreflightModal").then((mod) => ({ default: mod.PrintPreflightModal })));
+const BookJacketModal = lazy(() => import("./components/BookJacketModal").then((mod) => ({ default: mod.BookJacketModal })));
+const CipBarcodeModal = lazy(() => import("./components/CipBarcodeModal").then((mod) => ({ default: mod.CipBarcodeModal })));
+const WebnovelPaywallModal = lazy(() => import("./components/WebnovelPaywallModal").then((mod) => ({ default: mod.WebnovelPaywallModal })));
+const PolyglotMatrixModal = lazy(() => import("./components/PolyglotMatrixModal").then((mod) => ({ default: mod.PolyglotMatrixModal })));
+const ReadingScalerModal = lazy(() => import("./components/ReadingScalerModal").then((mod) => ({ default: mod.ReadingScalerModal })));
+const RoyaltySplitModal = lazy(() => import("./components/RoyaltySplitModal").then((mod) => ({ default: mod.RoyaltySplitModal })));
+const LegalShieldModal = lazy(() => import("./components/LegalShieldModal").then((mod) => ({ default: mod.LegalShieldModal })));
+const InkOsCommandDockModal = lazy(() => import("./components/InkOsCommandDockModal").then((mod) => ({ default: mod.InkOsCommandDockModal })));
 import { INKOS_TOOLS, type InkOsToolId } from "./config/inkos-tool-catalog";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import { useSubscription } from "@/hooks/subscription/useSubscription";
@@ -802,7 +802,8 @@ export function PolishedWriteView({
         authorName={project?.author || "Shothik Author"}
       />
 
-      {/* Supabase DeepTech Modals */}
+      {/* Supabase DeepTech Modals (Lazy Loaded) */}
+      <Suspense fallback={null}>
       <RoomShareModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
@@ -1157,6 +1158,7 @@ export function PolishedWriteView({
         onInsertProse={(snippet) => setContent(content + snippet)}
         projectId={project?._id || project?.id || "default"}
       />
+      </Suspense>
       <UpgradeModal
         open={isUpgradeModalOpen}
         onOpenChange={setIsUpgradeModalOpen}
