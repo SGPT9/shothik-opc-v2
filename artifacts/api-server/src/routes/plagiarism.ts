@@ -5,41 +5,55 @@ import { desc } from "drizzle-orm";
 
 export const plagiarismRouter = Router();
 
-plagiarismRouter.post("/academic/plagiarism/scan", async (req, res) => {
-  try {
-    const { text, title, author } = req.body;
-    if (!text) {
-      res.status(400).json({ success: false, error: "text content is required" });
-      return;
-    }
-
-    const report = BengaliPlagiarismEngine.scanManuscript(
-      text,
-      title || "Research Document",
-      author || "Author",
-    );
-
-    if (db) {
-      try {
-        await db.insert(plagiarismScansTable).values({
-          scanId: report.reportId,
-          documentTitle: report.documentTitle,
-          authorName: report.authorName,
-          totalWords: report.wordCount,
-          similarityScorePercent: String(report.overallSimilarityPercent),
-          ugcCompliant: report.ugcComplianceStatus === "PASSED" ? "true" : "false",
-          auditSealSha256: `sha256:${report.auditHashSha256}`,
-        });
-      } catch {
-        // Non-fatal persistence fallback
+plagiarismRouter.post(
+  ["/academic/plagiarism/scan", "/v1/nlp/plagiarism:analyze", "/v1/nlp/plagiarism/scan"],
+  async (req, res) => {
+    try {
+      const { text, title, author } = req.body;
+      if (!text) {
+        res.status(400).json({ success: false, error: "text content is required" });
+        return;
       }
-    }
 
-    res.json({ success: true, report });
-  } catch (err: any) {
-    res.status(400).json({ success: false, error: err.message });
+      const isLiveWeb =
+        req.body.liveWeb === true ||
+        req.body.liveWeb === "true" ||
+        req.query.liveWeb === "true";
+
+      const report = isLiveWeb
+        ? await BengaliPlagiarismEngine.scanWithLiveWeb(
+            text,
+            title || "Research Document",
+            author || "Author"
+          )
+        : BengaliPlagiarismEngine.scanManuscript(
+            text,
+            title || "Research Document",
+            author || "Author"
+          );
+
+      if (db) {
+        try {
+          await db.insert(plagiarismScansTable).values({
+            scanId: report.reportId,
+            documentTitle: report.documentTitle,
+            authorName: report.authorName,
+            totalWords: report.wordCount,
+            similarityScorePercent: String(report.overallSimilarityPercent),
+            ugcCompliant: report.ugcComplianceStatus === "PASSED" ? "true" : "false",
+            auditSealSha256: `sha256:${report.auditHashSha256}`,
+          });
+        } catch {
+          // Non-fatal persistence fallback
+        }
+      }
+
+      res.json({ success: true, report });
+    } catch (err: any) {
+      res.status(400).json({ success: false, error: err.message });
+    }
   }
-});
+);
 
 plagiarismRouter.get(["/academic/plagiarism/scans", "/v1/nlp/plagiarism/scans"], async (_req, res) => {
   try {

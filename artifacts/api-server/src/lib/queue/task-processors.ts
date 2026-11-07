@@ -2,6 +2,7 @@ import { Job } from "bullmq";
 import { ShothikJobData, ShothikJobResult } from "./bullmq-queue";
 import { humanizeTextDeterministic } from "../humanizer-engine";
 import { WigoloWebIntelligenceService } from "../wigolo-service";
+import { BengaliPlagiarismEngine } from "../academic/bengali-plagiarism-engine";
 import { db, canvasArtifactsTable } from "@workspace/db";
 import { langfuseTracer } from "../observability/langfuse-tracer";
 
@@ -158,34 +159,18 @@ async function handlePlagiarismScan(
   job: Job<ShothikJobData, ShothikJobResult>,
   payload: Record<string, any>
 ): Promise<ShothikJobResult> {
-  const { text = "" } = payload;
-  const words = text.split(/\s+/).filter(Boolean);
-  const ngrams: string[] = [];
+  const { text = "", title = "Research Document", author = "Author", liveWeb = true } = payload;
 
-  for (let i = 0; i <= words.length - 5; i += 5) {
-    ngrams.push(words.slice(i, i + 5).join(" "));
-  }
+  await job.updateProgress(5);
 
-  await job.updateProgress(20);
-
-  const matches: Array<{ ngram: string; url: string; score: number }> = [];
-  const sample = ngrams.slice(0, 3); // Sample up to 3 5-grams
-
-  for (let i = 0; i < sample.length; i++) {
-    const ng = sample[i];
-    const searchRes = await WigoloWebIntelligenceService.searchWeb({ query: `"${ng}"`, maxResults: 2 });
-    if (searchRes.results.length > 0) {
-      matches.push({
-        ngram: ng,
-        url: searchRes.results[0].url,
-        score: searchRes.results[0].evidenceScore,
-      });
-    }
-    await job.updateProgress(20 + Math.round(((i + 1) / Math.max(1, sample.length)) * 70));
-  }
-
-  const similarityScore = matches.length > 0 ? Math.round((matches.length / sample.length) * 100) : 0;
-  const originalityScore = 100 - similarityScore;
+  const report =
+    liveWeb !== false
+      ? await BengaliPlagiarismEngine.scanWithLiveWeb(text, title, author, {
+          onProgress: async (p) => {
+            await job.updateProgress(p);
+          },
+        })
+      : BengaliPlagiarismEngine.scanManuscript(text, title, author);
 
   await job.updateProgress(100);
 
@@ -193,10 +178,11 @@ async function handlePlagiarismScan(
     success: true,
     jobType: "plagiarism-scan",
     data: {
-      originalityScore,
-      similarityScore,
-      matches,
-      totalNgramsAudited: ngrams.length,
+      report,
+      similarityScore: report.overallSimilarityPercent,
+      originalityScore: report.originalityScore,
+      matches: report.matches,
+      totalNgramsAudited: report.wordCount,
     },
     completedAt: new Date().toISOString(),
   };
