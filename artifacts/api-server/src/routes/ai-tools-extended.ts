@@ -6,6 +6,7 @@ import { inferenceGateway } from "../lib/inference-gateway";
 import { db, canvasArtifactsTable, savedReportsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { resolveUserId } from "../middleware/auth";
+import { humanizeTextDeterministic } from "../lib/humanizer-engine";
 
 const router = Router();
 
@@ -16,64 +17,45 @@ router.use(createApiCanonicalizer([
   }
 ]));
 
-// --- 1. AI Text Humanizer Engine (Humanizer V5) ---
+// --- 1. AI Text Humanizer Engine (Humanizer V5 - 15-Stage Evasion Pipeline) ---
 router.post(["/v1/nlp/humanize", "/v1/tools/humanize", "/tools/humanize", "/humanize", "/humanizerV5", "/humanizerV4", "/api/humanize", "/api/tools/humanize", "/api/v1/tools/humanize", "/api/v1/nlp/humanize"], async (req: Request, res: Response): Promise<void> => {
   try {
-    const { text = "", mode = "standard", language = "auto" } = req.body;
+    const {
+      text = "",
+      mode = "standard",
+      language = "auto",
+      intensity = 75,
+      zeroExpansion = false,
+      protectedTerms = [],
+      enableVoiceTransform = true,
+      enableSentenceFusion = !zeroExpansion,
+      enableDiscourseRotate = true,
+      enableClauseReorder = true,
+      enableNominalization = true,
+      enableNgramAudit = true,
+    } = req.body;
 
     if (!text || typeof text !== "string") {
       res.status(400).json({ success: false, error: "Text is required for humanization" });
       return;
     }
 
-    const isBengali = language === "bn" || /[\u0980-\u09FF]/.test(text);
-
-    let humanizedText = text;
-    if (isBengali) {
-      humanizedText = text
-        .replace(/তদুপরি,?/g, "তাছাড়া")
-        .replace(/ফলশ্রুতিতে,?/g, "ফলে")
-        .replace(/পরিশেষে বলা যায় যে,?/g, "এককথায়")
-        .replace(/উল্লেখ্য যে,?/g, "লক্ষ্য করলে দেখা যায়")
-        .replace(/সামগ্রিকভাবে বলা যায়,?/g, "সব মিলিয়ে")
-        .replace(/অপরিহার্য ভূমিকা পালন করে/g, "খুবই বড় ভূমিকা রাখে")
-        .replace(/বাস্তবায়ন করা আবশ্যক/g, "কাজে লাগানো দরকার");
-      if (humanizedText === text) {
-        const result = paraphraseOffline(text, "fluency", "bn");
-        humanizedText = result.paraphrasedText;
-      }
-    } else {
-      humanizedText = text
-        .replace(/\bFurthermore,\s*/gi, "Also, ")
-        .replace(/\bMoreover,\s*/gi, "Plus, ")
-        .replace(/\bIn conclusion,\s*/gi, "All in all, ")
-        .replace(/\bIt is important to note that\b/gi, "Keep in mind that")
-        .replace(/\bdelve into\b/gi, "explore")
-        .replace(/\ba testament to\b/gi, "proof of")
-        .replace(/\bplays a crucial role in\b/gi, "really shapes")
-        .replace(/\butilize\b/gi, "use")
-        .replace(/\bcommence\b/gi, "start")
-        .replace(/\bfacilitate\b/gi, "help")
-        .replace(/\bendeavor\b/gi, "effort")
-        .replace(/\bsubsequently\b/gi, "later");
-      if (humanizedText === text) {
-        const result = paraphraseOffline(text, mode === "academic" ? "formal" : "fluency", "en");
-        humanizedText = result.paraphrasedText;
-      }
-    }
+    const result = humanizeTextDeterministic({
+      text,
+      mode,
+      language,
+      intensity,
+      zeroExpansion,
+      protectedTerms,
+      enableVoiceTransform,
+      enableSentenceFusion,
+      enableDiscourseRotate,
+      enableClauseReorder,
+      enableNominalization,
+      enableNgramAudit,
+    });
 
     const userId = resolveUserId(req, "usr_default");
-    const origWords = text.trim().split(/\s+/);
-    const newWords = humanizedText.trim().split(/\s+/);
-    const words = newWords.map((word, i) => {
-      const isChanged = i >= origWords.length || origWords[i]?.toLowerCase() !== word.toLowerCase();
-      return {
-        word,
-        isChanged,
-        original: isChanged && i < origWords.length ? origWords[i] : undefined,
-      };
-    });
-    const sentences = [{ original: text, humanized: humanizedText }];
 
     if (db) {
       try {
@@ -82,12 +64,14 @@ router.post(["/v1/nlp/humanize", "/v1/tools/humanize", "/tools/humanize", "/huma
           title: text.slice(0, 80).trim() || "Humanized Document",
           content: {
             originalText: text,
-            humanizedText,
+            humanizedText: result.humanizedText,
+            markedHtml: result.markedHtml,
             mode,
-            language: isBengali ? "bn" : "en",
-            humanScore: 96,
-            aiScore: 4,
-            wordsCount: origWords.length,
+            language,
+            humanScore: result.humanScore,
+            aiScore: result.aiScore,
+            wordsCount: result.words.length,
+            telemetry: result.telemetry,
           },
           version: 1,
           isPublic: false,
@@ -101,20 +85,26 @@ router.post(["/v1/nlp/humanize", "/v1/tools/humanize", "/tools/humanize", "/huma
     res.status(200).json({
       success: true,
       originalText: text,
-      humanizedText,
-      humanScore: 96,
-      aiScore: 4,
-      words,
-      sentences,
+      humanizedText: result.humanizedText,
+      markedHtml: result.markedHtml,
+      humanScore: result.humanScore,
+      aiScore: result.aiScore,
+      readabilityGrade: result.readabilityGrade,
+      wordCountDelta: result.wordCountDelta,
+      words: result.words,
+      sentences: result.sentences,
+      telemetry: result.telemetry,
       data: {
-        humanizedContent: humanizedText,
+        humanizedContent: result.humanizedText,
         originalLength: text.length,
-        humanizedLength: humanizedText.length,
-        humanScore: 96,
-        aiScore: 4,
-        readabilityGrade: "8th Grade (Accessible & Natural)",
-        words,
-        sentences,
+        humanizedLength: result.humanizedText.length,
+        humanScore: result.humanScore,
+        aiScore: result.aiScore,
+        readabilityGrade: result.readabilityGrade,
+        words: result.words,
+        sentences: result.sentences,
+        markedHtml: result.markedHtml,
+        telemetry: result.telemetry,
       },
     });
   } catch (err: any) {
@@ -204,14 +194,17 @@ router.delete(["/gpt-history/:id", "/api/gpt-history/:id"], async (req: Request,
 
 router.get(["/gpt-stats", "/api/gpt-stats"], async (_req: Request, res: Response): Promise<void> => {
   try {
+    const stats = {
+      totalWordsHumanized: 18450,
+      totalDocuments: 24,
+      averageHumanScore: 97.2,
+      bypassSuccessRate: "99.4%",
+    };
     res.status(200).json({
       success: true,
-      stats: {
-        totalWordsHumanized: 18450,
-        totalDocuments: 24,
-        averageHumanScore: 97.2,
-        bypassSuccessRate: "99.4%",
-      },
+      data: stats,
+      stats,
+      ...stats,
     });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });

@@ -253,4 +253,78 @@ describe("Multilingual NLP Writing Tools Suite (/api/v1/nlp/*)", () => {
     expect(kycJson.success).toBe(true);
     expect(Array.isArray(kycJson.dossiers)).toBe(true);
   });
+
+  it("POST /api/v1/nlp/humanize breaks AI clichés and Winnowing n-grams", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/nlp/humanize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: "Delve into the multifaceted tapestry of modern artificial intelligence. Furthermore, it is important to remember that it is crucial to understand this paradigm.",
+        mode: "academic",
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.humanScore).toBeGreaterThanOrEqual(95);
+    expect(json.telemetry.stagesApplied).toContain("ai_cliche_sanitization");
+    expect(json.telemetry.stagesApplied).toContain("source_aware_5gram_chain_audit");
+    expect(json.markedHtml).toContain("ai-crossed");
+  });
+
+  it("POST /api/v1/nlp/humanize respects zeroExpansion and protectedTerms", async () => {
+    const input = "Delve into the multifaceted CRISPR pipeline. Furthermore, PyTorch is crucial for training neural models.";
+    const res = await fetch(`${baseUrl}/api/v1/nlp/humanize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: input,
+        zeroExpansion: true,
+        protectedTerms: ["CRISPR", "PyTorch"],
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.wordCountDelta).toBe(0);
+    expect(json.humanizedText).toContain("CRISPR");
+    expect(json.humanizedText).toContain("PyTorch");
+    expect(json.telemetry.protectedTermsPreserved).toBe(2);
+  });
+
+  it("POST /api/v1/nlp/humanize handles Bengali prose authentically", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/nlp/humanize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: "এই বিষয়ে গভীরভাবে পর্যালোচনা করা অত্যন্ত গুরুত্বপূর্ণ। অধিকন্তু, এটি আমাদের ভবিষ্যতের রূপরেখা পরিবর্তন করবে।",
+        language: "bn",
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.readabilityGrade).toContain("বাংলা");
+    expect(json.humanScore).toBeGreaterThanOrEqual(95);
+  });
+
+  it("GET /api/gpt-history and /api/gpt-stats return valid slice payloads", async () => {
+    const [histRes, statsRes] = await Promise.all([
+      fetch(`${baseUrl}/api/gpt-history`),
+      fetch(`${baseUrl}/api/gpt-stats`),
+    ]);
+
+    expect(histRes.status).toBe(200);
+    const histJson = (await histRes.json()) as any;
+    expect(histJson.success).toBe(true);
+    expect(Array.isArray(histJson.data)).toBe(true);
+
+    expect(statsRes.status).toBe(200);
+    const statsJson = (await statsRes.json()) as any;
+    expect(statsJson.success).toBe(true);
+    expect(statsJson.data.totalWordsHumanized).toBeGreaterThanOrEqual(0);
+  });
 });
