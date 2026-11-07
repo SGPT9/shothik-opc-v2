@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
 import { synthesizeDialogueLine } from "./voice-casting";
-import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
+import { persistSuiteManifest, loadSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const phonemeTunerRouter = Router();
 
@@ -312,7 +312,13 @@ phonemeTunerRouter.get(
     try {
       let store = dictionaryStores.get(projectId);
       if (!store) {
-        store = generateDefaultPhonemeDictionary(projectId);
+        const persisted = await loadSuiteManifest<PhonemeDictionaryStore>(projectId, "phoneme_tuner");
+        if (persisted && Array.isArray(persisted.entries)) {
+          store = persisted;
+          dictionaryStores.set(projectId, store);
+        } else {
+          store = generateDefaultPhonemeDictionary(projectId);
+        }
       }
       return res.json({ success: true, data: store });
     } catch (err: any) {
@@ -370,7 +376,13 @@ phonemeTunerRouter.post(
       const body = upsertPhonemeSchema.parse(req.body);
       let store = dictionaryStores.get(projectId);
       if (!store) {
-        store = generateDefaultPhonemeDictionary(projectId);
+        const persisted = await loadSuiteManifest<PhonemeDictionaryStore>(projectId, "phoneme_tuner");
+        if (persisted && Array.isArray(persisted.entries)) {
+          store = persisted;
+          dictionaryStores.set(projectId, store);
+        } else {
+          store = generateDefaultPhonemeDictionary(projectId);
+        }
       }
 
       const analysis = analyzeBengaliPhonetics(body.grapheme, body.ipa);
@@ -419,7 +431,13 @@ phonemeTunerRouter.delete(
     try {
       let store = dictionaryStores.get(projectId);
       if (!store) {
-        store = generateDefaultPhonemeDictionary(projectId);
+        const persisted = await loadSuiteManifest<PhonemeDictionaryStore>(projectId, "phoneme_tuner");
+        if (persisted && Array.isArray(persisted.entries)) {
+          store = persisted;
+          dictionaryStores.set(projectId, store);
+        } else {
+          store = generateDefaultPhonemeDictionary(projectId);
+        }
       }
 
       store.entries = store.entries.filter(e => e.id !== entryId);

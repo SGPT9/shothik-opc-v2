@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
-import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
+import { persistSuiteManifest, loadSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const voiceCastingRouter = Router();
 
@@ -247,7 +247,13 @@ voiceCastingRouter.get(
     try {
       let roster = castStores.get(projectId);
       if (!roster) {
-        roster = generateDefaultCastRoster(projectId);
+        const persisted = await loadSuiteManifest<ProjectCastRoster>(projectId, "voice_casting");
+        if (persisted && Array.isArray(persisted.characters)) {
+          roster = persisted;
+          castStores.set(projectId, roster);
+        } else {
+          roster = generateDefaultCastRoster(projectId);
+        }
       }
       return res.json({ success: true, data: roster });
     } catch (err: any) {
@@ -281,7 +287,13 @@ voiceCastingRouter.post(
       const body = assignProfileSchema.parse(req.body);
       let roster = castStores.get(projectId);
       if (!roster) {
-        roster = generateDefaultCastRoster(projectId);
+        const persisted = await loadSuiteManifest<ProjectCastRoster>(projectId, "voice_casting");
+        if (persisted && Array.isArray(persisted.characters)) {
+          roster = persisted;
+          castStores.set(projectId, roster);
+        } else {
+          roster = generateDefaultCastRoster(projectId);
+        }
       }
 
       const existingIdx = roster.characters.findIndex(c => c.characterId === body.characterId);
@@ -372,7 +384,13 @@ voiceCastingRouter.post(
       const body = renderSceneSchema.parse(req.body);
       let roster = castStores.get(projectId);
       if (!roster) {
-        roster = generateDefaultCastRoster(projectId);
+        const persisted = await loadSuiteManifest<ProjectCastRoster>(projectId, "voice_casting");
+        if (persisted && Array.isArray(persisted.characters)) {
+          roster = persisted;
+          castStores.set(projectId, roster);
+        } else {
+          roster = generateDefaultCastRoster(projectId);
+        }
       }
 
       // Parse lines: e.g. "হিমু: কথা বলল।" or narration

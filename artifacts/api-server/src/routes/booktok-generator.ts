@@ -2,7 +2,7 @@ import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
 import { synthesizeDialogueLine } from "./voice-casting";
-import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
+import { persistSuiteManifest, loadSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const bookTokGeneratorRouter = Router();
 
@@ -213,7 +213,13 @@ bookTokGeneratorRouter.get(
     try {
       let teaser = teaserStores.get(projectId);
       if (!teaser) {
-        teaser = generateDefaultTeaser(projectId);
+        const persisted = await loadSuiteManifest<BookTokTeaserManifest>(projectId, "booktok");
+        if (persisted && persisted.id) {
+          teaser = persisted;
+          teaserStores.set(projectId, teaser);
+        } else {
+          teaser = generateDefaultTeaser(projectId);
+        }
       }
       return res.json({ success: true, data: teaser });
     } catch (err: any) {

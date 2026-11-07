@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
-import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
+import { persistSuiteManifest, loadSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const roomBlockingRouter = Router();
 
@@ -236,7 +236,13 @@ roomBlockingRouter.get(
     try {
       let layout = roomStores.get(projectId);
       if (!layout) {
-        layout = generateDefaultRoomLayout(projectId);
+        const persisted = await loadSuiteManifest<RoomLayout>(projectId, "room_blocking");
+        if (persisted && Array.isArray(persisted.characters)) {
+          layout = persisted;
+          roomStores.set(projectId, layout);
+        } else {
+          layout = generateDefaultRoomLayout(projectId);
+        }
       }
       const sightlines = computeCharacterSightlines(layout);
       return res.json({

@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
-import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
+import { persistSuiteManifest, loadSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const soundscapeEngineRouter = Router();
 
@@ -260,7 +260,13 @@ soundscapeEngineRouter.get(
     try {
       let mix = mixStores.get(projectId);
       if (!mix) {
-        mix = generateDefaultSoundscape(projectId);
+        const persisted = await loadSuiteManifest<SceneSoundscapeMix>(projectId, "soundscape");
+        if (persisted && Array.isArray(persisted.layers)) {
+          mix = persisted;
+          mixStores.set(projectId, mix);
+        } else {
+          mix = generateDefaultSoundscape(projectId);
+        }
       }
       return res.json({ success: true, data: mix });
     } catch (err: any) {
@@ -335,7 +341,13 @@ soundscapeEngineRouter.post(
       const body = updateLayersSchema.parse(req.body);
       let mix = mixStores.get(projectId);
       if (!mix) {
-        mix = generateDefaultSoundscape(projectId);
+        const persisted = await loadSuiteManifest<SceneSoundscapeMix>(projectId, "soundscape");
+        if (persisted && Array.isArray(persisted.layers)) {
+          mix = persisted;
+          mixStores.set(projectId, mix);
+        } else {
+          mix = generateDefaultSoundscape(projectId);
+        }
       }
 
       mix.layers = body.layers;

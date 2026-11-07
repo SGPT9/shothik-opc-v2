@@ -104,6 +104,27 @@ export async function persistEngineSnapshot(
   }
 }
 
+export async function loadEngineSnapshot<T>(
+  namespace: string,
+  entityId: string,
+): Promise<T | null> {
+  try {
+    const [row] = await db
+      .select()
+      .from(engineKvSnapshotsTable)
+      .where(
+        and(
+          eq(engineKvSnapshotsTable.namespace, namespace),
+          eq(engineKvSnapshotsTable.entityId, entityId),
+        ),
+      )
+      .limit(1);
+    return (row?.payload as T) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function persistCharacterThreadMessage(
   threadId: string,
   authorId: string,

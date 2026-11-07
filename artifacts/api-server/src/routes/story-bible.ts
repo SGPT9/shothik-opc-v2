@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
-import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
+import { persistSuiteManifest, loadSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const storyBibleRouter = Router();
 
@@ -191,7 +191,13 @@ storyBibleRouter.get(
     try {
       let store = bibleStores.get(projectId);
       if (!store) {
-        store = generateDefaultStoryBible(projectId);
+        const persisted = await loadSuiteManifest<StoryBibleStore>(projectId, "story_bible");
+        if (persisted && Array.isArray(persisted.entities)) {
+          store = persisted;
+          bibleStores.set(projectId, store);
+        } else {
+          store = generateDefaultStoryBible(projectId);
+        }
       }
       return res.json({ success: true, data: store });
     } catch (err: any) {
@@ -213,7 +219,13 @@ storyBibleRouter.get(
 
       let store = bibleStores.get(projectId);
       if (!store) {
-        store = generateDefaultStoryBible(projectId);
+        const persisted = await loadSuiteManifest<StoryBibleStore>(projectId, "story_bible");
+        if (persisted && Array.isArray(persisted.entities)) {
+          store = persisted;
+          bibleStores.set(projectId, store);
+        } else {
+          store = generateDefaultStoryBible(projectId);
+        }
       }
 
       const { results, latencyMs } = searchBibleEntities(store.entities, q, category);
@@ -259,7 +271,13 @@ storyBibleRouter.post(
       const body = upsertEntitySchema.parse(req.body);
       let store = bibleStores.get(projectId);
       if (!store) {
-        store = generateDefaultStoryBible(projectId);
+        const persisted = await loadSuiteManifest<StoryBibleStore>(projectId, "story_bible");
+        if (persisted && Array.isArray(persisted.entities)) {
+          store = persisted;
+          bibleStores.set(projectId, store);
+        } else {
+          store = generateDefaultStoryBible(projectId);
+        }
       }
 
       const entityId = body.id || `ent_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
@@ -309,7 +327,13 @@ storyBibleRouter.delete(
     try {
       let store = bibleStores.get(projectId);
       if (!store) {
-        store = generateDefaultStoryBible(projectId);
+        const persisted = await loadSuiteManifest<StoryBibleStore>(projectId, "story_bible");
+        if (persisted && Array.isArray(persisted.entities)) {
+          store = persisted;
+          bibleStores.set(projectId, store);
+        } else {
+          store = generateDefaultStoryBible(projectId);
+        }
       }
 
       store.entities = store.entities.filter(e => e.id !== entityId);

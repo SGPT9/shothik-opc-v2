@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { db, ragChunksTable, ragDocumentsTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { logger } from "./logger.js";
 import { promises as fs } from "fs";
 import path from "path";
@@ -393,6 +393,31 @@ export class RAGKnowledgeEngine {
 
     const queryVector = await this.generateVector(query);
     const queryWords = query.toLowerCase().match(/[\p{L}\p{N}_]{2,}/gu) || [];
+
+    // 2. Try Native Supabase pgvector HNSW + FTS Hybrid RRF RPC when in-memory cache is cold or for cross-worker persistence
+    if (this.chunks.size === 0 || queryVector.length === 384) {
+      try {
+        const vecLiteral = queryVector.length === 384 ? `[${queryVector.join(",")}]` : null;
+        const dbRes: any = await db.execute(
+          sql`SELECT id, doc_id, title, content, rrf_score, metadata FROM public.hybrid_search_rag_chunks(${userId}, ${query}, ${vecLiteral}, ${topK * 2}, 60)`
+        );
+        const rows = Array.isArray(dbRes) ? dbRes : dbRes?.rows || [];
+        if (rows.length > 0 && this.chunks.size === 0) {
+          const pgResults: RAGSearchResult[] = rows.map((r: any) => ({
+            chunkId: r.id,
+            docId: r.doc_id,
+            title: r.title,
+            content: r.content,
+            score: Number(Number(r.rrf_score || 0).toFixed(4)),
+            metadata: r.metadata,
+          }));
+          const reranked = await this.rerankResults(query, pgResults);
+          return reranked.slice(0, topK);
+        }
+      } catch {
+        // Fall through to in-memory hybrid scorer
+      }
+    }
 
     const userChunks = Array.from(this.chunks.values()).filter(
       (c) => c.userId === userId || c.userId === "global" || c.userId === "usr_default"

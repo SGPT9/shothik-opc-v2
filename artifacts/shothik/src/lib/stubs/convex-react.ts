@@ -252,6 +252,18 @@ async function executeSupabaseMutation(path: string, args: Record<string, any> =
   }
 }
 
+function resolveRealtimeTable(path: string): string | null {
+  if (path.startsWith("twins:")) return "twin_profiles";
+  if (path.startsWith("tasks:")) return "opc_tasks";
+  if (path.startsWith("books:") || path.startsWith("admin:")) return "publishing_books";
+  if (path.startsWith("earnings:")) return "author_earnings";
+  if (path.startsWith("conversations:")) return "chat_conversations";
+  if (path.startsWith("organizations:")) return "organizations";
+  if (path.startsWith("workspaces:")) return "workspaces";
+  if (path.startsWith("canvas:")) return "canvas_artifacts";
+  return null;
+}
+
 export function useQuery(ref: unknown, args?: unknown): any {
   const path = resolveRefKey(ref);
   const [data, setData] = useState<any>(undefined);
@@ -264,15 +276,58 @@ export function useQuery(ref: unknown, args?: unknown): any {
     }
     let cancelled = false;
     const parsedArgs = JSON.parse(serializedArgs);
-    executeSupabaseQuery(path, parsedArgs)
-      .then((res) => {
-        if (!cancelled) setData(res);
-      })
-      .catch(() => {
-        if (!cancelled) setData(null);
-      });
+
+    const runFetch = () => {
+      executeSupabaseQuery(path, parsedArgs)
+        .then((res) => {
+          if (!cancelled) setData(res);
+        })
+        .catch(() => {
+          if (!cancelled) setData(null);
+        });
+    };
+
+    runFetch();
+
+    // 1. Local optimistic mutation broadcast listener
+    const handleMutationEvent = () => runFetch();
+    if (typeof window !== "undefined") {
+      window.addEventListener("shothik:supabase-mutation", handleMutationEvent);
+    }
+
+    // 2. Live Supabase Realtime (postgres_changes) subscription
+    const table = resolveRealtimeTable(path);
+    const supabase = getInsforgeBrowserClient() as any;
+    let channel: any = null;
+    if (table && supabase && typeof supabase.channel === "function") {
+      try {
+        channel = supabase
+          .channel(`rt_${table}_${Math.random().toString(36).slice(2, 8)}`)
+          .on(
+            "postgres_changes",
+            { event: "*", schema: "public", table },
+            () => {
+              runFetch();
+            },
+          )
+          .subscribe();
+      } catch {
+        // non-blocking if realtime socket is offline
+      }
+    }
+
     return () => {
       cancelled = true;
+      if (typeof window !== "undefined") {
+        window.removeEventListener("shothik:supabase-mutation", handleMutationEvent);
+      }
+      if (channel && supabase && typeof supabase.removeChannel === "function") {
+        try {
+          supabase.removeChannel(channel);
+        } catch {
+          // ignore cleanup errors
+        }
+      }
     };
   }, [path, serializedArgs]);
 
@@ -283,7 +338,11 @@ export function useMutation(ref: unknown) {
   const path = resolveRefKey(ref);
   return useCallback(
     async (args?: Record<string, any>) => {
-      return await executeSupabaseMutation(path, args || {});
+      const res = await executeSupabaseMutation(path, args || {});
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("shothik:supabase-mutation", { detail: { path } }));
+      }
+      return res;
     },
     [path],
   );
