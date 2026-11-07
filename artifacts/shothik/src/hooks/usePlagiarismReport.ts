@@ -60,7 +60,7 @@ function clearDraft() {
   } catch { /* ignore */ }
 }
 
-export const usePlagiarismReport = (text: string) => {
+export const usePlagiarismReport = (text: string, options?: { liveWeb?: boolean }) => {
   const dispatch = useDispatch();
 
   const accessToken = useSelector((state: RootState) => state?.auth?.accessToken);
@@ -153,13 +153,14 @@ export const usePlagiarismReport = (text: string) => {
   );
 
   const runScan = useCallback(
-    async (options?: { forceRefresh?: boolean }) => {
+    async (scanOptions?: { forceRefresh?: boolean; liveWeb?: boolean }) => {
       const currentText = text || "";
       const trimmedText = normalizeKey(currentText);
       const effectiveToken =
         accessToken ||
         (typeof window !== "undefined" ? window.localStorage.getItem("accessToken") : null) ||
         undefined;
+      const effectiveLiveWeb = scanOptions?.liveWeb ?? options?.liveWeb ?? true;
 
       if (!trimmedText) {
         stopActiveRequest();
@@ -178,11 +179,11 @@ export const usePlagiarismReport = (text: string) => {
         return null;
       }
 
-      if (isRequestInProgressRef.current && !options?.forceRefresh) {
+      if (isRequestInProgressRef.current && !scanOptions?.forceRefresh) {
         return null;
       }
 
-      if (!options?.forceRefresh) {
+      if (!scanOptions?.forceRefresh) {
         const cachedReport = getCachedReport(trimmedText);
         if (cachedReport) {
           flushSync(() => {
@@ -226,6 +227,10 @@ export const usePlagiarismReport = (text: string) => {
           text,
           token: effectiveToken,
           signal: abortController.signal,
+          liveWeb: effectiveLiveWeb,
+          options: {
+            liveWeb: effectiveLiveWeb,
+          },
         });
 
         if (abortController.signal.aborted) {
@@ -301,6 +306,7 @@ export const usePlagiarismReport = (text: string) => {
     [
       accessToken,
       handleError,
+      options?.liveWeb,
       resetState,
       stopActiveRequest,
       text,

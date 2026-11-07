@@ -50,6 +50,28 @@ export default function PlagiarismResultsPanel({
   const hasReport = Boolean(report);
   const originality = getOriginalityScore(report);
   const matchCount = (report?.sections?.length ?? 0) + (report?.exactMatches?.length ?? 0);
+  const auditHash =
+    (report as any)?.auditHashSha256 ||
+    (report as any)?.auditHash ||
+    (report as any)?.auditSealSha256;
+  const hasWebMatches =
+    Boolean(
+      (report?.sources && report.sources.length > 0) ||
+      (report?.sections?.some((s) => s.sources && s.sources.length > 0)) ||
+      (report?.exactMatches?.some((s) => s.sources && s.sources.length > 0)) ||
+      auditHash
+    );
+
+  const handleSectionClick = (matchId: string) => {
+    // If target match has sourceUrl or url, open safely
+    const allSections = [...(report?.exactMatches ?? []), ...(report?.sections ?? [])];
+    const match = allSections.find((_, idx) => `exact-${idx}` === matchId || `section-${idx}` === matchId);
+    const targetSourceUrl = (match?.sources?.[0] as any)?.sourceUrl || match?.sources?.[0]?.url;
+    if (targetSourceUrl && typeof window !== "undefined") {
+      window.open(targetSourceUrl, "_blank", "noopener,noreferrer");
+    }
+    onSectionClick?.(matchId);
+  };
 
   return (
     <motion.aside
@@ -132,6 +154,29 @@ export default function PlagiarismResultsPanel({
                 </Button>
               </div>
 
+              {hasReport && (hasWebMatches || auditHash) ? (
+                <div
+                  data-testid="badge-live-web-verified"
+                  className="flex items-center justify-between gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-2.5 text-emerald-700 dark:text-emerald-300"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="relative flex h-2 w-2 shrink-0">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+                    </span>
+                    <span className="text-xs font-semibold truncate">🌐 Live Web Sources Verified</span>
+                  </div>
+                  {auditHash ? (
+                    <span
+                      className="shrink-0 rounded bg-emerald-500/20 px-2 py-0.5 font-mono text-[10px] text-emerald-800 dark:text-emerald-200"
+                      title={`UGC Academic Audit Hash: ${auditHash}`}
+                    >
+                      seal:{String(auditHash).replace(/^sha256:/, "").slice(0, 10)}...
+                    </span>
+                  ) : null}
+                </div>
+              ) : null}
+
               <ReportSummary report={report} loading={loading} fromCache={fromCache} />
 
               {hasReport ? (
@@ -140,7 +185,7 @@ export default function PlagiarismResultsPanel({
                   exactMatches={report?.exactMatches}
                   loading={loading}
                   activeMatchId={activeMatchId}
-                  onSectionClick={onSectionClick}
+                  onSectionClick={handleSectionClick}
                 />
               ) : !loading ? (
                 <EmptyReportState

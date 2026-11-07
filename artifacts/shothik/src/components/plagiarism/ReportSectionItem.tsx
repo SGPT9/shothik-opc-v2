@@ -130,9 +130,9 @@ const ReportSectionItem = ({
               >
                 {sources.length} {sources.length === 1 ? t("tools.plagiarism.sections.source") : t("tools.plagiarism.sections.sources")}
               </Badge>
-              {primarySource?.url && (
+              {((primarySource as any)?.sourceUrl || primarySource?.url) && (
                 <a
-                  href={primarySource.url}
+                  href={(primarySource as any)?.sourceUrl || primarySource?.url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-primary inline-flex items-center gap-1 text-xs hover:underline"
@@ -241,10 +241,17 @@ const ReportSectionItem = ({
                   const sourceTone = getSimilarityTone(sourceSimilarity);
                   const sourceColor = getSimilarityColor(sourceSimilarity);
 
+                  const effectiveSourceUrl = (source as any)?.sourceUrl || source?.url;
+
                   return (
                     <div
-                      key={`${source.url}-${sourceIndex}`}
-                      className="bg-background/80 dark:bg-background/60 rounded-xl p-4 shadow-sm transition-all hover:shadow-md"
+                      key={`${effectiveSourceUrl || sourceIndex}-${sourceIndex}`}
+                      className="bg-background/80 dark:bg-background/60 rounded-xl p-4 shadow-sm transition-all hover:shadow-md cursor-pointer"
+                      onClick={() => {
+                        if (effectiveSourceUrl && typeof window !== "undefined") {
+                          window.open(effectiveSourceUrl, "_blank", "noopener,noreferrer");
+                        }
+                      }}
                     >
                       <div className="mb-3 flex items-start justify-between gap-3">
                         <div className="min-w-0 flex-1">
@@ -265,15 +272,16 @@ const ReportSectionItem = ({
                               </p>
                             </div>
                           </div>
-                          {source.url && (
+                          {effectiveSourceUrl && (
                             <a
-                              href={source.url}
+                              href={effectiveSourceUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary inline-flex items-center gap-1.5 text-xs font-medium hover:underline"
+                              onClick={(e) => e.stopPropagation()}
                             >
                               <LinkIcon className="size-3.5" />
-                              <span className="line-clamp-1">{source.url}</span>
+                              <span className="line-clamp-1">{effectiveSourceUrl}</span>
                               <ExternalLink className="size-3" />
                             </a>
                           )}

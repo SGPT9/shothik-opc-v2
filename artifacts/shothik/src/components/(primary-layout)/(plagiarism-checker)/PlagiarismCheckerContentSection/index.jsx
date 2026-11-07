@@ -22,6 +22,7 @@ import PlagiarismResultsPanel from "@/components/plagiarism/PlagiarismResultsPan
 import { getOriginalityScore } from "@/components/plagiarism/plagiarism-modernization";
 import WordCounter from "@/components/tools/common/WordCounter";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import useResponsive from "@/hooks/ui/useResponsive";
@@ -40,6 +41,7 @@ const PlagiarismCheckerContentSection = () => {
   const { t } = useTranslation();
   const { addEntry } = useScanHistory();
   const { user } = useSelector((state) => state.auth);
+  const [liveWebRadar, setLiveWebRadar] = useState(true);
   const [enableScan, setEnableScan] = useState(true);
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const [inputText, setInputText] = useState("");
@@ -119,7 +121,7 @@ const PlagiarismCheckerContentSection = () => {
     triggerCheck,
     retryWithBackoff,
     reset,
-  } = useGlobalPlagiarismCheck(textForScan);
+  } = useGlobalPlagiarismCheck(textForScan, { liveWeb: liveWebRadar });
 
   const hasReport = Boolean(report);
   const originalityScore = getOriginalityScore(report);
@@ -411,7 +413,7 @@ const PlagiarismCheckerContentSection = () => {
     isScanningRef.current = true;
 
     try {
-      const scanResult = await triggerCheck(true);
+      const scanResult = await triggerCheck({ forceRefresh: true, liveWeb: liveWebRadar });
       if (scanResult && scanResult.score != null) {
         addEntry({
           score: scanResult.score,
@@ -648,6 +650,19 @@ const PlagiarismCheckerContentSection = () => {
                     </Label>
                   </div>
                 )}
+                <div className="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-primary/20 bg-primary/5">
+                  <Switch
+                    id="live-web-radar"
+                    data-testid="switch-live-web-radar"
+                    checked={liveWebRadar}
+                    onCheckedChange={setLiveWebRadar}
+                    disabled={loading}
+                  />
+                  <Label htmlFor="live-web-radar" className="text-xs font-semibold cursor-pointer flex items-center gap-1.5">
+                    <span className="text-primary">🌐 Live Web Radar</span>
+                    <Badge variant="secondary" className="text-[10px] h-4 px-1.5 font-mono">SearXNG</Badge>
+                  </Label>
+                </div>
               </div>
             )}
             {(hasReport && highlightRanges.length > 0) || excludedDecorations.length > 0 ? (
