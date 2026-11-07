@@ -426,6 +426,13 @@ const CheckoutButton: React.FC<CheckoutButtonProps> = ({
 
   const handleAuthPopup = () => {
     if (!accessToken) {
+      if (typeof window !== "undefined" && planId) {
+        try {
+          sessionStorage.setItem("post_login_redirect", `/pricing/checkout?package_id=${packageId}&plan_id=${planId}`);
+        } catch {
+          // ignore storage error
+        }
+      }
       dispatch(setShowLoginModal(true));
     }
   };

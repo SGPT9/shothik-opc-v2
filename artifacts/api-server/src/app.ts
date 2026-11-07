@@ -19,12 +19,16 @@ app.use(
 app.use(
   pinoHttp({
     logger,
+    autoLogging: {
+      ignore: (req) => req.url === "/health" || req.url === "/api/health",
+    },
     serializers: {
       req(req) {
+        const u = req.url;
         return {
           id: req.id,
           method: req.method,
-          url: req.url?.split("?")[0],
+          url: u && u.includes("?") ? u.split("?")[0] : u,
         };
       },
       res(res) {

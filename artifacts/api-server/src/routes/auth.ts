@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "../lib/logger";
+import { db, userCreditsTable, userSubscriptionsTable } from "@workspace/db";
 
 const router: IRouter = Router();
 
@@ -243,6 +244,24 @@ router.post(["/auth/sign-up", "/v1/auth/sign-up", "/sign-up"], (req: Request, re
     usersByEmail.set(normalizedEmail, newUser);
     usersById.set(userId, newUser);
     persistUsers();
+
+    // Replicate new account credits & subscription to PostgreSQL
+    try {
+      db.insert(userCreditsTable).values({
+        userId,
+        balance: 500,
+        lifetimeEarned: 500,
+        lifetimeSpent: 0,
+      }).onConflictDoNothing().catch(() => {});
+
+      db.insert(userSubscriptionsTable).values({
+        userId,
+        tier: "starter",
+        status: "active",
+      }).onConflictDoNothing().catch(() => {});
+    } catch {
+      // ignore
+    }
 
     const token = generateToken(userId, normalizedEmail);
 

@@ -17,11 +17,16 @@ import { useSearchParams } from "@/lib/navigation";
 import { useTranslation } from "@/i18n";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/redux/store";
 
 type PaymentStatus = "idle" | "processing" | "success" | "failed" | "pending";
 
 const CheckoutPage = () => {
   const searchParams = useSearchParams();
+  const authState = useSelector((state: RootState) => (state as any)?.auth);
+  const activeUser = authState?.user;
+  const accessToken = authState?.accessToken;
   const { t } = useTranslation();
   const passIdFromQuery = searchParams.get("pass") || searchParams.get("passId");
   const packageId =
@@ -133,14 +138,20 @@ const CheckoutPage = () => {
     }
     setPaymentStatus("processing");
     try {
+      const activeUserId = activeUser?.id || (activeUser as any)?._id || "usr_default";
+      const requestHeaders: Record<string, string> = {
+        "Content-Type": "application/json",
+        "Idempotency-Key": `pass_${selectedOutcomePass.id}_${Date.now()}`,
+      };
+      if (accessToken) {
+        requestHeaders["Authorization"] = `Bearer ${accessToken}`;
+      }
+
       const res = await fetch("/api/v1/subscriptions/passes:purchase", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": `pass_${selectedOutcomePass.id}_${Date.now()}`,
-        },
+        headers: requestHeaders,
         body: JSON.stringify({
-          userId: "usr_default",
+          userId: activeUserId,
           passId: selectedOutcomePass.id,
           trxId: passTrxId.trim().toUpperCase(),
         }),

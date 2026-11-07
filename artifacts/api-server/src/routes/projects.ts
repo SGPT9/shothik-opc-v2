@@ -70,6 +70,13 @@ router.get("/v1/projects/:id", async (req: Request, res: Response) => {
 router.post("/v1/projects", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
     const userId = resolveUserId(req);
+    if (userId === "guest" && process.env.NODE_ENV === "production") {
+      res.status(401).json({
+        success: false,
+        error: "Unauthorized: Please sign in to create and manage project workspaces.",
+      });
+      return;
+    }
     const { title, type, template, description, sections, settings } = req.body;
 
     if (!title || !type) {

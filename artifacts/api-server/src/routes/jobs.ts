@@ -87,7 +87,8 @@ router.get("/v1/jobs/:jobId/stream", (req: Request, res: Response): void => {
     res.write(`data: ${JSON.stringify(event)}\n\n`);
     if (event.status === "completed" || event.status === "failed" || event.status === "dlq") {
       cleanup();
-      res.write(`data: ${JSON.stringify({ type: "done", result: job.result, error: job.error })}\n\n`);
+      const freshJob = taskQueue.getJob(jobId as string) || job;
+      res.write(`data: ${JSON.stringify({ type: "done", result: freshJob.result, error: freshJob.error })}\n\n`);
       res.write("data: [DONE]\n\n");
       res.end();
     }

@@ -112,8 +112,6 @@ export function useWritingStudioLimits() {
 
     switch (feature) {
       case "paraphrase":
-      case "grammar":
-      case "summarize":
         if (paraphraseLimits) {
           const hasWords =
             paraphraseLimits.remainingWord > 0 ||
@@ -126,6 +124,11 @@ export function useWritingStudioLimits() {
             total: paraphraseLimits.totalWordLimit,
           };
         }
+        return { allowed: true, reason: null };
+
+      case "grammar":
+      case "summarize":
+        // Grammar and summary tools operate on account tier rather than exhausting paraphrase quota
         return { allowed: true, reason: null };
 
       case "humanize":

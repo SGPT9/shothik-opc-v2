@@ -74,13 +74,24 @@ export class BengaliPlagiarismEngine {
 
       if (matchedKwCount >= 3) {
         detectedOverlapCount += matchedKwCount;
+        const firstKw = ref.sampleKeywords.find((kw) => text.includes(kw));
+        const firstKwToken = firstKw ? firstKw.split(/\s+/)[0] : null;
+        let matchIdx = 0;
+        if (firstKwToken) {
+          const found = words.findIndex((w) => w.includes(firstKwToken));
+          if (found !== -1) matchIdx = found;
+        }
+        const snippetStart = Math.max(0, matchIdx - 4);
+        const snippetEnd = Math.min(words.length, snippetStart + 15);
+        const snippet = words.slice(snippetStart, snippetEnd).join(" ");
+
         matches.push({
-          matchedSegment: `...${words.slice(0, Math.min(15, words.length)).join(" ")}...`,
+          matchedSegment: `...${snippet}...`,
           sourceTitle: ref.title,
           sourceUrl: ref.url,
           similarityPercent: Math.min(95, Math.round((matchedKwCount / ref.sampleKeywords.length) * 100)),
           matchType: matchedKwCount >= 5 ? "exact" : "paraphrased",
-          pageOrParagraphHint: "Section 2.1 (Literature Review)",
+          pageOrParagraphHint: `Section ${Math.min(4, Math.floor(matchIdx / 40) + 1)} (Paragraph ${Math.floor((matchIdx % 40) / 10) + 1})`,
         });
       }
     }

@@ -62,6 +62,18 @@ export class Mushak63Engine {
       throw new Error(`Invalid NBR Seller BIN format: ${input.sellerBIN}. Must be 9 or 13 digits.`);
     }
 
+    for (const item of input.items || []) {
+      if (item.quantity <= 0) {
+        throw new Error(`Invalid item quantity: ${item.quantity}. Must be greater than 0.`);
+      }
+      if (item.unitPriceBDT < 0) {
+        throw new Error(`Invalid item unit price: ${item.unitPriceBDT}. Cannot be negative.`);
+      }
+      if (item.vatRatePercent < 0) {
+        throw new Error(`Invalid VAT rate: ${item.vatRatePercent}%. Cannot be negative.`);
+      }
+    }
+
     const challanNumber = input.challanNumber || `MUSHAK-6.3-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     const issueDateTime = new Date().toISOString();
 

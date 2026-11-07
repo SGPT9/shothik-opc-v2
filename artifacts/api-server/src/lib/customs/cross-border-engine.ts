@@ -254,8 +254,15 @@ export class CrossBorderCustomsEngine {
     // 3. Insurance (Standard 1% of FOB + Freight per NBR statutory rules)
     const insuranceBdt = Math.round((fobValueBdt + freightBdt) * 0.01);
 
-    // 4. Assessable Value (AV) = FOB + Freight + Insurance
-    const assessableValueBdt = fobValueBdt + freightBdt + insuranceBdt;
+    // 4. Assessable Value (AV) with Statutory Tariff Floor floor protection (Customs Act 2023)
+    let effectiveFobBdt = fobValueBdt;
+    if (hsDetails.minimumTariffValueUsdPerKg) {
+      const minimumFloorBdt = Math.round(
+        input.totalWeightKg * hsDetails.minimumTariffValueUsdPerKg * this.EXCHANGE_RATES.USD
+      );
+      effectiveFobBdt = Math.max(fobValueBdt, minimumFloorBdt);
+    }
+    const assessableValueBdt = effectiveFobBdt + freightBdt + insuranceBdt;
 
     // 5. Statutory Duty Cascade (Bangladesh Customs Act 2023)
     const cdBdt = Math.round(assessableValueBdt * hsDetails.cdRate);

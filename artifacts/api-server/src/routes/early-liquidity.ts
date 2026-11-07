@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { verifyAuthRequest } from "./auth.js";
 import { globalFactoringEngine } from "../lib/factoring/early-liquidity-engine";
 
 export const earlyLiquidityRouter = Router();
@@ -8,8 +9,32 @@ earlyLiquidityRouter.get("/factoring/buyers", (_req, res) => {
   res.json({ success: true, count: buyers.length, buyers });
 });
 
-earlyLiquidityRouter.get("/factoring/invoices", (_req, res) => {
-  const invoices = globalFactoringEngine.listInvoices();
+earlyLiquidityRouter.get("/factoring/invoices", (req, res) => {
+  const verified = verifyAuthRequest(req);
+  const requestedBuyerId = req.query.buyerId as string | undefined;
+  const requestedStatus = req.query.status as string | undefined;
+
+  let invoices = globalFactoringEngine.listInvoices();
+  if (requestedBuyerId) {
+    invoices = invoices.filter((inv) => inv.buyerId === requestedBuyerId);
+  }
+  if (requestedStatus) {
+    invoices = invoices.filter((inv) => inv.status === requestedStatus);
+  }
+
+  // In production, unauthenticated callers receive anonymized buyer records
+  if (!verified && process.env.NODE_ENV === "production") {
+    const anonymized = invoices.map((inv) => ({
+      invoiceId: inv.invoiceId,
+      buyerName: "Enterprise Client",
+      invoiceAmountBDT: inv.invoiceAmountBDT,
+      status: inv.status,
+      dueDate: inv.dueDate,
+    }));
+    res.json({ success: true, count: anonymized.length, invoices: anonymized });
+    return;
+  }
+
   res.json({ success: true, count: invoices.length, invoices });
 });
 

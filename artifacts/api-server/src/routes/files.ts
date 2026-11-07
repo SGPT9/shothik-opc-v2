@@ -35,14 +35,16 @@ router.post("/v1/files/upload", idempotencyMiddleware, async (req: Request, res:
     if (fileBase64) {
       const buffer = Buffer.from(fileBase64, "base64");
       fileHash = crypto.createHash("sha256").update(buffer).digest("hex");
-      // Persist raw binary to disk for download & printing
+      // Persist raw binary to disk for download & printing safely without path traversal
       try {
-        const uploadDir = path.resolve(process.cwd(), "artifacts/api-server/data/uploads", userId);
+        const safeUserId = path.basename(userId).replace(/[^a-zA-Z0-9_-]/g, "") || "usr_default";
+        const uploadDir = path.resolve(process.cwd(), "artifacts/api-server/data/uploads", safeUserId);
         if (!fs.existsSync(uploadDir)) {
           fs.mkdirSync(uploadDir, { recursive: true });
         }
-        const savedFilePath = path.join(uploadDir, `${fileHash}_${path.basename(filename)}`);
-        fs.writeFileSync(savedFilePath, buffer);
+        const safeFilename = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, "_");
+        const savedFilePath = path.join(uploadDir, `${fileHash}_${safeFilename}`);
+        await fs.promises.writeFile(savedFilePath, buffer);
       } catch (err: any) {
         logger.warn({ error: err.message }, "[files] Failed to cache raw file binary");
       }

@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import { corporateTaxEngine } from "../lib/corporate-tax/corporate-tax-engine.js";
+import { verifyAuthRequest } from "./auth.js";
 
 export const corporateTaxRouter = Router();
 
@@ -7,9 +8,9 @@ export const corporateTaxRouter = Router();
 corporateTaxRouter.get("/v1/corporate-tax/summary", (_req: Request, res: Response) => {
   try {
     const summary = corporateTaxEngine.getSummaryMetrics();
-    return res.json({ ok: true, data: summary });
+    return res.json({ success: true, ok: true, data: summary });
   } catch (err: any) {
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({ success: false, ok: false, error: err.message });
   }
 });
 
@@ -32,7 +33,7 @@ corporateTaxRouter.post("/v1/corporate-tax/calculate", (req: Request, res: Respo
 
     if (!tinNumber || !companyName || !entityType || grossTurnoverBdt === undefined) {
       return res.status(400).json({
-        ok: false,
+        success: false, ok: false,
         error: "Missing required fields: tinNumber, companyName, entityType, grossTurnoverBdt",
       });
     }
@@ -51,9 +52,9 @@ corporateTaxRouter.post("/v1/corporate-tax/calculate", (req: Request, res: Respo
       otherIncomeBdt: Number(otherIncomeBdt || 0),
     });
 
-    return res.json({ ok: true, data: result });
+    return res.json({ success: true, ok: true, data: result });
   } catch (err: any) {
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({ success: false, ok: false, error: err.message });
   }
 });
 
@@ -61,15 +62,22 @@ corporateTaxRouter.post("/v1/corporate-tax/calculate", (req: Request, res: Respo
 corporateTaxRouter.get("/v1/corporate-tax/ait-ledger", (_req: Request, res: Response) => {
   try {
     const ledger = corporateTaxEngine.getAitLedger();
-    return res.json({ ok: true, data: ledger });
+    return res.json({ success: true, ok: true, data: ledger });
   } catch (err: any) {
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({ success: false, ok: false, error: err.message });
   }
 });
 
 // POST /api/v1/corporate-tax/ait-ledger/add
 corporateTaxRouter.post("/v1/corporate-tax/ait-ledger/add", (req: Request, res: Response) => {
   try {
+    const verified = verifyAuthRequest(req);
+    if (!verified && process.env.NODE_ENV === "production") {
+      return res.status(401).json({
+        success: false, ok: false,
+        error: "Unauthorized: Authentication required to submit AIT tax certificates.",
+      });
+    }
     const {
       section,
       challanOrCertificateNo,
@@ -83,7 +91,7 @@ corporateTaxRouter.post("/v1/corporate-tax/ait-ledger/add", (req: Request, res: 
 
     if (!section || !challanOrCertificateNo || !deductingAuthority || !aitDeductedAmountBdt) {
       return res.status(400).json({
-        ok: false,
+        success: false, ok: false,
         error: "Missing required fields for AIT Certificate",
       });
     }
@@ -99,9 +107,9 @@ corporateTaxRouter.post("/v1/corporate-tax/ait-ledger/add", (req: Request, res: 
       bankDepositChallanNo: bankDepositChallanNo || "",
     });
 
-    return res.status(201).json({ ok: true, data: item });
+    return res.status(201).json({ success: true, ok: true, data: item });
   } catch (err: any) {
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({ success: false, ok: false, error: err.message });
   }
 });
 
@@ -110,9 +118,9 @@ corporateTaxRouter.get("/v1/corporate-tax/mushak-9-1", (req: Request, res: Respo
   try {
     const period = (req.query.period as string) || "2026-09";
     const report = corporateTaxEngine.getMushak91Return(period);
-    return res.json({ ok: true, data: report });
+    return res.json({ success: true, ok: true, data: report });
   } catch (err: any) {
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({ success: false, ok: false, error: err.message });
   }
 });
 
@@ -132,8 +140,8 @@ corporateTaxRouter.post("/v1/corporate-tax/export-e-return", (req: Request, res:
       depreciationAllowanceBdt: Number(req.body.depreciationAllowanceBdt || 850000),
     });
 
-    return res.json({ ok: true, data: payload });
+    return res.json({ success: true, ok: true, data: payload });
   } catch (err: any) {
-    return res.status(500).json({ ok: false, error: err.message });
+    return res.status(500).json({ success: false, ok: false, error: err.message });
   }
 });

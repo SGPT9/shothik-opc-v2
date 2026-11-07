@@ -38,6 +38,17 @@ const processedTrxIds = new Set<string>();
  */
 router.post(["/v1/mfs/verify-trx", "/api/v1/mfs/verify-trx"], idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
+    const isProduction = process.env.NODE_ENV === "production";
+    const internalSecret = process.env.INTERNAL_SERVICE_SECRET || process.env.MFS_WEBHOOK_SECRET;
+    const providedSecret = req.headers["x-mfs-secret"] || req.headers["x-internal-secret"] || req.headers["x-webhook-secret"];
+
+    if (isProduction && !providedSecret && !bkashPgwClient.isLiveConfigured()) {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden: MFS verification requires authorized gateway webhook signature or live PGW confirmation.",
+      });
+    }
+
     const isStrictCandidate =
       req.body &&
       typeof req.body === "object" &&
@@ -126,6 +137,28 @@ router.post(["/v1/mfs/verify-trx", "/api/v1/mfs/verify-trx"], idempotencyMiddlew
 
     const { trxId, provider, tier, amountBdt, userId: payloadUserId } = parseResult.data;
     const userId = resolveUserId(req, payloadUserId || "usr_default");
+
+    // Check PostgreSQL transactions table in production to prevent cross-pod / cross-restart replays
+    if (isProduction) {
+      try {
+        const [existingTrx] = await db
+          .select()
+          .from(mfsTransactionsTable)
+          .where(eq(mfsTransactionsTable.trxId, trxId));
+        if (existingTrx) {
+          return res.status(200).json({
+            success: true,
+            trxId,
+            provider,
+            status: "already_processed",
+            idempotent: true,
+            message: `TrxID ${trxId} was already processed and credited.`,
+          });
+        }
+      } catch {
+        // ignore db error, proceed to memory check
+      }
+    }
 
     // Idempotency check: prevent duplicate credit on 3G network retries
     if (processedTrxIds.has(trxId)) {
