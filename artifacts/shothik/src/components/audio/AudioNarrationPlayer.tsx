@@ -142,6 +142,16 @@ export const AudioNarrationPlayer: React.FC<AudioNarrationPlayerProps> = ({
     };
   }, []);
 
+  // Cleanup audio upon component unmount
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+      }
+    };
+  }, []);
+
   // Update playback speed whenever speed state changes
   useEffect(() => {
     if (audioRef.current) {

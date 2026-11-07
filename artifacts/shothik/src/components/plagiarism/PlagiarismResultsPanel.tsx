@@ -63,13 +63,6 @@ export default function PlagiarismResultsPanel({
     );
 
   const handleSectionClick = (matchId: string) => {
-    // If target match has sourceUrl or url, open safely
-    const allSections = [...(report?.exactMatches ?? []), ...(report?.sections ?? [])];
-    const match = allSections.find((_, idx) => `exact-${idx}` === matchId || `section-${idx}` === matchId);
-    const targetSourceUrl = (match?.sources?.[0] as any)?.sourceUrl || match?.sources?.[0]?.url;
-    if (targetSourceUrl && typeof window !== "undefined") {
-      window.open(targetSourceUrl, "_blank", "noopener,noreferrer");
-    }
     onSectionClick?.(matchId);
   };
 
