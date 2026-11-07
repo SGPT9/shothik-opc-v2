@@ -1,7 +1,13 @@
 "use client";
 
 import React, { useState } from "react";
-import { CreditCard, CheckCircle2, AlertTriangle, ShieldCheck, RefreshCw } from "lucide-react";
+import {
+  CreditCard,
+  CheckCircle2,
+  AlertTriangle,
+  ShieldCheck,
+  RefreshCw,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface BkashCheckoutModalProps {
@@ -47,7 +53,10 @@ export default function BkashCheckoutModal({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          trxId: trxIdInput || data.paymentID || `9X87${Date.now().toString().slice(-4)}`,
+          trxId:
+            trxIdInput ||
+            data.paymentID ||
+            `9X87${Date.now().toString().slice(-4)}`,
           expectedAmount: amount,
           paymentChannel: "bkash",
         }),
@@ -79,13 +88,18 @@ export default function BkashCheckoutModal({
               ৳
             </div>
             <div>
-              <h3 className="font-bold text-white text-base">bKash Merchant Checkout</h3>
-              <p className="text-xs text-slate-400">Automated Instant Merchant Settlement</p>
+              <h3 className="font-bold text-white text-base">
+                bKash Merchant Checkout
+              </h3>
+              <p className="text-xs text-slate-400">
+                Automated Instant Merchant Settlement
+              </p>
             </div>
           </div>
           <button
+            aria-label="Close modal"
             onClick={onClose}
-            className="text-slate-400 hover:text-white text-lg font-bold p-1 transition"
+            className="text-slate-400 hover:text-white text-lg font-bold p-1 transition focus-visible:ring-2 focus-visible:outline-none"
           >
             ✕
           </button>
@@ -99,7 +113,9 @@ export default function BkashCheckoutModal({
           </div>
           <div className="flex justify-between text-sm font-bold text-white pt-1 border-t border-slate-800">
             <span>Total Payable Amount:</span>
-            <span className="text-pink-400 font-mono">৳{amount.toLocaleString()} BDT</span>
+            <span className="text-pink-400 font-mono">
+              ৳{amount.toLocaleString()} BDT
+            </span>
           </div>
         </div>
 
@@ -136,7 +152,8 @@ export default function BkashCheckoutModal({
             </div>
             {verificationResult.confidenceScore && (
               <p className="text-[10px] text-slate-400 pl-6">
-                OpenSearch-VL OCR Confidence: {(verificationResult.confidenceScore * 100).toFixed(0)}%
+                OpenSearch-VL OCR Confidence:{" "}
+                {(verificationResult.confidenceScore * 100).toFixed(0)}%
               </p>
             )}
           </div>

@@ -5,7 +5,9 @@ import { MCPServerConfig } from "../../api/agent-cockpit/mcp/route";
 import { SecurityRule } from "../../api/agent-cockpit/permissions/route";
 
 export default function AgentCockpitPage() {
-  const [activeTab, setActiveTab] = useState<"mcp" | "permissions" | "metrics">("mcp");
+  const [activeTab, setActiveTab] = useState<"mcp" | "permissions" | "metrics">(
+    "mcp",
+  );
   const [servers, setServers] = useState<MCPServerConfig[]>([]);
   const [rules, setRules] = useState<SecurityRule[]>([]);
   const [metrics, setMetrics] = useState<{
@@ -56,7 +58,10 @@ export default function AgentCockpitPage() {
     }
   };
 
-  const handleUpdatePermission = async (id: string, mode: SecurityRule["mode"]) => {
+  const handleUpdatePermission = async (
+    id: string,
+    mode: SecurityRule["mode"],
+  ) => {
     const res = await fetch("/api/agent-cockpit/permissions", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -72,13 +77,13 @@ export default function AgentCockpitPage() {
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       s.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.category.toLowerCase().includes(searchQuery.toLowerCase())
+      s.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const filteredRules = rules.filter(
     (r) =>
       r.capability.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      r.description.toLowerCase().includes(searchQuery.toLowerCase())
+      r.description.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   return (
@@ -93,9 +98,12 @@ export default function AgentCockpitPage() {
               </span>
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-white mt-2">Agent Control & Security Center</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-white mt-2">
+              Agent Control & Security Center
+            </h1>
             <p className="text-slate-400 text-sm mt-1">
-              Visual cockpit for MCP integrations, subagent security gates, and token cost analytics.
+              Visual cockpit for MCP integrations, subagent security gates, and
+              token cost analytics.
             </p>
           </div>
 
@@ -113,8 +121,9 @@ export default function AgentCockpitPage() {
               />
               {searchQuery && (
                 <button
+                  aria-label="Clear search"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs font-bold"
+                  className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs font-bold focus-visible:ring-2 focus-visible:outline-none"
                 >
                   ✕
                 </button>
@@ -125,15 +134,20 @@ export default function AgentCockpitPage() {
               <button
                 onClick={() => setActiveTab("mcp")}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  activeTab === "mcp" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                  activeTab === "mcp"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                MCP Servers ({filteredServers.filter((s) => s.status === "active").length})
+                MCP Servers (
+                {filteredServers.filter((s) => s.status === "active").length})
               </button>
               <button
                 onClick={() => setActiveTab("permissions")}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  activeTab === "permissions" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                  activeTab === "permissions"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 Security Gates
@@ -141,7 +155,9 @@ export default function AgentCockpitPage() {
               <button
                 onClick={() => setActiveTab("metrics")}
                 className={`px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  activeTab === "metrics" ? "bg-indigo-600 text-white shadow" : "text-slate-400 hover:text-slate-200"
+                  activeTab === "metrics"
+                    ? "bg-indigo-600 text-white shadow"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 Usage & Costs
@@ -151,7 +167,9 @@ export default function AgentCockpitPage() {
         </div>
 
         {loading ? (
-          <div className="py-20 text-center text-slate-500 animate-pulse">Loading Agent Cockpit Telemetry...</div>
+          <div className="py-20 text-center text-slate-500 animate-pulse">
+            Loading Agent Cockpit Telemetry...
+          </div>
         ) : (
           <>
             {/* Tab 1: MCP Servers */}
@@ -177,17 +195,28 @@ export default function AgentCockpitPage() {
                           {server.status.toUpperCase()}
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold text-white mt-3">{server.name}</h3>
-                      <p className="text-slate-400 text-sm mt-1 leading-relaxed">{server.description}</p>
+                      <h3 className="text-lg font-semibold text-white mt-3">
+                        {server.name}
+                      </h3>
+                      <p className="text-slate-400 text-sm mt-1 leading-relaxed">
+                        {server.description}
+                      </p>
                     </div>
 
                     <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
                       <div>
-                        <span className="font-semibold text-slate-200">{server.toolsCount}</span> Tools •{" "}
-                        <span className="text-emerald-400">{server.lastPingMs}ms</span>
+                        <span className="font-semibold text-slate-200">
+                          {server.toolsCount}
+                        </span>{" "}
+                        Tools •{" "}
+                        <span className="text-emerald-400">
+                          {server.lastPingMs}ms
+                        </span>
                       </div>
                       <button
-                        onClick={() => handleToggleMCP(server.id, server.status)}
+                        onClick={() =>
+                          handleToggleMCP(server.id, server.status)
+                        }
                         className={`px-3 py-1.5 rounded text-xs font-semibold transition-colors ${
                           server.status === "active"
                             ? "bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/30"
@@ -206,45 +235,60 @@ export default function AgentCockpitPage() {
             {activeTab === "permissions" && (
               <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 space-y-6 shadow-xl">
                 <div>
-                  <h2 className="text-xl font-bold text-white">Subagent Capability Permission Rules</h2>
+                  <h2 className="text-xl font-bold text-white">
+                    Subagent Capability Permission Rules
+                  </h2>
                   <p className="text-slate-400 text-sm mt-1">
-                    Control security gates for autonomous agent tools (Auto-Approve, Prompt for confirmation, or Block completely).
+                    Control security gates for autonomous agent tools
+                    (Auto-Approve, Prompt for confirmation, or Block
+                    completely).
                   </p>
                 </div>
 
                 <div className="divide-y divide-slate-800">
                   {filteredRules.map((rule) => (
-                    <div key={rule.id} className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div
+                      key={rule.id}
+                      className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                    >
                       <div>
                         <div className="flex items-center gap-2">
-                          <h4 className="font-semibold text-white">{rule.capability}</h4>
+                          <h4 className="font-semibold text-white">
+                            {rule.capability}
+                          </h4>
                           <span
                             className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded ${
                               rule.riskLevel === "critical"
                                 ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
                                 : rule.riskLevel === "high"
-                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                                : "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
+                                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                  : "bg-indigo-500/20 text-indigo-400 border border-indigo-500/30"
                             }`}
                           >
                             {rule.riskLevel} Risk
                           </span>
                         </div>
-                        <p className="text-xs text-slate-400 mt-1">{rule.description}</p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {rule.description}
+                        </p>
                       </div>
 
                       <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800">
-                        {(["auto-approve", "prompt-user", "block"] as const).map((modeOption) => (
+                        {(
+                          ["auto-approve", "prompt-user", "block"] as const
+                        ).map((modeOption) => (
                           <button
                             key={modeOption}
-                            onClick={() => handleUpdatePermission(rule.id, modeOption)}
+                            onClick={() =>
+                              handleUpdatePermission(rule.id, modeOption)
+                            }
                             className={`px-3 py-1.5 text-xs font-semibold rounded transition-all capitalize ${
                               rule.mode === modeOption
                                 ? modeOption === "block"
                                   ? "bg-rose-600 text-white"
                                   : modeOption === "prompt-user"
-                                  ? "bg-amber-600 text-white"
-                                  : "bg-emerald-600 text-white"
+                                    ? "bg-amber-600 text-white"
+                                    : "bg-emerald-600 text-white"
                                 : "text-slate-400 hover:text-slate-200"
                             }`}
                           >
@@ -264,36 +308,64 @@ export default function AgentCockpitPage() {
                 {/* Metric Summary Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
-                    <span className="text-xs text-slate-400 font-medium">Total Token Volume</span>
-                    <div className="text-2xl font-bold text-white mt-2">{metrics.totalTokens.toLocaleString()}</div>
-                    <div className="text-xs text-emerald-400 mt-1">Prompt: {metrics.promptTokens.toLocaleString()}</div>
+                    <span className="text-xs text-slate-400 font-medium">
+                      Total Token Volume
+                    </span>
+                    <div className="text-2xl font-bold text-white mt-2">
+                      {metrics.totalTokens.toLocaleString()}
+                    </div>
+                    <div className="text-xs text-emerald-400 mt-1">
+                      Prompt: {metrics.promptTokens.toLocaleString()}
+                    </div>
                   </div>
                   <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
-                    <span className="text-xs text-slate-400 font-medium">Est. Operational Cost</span>
-                    <div className="text-2xl font-bold text-emerald-400 mt-2">${metrics.estimatedCostUsd.toFixed(2)}</div>
-                    <div className="text-xs text-slate-400 mt-1">Billing Period: Current Month</div>
+                    <span className="text-xs text-slate-400 font-medium">
+                      Est. Operational Cost
+                    </span>
+                    <div className="text-2xl font-bold text-emerald-400 mt-2">
+                      ${metrics.estimatedCostUsd.toFixed(2)}
+                    </div>
+                    <div className="text-xs text-slate-400 mt-1">
+                      Billing Period: Current Month
+                    </div>
                   </div>
                   <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
-                    <span className="text-xs text-slate-400 font-medium">Active Agent Threads</span>
-                    <div className="text-2xl font-bold text-indigo-400 mt-2">{metrics.activeSessions}</div>
-                    <div className="text-xs text-slate-400 mt-1">Concurrent Subagents</div>
+                    <span className="text-xs text-slate-400 font-medium">
+                      Active Agent Threads
+                    </span>
+                    <div className="text-2xl font-bold text-indigo-400 mt-2">
+                      {metrics.activeSessions}
+                    </div>
+                    <div className="text-xs text-slate-400 mt-1">
+                      Concurrent Subagents
+                    </div>
                   </div>
                   <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
-                    <span className="text-xs text-slate-400 font-medium">Avg Execution Latency</span>
-                    <div className="text-2xl font-bold text-white mt-2">{metrics.avgLatencyMs}ms</div>
-                    <div className="text-xs text-emerald-400 mt-1">Optimized Response Speed</div>
+                    <span className="text-xs text-slate-400 font-medium">
+                      Avg Execution Latency
+                    </span>
+                    <div className="text-2xl font-bold text-white mt-2">
+                      {metrics.avgLatencyMs}ms
+                    </div>
+                    <div className="text-xs text-emerald-400 mt-1">
+                      Optimized Response Speed
+                    </div>
                   </div>
                 </div>
 
                 {/* Model Usage Breakdown */}
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
-                  <h3 className="text-lg font-semibold text-white mb-4">LLM Model Traffic Distribution</h3>
+                  <h3 className="text-lg font-semibold text-white mb-4">
+                    LLM Model Traffic Distribution
+                  </h3>
                   <div className="space-y-4">
                     {metrics.modelUsageBreakdown.map((item) => (
                       <div key={item.model} className="space-y-1">
                         <div className="flex justify-between text-xs text-slate-300">
                           <span className="font-mono">{item.model}</span>
-                          <span className="font-semibold">{item.usagePercent}%</span>
+                          <span className="font-semibold">
+                            {item.usagePercent}%
+                          </span>
                         </div>
                         <div className="w-full bg-slate-800 rounded-full h-2">
                           <div
