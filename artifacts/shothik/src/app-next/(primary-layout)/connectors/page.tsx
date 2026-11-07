@@ -278,9 +278,10 @@ export default function ConnectorsPage() {
         }),
       });
 
+      const maskedKey = apiKeyInput.length > 7 ? `${apiKeyInput.slice(0, 4)}••••${apiKeyInput.slice(-3)}` : '••••';
       setConnectors(connectors.map(c => 
         c.id === selectedConnector.id 
-          ? { ...c, connected: true, apiKeyPlaceholder: apiKeyInput, endpointUrl: endpointInput }
+          ? { ...c, connected: true, apiKeyPlaceholder: maskedKey, endpointUrl: endpointInput }
           : c
       ));
       writeLocalState(selectedConnector.id, true);

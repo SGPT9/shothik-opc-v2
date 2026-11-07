@@ -1,4 +1,4 @@
-import { db, keyCustodyTable } from "@workspace/db";
+import { db, keyCustodyTable, userConnectorsTable } from "@workspace/db";
 import { eq, and, sql } from "drizzle-orm";
 import crypto from "crypto";
 import { logger } from "./logger";
@@ -118,6 +118,22 @@ export class UserKeyVault {
             sealedKey: sealed,
           });
         }
+
+        const rawSecret = credentials.apiKey || credentials.secretKey || '';
+        const masked = rawSecret.length > 7 ? `${rawSecret.slice(0, 4)}••••${rawSecret.slice(-3)}` : '••••';
+        await db.insert(userConnectorsTable).values({
+          userId,
+          connectorId: provider.toLowerCase(),
+          connected: true,
+          encryptedCredentials: sealed,
+          maskedKey: masked,
+          endpointUrl: credentials.endpointUrl || null,
+          lastVerifiedAt: new Date(),
+          updatedAt: new Date(),
+        }).onConflictDoUpdate({
+          target: [userConnectorsTable.userId, userConnectorsTable.connectorId],
+          set: { connected: true, encryptedCredentials: sealed, maskedKey: masked, endpointUrl: credentials.endpointUrl || null, lastVerifiedAt: new Date(), updatedAt: new Date() },
+        }).catch(() => {});
         logger.info({ userId, provider }, "[UserKeyVault] Stored user BYOK credentials securely");
       } catch (err: any) {
         isPostgresAvailable = false;

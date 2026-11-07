@@ -1,6 +1,6 @@
 import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter, useParams } from "@/lib/navigation";
-import WritingHomeDashboard from "@/components/tools/writing-studio/dashboard/WritingHomeDashboard";
+import WritingHomeDashboard from "@/components/writing-studio/dashboard/WritingHomeDashboard";
 import { PolishedWriteView } from "@/components/writing-studio/PolishedWriteView";
 import { UnifiedStudioHub } from "@/components/writing-studio/UnifiedStudioHub";
 import { ReplitBookWorkspace } from "@/components/writing-studio/ReplitBookWorkspace";

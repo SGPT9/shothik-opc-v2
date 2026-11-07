@@ -179,7 +179,7 @@ export function calculateStylometrics(text: string): StylometricMetrics {
   // Dialogue ratio estimation (quoted text or dialogue dashes)
   const dialogueMatches = clean.match(/["'“‘”’«»][^"'“‘”’«»]+["'“‘”’«»]|(?:^|\n)\s*[—–-]\s*[^\n]+/g) || [];
   let dialogueWordCount = 0;
-  dialogueMatches.forEach(chunk => {
+  dialogueMatches.forEach((chunk: string) => {
     const dWords = chunk.replace(/["'“‘”’«»—–-]/g, " ").trim().split(/\s+/).filter(Boolean);
     dialogueWordCount += dWords.length;
   });

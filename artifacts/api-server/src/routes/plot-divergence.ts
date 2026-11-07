@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const plotDivergenceRouter = Router();
 
@@ -151,7 +152,7 @@ export function analyzePlotDivergence(manuscript: string, projectId: string): Pl
     branches: [canonBranch, alternateBranch1, alternateBranch2]
   };
 
-  divergenceStore.set(projectId, state);
+  divergenceStore.set(projectId, state); void persistSuiteManifest(projectId, "plot_divergence", state);
   return state;
 }
 
@@ -238,7 +239,7 @@ for (const routePath of FORK_ROUTES) {
 
       state.branches.push(newBranch);
       state.totalBranches = state.branches.length;
-      divergenceStore.set(projectId, state);
+      divergenceStore.set(projectId, state); void persistSuiteManifest(projectId, "plot_divergence", state);
 
       return res.status(201).json({ branch: newBranch, totalBranches: state.totalBranches });
     } catch (err: any) {
@@ -274,7 +275,7 @@ for (const routePath of REPLAY_ROUTES) {
       }
 
       state.activeBranchId = branchId;
-      divergenceStore.set(projectId, state);
+      divergenceStore.set(projectId, state); void persistSuiteManifest(projectId, "plot_divergence", state);
 
       return res.status(200).json({
         success: true,

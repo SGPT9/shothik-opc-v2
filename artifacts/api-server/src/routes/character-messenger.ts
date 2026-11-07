@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistCharacterThreadMessage } from "../lib/novel-engine/suite-manifest-store";
 
 export const characterMessengerRouter = Router();
 
@@ -356,6 +357,8 @@ characterMessengerRouter.post(
     };
     messages.push(charMsg);
     threadStores.set(key, messages);
+    void persistCharacterThreadMessage(key, "author", "author", userMessage, { projectId, characterId });
+    void persistCharacterThreadMessage(key, characterId, "character", replyText, { projectId, characterId, hasVoice: !!voiceNote, secretLoreDisclosure: secretLore });
 
     logger.info({ projectId, characterId, hasVoice: !!voiceNote }, "[CharacterMessenger] Message exchanged");
 

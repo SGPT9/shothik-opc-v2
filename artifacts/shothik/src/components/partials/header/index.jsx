@@ -52,7 +52,7 @@ import { useAuth } from "@/providers/AuthProvider";
 import { fetchAgents } from "@/services/agent-team.service";
 import { useCreditBalance } from "@/hooks/useCreditBalance";
 
-const NotificationBell = lazy(() => import("@/components/forum/NotificationBell"));
+const NotificationBell = lazy(() => import("@/components/community/NotificationBell"));
 const TeamModal = lazy(() => import("@/components/team/TeamModal"));
 
 const navLinkKeys = [

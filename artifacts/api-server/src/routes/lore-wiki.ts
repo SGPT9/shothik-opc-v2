@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const loreWikiRouter = Router();
 
@@ -191,7 +192,7 @@ export function extractLoreWiki(manuscript: string, projectId: string): LoreWiki
     transmediaPitchDeck: pitchDeck
   };
 
-  loreWikiStore.set(projectId, state);
+  loreWikiStore.set(projectId, state); void persistSuiteManifest(projectId, "lore_wiki", state);
   return state;
 }
 
@@ -305,7 +306,7 @@ for (const routePath of ENTITY_ROUTES) {
       state.entities.unshift(newEntity);
       state.totalEntitiesCount = state.entities.length;
       state.lastScannedAt = new Date().toISOString();
-      loreWikiStore.set(projectId, state);
+      loreWikiStore.set(projectId, state); void persistSuiteManifest(projectId, "lore_wiki", state);
 
       return res.status(201).json({ entity: newEntity, totalCount: state.totalEntitiesCount });
     } catch (err: any) {

@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { z } from "zod";
 import { logger } from "../lib/logger";
+import { persistSuiteManifest } from "../lib/novel-engine/suite-manifest-store";
 
 export const chronoBraiderRouter = Router();
 
@@ -194,7 +195,7 @@ export function analyzeChronoBraid(manuscript: string, projectId: string): Chron
     transitionProseTemplates: transitions
   };
 
-  chronoStore.set(projectId, state);
+  chronoStore.set(projectId, state); void persistSuiteManifest(projectId, "chrono_braider", state);
   return state;
 }
 
@@ -311,7 +312,7 @@ for (const routePath of NODE_ROUTES) {
 
       state.nodes.push(newNode);
       state.totalChaptersMapped = state.nodes.length;
-      chronoStore.set(projectId, state);
+      chronoStore.set(projectId, state); void persistSuiteManifest(projectId, "chrono_braider", state);
 
       return res.status(201).json({ node: newNode, totalChaptersMapped: state.totalChaptersMapped });
     } catch (err: any) {

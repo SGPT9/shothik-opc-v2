@@ -9,20 +9,6 @@ import { speculativeSystem1Engine, type SpeculativeResult } from "../lib/router/
 
 const router: IRouter = Router();
 
-// GET /api/auth/session — returns mock dev session so client never 401s
-router.get("/auth/session", (_req: Request, res: Response) => {
-  res.json({
-    user: {
-      id: "usr_shothik_dev_01",
-      name: "Hermes Lead Engineer",
-      email: "engineer@shothikgpt.com",
-      image: "https://api.dicebear.com/7.x/bottts/svg?seed=Hermes",
-      credits: 14250,
-      tier: "enterprise_pro",
-    },
-    expires: new Date(Date.now() + 86400000 * 30).toISOString(),
-  });
-});
 
 // POST /api/chat or /api/chat/stream
 router.post(["/chat", "/chat/stream"], async (req: Request, res: Response) => {

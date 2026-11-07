@@ -26,11 +26,11 @@ import {
   Heart,
   Share2
 } from "lucide-react";
-import CountdownTimer from "@/components/forum/CountdownTimer";
+import CountdownTimer from "@/components/community/CountdownTimer";
 import ReviewerFundDashboard from "@/components/credits/ReviewerFundDashboard";
 import { useTranslation } from "@/i18n";
 import { useChannels, useHotPosts } from "@/hooks/useCommunity";
-import ForumPost from "@/components/forum/ForumPost";
+import ForumPost from "@/components/community/ForumPost";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 

@@ -38,8 +38,8 @@ import {
   subscribeChatSessions,
 } from "@/lib/chat-sessions-store";
 import { getProjects } from "@/lib/projects-store";
-import CreateProjectModal from "@/components/tools/writing-studio/dashboard/CreateProjectModal";
-import NotificationBell from "@/components/forum/NotificationBell";
+import CreateProjectModal from "@/components/writing-studio/dashboard/CreateProjectModal";
+import NotificationBell from "@/components/community/NotificationBell";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/providers/AuthProvider";
 
