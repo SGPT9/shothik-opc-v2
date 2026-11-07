@@ -7,6 +7,7 @@ import { db, canvasArtifactsTable, savedReportsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { resolveUserId } from "../middleware/auth";
 import { humanizeTextDeterministic } from "../lib/humanizer-engine";
+import { WigoloWebIntelligenceService } from "../lib/wigolo-service";
 
 const router = Router();
 
@@ -663,6 +664,44 @@ router.post(["/v1/feedback/report", "/api/v1/feedback/report", "/report/send-rep
     success: true,
     message: "Report logged for model fine-tuning.",
   });
+});
+
+// --- 7. Wigolo Keyless Web Intelligence & Rank Fusion ---
+router.post(["/v1/search/wigolo", "/api/v1/search/wigolo", "/search/wigolo", "/api/search/wigolo"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { query, domains, maxResults = 10, timeRange, language } = req.body || {};
+    if (!query) {
+      res.status(400).json({ success: false, error: "query is required" });
+      return;
+    }
+    const results = await WigoloWebIntelligenceService.searchWeb({
+      query,
+      domains,
+      maxResults: Number(maxResults),
+      timeRange,
+      language,
+    });
+    res.status(200).json({ success: true, ...results });
+  } catch (err: any) {
+    logger.error({ err }, "[wigolo] Web search error");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get(["/v1/search/wigolo", "/api/v1/search/wigolo", "/search/wigolo", "/api/search/wigolo"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const query = String(req.query.q || req.query.query || "").trim();
+    if (!query) {
+      res.status(400).json({ success: false, error: "q parameter is required" });
+      return;
+    }
+    const maxResults = Number(req.query.maxResults || req.query.limit || 10);
+    const results = await WigoloWebIntelligenceService.searchWeb({ query, maxResults });
+    res.status(200).json({ success: true, ...results });
+  } catch (err: any) {
+    logger.error({ err }, "[wigolo] Web search error");
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 export default router;
