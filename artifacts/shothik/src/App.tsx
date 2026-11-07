@@ -318,6 +318,9 @@ function AppRoutes() {
         <Route path="/agents" component={AgentsPageWithLayout} />
         <Route path="/paraphrase" component={ParaphrasePageWithLayout} />
         <Route path="/humanize-gpt" component={HumanizePageWithLayout} />
+        <Route path="/humanize" component={HumanizePageWithLayout} />
+        <Route path="/humanizer" component={HumanizePageWithLayout} />
+        <Route path="/ai-humanizer" component={HumanizePageWithLayout} />
         <Route path="/grammar-checker" component={GrammarCheckerPageWithLayout} />
         <Route path="/ai-detector/shared/:shareLinkId" component={AiDetectorSharedPageWithLayout} />
         <Route path="/ai-detector" component={AiDetectorPageWithLayout} />
