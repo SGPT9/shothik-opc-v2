@@ -6,7 +6,12 @@ import { desc } from "drizzle-orm";
 export const plagiarismRouter = Router();
 
 plagiarismRouter.post(
-  ["/academic/plagiarism/scan", "/v1/nlp/plagiarism:analyze", "/v1/nlp/plagiarism/scan"],
+  [
+    "/academic/plagiarism/scan",
+    "/v1/academic/plagiarism/scan",
+    "/v1/nlp/plagiarism:analyze",
+    "/v1/nlp/plagiarism/scan"
+  ],
   async (req, res) => {
     try {
       const { text, title, author } = req.body;
@@ -18,6 +23,7 @@ plagiarismRouter.post(
       const isLiveWeb =
         req.body.liveWeb === true ||
         req.body.liveWeb === "true" ||
+        req.body.options?.liveWeb === true ||
         req.query.liveWeb === "true";
 
       const report = isLiveWeb
@@ -48,7 +54,14 @@ plagiarismRouter.post(
         }
       }
 
-      res.json({ success: true, report });
+      res.json({
+        success: true,
+        report,
+        similarityPercent: report.overallSimilarityPercent,
+        originalityScore: report.originalityScore,
+        wordCount: report.wordCount,
+        matches: report.matches,
+      });
     } catch (err: any) {
       res.status(400).json({ success: false, error: err.message });
     }
