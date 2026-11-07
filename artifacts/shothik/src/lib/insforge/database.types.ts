@@ -3,25 +3,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 
 export type Database = {
   
-  "graphql_public": {
-          Tables: {
-            [_ in never]: never
-          }
-          Views: {
-            [_ in never]: never
-          }
-          Functions: {
-            "graphql":
-{ Args: { "extensions"?: Json,"operationName"?: string,"query"?: string,"variables"?: Json }; Returns: Json
-                           }
-          }
-          Enums: {
-            [_ in never]: never
-          }
-          CompositeTypes: {
-            [_ in never]: never
-          }
-        },"public": {
+  "public": {
           Tables: {
             "audit_journal_entries": {
                   Row: {
@@ -625,14 +607,14 @@ isOneToOne: false
                   ]
                 },"projects": {
                   Row: {
-                    "access_mode": string,"branch_name": string,"content": string,"created_at": string,"description": string,"id": string,"lineage_root_id": string | null,"parent_project_id": string | null,"passcode_hash": string | null,"progress": number,"sections": NonNullable<Json>,"settings": NonNullable<Json>,"share_token": string | null,"starred": boolean,"template": string | null,"title": string,"type": string,"updated_at": string,"user_id": string,"word_count": number
+                    "access_mode": string,"branch_name": string,"content": string,"created_at": string,"current_version": number | null,"description": string,"genre": string | null,"id": string,"lineage_root_id": string | null,"parent_project_id": string | null,"passcode_hash": string | null,"progress": number,"sections": NonNullable<Json>,"settings": NonNullable<Json>,"share_token": string | null,"starred": boolean,"template": string | null,"title": string,"type": string,"updated_at": string,"user_id": string,"word_count": number
                   }
                   ComputedFields: never
                   Insert: {
-                    "access_mode"?: string,"branch_name"?: string,"content"?: string,"created_at"?: string,"description"?: string,"id"?: string,"lineage_root_id"?: string | null,"parent_project_id"?: string | null,"passcode_hash"?: string | null,"progress"?: number,"sections"?: NonNullable<Json>,"settings"?: NonNullable<Json>,"share_token"?: string | null,"starred"?: boolean,"template"?: string | null,"title": string,"type"?: string,"updated_at"?: string,"user_id": string,"word_count"?: number
+                    "access_mode"?: string,"branch_name"?: string,"content"?: string,"created_at"?: string,"current_version"?: number | null,"description"?: string,"genre"?: string | null,"id"?: string,"lineage_root_id"?: string | null,"parent_project_id"?: string | null,"passcode_hash"?: string | null,"progress"?: number,"sections"?: NonNullable<Json>,"settings"?: NonNullable<Json>,"share_token"?: string | null,"starred"?: boolean,"template"?: string | null,"title": string,"type"?: string,"updated_at"?: string,"user_id": string,"word_count"?: number
                   }
                   Update: {
-                    "access_mode"?: string,"branch_name"?: string,"content"?: string,"created_at"?: string,"description"?: string,"id"?: string,"lineage_root_id"?: string | null,"parent_project_id"?: string | null,"passcode_hash"?: string | null,"progress"?: number,"sections"?: NonNullable<Json>,"settings"?: NonNullable<Json>,"share_token"?: string | null,"starred"?: boolean,"template"?: string | null,"title"?: string,"type"?: string,"updated_at"?: string,"user_id"?: string,"word_count"?: number
+                    "access_mode"?: string,"branch_name"?: string,"content"?: string,"created_at"?: string,"current_version"?: number | null,"description"?: string,"genre"?: string | null,"id"?: string,"lineage_root_id"?: string | null,"parent_project_id"?: string | null,"passcode_hash"?: string | null,"progress"?: number,"sections"?: NonNullable<Json>,"settings"?: NonNullable<Json>,"share_token"?: string | null,"starred"?: boolean,"template"?: string | null,"title"?: string,"type"?: string,"updated_at"?: string,"user_id"?: string,"word_count"?: number
                   }
                   Relationships: [
                     {
@@ -783,28 +765,28 @@ isOneToOne: false
                   ]
                 },"semantic_memory_vectors": {
                   Row: {
-                    "access_count": number,"category": string,"confidence": number,"content": string,"created_at": string,"embedding": NonNullable<Json>,"id": string,"keywords": NonNullable<Json>,"last_accessed_at": string,"user_id": string
+                    "access_count": number,"category": string,"chunk_id": string | null,"confidence": number,"content": string,"created_at": string,"document_name": string | null,"embedding": NonNullable<Json>,"id": string,"keywords": NonNullable<Json>,"last_accessed_at": string,"metadata": Json | null,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "access_count"?: number,"category"?: string,"confidence"?: number,"content": string,"created_at"?: string,"embedding"?: NonNullable<Json>,"id": string,"keywords"?: NonNullable<Json>,"last_accessed_at"?: string,"user_id": string
+                    "access_count"?: number,"category"?: string,"chunk_id"?: string | null,"confidence"?: number,"content": string,"created_at"?: string,"document_name"?: string | null,"embedding"?: NonNullable<Json>,"id": string,"keywords"?: NonNullable<Json>,"last_accessed_at"?: string,"metadata"?: Json | null,"user_id": string
                   }
                   Update: {
-                    "access_count"?: number,"category"?: string,"confidence"?: number,"content"?: string,"created_at"?: string,"embedding"?: NonNullable<Json>,"id"?: string,"keywords"?: NonNullable<Json>,"last_accessed_at"?: string,"user_id"?: string
+                    "access_count"?: number,"category"?: string,"chunk_id"?: string | null,"confidence"?: number,"content"?: string,"created_at"?: string,"document_name"?: string | null,"embedding"?: NonNullable<Json>,"id"?: string,"keywords"?: NonNullable<Json>,"last_accessed_at"?: string,"metadata"?: Json | null,"user_id"?: string
                   }
                   Relationships: [
                     
                   ]
                 },"tool_usage": {
                   Row: {
-                    "count": number,"id": number,"period_end": string | null,"period_start": string,"tool": string,"updated_at": string,"user_id": string
+                    "cost_credits": number | null,"count": number,"created_at": string | null,"duration_ms": number | null,"id": number,"metadata": Json | null,"period_end": string | null,"period_start": string,"success": boolean | null,"tool": string,"tool_name": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "count"?: number,"id"?: number,"period_end"?: string | null,"period_start"?: string,"tool": string,"updated_at"?: string,"user_id": string
+                    "cost_credits"?: number | null,"count"?: number,"created_at"?: string | null,"duration_ms"?: number | null,"id"?: number,"metadata"?: Json | null,"period_end"?: string | null,"period_start"?: string,"success"?: boolean | null,"tool": string,"tool_name"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "count"?: number,"id"?: number,"period_end"?: string | null,"period_start"?: string,"tool"?: string,"updated_at"?: string,"user_id"?: string
+                    "cost_credits"?: number | null,"count"?: number,"created_at"?: string | null,"duration_ms"?: number | null,"id"?: number,"metadata"?: Json | null,"period_end"?: string | null,"period_start"?: string,"success"?: boolean | null,"tool"?: string,"tool_name"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -909,14 +891,14 @@ isOneToOne: false
                   ]
                 },"twin_seeds": {
                   Row: {
-                    "business_plan": string,"company_name": string,"conversation_id": string,"created_at": string,"id": number,"identity": string,"revision": number,"summary": string,"tasks": NonNullable<Json>,"updated_at": string
+                    "business_plan": string,"company_name": string,"conversation_id": string,"created_at": string,"id": number,"identity": string,"revision": number,"seed": Json | null,"summary": string,"tasks": NonNullable<Json>,"updated_at": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "business_plan"?: string,"company_name": string,"conversation_id": string,"created_at"?: string,"id"?: number,"identity": string,"revision"?: number,"summary"?: string,"tasks"?: NonNullable<Json>,"updated_at"?: string
+                    "business_plan"?: string,"company_name": string,"conversation_id": string,"created_at"?: string,"id"?: number,"identity": string,"revision"?: number,"seed"?: Json | null,"summary"?: string,"tasks"?: NonNullable<Json>,"updated_at"?: string
                   }
                   Update: {
-                    "business_plan"?: string,"company_name"?: string,"conversation_id"?: string,"created_at"?: string,"id"?: number,"identity"?: string,"revision"?: number,"summary"?: string,"tasks"?: NonNullable<Json>,"updated_at"?: string
+                    "business_plan"?: string,"company_name"?: string,"conversation_id"?: string,"created_at"?: string,"id"?: number,"identity"?: string,"revision"?: number,"seed"?: Json | null,"summary"?: string,"tasks"?: NonNullable<Json>,"updated_at"?: string
                   }
                   Relationships: [
                     
@@ -1087,7 +1069,12 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "get_auth_role":
+            "deduct_user_credits":
+{ Args: { "p_amount": number,"p_user_id": string }; Returns: {
+              "lifetime_spent": number,"new_balance": number,"success": boolean,"user_id": string
+            }[]
+                           },
+"get_auth_role":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
 "get_hot_posts":
@@ -1111,6 +1098,9 @@ isOneToOne: false
       } },
 "get_my_vault_secret":
 { Args: { "secret_name": string }; Returns: string
+                           },
+"get_platform_domain_stats":
+{ Args: Record<PropertyKey, never>; Returns: Json
                            },
 "hybrid_search_rag_chunks":
 { Args: { "p_match_count"?: number,"p_query_embedding": string,"p_query_text": string,"p_rrf_k"?: number,"p_user_id": string }; Returns: {
@@ -1233,11 +1223,7 @@ export type CompositeTypes<
   : never
 
 export const Constants = {
-  "graphql_public": {
-          Enums: {
-            
-          }
-        },"public": {
+  "public": {
           Enums: {
             
           }
