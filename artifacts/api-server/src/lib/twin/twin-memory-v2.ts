@@ -11,6 +11,7 @@
 
 import fs from "fs";
 import path from "path";
+import { db, twinDirectionsTable, twinTaskMemosTable } from "@workspace/db";
 import { logger } from "../logger.js";
 
 // --- 1. Direction Layer Interfaces ---
@@ -155,6 +156,25 @@ export class TwinMemoryV2Engine {
 
     this.directions.set(id, entry);
     this.saveToDisk();
+    try {
+      db.insert(twinDirectionsTable)
+        .values({
+          id: entry.id,
+          userId: entry.userId,
+          companySlug: entry.companySlug,
+          kind: entry.kind,
+          content: entry.content,
+          supersedesId: entry.supersedesId || null,
+          isActive: entry.isActive,
+        })
+        .onConflictDoUpdate({
+          target: twinDirectionsTable.id,
+          set: { content: entry.content, isActive: entry.isActive, updatedAt: new Date() },
+        })
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
     return entry;
   }
 
@@ -195,6 +215,26 @@ export class TwinMemoryV2Engine {
 
     this.memos.set(id, memo);
     this.saveToDisk();
+    try {
+      db.insert(twinTaskMemosTable)
+        .values({
+          id: memo.id,
+          taskId: memo.taskId,
+          companySlug: memo.companySlug,
+          userId: memo.userId,
+          title: memo.title,
+          scopePath: memo.scopePath,
+          summary: memo.summary,
+          executionSteps: memo.executionSteps,
+          outputArtifacts: memo.outputArtifacts,
+          qualityScore: String(memo.qualityScore),
+          isInvalidated: memo.isInvalidated,
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
     return memo;
   }
 

@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import os from "os";
+import { db, nightshiftDigestsTable } from "@workspace/db";
 import { logger } from "./logger.js";
 import { dshRuntime } from "./dsh-runtime.js";
 
@@ -298,6 +299,24 @@ All 5 nocturnal autonomous pipelines completed with **100% success**. Overall pl
     // Prepend to in-memory list and persist
     this.digests.unshift(digest);
     this.saveDigests();
+    try {
+      db.insert(nightshiftDigestsTable)
+        .values({
+          id: digest.id,
+          cycleTimestamp: digest.cycleTimestamp,
+          date: digest.date,
+          status: digest.status,
+          skillsExecuted: digest.skillsExecuted,
+          overallHealthScore: digest.overallHealthScore,
+          topActionItems: digest.topActionItems,
+          markdownReport: digest.markdownReport,
+          executionDurationMs: digest.executionDurationMs,
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     // Log completion in DSH runtime
     await dshRuntime.recordEvent(dshSession.id, "session_done", {

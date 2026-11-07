@@ -1,4 +1,6 @@
 import { randomUUID } from "crypto";
+import { db, ragChunksTable, ragDocumentsTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { logger } from "./logger.js";
 import { promises as fs } from "fs";
 import path from "path";
@@ -307,6 +309,40 @@ export class RAGKnowledgeEngine {
 
     this.documents.set(docId, doc);
     await this.persistToDisk();
+    try {
+      db.insert(ragDocumentsTable)
+        .values({
+          id: doc.id,
+          userId: doc.userId,
+          title: doc.title,
+          sourceType: doc.sourceType,
+          sourceUrl: doc.sourceUrl || null,
+          totalLength: doc.totalLength,
+          chunkCount: doc.chunkCount,
+        })
+        .onConflictDoNothing()
+        .then(() => {
+          for (const c of createdChunks) {
+            db.insert(ragChunksTable)
+              .values({
+                id: c.id,
+                docId: c.docId,
+                userId: c.userId,
+                title: c.title,
+                content: c.content,
+                chunkIndex: c.chunkIndex,
+                tokens: c.tokens,
+                embedding: c.embedding,
+                metadata: c.metadata || {},
+              })
+              .onConflictDoNothing()
+              .catch(() => {});
+          }
+        })
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     logger.info(`[rag-engine] Ingested document "${params.title}" (${docId}) into ${createdChunks.length} vector chunks`);
     return { document: doc, chunksCreated: createdChunks.length };
@@ -420,6 +456,11 @@ export class RAGKnowledgeEngine {
     }
 
     await this.persistToDisk();
+    try {
+      db.delete(ragDocumentsTable).where(eq(ragDocumentsTable.id, docId)).catch(() => {});
+    } catch {
+      // non-blocking
+    }
     logger.info(`[rag-engine] Deleted document ${docId} and its associated chunks`);
     return true;
   }

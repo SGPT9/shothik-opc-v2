@@ -1,4 +1,4 @@
-import { db, bookSuiteManifestsTable, chatMessagesTable } from "@workspace/db";
+import { db, bookSuiteManifestsTable, chatMessagesTable, engineKvSnapshotsTable } from "@workspace/db";
 import { and, eq, asc } from "drizzle-orm";
 import { logger } from "../logger";
 
@@ -7,7 +7,19 @@ export type SuiteModuleType =
   | "plot_divergence"
   | "lore_wiki"
   | "book_jacket"
-  | "cip_barcode";
+  | "cip_barcode"
+  | "story_bible"
+  | "story_graphs"
+  | "foreshadowing"
+  | "multiverse"
+  | "room_blocking"
+  | "soundscape"
+  | "voice_casting"
+  | "booktok"
+  | "phoneme_tuner"
+  | "short_fiction"
+  | "tabletop"
+  | "style_dna";
 
 /**
  * Write-through Supabase PostgreSQL persistence for Writing Suite & Novel Engine modules.
@@ -61,6 +73,34 @@ export async function loadSuiteManifest<T>(
     return (row?.state as T) ?? null;
   } catch {
     return null;
+  }
+}
+
+export async function persistEngineSnapshot(
+  namespace: string,
+  entityId: string,
+  payload: unknown,
+  userId = "system",
+): Promise<void> {
+  try {
+    await db
+      .insert(engineKvSnapshotsTable)
+      .values({
+        namespace,
+        entityId,
+        userId,
+        payload: (payload as Record<string, unknown>) || {},
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [engineKvSnapshotsTable.namespace, engineKvSnapshotsTable.entityId],
+        set: {
+          payload: (payload as Record<string, unknown>) || {},
+          updatedAt: new Date(),
+        },
+      });
+  } catch (err: any) {
+    logger.debug({ namespace, entityId, err: err?.message }, "[SuiteManifestStore] Engine KV snapshot sync skipped");
   }
 }
 

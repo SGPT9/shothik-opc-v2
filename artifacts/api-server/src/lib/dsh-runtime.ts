@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { recordAgentTrace } from "@workspace/db";
+import { db, dshSessionsTable, recordAgentTrace } from "@workspace/db";
 import { logger } from "./logger";
 
 export type DshEventType =
@@ -136,9 +136,39 @@ export class DshRuntimeEngine {
 
     this.sessions.set(sessionId, session);
     this.saveToDisk();
+    this.syncSessionToPostgres(session);
+    this.syncSessionToPostgres(session);
 
     logger.info(`[dsh-runtime] Initialized DSH tracked session ${sessionId} for user ${userId}`);
     return session;
+  }
+
+  private syncSessionToPostgres(session: DshSession): void {
+    try {
+      db.insert(dshSessionsTable)
+        .values({
+          id: session.id,
+          userId: session.userId,
+          title: session.title,
+          status: session.status,
+          forkedFromSessionId: session.forkedFromSessionId || null,
+          forkedAtEventIndex: session.forkedAtEventIndex ?? null,
+          events: session.events,
+          metrics: session.metrics,
+        })
+        .onConflictDoUpdate({
+          target: dshSessionsTable.id,
+          set: {
+            status: session.status,
+            events: session.events,
+            metrics: session.metrics,
+            updatedAt: new Date(),
+          },
+        })
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
   }
 
   async recordEvent(
@@ -183,6 +213,7 @@ export class DshRuntimeEngine {
     }
 
     this.saveToDisk();
+    this.syncSessionToPostgres(session);
 
     // Persist to SQLite agent_traces
     try {
@@ -273,6 +304,7 @@ export class DshRuntimeEngine {
 
     this.sessions.set(newSessionId, forkedSession);
     this.saveToDisk();
+    this.syncSessionToPostgres(forkedSession);
 
     logger.info(`[dsh-runtime] Forked session ${sessionId} into new session ${newSessionId} at index ${cutIndex}`);
     return forkedSession;

@@ -345,4 +345,109 @@ export const chatConversationsTable = pgTable("chat_conversations", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/**
+ * 11. Migrated In-Memory & Disk-Backed Engines (TwinMemoryV2, SemanticMemory, RAG, DSH, Nightshift, Engine KV)
+ */
+export const twinDirectionsTable = pgTable("twin_directions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  companySlug: text("company_slug").notNull().default("default"),
+  kind: text("kind").notNull(),
+  content: text("content").notNull(),
+  supersedesId: text("supersedes_id"),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const twinTaskMemosTable = pgTable("twin_task_memos", {
+  id: text("id").primaryKey(),
+  taskId: text("task_id").notNull(),
+  companySlug: text("company_slug").notNull().default("default"),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  scopePath: text("scope_path").notNull().default("general"),
+  summary: text("summary").notNull(),
+  executionSteps: jsonb("execution_steps").$type<string[]>().notNull().default([]),
+  outputArtifacts: jsonb("output_artifacts").$type<Array<{ type: string; path: string }>>().notNull().default([]),
+  qualityScore: text("quality_score").notNull().default("1.0"),
+  invalidationReason: text("invalidation_reason"),
+  isInvalidated: boolean("is_invalidated").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const semanticMemoriesTable = pgTable("semantic_memories", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  category: text("category").notNull().default("fact"),
+  content: text("content").notNull(),
+  keywords: jsonb("keywords").$type<string[]>().notNull().default([]),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const ragDocumentsTable = pgTable("rag_documents", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  sourceType: text("source_type").notNull().default("text"),
+  sourceUrl: text("source_url"),
+  totalLength: integer("total_length").notNull().default(0),
+  chunkCount: integer("chunk_count").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const ragChunksTable = pgTable("rag_chunks", {
+  id: text("id").primaryKey(),
+  docId: text("doc_id").notNull().references(() => ragDocumentsTable.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  chunkIndex: integer("chunk_index").notNull().default(0),
+  tokens: integer("tokens").notNull().default(0),
+  embedding: jsonb("embedding").$type<number[]>().notNull().default([]),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const dshSessionsTable = pgTable("dsh_sessions", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  status: text("status").notNull().default("active"),
+  forkedFromSessionId: text("forked_from_session_id"),
+  forkedAtEventIndex: integer("forked_at_event_index"),
+  events: jsonb("events").$type<unknown[]>().notNull().default([]),
+  metrics: jsonb("metrics").$type<Record<string, unknown>>().notNull().default({}),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const nightshiftDigestsTable = pgTable("nightshift_digests", {
+  id: text("id").primaryKey(),
+  cycleTimestamp: text("cycle_timestamp").notNull(),
+  date: text("date").notNull(),
+  status: text("status").notNull().default("completed"),
+  skillsExecuted: jsonb("skills_executed").$type<unknown[]>().notNull().default([]),
+  overallHealthScore: integer("overall_health_score").notNull().default(100),
+  topActionItems: jsonb("top_action_items").$type<string[]>().notNull().default([]),
+  markdownReport: text("markdown_report").notNull().default(""),
+  executionDurationMs: integer("execution_duration_ms").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const engineKvSnapshotsTable = pgTable(
+  "engine_kv_snapshots",
+  {
+    namespace: text("namespace").notNull(),
+    entityId: text("entity_id").notNull(),
+    userId: text("user_id").notNull().default("system"),
+    payload: jsonb("payload").$type<Record<string, unknown>>().notNull().default({}),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("engine_kv_snapshots_ns_entity_idx").on(t.namespace, t.entityId)],
+);
+
+
 
