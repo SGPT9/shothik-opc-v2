@@ -795,8 +795,8 @@ importers:
         specifier: ^5.32.12
         version: 5.32.12(@types/react@19.2.14)(debug@4.4.3(supports-color@10.2.2))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(supports-color@10.2.2)
       uuid:
-        specifier: ^14.0.1
-        version: 14.0.1
+        specifier: ^14.0.2
+        version: 14.0.2
       xlsx:
         specifier: ^0.18.5
         version: 0.18.5
@@ -8003,8 +8003,8 @@ packages:
   utrie@1.0.2:
     resolution: {integrity: sha512-1MLa5ouZiOmQzUbjbu9VmjLzn1QLXBhwpUa7kdLUQK+KQ5KA9I1vk5U4YHe/X2Ch7PYnJfWuWT+VbuxbGwljhw==}
 
-  uuid@14.0.1:
-    resolution: {integrity: sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew==}
+  uuid@14.0.2:
+    resolution: {integrity: sha512-xZe/16rV4aa+HGSOCiY2YeLT1OybRLrrkL/Rqaq7p7GMVXjFh+6wN4oMYgjFmnSnhY8t6Xpdl2l9qmnHYuMHwQ==}
     hasBin: true
 
   uuid@8.3.2:
@@ -16420,7 +16420,7 @@ snapshots:
     dependencies:
       base64-arraybuffer: 1.0.2
 
-  uuid@14.0.1: {}
+  uuid@14.0.2: {}
 
   uuid@8.3.2: {}
 
