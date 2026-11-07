@@ -84,12 +84,17 @@ import {
 } from "./paraphraseUtils";
 
 const ParaphraseContend = () => {
-  const { paraphraseQuotations, automaticStartParaphrasing } = useSelector(
-    (state) => state.settings.paraphraseOptions,
+  // Optimization: Select specific properties instead of destructuring to prevent unnecessary re-renders
+  const paraphraseQuotations = useSelector(
+    (state) => state.settings.paraphraseOptions.paraphraseQuotations,
+  );
+  const automaticStartParaphrasing = useSelector(
+    (state) => state.settings.paraphraseOptions.automaticStartParaphrasing,
   );
 
-  const { useYellowHighlight } = useSelector(
-    (state) => state.settings.interfaceOptions,
+  // Optimization: Select specific property instead of destructuring to prevent unnecessary re-renders
+  const useYellowHighlight = useSelector(
+    (state) => state.settings.interfaceOptions.useYellowHighlight,
   );
 
   const [showDemo, setShowDemo] = useState(false);
@@ -110,7 +115,8 @@ const ParaphraseContend = () => {
   };
 
   const [showLanguageDetect, setShowLanguageDetect] = useState(false);
-  const { accessToken } = useSelector((state) => state.auth);
+  // Optimization: Select specific property instead of destructuring to prevent unnecessary re-renders
+  const accessToken = useSelector((state) => state.auth.accessToken);
   const [outputHistoryIndex, setOutputHistoryIndex] = useState(0);
   const [highlightSentence, setHighlightSentence] = useState(0);
   const [selectedMode, setSelectedModeState] = useState("Standard");
@@ -123,7 +129,8 @@ const ParaphraseContend = () => {
   const [outputWordCount, setOutputWordCount] = useState(0);
   const [outputHistory, setOutputHistory] = useState([]);
   const [outputContend, setOutputContend] = useState("");
-  const { user } = useSelector((state) => state.auth);
+  // Optimization: Select specific property instead of destructuring to prevent unnecessary re-renders
+  const user = useSelector((state) => state.auth.user);
   const frozenWords = useSetState(initialFrozenWords);
   const frozenPhrases = useSetState(initialFrozenPhrase);
   const [recommendedFreezeWords, setRecommendedFreezeWords] = useState([]);
@@ -199,19 +206,19 @@ const ParaphraseContend = () => {
     action: null, // Will store the function to execute on confirm
   }); // this is for freezing word confirmation
 
-  const {
-    activeHistory,
-    isUpdatedHistory,
-    isUpdatedFileHistory,
-    fileHistories,
-  } = useSelector((state) => state.paraphraseHistory);
+  // Optimization: Select specific properties instead of destructuring to prevent unnecessary re-renders
+  const activeHistory = useSelector((state) => state.paraphraseHistory.activeHistory);
+  const isUpdatedHistory = useSelector((state) => state.paraphraseHistory.isUpdatedHistory);
+  const isUpdatedFileHistory = useSelector((state) => state.paraphraseHistory.isUpdatedFileHistory);
+  const fileHistories = useSelector((state) => state.paraphraseHistory.fileHistories);
 
   const paidUser =
     user?.package === "pro_plan" ||
     user?.package === "value_plan" ||
     user?.package === "unlimited";
 
-  const { paraphraseOptions } = useSelector((state) => state.settings);
+  // Optimization: Select specific property instead of destructuring to prevent unnecessary re-renders
+  const paraphraseOptions = useSelector((state) => state.settings.paraphraseOptions);
 
   const {
     autoFrozenTerms,
