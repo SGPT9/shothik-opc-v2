@@ -19,19 +19,22 @@ import {
   Check,
 } from "lucide-react";
 import { useModalA11y } from "@/hooks/ui/useModalA11y";
+import SendToWritingStudioButton from "@/components/tools/common/SendToWritingStudioButton";
 
 export interface DeepResearchStudioModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onInsertContent?: (markdown: string) => void;
 }
 
 export const DeepResearchStudioModal: React.FC<DeepResearchStudioModalProps> = ({
   isOpen,
   onClose,
+  onInsertContent,
 }) => {
   useModalA11y({ isOpen, onClose });
 
-  const [activeTab, setActiveTab] = useState<"slr" | "paper" | "sandbox" | "mcp">("slr");
+  const [activeTab, setActiveTab] = useState<"slr" | "paper" | "sandbox" | "mcp" | "wigolo">("wigolo");
 
   // SLR Tab State
   const [slrTopic, setSlrTopic] = useState("Low-latency speculative routing and Banglish conversational agents");
@@ -59,6 +62,36 @@ export const DeepResearchStudioModal: React.FC<DeepResearchStudioModalProps> = (
   const [aitRate, setAitRate] = useState(3);
   const [calcLoading, setCalcLoading] = useState(false);
   const [calcResult, setCalcResult] = useState<any | null>(null);
+
+  // Wigolo Live Web Intelligence State
+  const [wigoloQuery, setWigoloQuery] = useState("AI safety and autonomous agentic standards 2026");
+  const [wigoloSources, setWigoloSources] = useState(5);
+  const [wigoloLoading, setWigoloLoading] = useState(false);
+  const [wigoloResult, setWigoloResult] = useState<any | null>(null);
+  const [copiedWigolo, setCopiedWigolo] = useState(false);
+
+  const handleRunWigoloResearch = async () => {
+    if (!wigoloQuery.trim() || wigoloLoading) return;
+    setWigoloLoading(true);
+    try {
+      const res = await fetch("/api/v1/studio/deep-research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          query: wigoloQuery,
+          maxSources: wigoloSources,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setWigoloResult(data);
+      }
+    } catch {
+      // Fallback
+    } finally {
+      setWigoloLoading(false);
+    }
+  };
 
   // Keyboard shortcut ⌘R / Ctrl+R
   useEffect(() => {
@@ -275,6 +308,17 @@ export const DeepResearchStudioModal: React.FC<DeepResearchStudioModalProps> = (
         {/* Navigation Tabs */}
         <div className="flex border-b border-white/10 px-6 bg-zinc-900/30 gap-2 overflow-x-auto">
           <button
+            onClick={() => setActiveTab("wigolo")}
+            className={`flex items-center gap-2 py-3 px-4 text-xs font-medium border-b-2 transition min-h-[36px] ${
+              activeTab === "wigolo"
+                ? "border-emerald-500 text-emerald-400 font-bold"
+                : "border-transparent text-zinc-400 hover:text-zinc-200"
+            }`}
+          >
+            <Sparkles className="w-4 h-4 text-emerald-400" />
+            Wigolo Web Intelligence & Canvas
+          </button>
+          <button
             onClick={() => setActiveTab("slr")}
             className={`flex items-center gap-2 py-3 px-4 text-xs font-medium border-b-2 transition min-h-[36px] ${
               activeTab === "slr"
@@ -322,6 +366,108 @@ export const DeepResearchStudioModal: React.FC<DeepResearchStudioModalProps> = (
 
         {/* Content Body */}
         <div className="p-6 overflow-y-auto flex-1 space-y-6">
+          {/* TAB 0: WIGOLO LIVE WEB RESEARCH & CANVAS CITATIONS */}
+          {activeTab === "wigolo" && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-zinc-300 mb-1">
+                    Deep Research Query (Multi-Engine Rank Fusion)
+                  </label>
+                  <input
+                    type="text"
+                    value={wigoloQuery}
+                    onChange={(e) => setWigoloQuery(e.target.value)}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500"
+                    placeholder="Enter topic or question for deep research..."
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-zinc-300 mb-1">
+                    Target Primary Sources
+                  </label>
+                  <select
+                    value={wigoloSources}
+                    onChange={(e) => setWigoloSources(Number(e.target.value))}
+                    className="w-full bg-zinc-900 border border-white/10 rounded-lg px-3 py-2 text-sm text-zinc-100 focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value={3}>3 In-depth Sources</option>
+                    <option value={5}>5 Broad Sources (Default)</option>
+                    <option value={10}>10 Exhaustive Academic Sources</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="text-xs text-zinc-400 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Keyless Local SearXNG + Redis Cache + LangGraph Synthesis
+                </div>
+                <button
+                  onClick={handleRunWigoloResearch}
+                  disabled={wigoloLoading || !wigoloQuery.trim()}
+                  className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-2 transition disabled:opacity-50"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  {wigoloLoading ? "Synthesizing Findings..." : "⚡ Execute Deep Research"}
+                </button>
+              </div>
+
+              {wigoloResult && (
+                <div className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="text-sm font-bold text-emerald-400">
+                        {wigoloResult.query}
+                      </h4>
+                      <p className="text-xs text-zinc-400 mt-0.5">
+                        {wigoloResult.totalSourcesAnalyzed} sources analyzed ({wigoloResult.latencyMs}ms)
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(wigoloResult.markdownSynthesis);
+                          setCopiedWigolo(true);
+                          setTimeout(() => setCopiedWigolo(false), 2000);
+                        }}
+                        className="px-3 py-1.5 rounded-lg border border-white/10 hover:bg-white/5 text-xs flex items-center gap-1.5 transition text-zinc-300"
+                      >
+                        {copiedWigolo ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                        {copiedWigolo ? "Copied" : "Copy Markdown"}
+                      </button>
+                      {onInsertContent ? (
+                        <button
+                          onClick={() => {
+                            onInsertContent(wigoloResult.markdownSynthesis);
+                            onClose();
+                          }}
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-3 rounded-lg font-semibold flex items-center gap-1.5 transition"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          Insert to Active Canvas
+                        </button>
+                      ) : (
+                        <SendToWritingStudioButton
+                          text={wigoloResult.markdownSynthesis}
+                          title={wigoloResult.query}
+                          source="deep-research"
+                          label="Insert to Studio Canvas"
+                          variant="default"
+                          className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 px-3"
+                        />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="p-3 bg-zinc-900/90 rounded-lg border border-white/5 text-xs text-zinc-300 whitespace-pre-wrap font-mono max-h-72 overflow-y-auto">
+                    {wigoloResult.markdownSynthesis}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TAB 1: SYSTEMATIC LITERATURE REVIEW */}
           {activeTab === "slr" && (
             <div className="space-y-6">

@@ -327,4 +327,53 @@ describe("Multilingual NLP Writing Tools Suite (/api/v1/nlp/*)", () => {
     expect(statsJson.success).toBe(true);
     expect(statsJson.data.totalWordsHumanized).toBeGreaterThanOrEqual(0);
   });
+
+  it("POST /api/v1/nlp/evasion-loop executes autonomous multi-pass evasion", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/nlp/evasion-loop`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        text: "Furthermore, it is important to delve deeply into neural architectures. In conclusion, models evolve rapidly.",
+        maxPasses: 3,
+        targetHumanScore: 90,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.finalHumanScore).toBeGreaterThanOrEqual(json.initialHumanScore);
+    expect(Array.isArray(json.passes)).toBe(true);
+    expect(json.passes.length).toBeGreaterThanOrEqual(1);
+    expect(json.humanizedText).toBeDefined();
+  });
+
+  it("POST /api/v1/studio/deep-research conducts live rank-fusion research and returns markdown synthesis", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/studio/deep-research`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        query: "Bangladesh AI and smart logistics 2026",
+        maxSources: 3,
+      }),
+    });
+
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.query).toBe("Bangladesh AI and smart logistics 2026");
+    expect(json.markdownSynthesis).toContain("### 📚 Deep Research Dossier");
+    expect(json.markdownSynthesis).toContain("[^1]");
+    expect(Array.isArray(json.citations)).toBe(true);
+    expect(json.citations.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("GET /api/v1/telemetry/traces returns recent Langfuse trace stream", async () => {
+    const res = await fetch(`${baseUrl}/api/v1/telemetry/traces?limit=10`);
+    expect(res.status).toBe(200);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(Array.isArray(json.traces)).toBe(true);
+    expect(json.count).toBeGreaterThanOrEqual(1);
+  });
 });

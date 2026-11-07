@@ -7,7 +7,11 @@ import { db, canvasArtifactsTable, savedReportsTable } from "@workspace/db";
 import { eq, desc } from "drizzle-orm";
 import { resolveUserId } from "../middleware/auth";
 import { humanizeTextDeterministic } from "../lib/humanizer-engine";
+import { runAutonomousEvasionLoop } from "../lib/evasion-autoloop";
+import { DeepResearchService } from "../lib/deep-research-service";
+import { langfuseTracer } from "../lib/observability/langfuse-tracer";
 import { WigoloWebIntelligenceService } from "../lib/wigolo-service";
+import { queueManager } from "../lib/queue/bullmq-queue";
 
 const router = Router();
 
@@ -83,6 +87,14 @@ router.post(["/v1/nlp/humanize", "/v1/tools/humanize", "/tools/humanize", "/huma
       }
     }
 
+    langfuseTracer.traceGeneration({
+      name: "humanize-deterministic",
+      model: "humanizer-v5",
+      input: { text: text.slice(0, 100), mode, language, intensity },
+      output: { humanScore: result.humanScore, aiScore: result.aiScore },
+      usage: { totalTokens: result.words.length },
+    });
+
     res.status(200).json({
       success: true,
       originalText: text,
@@ -110,6 +122,80 @@ router.post(["/v1/nlp/humanize", "/v1/tools/humanize", "/tools/humanize", "/huma
     });
   } catch (err: any) {
     logger.error({ error: err.message }, "[humanizer] Failed to humanize text");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// --- 1.0b Autonomous Evasion Loop (Detect -> Perturb -> Verify) ---
+router.post(["/v1/nlp/evasion-loop", "/api/v1/nlp/evasion-loop", "/nlp/evasion-loop", "/api/evasion-loop"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const {
+      text = "",
+      mode = "standard",
+      language = "auto",
+      intensity = 80,
+      zeroExpansion = false,
+      protectedTerms = [],
+      enableVoiceTransform = true,
+      enableSentenceFusion = !zeroExpansion,
+      enableDiscourseRotate = true,
+      enableClauseReorder = true,
+      enableNominalization = true,
+      enableNgramAudit = true,
+      maxPasses = 3,
+      targetHumanScore = 95,
+    } = req.body || {};
+
+    if (!text || typeof text !== "string") {
+      res.status(400).json({ success: false, error: "Text is required for evasion loop" });
+      return;
+    }
+
+    const result = runAutonomousEvasionLoop({
+      text,
+      mode,
+      language,
+      intensity,
+      zeroExpansion,
+      protectedTerms,
+      enableVoiceTransform,
+      enableSentenceFusion,
+      enableDiscourseRotate,
+      enableClauseReorder,
+      enableNominalization,
+      enableNgramAudit,
+      maxPasses,
+      targetHumanScore,
+    });
+
+    langfuseTracer.traceGeneration({
+      name: "autonomous-evasion-loop",
+      model: "evasion-loop-v1",
+      input: { text: text.slice(0, 100), maxPasses, targetHumanScore },
+      output: {
+        finalHumanScore: result.finalHumanScore,
+        finalAiScore: result.finalAiScore,
+        passesExecuted: result.totalPassesExecuted,
+      },
+      usage: { totalTokens: result.humanizedText.split(/\s+/).length },
+    });
+
+    res.status(200).json({
+      ...result,
+      data: {
+        humanizedContent: result.humanizedText,
+        originalLength: text.length,
+        humanizedLength: result.humanizedText.length,
+        humanScore: result.finalHumanScore,
+        aiScore: result.finalAiScore,
+        markedHtml: result.markedHtml,
+        passes: result.passes,
+        targetReached: result.targetReached,
+        totalPassesExecuted: result.totalPassesExecuted,
+      },
+    });
+  } catch (err: any) {
+    logger.error({ error: err.message }, "[evasion-loop] Failed to execute evasion loop");
     res.status(500).json({ success: false, error: err.message });
   }
 });
@@ -681,6 +767,14 @@ router.post(["/v1/search/wigolo", "/api/v1/search/wigolo", "/search/wigolo", "/a
       timeRange,
       language,
     });
+
+    langfuseTracer.traceSpan({
+      name: "wigolo-search",
+      input: { query, maxResults, language },
+      output: { totalFound: results.totalFound, cached: results.cached },
+      durationMs: 50,
+    });
+
     res.status(200).json({ success: true, ...results });
   } catch (err: any) {
     logger.error({ err }, "[wigolo] Web search error");
@@ -697,9 +791,160 @@ router.get(["/v1/search/wigolo", "/api/v1/search/wigolo", "/search/wigolo", "/ap
     }
     const maxResults = Number(req.query.maxResults || req.query.limit || 10);
     const results = await WigoloWebIntelligenceService.searchWeb({ query, maxResults });
+
+    langfuseTracer.traceSpan({
+      name: "wigolo-search",
+      input: { query, maxResults },
+      output: { totalFound: results.totalFound, cached: results.cached },
+      durationMs: 50,
+    });
+
     res.status(200).json({ success: true, ...results });
   } catch (err: any) {
     logger.error({ err }, "[wigolo] Web search error");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// --- 7.1 Deep Research Canvas Synthesis ---
+router.post(["/v1/studio/deep-research", "/api/v1/studio/deep-research", "/studio/deep-research", "/api/deep-research"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { query = "", documentContext = "", maxSources = 5, language = "auto" } = req.body || {};
+    if (!query || typeof query !== "string") {
+      res.status(400).json({ success: false, error: "query is required for deep research" });
+      return;
+    }
+
+    const researchResult = await DeepResearchService.synthesizeResearch({
+      query,
+      documentContext,
+      maxSources: Number(maxSources),
+      language,
+    });
+
+    langfuseTracer.traceSpan({
+      name: "deep-research-canvas",
+      input: { query, maxSources, language },
+      output: {
+        sourcesAnalyzed: researchResult.totalSourcesAnalyzed,
+        citationsCount: researchResult.citations.length,
+      },
+      durationMs: researchResult.latencyMs,
+    });
+
+    res.status(200).json({
+      ...researchResult,
+      data: {
+        query: researchResult.query,
+        markdown: researchResult.markdownSynthesis,
+        citations: researchResult.citations,
+        keyInsights: researchResult.keyInsights,
+        executiveSummary: researchResult.executiveSummary,
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err }, "[deep-research] Canvas research synthesis error");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// --- 8. BullMQ Asynchronous Task Queue & SSE Progress Engine ---
+router.post(["/v1/jobs/submit", "/api/v1/jobs/submit", "/jobs/submit", "/api/jobs/submit"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { jobType, payload = {} } = req.body || {};
+    if (!jobType) {
+      res.status(400).json({ success: false, error: "jobType is required" });
+      return;
+    }
+
+    const userId = resolveUserId(req);
+    const { jobId } = await queueManager.addJob(jobType, payload, userId);
+
+    res.status(202).json({
+      success: true,
+      jobId,
+      jobType,
+      status: "queued",
+      progressUrl: `/api/v1/jobs/${jobId}/progress`,
+      statusUrl: `/api/v1/jobs/${jobId}/status`,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "[jobs] Job submit error");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get(["/v1/jobs/:jobId/status", "/api/v1/jobs/:jobId/status", "/jobs/:jobId/status", "/api/jobs/:jobId/status"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const jobId = String(req.params.jobId);
+    const status = await queueManager.getJobStatus(jobId);
+
+    if (!status) {
+      res.status(404).json({ success: false, error: "Job not found" });
+      return;
+    }
+
+    res.status(200).json({ success: true, ...status });
+  } catch (err: any) {
+    logger.error({ err }, "[jobs] Job status query error");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.get(["/v1/jobs/:jobId/progress", "/api/v1/jobs/:jobId/progress", "/jobs/:jobId/progress", "/api/jobs/:jobId/progress"], async (req: Request, res: Response): Promise<void> => {
+  const jobId = String(req.params.jobId);
+
+  res.setHeader("Content-Type", "text/event-stream");
+  res.setHeader("Cache-Control", "no-cache");
+  res.setHeader("Connection", "keep-alive");
+  res.flushHeaders?.();
+
+  let isAborted = false;
+  req.on("close", () => {
+    isAborted = true;
+  });
+
+  const pollInterval = setInterval(async () => {
+    if (isAborted) {
+      clearInterval(pollInterval);
+      return;
+    }
+
+    try {
+      const status = await queueManager.getJobStatus(jobId);
+      if (!status) {
+        res.write(`data: ${JSON.stringify({ error: "Job not found" })}\n\n`);
+        clearInterval(pollInterval);
+        res.end();
+        return;
+      }
+
+      res.write(`data: ${JSON.stringify(status)}\n\n`);
+
+      if (status.state === "completed" || status.state === "failed") {
+        clearInterval(pollInterval);
+        res.end();
+      }
+    } catch (err: any) {
+      res.write(`data: ${JSON.stringify({ error: err.message })}\n\n`);
+      clearInterval(pollInterval);
+      res.end();
+    }
+  }, 300);
+});
+
+// --- 9. Observability & Langfuse Trace Telemetry ---
+router.get(["/v1/telemetry/traces", "/api/v1/telemetry/traces", "/telemetry/traces"], async (req: Request, res: Response): Promise<void> => {
+  try {
+    const limit = Number(req.query.limit || 50);
+    const traces = langfuseTracer.getRecentTraces(limit);
+    res.status(200).json({
+      success: true,
+      count: traces.length,
+      traces,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "[telemetry] Trace query error");
     res.status(500).json({ success: false, error: err.message });
   }
 });

@@ -89,6 +89,7 @@ const ReadingScalerModal = lazy(() => import("./components/ReadingScalerModal").
 const RoyaltySplitModal = lazy(() => import("./components/RoyaltySplitModal").then((mod) => ({ default: mod.RoyaltySplitModal })));
 const LegalShieldModal = lazy(() => import("./components/LegalShieldModal").then((mod) => ({ default: mod.LegalShieldModal })));
 const InkOsCommandDockModal = lazy(() => import("./components/InkOsCommandDockModal").then((mod) => ({ default: mod.InkOsCommandDockModal })));
+const DeepResearchStudioModal = lazy(() => import("@/components/twin/DeepResearchStudioModal").then((mod) => ({ default: mod.DeepResearchStudioModal })));
 import { INKOS_TOOLS, type InkOsToolId } from "./config/inkos-tool-catalog";
 import UpgradeModal from "@/components/subscription/UpgradeModal";
 import { useSubscription } from "@/hooks/subscription/useSubscription";
@@ -118,6 +119,7 @@ export function PolishedWriteView({
   const [showPreview, setShowPreview] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isCommandDockOpen, setIsCommandDockOpen] = useState(false);
+  const [isDeepResearchModalOpen, setIsDeepResearchModalOpen] = useState(false);
   const [externalChatPrompt, setExternalChatPrompt] = useState<string | null>(null);
   const [preview3D, setPreview3D] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -448,6 +450,18 @@ export function PolishedWriteView({
               <kbd className="hidden md:inline text-[10px] font-mono opacity-75 px-1 bg-brand/15 rounded">
                 ⌃⇧P
               </kbd>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-open-deep-research"
+              onClick={() => setIsDeepResearchModalOpen(true)}
+              className="h-7 px-2.5 text-xs font-bold gap-1.5 border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 shrink-0 cursor-pointer"
+              title="Open Deep Research Assistant & Citations"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+              <span>🔬 Deep Research</span>
             </Button>
           </div>
 

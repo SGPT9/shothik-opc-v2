@@ -112,6 +112,25 @@ services:
     networks:
       - shothik-mesh
 
+
+  # 7. Local Langfuse Observability & LLM Trace Container
+  langfuse:
+    image: langfuse/langfuse:2
+    container_name: shothik-langfuse-prod
+    restart: always
+    ports:
+      - "12000:3000"
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@host.docker.internal:54322/postgres
+      - NEXTAUTH_URL=http://localhost:12000
+      - NEXTAUTH_SECRET=shothik-langfuse-super-secret-key-32chars
+      - SALT=shothik-langfuse-salt
+      - TELEMETRY_ENABLED=false
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - shothik-mesh
+
 networks:
   shothik-mesh:
     driver: bridge
