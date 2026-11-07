@@ -135,14 +135,14 @@ isOneToOne: false
                   ]
                 },"book_chapters": {
                   Row: {
-                    "accepted_at": string,"book_id": string,"chapter_index": number,"content": string,"id": string,"title": string
+                    "accepted_at": string,"book_id": string,"chapter_index": number,"content": string,"id": string,"status": string | null,"title": string,"word_count": number | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "accepted_at"?: string,"book_id": string,"chapter_index": number,"content"?: string,"id"?: string,"title": string
+                    "accepted_at"?: string,"book_id": string,"chapter_index": number,"content"?: string,"id"?: string,"status"?: string | null,"title": string,"word_count"?: number | null
                   }
                   Update: {
-                    "accepted_at"?: string,"book_id"?: string,"chapter_index"?: number,"content"?: string,"id"?: string,"title"?: string
+                    "accepted_at"?: string,"book_id"?: string,"chapter_index"?: number,"content"?: string,"id"?: string,"status"?: string | null,"title"?: string,"word_count"?: number | null
                   }
                   Relationships: [
                     {
@@ -223,14 +223,14 @@ isOneToOne: false
                   ]
                 },"chat_messages": {
                   Row: {
-                    "author_id": string,"channel_id": string | null,"content": string,"created_at": string | null,"id": string,"metadata": Json | null,"role": string | null,"thread_id": string | null
+                    "author_id": string,"channel_id": string | null,"content": string,"conversation_id": string | null,"created_at": string | null,"id": string,"metadata": Json | null,"model": string | null,"role": string | null,"thread_id": string | null,"user_id": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "author_id": string,"channel_id"?: string | null,"content": string,"created_at"?: string | null,"id"?: string,"metadata"?: Json | null,"role"?: string | null,"thread_id"?: string | null
+                    "author_id": string,"channel_id"?: string | null,"content": string,"conversation_id"?: string | null,"created_at"?: string | null,"id"?: string,"metadata"?: Json | null,"model"?: string | null,"role"?: string | null,"thread_id"?: string | null,"user_id"?: string | null
                   }
                   Update: {
-                    "author_id"?: string,"channel_id"?: string | null,"content"?: string,"created_at"?: string | null,"id"?: string,"metadata"?: Json | null,"role"?: string | null,"thread_id"?: string | null
+                    "author_id"?: string,"channel_id"?: string | null,"content"?: string,"conversation_id"?: string | null,"created_at"?: string | null,"id"?: string,"metadata"?: Json | null,"model"?: string | null,"role"?: string | null,"thread_id"?: string | null,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -429,6 +429,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"marketplace_agents": {
+                  Row: {
+                    "author_id": string,"author_name": string,"category": string,"created_at": string,"description": string,"icon_name": string,"id": string,"installs_count": number,"is_published": boolean,"manifest": NonNullable<Json>,"name": string,"price_bdt": number,"price_credits": number,"rating": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "author_id"?: string,"author_name": string,"category": string,"created_at"?: string,"description": string,"icon_name"?: string,"id": string,"installs_count"?: number,"is_published"?: boolean,"manifest"?: NonNullable<Json>,"name": string,"price_bdt"?: number,"price_credits"?: number,"rating"?: number,"updated_at"?: string
+                  }
+                  Update: {
+                    "author_id"?: string,"author_name"?: string,"category"?: string,"created_at"?: string,"description"?: string,"icon_name"?: string,"id"?: string,"installs_count"?: number,"is_published"?: boolean,"manifest"?: NonNullable<Json>,"name"?: string,"price_bdt"?: number,"price_credits"?: number,"rating"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"mfs_transactions": {
                   Row: {
                     "amount_bdt": number,"created_at": string,"id": number,"metadata": NonNullable<Json>,"provider": string,"reconciled_at": string,"status": string,"tier": string | null,"trx_id": string,"user_id": string
@@ -533,6 +547,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"outcome_passes": {
+                  Row: {
+                    "category": string,"created_at": string,"credits_equivalent": number,"id": string,"is_active": boolean,"is_core": boolean,"name": string,"outcome": string,"price_bdt": number,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category"?: string,"created_at"?: string,"credits_equivalent": number,"id": string,"is_active"?: boolean,"is_core"?: boolean,"name": string,"outcome": string,"price_bdt": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "category"?: string,"created_at"?: string,"credits_equivalent"?: number,"id"?: string,"is_active"?: boolean,"is_core"?: boolean,"name"?: string,"outcome"?: string,"price_bdt"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"parcels": {
                   Row: {
                     "address": string,"city": string,"cod_amount_bdt": number,"consignment_id": string,"created_at": string,"delivery_fee_bdt": number,"id": number,"metadata": NonNullable<Json>,"provider": string,"recipient_name": string,"recipient_phone": string,"status": string,"status_bangla": string,"timeline": NonNullable<Json>,"tracking_code": string,"updated_at": string,"user_id": string,"whatsapp_notification_sent": boolean
@@ -581,6 +609,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pricing_plans": {
+                  Row: {
+                    "billing_interval": string,"created_at": string,"features": NonNullable<Json>,"id": string,"is_active": boolean,"is_popular": boolean,"monthly_credits": number,"name": string,"name_bn": string | null,"price_bdt": number,"price_usd": number,"slug": string,"sort_order": number,"tagline": string | null,"tool_limits": NonNullable<Json>,"updated_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "billing_interval"?: string,"created_at"?: string,"features"?: NonNullable<Json>,"id": string,"is_active"?: boolean,"is_popular"?: boolean,"monthly_credits"?: number,"name": string,"name_bn"?: string | null,"price_bdt"?: number,"price_usd"?: number,"slug": string,"sort_order"?: number,"tagline"?: string | null,"tool_limits"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Update: {
+                    "billing_interval"?: string,"created_at"?: string,"features"?: NonNullable<Json>,"id"?: string,"is_active"?: boolean,"is_popular"?: boolean,"monthly_credits"?: number,"name"?: string,"name_bn"?: string | null,"price_bdt"?: number,"price_usd"?: number,"slug"?: string,"sort_order"?: number,"tagline"?: string | null,"tool_limits"?: NonNullable<Json>,"updated_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"projects": {
                   Row: {
                     "access_mode": string,"branch_name": string,"content": string,"created_at": string,"description": string,"id": string,"lineage_root_id": string | null,"parent_project_id": string | null,"passcode_hash": string | null,"progress": number,"sections": NonNullable<Json>,"settings": NonNullable<Json>,"share_token": string | null,"starred": boolean,"template": string | null,"title": string,"type": string,"updated_at": string,"user_id": string,"word_count": number
@@ -623,14 +665,14 @@ isOneToOne: false
                   ]
                 },"publishing_books": {
                   Row: {
-                    "category": string | null,"cover_dimensions": Json | null,"cover_storage_id": string | null,"created_at": string,"currency": string,"current_run_id": string | null,"description": string | null,"google_play_url": string | null,"id": string,"isbn": string | null,"keywords": NonNullable<Json>,"language": string,"list_price": string | null,"manuscript_format": string | null,"manuscript_name": string | null,"manuscript_size": number | null,"manuscript_storage_id": string | null,"project_id": string | null,"rejection_category": string | null,"rejection_reason": string | null,"review_notes": string | null,"reviewer_name": string | null,"status": string,"subcategory": string | null,"subtitle": string | null,"target_word_count": number,"title": string,"updated_at": string,"user_id": string
+                    "author_name": string | null,"category": string | null,"chapters": Json | null,"cover_dimensions": Json | null,"cover_preset": string | null,"cover_storage_id": string | null,"cover_url": string | null,"created_at": string,"credit_price": number | null,"currency": string,"current_run_id": string | null,"description": string | null,"genre": string | null,"google_play_url": string | null,"id": string,"isbn": string | null,"keywords": NonNullable<Json>,"language": string,"list_price": string | null,"manuscript_format": string | null,"manuscript_name": string | null,"manuscript_size": number | null,"manuscript_storage_id": string | null,"page_count": number | null,"project_id": string | null,"published_at": string | null,"rating": number | null,"rating_count": number | null,"rejection_category": string | null,"rejection_reason": string | null,"review_notes": string | null,"reviewer_name": string | null,"status": string,"subcategory": string | null,"subtitle": string | null,"synopsis": string | null,"target_word_count": number,"title": string,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "category"?: string | null,"cover_dimensions"?: Json | null,"cover_storage_id"?: string | null,"created_at"?: string,"currency"?: string,"current_run_id"?: string | null,"description"?: string | null,"google_play_url"?: string | null,"id"?: string,"isbn"?: string | null,"keywords"?: NonNullable<Json>,"language"?: string,"list_price"?: string | null,"manuscript_format"?: string | null,"manuscript_name"?: string | null,"manuscript_size"?: number | null,"manuscript_storage_id"?: string | null,"project_id"?: string | null,"rejection_category"?: string | null,"rejection_reason"?: string | null,"review_notes"?: string | null,"reviewer_name"?: string | null,"status"?: string,"subcategory"?: string | null,"subtitle"?: string | null,"target_word_count"?: number,"title"?: string,"updated_at"?: string,"user_id"?: string
+                    "author_name"?: string | null,"category"?: string | null,"chapters"?: Json | null,"cover_dimensions"?: Json | null,"cover_preset"?: string | null,"cover_storage_id"?: string | null,"cover_url"?: string | null,"created_at"?: string,"credit_price"?: number | null,"currency"?: string,"current_run_id"?: string | null,"description"?: string | null,"genre"?: string | null,"google_play_url"?: string | null,"id"?: string,"isbn"?: string | null,"keywords"?: NonNullable<Json>,"language"?: string,"list_price"?: string | null,"manuscript_format"?: string | null,"manuscript_name"?: string | null,"manuscript_size"?: number | null,"manuscript_storage_id"?: string | null,"page_count"?: number | null,"project_id"?: string | null,"published_at"?: string | null,"rating"?: number | null,"rating_count"?: number | null,"rejection_category"?: string | null,"rejection_reason"?: string | null,"review_notes"?: string | null,"reviewer_name"?: string | null,"status"?: string,"subcategory"?: string | null,"subtitle"?: string | null,"synopsis"?: string | null,"target_word_count"?: number,"title"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Update: {
-                    "category"?: string | null,"cover_dimensions"?: Json | null,"cover_storage_id"?: string | null,"created_at"?: string,"currency"?: string,"current_run_id"?: string | null,"description"?: string | null,"google_play_url"?: string | null,"id"?: string,"isbn"?: string | null,"keywords"?: NonNullable<Json>,"language"?: string,"list_price"?: string | null,"manuscript_format"?: string | null,"manuscript_name"?: string | null,"manuscript_size"?: number | null,"manuscript_storage_id"?: string | null,"project_id"?: string | null,"rejection_category"?: string | null,"rejection_reason"?: string | null,"review_notes"?: string | null,"reviewer_name"?: string | null,"status"?: string,"subcategory"?: string | null,"subtitle"?: string | null,"target_word_count"?: number,"title"?: string,"updated_at"?: string,"user_id"?: string
+                    "author_name"?: string | null,"category"?: string | null,"chapters"?: Json | null,"cover_dimensions"?: Json | null,"cover_preset"?: string | null,"cover_storage_id"?: string | null,"cover_url"?: string | null,"created_at"?: string,"credit_price"?: number | null,"currency"?: string,"current_run_id"?: string | null,"description"?: string | null,"genre"?: string | null,"google_play_url"?: string | null,"id"?: string,"isbn"?: string | null,"keywords"?: NonNullable<Json>,"language"?: string,"list_price"?: string | null,"manuscript_format"?: string | null,"manuscript_name"?: string | null,"manuscript_size"?: number | null,"manuscript_storage_id"?: string | null,"page_count"?: number | null,"project_id"?: string | null,"published_at"?: string | null,"rating"?: number | null,"rating_count"?: number | null,"rejection_category"?: string | null,"rejection_reason"?: string | null,"review_notes"?: string | null,"reviewer_name"?: string | null,"status"?: string,"subcategory"?: string | null,"subtitle"?: string | null,"synopsis"?: string | null,"target_word_count"?: number,"title"?: string,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     
@@ -923,14 +965,14 @@ isOneToOne: false
                   ]
                 },"user_connectors": {
                   Row: {
-                    "connected": boolean,"connector_id": string,"created_at": string,"encrypted_credentials": string | null,"endpoint_url": string | null,"id": string,"last_verified_at": string | null,"masked_key": string | null,"metadata": NonNullable<Json>,"updated_at": string,"user_id": string
+                    "connected": boolean,"connector_id": string,"created_at": string,"encrypted_credentials": string | null,"endpoint_url": string | null,"id": string,"items_indexed": number,"last_synced_at": string | null,"last_verified_at": string | null,"masked_key": string | null,"metadata": NonNullable<Json>,"status": string,"sync_summary": string | null,"updated_at": string,"user_id": string
                   }
                   ComputedFields: never
                   Insert: {
-                    "connected"?: boolean,"connector_id": string,"created_at"?: string,"encrypted_credentials"?: string | null,"endpoint_url"?: string | null,"id"?: string,"last_verified_at"?: string | null,"masked_key"?: string | null,"metadata"?: NonNullable<Json>,"updated_at"?: string,"user_id": string
+                    "connected"?: boolean,"connector_id": string,"created_at"?: string,"encrypted_credentials"?: string | null,"endpoint_url"?: string | null,"id"?: string,"items_indexed"?: number,"last_synced_at"?: string | null,"last_verified_at"?: string | null,"masked_key"?: string | null,"metadata"?: NonNullable<Json>,"status"?: string,"sync_summary"?: string | null,"updated_at"?: string,"user_id": string
                   }
                   Update: {
-                    "connected"?: boolean,"connector_id"?: string,"created_at"?: string,"encrypted_credentials"?: string | null,"endpoint_url"?: string | null,"id"?: string,"last_verified_at"?: string | null,"masked_key"?: string | null,"metadata"?: NonNullable<Json>,"updated_at"?: string,"user_id"?: string
+                    "connected"?: boolean,"connector_id"?: string,"created_at"?: string,"encrypted_credentials"?: string | null,"endpoint_url"?: string | null,"id"?: string,"items_indexed"?: number,"last_synced_at"?: string | null,"last_verified_at"?: string | null,"masked_key"?: string | null,"metadata"?: NonNullable<Json>,"status"?: string,"sync_summary"?: string | null,"updated_at"?: string,"user_id"?: string
                   }
                   Relationships: [
                     

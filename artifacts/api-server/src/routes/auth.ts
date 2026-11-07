@@ -3,7 +3,8 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "../lib/logger";
-import { db, userCreditsTable, userProfilesTable, userSubscriptionsTable } from "@workspace/db";
+import { db, userCreditsTable, userProfilesTable, userSubscriptionsTable, userPreferencesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -905,6 +906,63 @@ router.get(["/auth/token-generate", "/v1/auth/token-generate"], (req: Request, r
 
 router.post(["/auth/logout", "/v1/auth/logout"], (_req: Request, res: Response) => {
   return res.status(200).json({ success: true, message: "Logged out successfully." });
+});
+
+router.get(["/user/preferences", "/v1/user/preferences", "/account/preferences", "/v1/account/preferences"], async (req: Request, res: Response) => {
+  const token = extractToken(req);
+  const verified = token ? verifyToken(token) : null;
+  const userId = verified?.userId || String(req.headers["x-user-id"] || "usr_default");
+  try {
+    const [prefs] = await db
+      .select()
+      .from(userPreferencesTable)
+      .where(eq(userPreferencesTable.userId, userId))
+      .catch(() => []);
+    return res.status(200).json({
+      success: true,
+      data: prefs || {
+        userId,
+        locale: "bn-BD",
+        theme: "dark",
+        studioMode: "publishing_and_venture",
+        notifications: { email: true, whatsapp: true, nightshiftDigest: true },
+        taxProfile: {},
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+router.put(["/user/preferences", "/v1/user/preferences", "/account/preferences", "/v1/account/preferences"], async (req: Request, res: Response) => {
+  const token = extractToken(req);
+  const verified = token ? verifyToken(token) : null;
+  const userId = verified?.userId || String(req.headers["x-user-id"] || "usr_default");
+  const { locale = "bn-BD", theme = "dark", studioMode = "publishing_and_venture", notifications = {}, taxProfile = {} } = req.body || {};
+  try {
+    await db
+      .insert(userPreferencesTable)
+      .values({
+        userId,
+        locale,
+        theme,
+        studioMode,
+        notifications,
+        taxProfile,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: userPreferencesTable.userId,
+        set: { locale, theme, studioMode, notifications, taxProfile, updatedAt: new Date() },
+      })
+      .catch(() => {});
+    return res.status(200).json({
+      success: true,
+      data: { userId, locale, theme, studioMode, notifications, taxProfile },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 export default router;

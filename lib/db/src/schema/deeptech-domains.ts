@@ -291,16 +291,21 @@ export const publishingBooksTable = pgTable("publishing_books", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().default("guest"),
   projectId: text("project_id"),
+  authorName: text("author_name").default("Shothik Community Author"),
   title: text("title").notNull().default("Untitled Book"),
   subtitle: text("subtitle"),
   description: text("description"),
+  synopsis: text("synopsis"),
   language: text("language").notNull().default("bn"),
   category: text("category"),
   subcategory: text("subcategory"),
+  genre: text("genre").default("General"),
   keywords: jsonb("keywords").$type<string[]>().notNull().default([]),
   listPrice: text("list_price").default("250"),
+  creditPrice: integer("credit_price").default(0),
   currency: text("currency").notNull().default("BDT"),
   status: text("status").notNull().default("draft"),
+  pageCount: integer("page_count").default(120),
   targetWordCount: integer("target_word_count").notNull().default(50000),
   currentRunId: text("current_run_id"),
   manuscriptStorageId: text("manuscript_storage_id"),
@@ -308,6 +313,8 @@ export const publishingBooksTable = pgTable("publishing_books", {
   manuscriptSize: integer("manuscript_size"),
   manuscriptFormat: text("manuscript_format"),
   coverStorageId: text("cover_storage_id"),
+  coverPreset: text("cover_preset").default("ekushey"),
+  coverUrl: text("cover_url"),
   coverDimensions: jsonb("cover_dimensions").$type<{ width: number; height: number }>(),
   reviewerName: text("reviewer_name"),
   reviewNotes: text("review_notes"),
@@ -315,6 +322,10 @@ export const publishingBooksTable = pgTable("publishing_books", {
   rejectionCategory: text("rejection_category"),
   isbn: text("isbn"),
   googlePlayUrl: text("google_play_url"),
+  rating: numeric("rating", { precision: 3, scale: 2 }).default("4.90"),
+  ratingCount: integer("rating_count").default(1),
+  publishedAt: timestamp("published_at", { withTimezone: true }).defaultNow(),
+  chapters: jsonb("chapters").$type<Array<{ id: string; title: string; wordCount: number; content?: string }>>().default([]),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -325,6 +336,8 @@ export const bookChaptersTable = pgTable("book_chapters", {
   chapterIndex: integer("chapter_index").notNull(),
   title: text("title").notNull(),
   content: text("content").notNull().default(""),
+  wordCount: integer("word_count").default(0),
+  status: text("status").default("approved"),
   acceptedAt: timestamp("accepted_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -517,6 +530,60 @@ export const authorPayoutAccountsTable = pgTable("author_payout_accounts", {
   isDefault: boolean("is_default").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * 12. Pricing Plans, Outcome Passes & Emporium Marketplace Agents
+ */
+export const pricingPlansTable = pgTable("pricing_plans", {
+  id: text("id").primaryKey(),
+  slug: text("slug").notNull().unique(),
+  name: text("name").notNull(),
+  nameBn: text("name_bn"),
+  tagline: text("tagline"),
+  priceBdt: integer("price_bdt").notNull().default(0),
+  priceUsd: numeric("price_usd", { precision: 10, scale: 2 }).notNull().default("0"),
+  billingInterval: text("billing_interval").notNull().default("month"),
+  monthlyCredits: integer("monthly_credits").notNull().default(500),
+  toolLimits: jsonb("tool_limits").$type<Record<string, number>>().notNull().default({}),
+  features: jsonb("features").$type<string[]>().notNull().default([]),
+  isPopular: boolean("is_popular").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const outcomePassesTable = pgTable("outcome_passes", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  priceBdt: integer("price_bdt").notNull(),
+  creditsEquivalent: integer("credits_equivalent").notNull(),
+  outcome: text("outcome").notNull(),
+  category: text("category").notNull().default("general"),
+  isCore: boolean("is_core").notNull().default(false),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const marketplaceAgentsTable = pgTable("marketplace_agents", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  category: text("category").notNull(),
+  description: text("description").notNull(),
+  authorName: text("author_name").notNull(),
+  authorId: text("author_id").notNull().default("usr_default"),
+  installsCount: integer("installs_count").notNull().default(0),
+  rating: numeric("rating", { precision: 3, scale: 2 }).notNull().default("5.00"),
+  priceCredits: integer("price_credits").notNull().default(0),
+  priceBdt: integer("price_bdt").notNull().default(0),
+  iconName: text("icon_name").notNull().default("Bot"),
+  manifest: jsonb("manifest").$type<Record<string, unknown>>().notNull().default({}),
+  isPublished: boolean("is_published").notNull().default(true),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 
 
 

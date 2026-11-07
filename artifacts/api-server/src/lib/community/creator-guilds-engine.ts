@@ -1,4 +1,5 @@
 import { db, creatorGuildsTable } from "@workspace/db";
+import { eq, sql } from "drizzle-orm";
 import { logger } from "../logger";
 
 export interface CreatorGuild {
@@ -121,7 +122,6 @@ export class CreatorGuildsEngine {
       createdAt: new Date().toISOString(),
     };
 
-    // Try persisting to PostgreSQL
     try {
       if (db) {
         await db.insert(creatorGuildsTable).values({
@@ -149,7 +149,15 @@ export class CreatorGuildsEngine {
     if (!guild) return null;
 
     guild.memberCount += 1;
-    logger.info(`[guilds] User ${userId} joined guild ${guildId}. Total members: ${guild.memberCount}`);
+    try {
+      db.update(creatorGuildsTable)
+        .set({ memberCount: sql`${creatorGuildsTable.memberCount} + 1` })
+        .where(eq(creatorGuildsTable.guildId, guildId))
+        .catch(() => {});
+    } catch {
+      // Non-blocking
+    }
+    logger.info(`[guilds] User ${userId} joined guild ${guildId} (members: ${guild.memberCount})`);
     return guild;
   }
 }

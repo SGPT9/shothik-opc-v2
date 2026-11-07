@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { eq, and } from "drizzle-orm";
 import { db } from "@workspace/db";
-import { userSubscriptionsTable, toolUsageTable, llmUsageTable, userCreditsTable } from "@workspace/db";
+import { userSubscriptionsTable, toolUsageTable, llmUsageTable, userCreditsTable, pricingPlansTable, outcomePassesTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { resolveUserId } from "../middleware/auth.js";
@@ -1082,6 +1082,21 @@ router.post(
     });
   }
 );
+
+router.get(["/v1/subscriptions/plans", "/v1/pricing/plans"], async (_req: Request, res: Response) => {
+  try {
+    const dbPlans: any[] = await db.select().from(pricingPlansTable).catch(() => []);
+    if (dbPlans.length > 0) {
+      dbPlans.sort((a: any, b: any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+      return res.status(200).json({ success: true, currency: "BDT", plans: dbPlans });
+    }
+  } catch {}
+  return res.status(200).json({
+    success: true,
+    currency: "BDT",
+    plans: Object.entries(DEFAULT_TIER_LIMITS).map(([slug, toolLimits]) => ({ id: `plan_${slug}`, slug, name: slug.toUpperCase(), toolLimits })),
+  });
+});
 
 export default router;
 

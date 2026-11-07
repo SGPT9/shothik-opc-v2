@@ -1,7 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import { eq, and } from "drizzle-orm";
 import { BoiMelaExportRequestSchema } from "@workspace/hermes/contracts";
-import { db, nilkhetOrdersTable } from "@workspace/db";
+import { db, nilkhetOrdersTable, publishingBooksTable, bookChaptersTable } from "@workspace/db";
 import { steadfastClient } from "../lib/logistics/steadfast-client";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
@@ -560,9 +560,56 @@ const BOI_MELA_CATALOG = [
 
 /**
  * GET /api/v1/publishing/books
- * Returns the Boi Mela published book catalogue
+ * Returns the Boi Mela published book catalogue (persisted in Supabase public.publishing_books)
  */
-router.get("/v1/publishing/books", (_req: Request, res: Response): void => {
+router.get("/v1/publishing/books", async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const dbBooks = await db.select().from(publishingBooksTable).catch(() => []);
+    if (dbBooks.length > 0) {
+      const mergedMap = new Map<string, any>();
+      for (const b of BOI_MELA_CATALOG) {
+        mergedMap.set(b.id, b);
+      }
+      for (const row of dbBooks) {
+        mergedMap.set(row.id, {
+          id: row.id,
+          _id: row.id,
+          title: row.title,
+          subtitle: row.subtitle || "",
+          authorName: row.authorName || "Shothik Community Author",
+          userId: row.userId,
+          category: row.category || "Fiction",
+          genre: row.genre || "General",
+          language: row.language || "bn",
+          pageCount: row.pageCount || 120,
+          listPrice: row.listPrice || "250",
+          creditPrice: row.creditPrice || 0,
+          currency: row.currency || "BDT",
+          coverPreset: row.coverPreset || "ekushey",
+          coverUrl: row.coverUrl || null,
+          isbn: row.isbn || "978-984-0000-00-0",
+          rating: Number(row.rating || 4.9),
+          ratingCount: row.ratingCount || 1,
+          publishedAt: row.publishedAt ? new Date(row.publishedAt).toISOString() : new Date().toISOString(),
+          synopsis: row.synopsis || row.description || "",
+          description: row.description || row.synopsis || "",
+          keywords: row.keywords || [],
+          chapters: Array.isArray(row.chapters) && row.chapters.length > 0
+            ? row.chapters
+            : [{ id: "ch1", title: "Chapter 1", wordCount: 1500 }],
+        });
+      }
+      const books = Array.from(mergedMap.values());
+      res.status(200).json({
+        success: true,
+        total: books.length,
+        books,
+      });
+      return;
+    }
+  } catch {
+    // Fall back to in-memory catalog
+  }
   res.status(200).json({
     success: true,
     total: BOI_MELA_CATALOG.length,
@@ -572,7 +619,7 @@ router.get("/v1/publishing/books", (_req: Request, res: Response): void => {
 
 /**
  * POST /api/v1/publishing/books
- * Publishes a new book to the catalogue
+ * Publishes a new book to the catalogue and persists to Supabase public.publishing_books
  */
 router.post(["/v1/publishing/books", "/api/v1/publishing/books"], (req: Request, res: Response): void => {
   const {
@@ -627,6 +674,49 @@ router.post(["/v1/publishing/books", "/api/v1/publishing/books"], (req: Request,
     BOI_MELA_CATALOG[existingIdx] = { ...BOI_MELA_CATALOG[existingIdx], ...newBook };
   } else {
     BOI_MELA_CATALOG.unshift(newBook);
+  }
+
+  try {
+    db.insert(publishingBooksTable)
+      .values({
+        id: newBook.id,
+        userId: newBook.userId,
+        authorName: newBook.authorName,
+        title: newBook.title,
+        subtitle: newBook.subtitle,
+        description: newBook.description,
+        synopsis: newBook.synopsis,
+        language: newBook.language,
+        category: newBook.category,
+        genre: newBook.genre,
+        keywords: newBook.keywords,
+        listPrice: newBook.listPrice,
+        creditPrice: newBook.creditPrice,
+        currency: newBook.currency,
+        pageCount: newBook.pageCount,
+        coverPreset: newBook.coverPreset,
+        coverUrl: newBook.coverUrl,
+        isbn: newBook.isbn,
+        status: "published",
+        chapters: newBook.chapters,
+      })
+      .onConflictDoUpdate({
+        target: publishingBooksTable.id,
+        set: {
+          title: newBook.title,
+          subtitle: newBook.subtitle,
+          authorName: newBook.authorName,
+          description: newBook.description,
+          synopsis: newBook.synopsis,
+          listPrice: newBook.listPrice,
+          creditPrice: newBook.creditPrice,
+          chapters: newBook.chapters,
+          updatedAt: new Date(),
+        },
+      })
+      .catch(() => {});
+  } catch {
+    // Non-blocking
   }
 
   res.status(201).json({

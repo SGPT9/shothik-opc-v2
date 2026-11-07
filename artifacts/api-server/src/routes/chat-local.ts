@@ -1,5 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { recordAgentTrace } from "@workspace/db";
+import { db, recordAgentTrace, chatConversationsTable, chatMessagesTable } from "@workspace/db";
 import { OllamaService } from "../lib/ollama-service";
 import { NeedleToolRegistry } from "../lib/needle-tool-registry";
 import { LiveWebKnowledgeEngine } from "../lib/live-web-knowledge";
@@ -341,6 +341,12 @@ ${PROMPT_INJECTION_ARMOR_INSTRUCTION}`;
     } catch (err: any) {
       logger.warn({ err: err?.message }, "[chat-local] Failed to record trace in SQLite");
     }
+    try {
+      const userId = String(req.headers["x-user-id"] || "usr_default");
+      await db.insert(chatConversationsTable).values({ id: activeSessionId, userId, surface: "studio", title: promptText.slice(0, 80) || "New Conversation", modelHandle: model, status: "active", lastMessagePreview: fullResponse.slice(0, 140), messageCount: 2 }).onConflictDoUpdate({ target: chatConversationsTable.id, set: { lastMessagePreview: fullResponse.slice(0, 140), updatedAt: new Date() } }).catch(() => {});
+      await db.insert(chatMessagesTable).values({ authorId: "assistant", role: "assistant", content: fullResponse, metadata: { conversationId: activeSessionId, model } }).catch(() => {});
+    } catch {
+    }
   } catch (err: any) {
     res.write(`data: ${JSON.stringify({ error: err?.message || "Stream interrupted" })}\n\n`);
     res.end();
@@ -378,6 +384,15 @@ function formatSpeculativeSystem1Response(result: SpeculativeResult): string {
       return `⚡ **Speculative System-1 Resolution**\n\n- **Intent**: ${result.intent}\n- **Assigned Twin**: ${result.targetTwin}\n\n*Resolved in ${result.latencyMs}ms (৳0.00 token cost)*`;
   }
 }
+
+router.get(["/v1/chat/conversations", "/chat/conversations"], async (req: Request, res: Response) => {
+  try {
+    const rows = await db.select().from(chatConversationsTable).catch(() => []);
+    res.status(200).json({ success: true, conversations: rows });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
 
 export default router;
 
