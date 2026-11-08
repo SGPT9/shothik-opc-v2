@@ -2,6 +2,7 @@
 // Eliminates external dependency on convex/server
 
 const proxyCache = new Map<string, any>();
+const functionNameSymbol = Symbol.for("functionName");
 
 function createProxy(path: string[] = []): any {
   const key = path.join(":");
@@ -13,6 +14,9 @@ function createProxy(path: string[] = []): any {
     get(_target, prop: string | symbol) {
       if (prop === Symbol.toPrimitive) {
         return () => key;
+      }
+      if (prop === functionNameSymbol) {
+        return key;
       }
       if (typeof prop === "symbol") return undefined;
       if (prop === "toString" || prop === "valueOf" || prop === "toJSON") {

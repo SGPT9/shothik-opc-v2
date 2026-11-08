@@ -1,5 +1,3 @@
-
-
 import { Component, useState, useRef, useEffect, type ReactNode } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -8,10 +6,11 @@ import { Link } from "wouter";
 import { useTranslation } from "@/i18n";
 
 interface NotificationErrorBoundaryProps {
-  onRetry: () => void;
-  loadFailedLabel: string;
-  retryLabel: string;
+  onRetry?: () => void;
+  loadFailedLabel?: string;
+  retryLabel?: string;
   children: ReactNode;
+  fallback?: ReactNode;
 }
 
 class NotificationErrorBoundary extends Component<
@@ -24,24 +23,31 @@ class NotificationErrorBoundary extends Component<
     return { hasError: true };
   }
 
+  componentDidCatch(error: any) {
+    console.warn("[NotificationBell] Caught query error:", error);
+  }
+
   handleRetry = () => {
     this.setState({ hasError: false });
-    this.props.onRetry();
+    this.props.onRetry?.();
   };
 
   render() {
     if (this.state.hasError) {
+      if (this.props.fallback) return this.props.fallback;
       return (
         <div className="p-6 text-center">
           <AlertTriangle className="mx-auto mb-2 h-6 w-6 text-amber-500" />
-          <p className="text-sm text-foreground">{this.props.loadFailedLabel}</p>
-          <button
-            onClick={this.handleRetry}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            {this.props.retryLabel}
-          </button>
+          <p className="text-sm text-foreground">{this.props.loadFailedLabel || "Notifications unavailable"}</p>
+          {this.props.retryLabel && (
+            <button
+              onClick={this.handleRetry}
+              className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              {this.props.retryLabel}
+            </button>
+          )}
         </div>
       );
     }
@@ -53,12 +59,24 @@ function NotificationList({
   masterId,
   onNavigate,
 }: {
-  masterId: string;
+  masterId?: string;
   onNavigate: () => void;
 }) {
   const { t } = useTranslation();
-  const notifications = useQuery(api.agent_notifications.getMasterNotifications, { masterId });
+  const notifications = useQuery(
+    api.agent_notifications.getMasterNotifications,
+    masterId ? { masterId } : "skip"
+  );
   const markAsRead = useMutation(api.agent_notifications.markAsRead);
+
+  if (!masterId) {
+    return (
+      <div className="p-8 text-center">
+        <Bell className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">{t("notifications.noneYet")}</p>
+      </div>
+    );
+  }
 
   if (!notifications) {
     return <div className="p-4 text-center text-sm text-muted-foreground">{t("notifications.loading")}</div>;
@@ -83,7 +101,14 @@ function NotificationList({
           <Link
             key={n._id}
             href={href}
-            onClick={() => { markAsRead({ notificationId: n._id }); onNavigate(); }}
+            onClick={() => {
+              try {
+                markAsRead({ notificationId: n._id });
+              } catch (e) {
+                console.warn("[NotificationBell] markAsRead failed", e);
+              }
+              onNavigate();
+            }}
             className={`flex gap-3 px-4 py-3 hover:bg-muted transition-colors ${!n.read ? "bg-primary/5" : ""}`}
           >
             <div className="mt-0.5 flex-shrink-0">{config.icon}</div>
@@ -119,13 +144,16 @@ function timeAgo(ts: number, t: (key: string, values?: Record<string, string | n
   return t("notifications.daysAgo", { count: Math.floor(diff / 86400000) });
 }
 
-export default function NotificationBell({ masterId }: { masterId: string }) {
+function NotificationBellInner({ masterId }: { masterId?: string }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
 
-  const unreadCount = useQuery(api.agent_notifications.getUnreadCount, { masterId });
+  const unreadCount = useQuery(
+    api.agent_notifications.getUnreadCount,
+    masterId ? { masterId } : "skip"
+  );
   const markAllAsRead = useMutation(api.agent_notifications.markAllAsRead);
 
   useEffect(() => {
@@ -138,7 +166,7 @@ export default function NotificationBell({ masterId }: { masterId: string }) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [open]);
 
-  const count = unreadCount ?? 0;
+  const count = typeof unreadCount === "number" ? unreadCount : 0;
 
   return (
     <div ref={ref} className="relative">
@@ -169,7 +197,13 @@ export default function NotificationBell({ masterId }: { masterId: string }) {
             </div>
             {count > 0 && (
               <button
-                onClick={() => markAllAsRead({ masterId })}
+                onClick={() => {
+                  try {
+                    markAllAsRead({ masterId });
+                  } catch (e) {
+                    console.warn("[NotificationBell] markAllAsRead failed", e);
+                  }
+                }}
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 <CheckCheck className="h-3.5 w-3.5" />
@@ -191,5 +225,29 @@ export default function NotificationBell({ masterId }: { masterId: string }) {
         </div>
       )}
     </div>
+  );
+}
+
+const StaticBellFallback = () => (
+  <div className="relative">
+    <button
+      type="button"
+      className="relative inline-flex h-9 w-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+      aria-label="Notifications"
+    >
+      <Bell className="h-4 w-4" />
+    </button>
+  </div>
+);
+
+export default function NotificationBell({ masterId }: { masterId?: string }) {
+  if (!masterId) {
+    return <StaticBellFallback />;
+  }
+
+  return (
+    <NotificationErrorBoundary fallback={<StaticBellFallback />}>
+      <NotificationBellInner masterId={masterId} />
+    </NotificationErrorBoundary>
   );
 }
