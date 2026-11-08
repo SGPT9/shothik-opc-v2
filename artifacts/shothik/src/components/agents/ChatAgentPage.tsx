@@ -22,6 +22,8 @@ import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveStat
 import { Transcript } from "@/components/chat/Transcript";
 import { SemanticMemoryDrawer } from "@/components/chat/SemanticMemoryDrawer";
 import { PromptVariableModal } from "@/components/chat/PromptVariableModal";
+import { ParametersPanel, ChatParameters, DEFAULT_CHAT_PARAMETERS } from "@/components/chat/ParametersPanel";
+import { McpInspectorDrawer } from "@/components/chat/McpInspectorDrawer";
 import { detectVariables } from "@/lib/chat/prompt-variables";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
@@ -72,6 +74,8 @@ import {
   ShieldCheck,
   CheckCircle2,
   MoreHorizontal,
+  Sliders,
+  PlugZap,
 } from "lucide-react";
 import { WebGpuInferenceService, type WebGpuCapability } from "@/lib/ai/WebGpuInferenceService";
 
@@ -241,11 +245,14 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const activeAgent = FLEET_AGENTS.find(a => a.id === selectedAgentId) || FLEET_AGENTS[0];
 
-  // LibreChat-adapted state: DAG branch switcher, Semantic Memory Drawer & Prompt Variable Modal
+  // LibreChat-adapted state: DAG branch switcher, Semantic Memory Drawer, Prompt Variable Modal, Parameters & MCP
   const [activeSiblingMap, setActiveSiblingMap] = useState<Record<string, number>>({});
   const [isMemoryDrawerOpen, setIsMemoryDrawerOpen] = useState(false);
   const [isPromptVariableModalOpen, setIsPromptVariableModalOpen] = useState(false);
   const [variablePromptTemplate, setVariablePromptTemplate] = useState<string>("");
+  const [isParametersOpen, setIsParametersOpen] = useState(false);
+  const [chatParameters, setChatParameters] = useState<ChatParameters>(DEFAULT_CHAT_PARAMETERS);
+  const [isMcpInspectorOpen, setIsMcpInspectorOpen] = useState(false);
 
   const handleSwitchSibling = useCallback((parentKey: string, siblingIdx: number) => {
     setActiveSiblingMap((prev) => ({
@@ -479,6 +486,12 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         break;
       case "memory":
         setIsMemoryDrawerOpen(true);
+        break;
+      case "parameters":
+        setIsParametersOpen(true);
+        break;
+      case "mcp":
+        setIsMcpInspectorOpen(true);
         break;
       case "browser":
         handleSendMessage("Automate web workflow: navigate and gather intelligence");
@@ -1181,6 +1194,40 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               <span className="hidden sm:inline">Call</span>
             </button>
 
+            {/* 🎛️ LibreChat-Adapted Inference Parameters Button */}
+            <button
+              type="button"
+              onClick={() => setIsParametersOpen(true)}
+              className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
+                isParametersOpen
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
+                  : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
+              )}
+              title="Tune Inference Parameters (Temperature, Top-P, Tokens, System Prompt)"
+              aria-label="Tune Inference Parameters"
+            >
+              <Sliders className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Params</span>
+            </button>
+
+            {/* ⚡ LibreChat-Adapted MCP Servers & Tools Inspector */}
+            <button
+              type="button"
+              onClick={() => setIsMcpInspectorOpen(true)}
+              className={cn(
+                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
+                isMcpInspectorOpen
+                  ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/40"
+                  : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
+              )}
+              title="MCP Servers & Tools Inspector"
+              aria-label="Inspect MCP Tools"
+            >
+              <PlugZap className="w-3.5 h-3.5 text-cyan-400" />
+              <span className="hidden md:inline">MCP</span>
+            </button>
+
             {/* New Thread (+) */}
             <button
               type="button"
@@ -1519,6 +1566,21 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           onClose={() => setIsPromptVariableModalOpen(false)}
           promptTemplate={variablePromptTemplate}
           onSubmit={(interpolated) => handleSendMessage(interpolated, { skipVariableCheck: true })}
+        />
+
+        {/* 🎛️ LibreChat-Adapted Inference Parameters Panel */}
+        <ParametersPanel
+          isOpen={isParametersOpen}
+          onClose={() => setIsParametersOpen(false)}
+          parameters={chatParameters}
+          onChange={setChatParameters}
+          activeModel={activeAgent?.model || activeAgent?.name || "Gemini 2.5 Flash"}
+        />
+
+        {/* ⚡ LibreChat-Adapted MCP Servers & Tools Inspector */}
+        <McpInspectorDrawer
+          isOpen={isMcpInspectorOpen}
+          onClose={() => setIsMcpInspectorOpen(false)}
         />
 
         {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}

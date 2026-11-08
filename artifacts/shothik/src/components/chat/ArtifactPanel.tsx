@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect, lazy, Suspense } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, PenLine, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown } from "lucide-react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, PenLine, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown, ExternalLink } from "lucide-react";
+import { UndockedWindowManager } from "@/lib/chat/undocked-window";
 const SlidesArtifact = lazy(() => import("@/components/chat/artifacts/SlidesArtifact").then((mod) => ({ default: (mod as any).SlidesArtifact || (mod as any).default })));
 const SheetArtifact = lazy(() => import("@/components/chat/artifacts/SheetArtifact").then((mod) => ({ default: (mod as any).SheetArtifact || (mod as any).default })));
 const DeepResearchArtifact = lazy(() => import("@/components/chat/artifacts/DeepResearchArtifact").then((mod) => ({ default: (mod as any).DeepResearchArtifact || (mod as any).default })));
@@ -355,6 +356,25 @@ export function ArtifactPanel({
             ) : (
               <Maximize2 className="h-3.5 w-3.5" />
             )}
+          </button>
+
+          {/* LibreChat-Adapted Pop-Out / Undocked Window (Multi-Monitor) */}
+          <button
+            type="button"
+            onClick={() => {
+              const manager = new UndockedWindowManager();
+              manager.openUndockedWindow({
+                title: String(title || activeTab || "Shothik Canvas Artifact"),
+                type: String(activeTab || "document"),
+                content: String(docContent || sheetTitle || slidesTopic || researchSummary || ""),
+                activeTab: String(activeTab || "doc"),
+              });
+            }}
+            aria-label="Pop out to separate window"
+            className="hidden sm:flex shrink-0 items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+            title="Pop out into separate window (Multi-monitor)"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
           </button>
 
           {/* Close Canvas (✕) */}

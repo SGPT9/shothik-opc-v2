@@ -28,6 +28,7 @@ import { GitHubRepoCard } from "./GitHubRepoCard";
 import { SiblingSwitch } from "./SiblingSwitch";
 import { AskOptions } from "./AskOptions";
 import { DiffView } from "./DiffView";
+import { MessageTokenBadge } from "./MessageTokenBadge";
 import { getActiveBranch, getParentKey, type ParentChatMessage } from "@/lib/chat/message-tree";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
@@ -1023,6 +1024,20 @@ export function Transcript({
                           ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                           : (message as any).timestamp || ""}
                       </span>
+
+                      {/* LibreChat-Adapted Message Token Telemetry & Latency Badge */}
+                      {Boolean((message as any).metrics || (message.metadata as any)?.tokens || (message.metadata as any)?.latencySeconds) && (
+                        <MessageTokenBadge
+                          metrics={(message as any).metrics || {
+                            promptTokens: (message.metadata as any)?.tokens?.prompt,
+                            completionTokens: (message.metadata as any)?.tokens?.completion,
+                            totalTokens: (message.metadata as any)?.tokens?.total,
+                            latencySeconds: (message.metadata as any)?.latencySeconds,
+                            modelName: (message.metadata as any)?.model,
+                            costEstimatedUsd: (message.metadata as any)?.costEstimatedUsd,
+                          }}
+                        />
+                      )}
                     </div>
                   )}
 
