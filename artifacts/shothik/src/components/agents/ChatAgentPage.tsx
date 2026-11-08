@@ -20,6 +20,9 @@ import { cn } from "@/lib/utils";
 import { needle3 } from "@/lib/ai/needle-dispatcher";
 import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveState";
 import { Transcript } from "@/components/chat/Transcript";
+import { SemanticMemoryDrawer } from "@/components/chat/SemanticMemoryDrawer";
+import { PromptVariableModal } from "@/components/chat/PromptVariableModal";
+import { detectVariables } from "@/lib/chat/prompt-variables";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
@@ -237,6 +240,19 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const activeAgent = FLEET_AGENTS.find(a => a.id === selectedAgentId) || FLEET_AGENTS[0];
+
+  // LibreChat-adapted state: DAG branch switcher, Semantic Memory Drawer & Prompt Variable Modal
+  const [activeSiblingMap, setActiveSiblingMap] = useState<Record<string, number>>({});
+  const [isMemoryDrawerOpen, setIsMemoryDrawerOpen] = useState(false);
+  const [isPromptVariableModalOpen, setIsPromptVariableModalOpen] = useState(false);
+  const [variablePromptTemplate, setVariablePromptTemplate] = useState<string>("");
+
+  const handleSwitchSibling = useCallback((parentKey: string, siblingIdx: number) => {
+    setActiveSiblingMap((prev) => ({
+      ...prev,
+      [parentKey]: siblingIdx,
+    }));
+  }, []);
 
   // Mobile Touch Gestures for 2GB RAM devices (Swipe Left = Canvas, Swipe Right = Chat)
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
@@ -460,6 +476,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         break;
       case "voice":
         setIsVoiceOrbOpen(true);
+        break;
+      case "memory":
+        setIsMemoryDrawerOpen(true);
         break;
       case "browser":
         handleSendMessage("Automate web workflow: navigate and gather intelligence");
@@ -736,10 +755,18 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
 
   // Intent-First Natural Language Routing Engine
   const handleSendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, options?: { parentMessageId?: string; isRegeneration?: boolean; skipVariableCheck?: boolean }) => {
       if (!text.trim() && attachments.length === 0) return;
 
       const trimmedText = text.trim();
+
+      // Check for prompt template variables (LibreChat adaptation)
+      if (detectVariables(trimmedText) && !options?.skipVariableCheck) {
+        setVariablePromptTemplate(trimmedText);
+        setIsPromptVariableModalOpen(true);
+        return;
+      }
+
       const githubUrlRegex = /^(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/?$/i;
       const bareRepoRegex = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
 
@@ -817,13 +844,16 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       const userMsgId = `usr_${Date.now()}`;
       const assistantMsgId = `ast_${Date.now()}`;
 
-      addMessage({
-        id: userMsgId,
-        role: "user",
-        content: text.trim(),
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        attachments: attachments.map((a) => a.url),
-      });
+      if (!options?.isRegeneration) {
+        addMessage({
+          id: userMsgId,
+          role: "user",
+          content: text.trim(),
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          attachments: attachments.map((a) => a.url),
+          parentMessageId: options?.parentMessageId,
+        });
+      }
 
       clearAttachments();
 
@@ -833,6 +863,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         content: "",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         isStreaming: true,
+        parentMessageId: options?.isRegeneration ? options?.parentMessageId : userMsgId,
       });
 
       const chatMode = autoChatMode;
@@ -971,6 +1002,29 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
     },
     [updateMessageMetadata]
+  );
+
+  const handleEditMessage = useCallback(
+    (msg: any, newContent: string) => {
+      handleSendMessage(newContent, {
+        parentMessageId: msg.parentMessageId,
+      });
+    },
+    [handleSendMessage]
+  );
+
+  const handleRegenerate = useCallback(
+    (msg: any) => {
+      const parentId = msg.parentMessageId;
+      const userPrompt = messages.find((m) => (m.id || m._id) === parentId)?.content;
+      if (userPrompt) {
+        handleSendMessage(userPrompt, {
+          parentMessageId: parentId,
+          isRegeneration: true,
+        });
+      }
+    },
+    [messages, handleSendMessage]
   );
 
   return (
@@ -1281,6 +1335,11 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     agentId={selectedAgentId}
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
+                    activeSiblingMap={activeSiblingMap}
+                    onSwitchSibling={handleSwitchSibling}
+                    onEditMessage={handleEditMessage}
+                    onRegenerate={handleRegenerate}
+                    onSelectOption={(val) => handleSendMessage(val)}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
                     onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
@@ -1395,6 +1454,11 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     agentId={selectedAgentId}
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
+                    activeSiblingMap={activeSiblingMap}
+                    onSwitchSibling={handleSwitchSibling}
+                    onEditMessage={handleEditMessage}
+                    onRegenerate={handleRegenerate}
+                    onSelectOption={(val) => handleSendMessage(val)}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
                     onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
@@ -1441,6 +1505,20 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             setIsVoiceOrbOpen(false);
             setVoiceActive(false);
           }}
+        />
+
+        {/* 🧠 LibreChat-Adapted Semantic Memory Drawer */}
+        <SemanticMemoryDrawer
+          isOpen={isMemoryDrawerOpen}
+          onClose={() => setIsMemoryDrawerOpen(false)}
+        />
+
+        {/* 📝 LibreChat-Adapted Prompt Template Variable Modal */}
+        <PromptVariableModal
+          isOpen={isPromptVariableModalOpen}
+          onClose={() => setIsPromptVariableModalOpen(false)}
+          promptTemplate={variablePromptTemplate}
+          onSubmit={(interpolated) => handleSendMessage(interpolated, { skipVariableCheck: true })}
         />
 
         {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}
