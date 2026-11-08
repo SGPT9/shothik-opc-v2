@@ -85,7 +85,8 @@ export default function BkashCheckoutModal({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white text-lg font-bold p-1 transition"
+            aria-label="Close checkout modal"
+            className="text-slate-400 hover:text-white text-lg font-bold p-1 transition rounded-md outline-none focus-visible:ring-2 focus-visible:ring-pink-500"
           >
             ✕
           </button>
@@ -105,10 +106,11 @@ export default function BkashCheckoutModal({
 
         {/* TrxID / OCR Form */}
         <div className="space-y-3">
-          <label className="text-xs font-medium text-slate-300 block">
+          <label htmlFor="trxIdInput" className="text-xs font-medium text-slate-300 block">
             Enter bKash Transaction ID (or Paste TrxID):
           </label>
           <input
+            id="trxIdInput"
             type="text"
             placeholder="e.g. 9X87Y12300"
             value={trxIdInput}
