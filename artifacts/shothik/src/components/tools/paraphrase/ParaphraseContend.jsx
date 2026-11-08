@@ -110,7 +110,7 @@ const ParaphraseContend = () => {
   };
 
   const [showLanguageDetect, setShowLanguageDetect] = useState(false);
-  const { accessToken } = useSelector((state) => state.auth);
+  const accessToken = useSelector((state) => state.auth?.accessToken);
   const [outputHistoryIndex, setOutputHistoryIndex] = useState(0);
   const [highlightSentence, setHighlightSentence] = useState(0);
   const [selectedMode, setSelectedModeState] = useState("Standard");
@@ -123,7 +123,7 @@ const ParaphraseContend = () => {
   const [outputWordCount, setOutputWordCount] = useState(0);
   const [outputHistory, setOutputHistory] = useState([]);
   const [outputContend, setOutputContend] = useState("");
-  const { user } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth?.user);
   const frozenWords = useSetState(initialFrozenWords);
   const frozenPhrases = useSetState(initialFrozenPhrase);
   const [recommendedFreezeWords, setRecommendedFreezeWords] = useState([]);
@@ -211,7 +211,7 @@ const ParaphraseContend = () => {
     user?.package === "value_plan" ||
     user?.package === "unlimited";
 
-  const { paraphraseOptions } = useSelector((state) => state.settings);
+  const paraphraseOptions = useSelector((state) => state.settings?.paraphraseOptions);
 
   const {
     autoFrozenTerms,
