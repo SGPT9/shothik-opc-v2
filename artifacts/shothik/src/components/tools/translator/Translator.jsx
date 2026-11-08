@@ -32,7 +32,8 @@ import {
 
 const Translator = () => {
   const [outputContend, setOutputContend] = useState("");
-  const { user, accessToken } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth?.user);
+  const accessToken = useSelector((state) => state.auth?.accessToken);
   const [isHumanizing, setIsHumanizing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [userInput, setUserInput] = useState("");
