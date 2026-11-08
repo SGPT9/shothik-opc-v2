@@ -1,0 +1,4 @@
+## 2026-11-08 - SVG Execution Sandbox Bypass
+**Vulnerability:** Raw SVG content from users was rendered directly into the DOM using `dangerouslySetInnerHTML`. While React protects against `<script>` tags, event handlers inside SVGs (e.g., `<svg onload="alert(1)">`) execute immediately upon parsing, leading to XSS.
+**Learning:** `dangerouslySetInnerHTML` does not sanitize HTML, and while `src/lib/sanitize.ts` exists, it specifically strips `<svg>` tags. Attempting to render raw SVG text directly into a `div` is unsafe in any context where the content originates from an untrusted source.
+**Prevention:** To safely render user-supplied SVGs, always sandbox them using an `<img>` tag with a Data URI (e.g., `src={`data:image/svg+xml,${encodeURIComponent(text)}`}`). Browsers strictly prevent script execution and external resource loading for SVGs embedded this way.
