@@ -24,6 +24,7 @@ import { SemanticMemoryDrawer } from "@/components/chat/SemanticMemoryDrawer";
 import { PromptVariableModal } from "@/components/chat/PromptVariableModal";
 import { ParametersPanel, ChatParameters, DEFAULT_CHAT_PARAMETERS } from "@/components/chat/ParametersPanel";
 import { McpInspectorDrawer } from "@/components/chat/McpInspectorDrawer";
+import { ByokEndpointsModal } from "@/components/chat/ByokEndpointsModal";
 import { detectVariables } from "@/lib/chat/prompt-variables";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
@@ -76,6 +77,7 @@ import {
   MoreHorizontal,
   Sliders,
   PlugZap,
+  KeyRound,
 } from "lucide-react";
 import { WebGpuInferenceService, type WebGpuCapability } from "@/lib/ai/WebGpuInferenceService";
 
@@ -253,6 +255,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isParametersOpen, setIsParametersOpen] = useState(false);
   const [chatParameters, setChatParameters] = useState<ChatParameters>(DEFAULT_CHAT_PARAMETERS);
   const [isMcpInspectorOpen, setIsMcpInspectorOpen] = useState(false);
+  const [isByokModalOpen, setIsByokModalOpen] = useState(false);
 
   const handleSwitchSibling = useCallback((parentKey: string, siblingIdx: number) => {
     setActiveSiblingMap((prev) => ({
@@ -1306,6 +1309,14 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   </button>
                   <button
                     type="button"
+                    onClick={() => setIsByokModalOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="font-medium">Custom API Endpoints (BYOK)</span>
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => setIsShortcutsOpen(true)}
                     className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
                   >
@@ -1581,6 +1592,12 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         <McpInspectorDrawer
           isOpen={isMcpInspectorOpen}
           onClose={() => setIsMcpInspectorOpen(false)}
+        />
+
+        {/* 🔑 LibreChat-Adapted Custom BYOK Provider Endpoints Modal */}
+        <ByokEndpointsModal
+          isOpen={isByokModalOpen}
+          onClose={() => setIsByokModalOpen(false)}
         />
 
         {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}

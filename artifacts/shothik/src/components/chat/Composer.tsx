@@ -50,6 +50,7 @@ import {
 } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { FileAttachmentBar } from "./FileAttachmentBar";
 import { PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
 import type { ChatPersona } from "@/lib/chat/types";
 const RagKnowledgeVaultModal = lazy(() => import("./RagKnowledgeVaultModal").then((mod) => ({ default: (mod as any).RagKnowledgeVaultModal || (mod as any).default })));
@@ -720,32 +721,12 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
             </div>
           )}
 
-          {/* ── Attachment Previews ── */}
+          {/* ── LibreChat-Adapted Attachment Previews & Token Estimator ── */}
           {attachments.length > 0 && (
-            <div className="flex flex-wrap gap-2 px-3.5 pt-3 pb-1">
-              {attachments.map((att) => (
-                <div
-                  key={att.id}
-                  className="relative group flex items-center gap-2 p-1.5 pr-2 rounded-xl bg-muted/60 border border-border text-xs"
-                >
-                  {att.preview ? (
-                    <img src={att.preview} alt={att.name} className="h-8 w-8 object-cover rounded-lg" />
-                  ) : (
-                    <FileText className="h-4 w-4 text-muted-foreground ml-1" />
-                  )}
-                  <span className="max-w-[120px] truncate text-[11px] font-medium">{att.name}</span>
-                  {(onAction || onRemoveAttachment) && (
-                    <button
-                      type="button"
-                      onClick={() => dispatchRemoveAttachment(att.id)}
-                      className="p-1 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
+            <FileAttachmentBar
+              attachments={attachments as any}
+              onRemoveAttachment={(attId) => dispatchRemoveAttachment(attId)}
+            />
           )}
 
           {/* ── Live Audio Dictation Waveform Visualizer ── */}
