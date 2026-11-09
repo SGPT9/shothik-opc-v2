@@ -128,6 +128,7 @@ const SlideSharePage = lazy(async () => {
 // Misc
 const SharedContentPage = lazy(() => import('@/app-next/shared/[contentType]/[shareId]/page'));
 const AgentDemoPage = lazy(() => import('@/app-next/agent-demo/page'));
+const VoicePage = lazy(() => import('@/app-next/voice/page'));
 
 // New Workspace Pages
 const FilesPage = lazy(() => import('@/app-next/(primary-layout)/files/page'));
@@ -184,6 +185,7 @@ const ConnectorsPageWithLayout = withPrimaryLayout(ConnectorsPage);
 const SavedReportsPageWithLayout = withPrimaryLayout(SavedReportsPage);
 const DeepResearchPageWithLayout = withPrimaryLayout(DeepResearchPage);
 const SettingsWorkspacePageWithLayout = withPrimaryLayout(SettingsWorkspacePage);
+const VoicePageWithLayout = withPrimaryLayout(VoicePage);
 
 // Secondary layout pages wrapped
 const PricingPageWithLayout = withSecondaryLayout(PricingPage);
@@ -271,9 +273,7 @@ function AppRoutes() {
         <Route path="/agent-demo" component={AgentDemoPage} />
 
         {/* Voice */}
-        <Route path="/voice">
-          <Redirect to="/twin?tab=video" replace />
-        </Route>
+        <Route path="/voice" component={VoicePageWithLayout} />
 
         {/* Secondary layout routes */}
         <Route path="/pricing" component={PricingPageWithLayout} />

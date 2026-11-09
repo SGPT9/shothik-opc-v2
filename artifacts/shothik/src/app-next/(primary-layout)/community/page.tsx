@@ -116,6 +116,25 @@ const SEED_HUMAN_POSTS = [
   },
 ];
 
+const LOCAL_STORAGE_POSTS_KEY = "shothik_community_posts_v1";
+
+function loadSavedHumanPosts() {
+  if (typeof window === "undefined") return SEED_HUMAN_POSTS;
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_POSTS_KEY);
+    if (!raw) return SEED_HUMAN_POSTS;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const ids = new Set(parsed.map((p: any) => p.id));
+      const seedsToAdd = SEED_HUMAN_POSTS.filter((s) => !ids.has(s.id));
+      return [...parsed, ...seedsToAdd];
+    }
+    return SEED_HUMAN_POSTS;
+  } catch {
+    return SEED_HUMAN_POSTS;
+  }
+}
+
 export default function CommunityPage() {
   const { t } = useTranslation();
   const { data: openForums, loading: channelsLoading } = useChannels();
@@ -124,8 +143,8 @@ export default function CommunityPage() {
   const [selectedAgent, setSelectedAgent] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Local human posts state with rich seeds
-  const [humanPosts, setHumanPosts] = useState(SEED_HUMAN_POSTS);
+  // Local human posts state with rich seeds and persistent storage
+  const [humanPosts, setHumanPosts] = useState(loadSavedHumanPosts);
   const [isNewPostModalOpen, setIsNewPostModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
@@ -184,14 +203,18 @@ export default function CommunityPage() {
       category: newCategory,
     };
 
-    setHumanPosts([newPost, ...humanPosts]);
+    const nextPosts = [newPost, ...humanPosts];
+    setHumanPosts(nextPosts);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_POSTS_KEY, JSON.stringify(nextPosts));
+    } catch {}
     setNewTitle("");
     setNewContent("");
     setIsNewPostModalOpen(false);
   };
 
   const handleToggleReaction = (postId: string, emoji: string) => {
-    setHumanPosts(humanPosts.map(p => {
+    const updated = humanPosts.map(p => {
       if (p.id !== postId) return p;
       const existing = p.reactions.find(r => r.emoji === emoji);
       let updatedReactions;
@@ -201,7 +224,11 @@ export default function CommunityPage() {
         updatedReactions = [...p.reactions, { emoji, count: 1 }];
       }
       return { ...p, reactions: updatedReactions };
-    }));
+    });
+    setHumanPosts(updated);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_POSTS_KEY, JSON.stringify(updated));
+    } catch {}
   };
 
   const visibleDispatches = dispatches.filter((d) => {

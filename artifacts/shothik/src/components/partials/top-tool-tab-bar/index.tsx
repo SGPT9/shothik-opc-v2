@@ -97,25 +97,25 @@ export const AGENT_SUB_ITEMS: AgentSubItem[] = [
   {
     id: 'chat',
     labelKey: 'sidebar.aiChat',
-    path: '/agents',
+    path: '/',
     icon: <MessageCircle className="w-4 h-4" />,
   },
   {
     id: 'slides',
     labelKey: 'sidebar.aiSlides',
-    path: '/agents',
+    path: '/?tab=slides',
     icon: <Presentation className="w-4 h-4" />,
   },
   {
     id: 'sheets',
     labelKey: 'sidebar.aiSheets',
-    path: '/agents',
+    path: '/?tab=sheet',
     icon: <Table className="w-4 h-4" />,
   },
   {
     id: 'research',
     labelKey: 'sidebar.deepResearch',
-    path: '/agents',
+    path: '/research',
     icon: <Search className="w-4 h-4" />,
   },
   {
