@@ -1137,7 +1137,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             <OfflineSyncBadge />
           </div>
 
-          {/* Right Zen Actions */}
+          {/* Right Zen Actions (ChatGPT / Perplexity Clean Minimal Header) */}
           <div className="flex items-center gap-1.5 shrink-0">
             {/* 🔗 Public 1-Click Viral Share Button */}
             {messages.length > 0 && (
@@ -1151,15 +1151,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 <span className="hidden sm:inline">Share</span>
               </button>
             )}
-
-            {/* Live Edge Engine Indicator */}
-            <div
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs cursor-default select-none animate-in fade-in duration-300"
-              title="Shothik Neural Speculative Engine Active (Sub-15ms Edge Latency · Local Acceleration)"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Shothik ⚡ Edge</span>
-            </div>
 
             {/* Work Canvas Toggle Pill (only if messages > 0 or artifact is open) */}
             {(messages.length > 0 || artifactOpen) && (
@@ -1179,69 +1170,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </button>
             )}
 
-            {/* 📞 Call / Voice Studio Button — opens the 3D Voice Orb + background Scenario Lab */}
-            <button
-              type="button"
-              onClick={() => setIsVoiceOrbOpen(true)}
-              id="chat-call-button"
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
-                isVoiceOrbOpen
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                  : "bg-secondary/40 hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 border-border/30 hover:border-emerald-500/30"
-              )}
-              title="Start Voice Session (Voice Studio + Scenario Analytics)"
-              aria-label="Start Voice Session"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Call</span>
-            </button>
-
-            {/* 🎛️ LibreChat-Adapted Inference Parameters Button */}
-            <button
-              type="button"
-              onClick={() => setIsParametersOpen(true)}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
-                isParametersOpen
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                  : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
-              )}
-              title="Tune Inference Parameters (Temperature, Top-P, Tokens, System Prompt)"
-              aria-label="Tune Inference Parameters"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Params</span>
-            </button>
-
-            {/* ⚡ LibreChat-Adapted MCP Servers & Tools Inspector */}
-            <button
-              type="button"
-              onClick={() => setIsMcpInspectorOpen(true)}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
-                isMcpInspectorOpen
-                  ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/40"
-                  : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
-              )}
-              title="MCP Servers & Tools Inspector"
-              aria-label="Inspect MCP Tools"
-            >
-              <PlugZap className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden md:inline">MCP</span>
-            </button>
-
-            {/* New Thread (+) */}
-            <button
-              type="button"
-              onClick={createNewConversation}
-              className="p-1.5 sm:p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer"
-              title="New Chat (Ctrl+Shift+O)"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-
-            {/* ⋯ Zen Overflow Menu (Export, Telemetry, Shortcuts) */}
+            {/* ⋯ Zen Overflow Menu (Voice, Parameters, MCP, Export, Diagnostics) */}
             <div className="relative">
               <button
                 type="button"
@@ -1259,7 +1188,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
 
               {isMoreMenuOpen && (
                 <div
-                  className="absolute right-0 top-full mt-1.5 z-50 w-56 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/70 rounded-2xl shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
+                  className="absolute right-0 top-full mt-1.5 z-50 w-64 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/70 rounded-2xl shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
                   onClick={() => setIsMoreMenuOpen(false)}
                 >
                   {/* Export Options */}
@@ -1295,10 +1224,34 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     </>
                   )}
 
-                  {/* Tools & Shortcuts */}
+                  {/* Intelligence & Power Tools */}
                   <div className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    Tools & Shortcuts
+                    Intelligence & Tools
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsVoiceOrbOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <Phone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="font-medium">Voice Studio & Scenario Lab</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsParametersOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <Sliders className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="font-medium">Inference Parameters (Ctrl+Shift+P)</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsMcpInspectorOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <PlugZap className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                    <span className="font-medium">MCP Tools & Servers (Ctrl+Shift+M)</span>
+                  </button>
                   <button
                     type="button"
                     onClick={() => setIsDshDrawerOpen(true)}
@@ -1323,12 +1276,10 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     <Keyboard className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
                     <span className="font-medium">Keyboard Shortcuts (?)</span>
                   </button>
-                  {webGpuInfo?.isSupported && (
-                    <div className="px-2.5 py-1.5 text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 border-t border-border/30 mt-1">
-                      <Zap className="w-3 h-3 text-emerald-400" />
-                      <span>Turbo Engine Active</span>
-                    </div>
-                  )}
+                  <div className="px-2.5 py-1.5 text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 border-t border-border/30 mt-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>Shothik Neural Edge Engine</span>
+                  </div>
                 </div>
               )}
             </div>
