@@ -138,6 +138,24 @@ export function getActiveBranch({
   activeBranch: ParentChatMessage[];
   siblingMap: Record<string, number>;
 } {
+  if (!messages || messages.length === 0) {
+    return { activeBranch: [], siblingMap: { ...siblingMap } };
+  }
+
+  // If no messages contain tree metadata (parentMessageId), treat as a standard linear sequence
+  const hasTreeMetadata = messages.some((m) => Boolean(m && m.parentMessageId && m.parentMessageId.trim().length > 0));
+  if (!hasTreeMetadata) {
+    const linearBranch: ParentChatMessage[] = messages.map((m) => ({
+      ...m,
+      _id: m._id || (m as any).id,
+      children: [],
+      depth: 0,
+      siblingIndex: 0,
+      siblingCount: 1,
+    }));
+    return { activeBranch: linearBranch, siblingMap: { ...siblingMap } };
+  }
+
   const tree = buildTree(messages);
   if (!tree || tree.length === 0) {
     return { activeBranch: [], siblingMap: { ...siblingMap } };

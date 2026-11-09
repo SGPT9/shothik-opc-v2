@@ -29,6 +29,7 @@ import { SiblingSwitch } from "./SiblingSwitch";
 import { AskOptions } from "./AskOptions";
 import { DiffView } from "./DiffView";
 import { MessageTokenBadge } from "./MessageTokenBadge";
+import { FloatingSelectionToolbar } from "./FloatingSelectionToolbar";
 import { getActiveBranch, getParentKey, type ParentChatMessage } from "@/lib/chat/message-tree";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
@@ -159,6 +160,40 @@ export function Transcript({
   agentId = "core",
 }: TranscriptProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isTransformingSelection, setIsTransformingSelection] = useState(false);
+
+  const handleSelectionTransform = async (
+    action: "polish" | "bangla_harmony" | "forecast" | "shorten" | "custom",
+    selectedText: string,
+    customPrompt?: string
+  ) => {
+    setIsTransformingSelection(true);
+    try {
+      let promptQuery = "";
+      if (action === "polish") {
+        promptQuery = `Fix grammar, polish phrasing, and improve clarity of this text:\n\n"${selectedText}"`;
+      } else if (action === "bangla_harmony") {
+        promptQuery = `Translate and harmoniously adapt this text into standard, natural Bengali:\n\n"${selectedText}"`;
+      } else if (action === "shorten") {
+        promptQuery = `Summarize this text in 1 punchy, concise paragraph:\n\n"${selectedText}"`;
+      } else if (action === "forecast") {
+        promptQuery = `Generate a 3-scenario strategic forecast based on this text:\n\n"${selectedText}"`;
+      } else if (action === "custom" && customPrompt) {
+        promptQuery = `${customPrompt}:\n\n"${selectedText}"`;
+      }
+
+      if (promptQuery && onSelectPrompt) {
+        onSelectPrompt(promptQuery, "core");
+      } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(selectedText);
+      }
+    } catch (err) {
+      console.error("Selection transformation failed:", err);
+    } finally {
+      setIsTransformingSelection(false);
+    }
+  };
   const lowRamConfig = LowRamStylexOptimizerService.detectDeviceCapabilities();
   const [visibleLimit, setVisibleLimit] = useState(lowRamConfig.virtualizationBatchSize);
   const [trajectoryOpen, setTrajectoryOpen] = useState(false);
@@ -215,9 +250,17 @@ export function Transcript({
         description: content.slice(0, 500),
         intent,
       });
-      window.location.href = `/writing-studio?projectId=${encodeURIComponent(created._id)}`;
+      if (onOpenArtifact) {
+        onOpenArtifact("doc", message);
+      } else {
+        window.location.href = `/writing-studio?projectId=${encodeURIComponent(created._id)}`;
+      }
     } else {
-      window.location.href = "/writing-studio";
+      if (onOpenArtifact) {
+        onOpenArtifact("doc", message);
+      } else {
+        window.location.href = "/writing-studio";
+      }
     }
   };
 
@@ -356,7 +399,7 @@ export function Transcript({
         @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
       `}</style>
 
-      <div className="relative flex-1 h-full overflow-hidden">
+      <div ref={containerRef} className="relative flex-1 h-full overflow-hidden">
         <ScrollArea
           className={cn("h-full", className)}
           onScrollCapture={(e) => {
@@ -1083,6 +1126,13 @@ export function Transcript({
           <ChevronDown className="w-3.5 w-3.5 text-brand animate-bounce" />
         </button>
       )}
+
+      {/* ✍️ Floating Linguistic Selection Toolbar (ChatGPT Canvas Pattern) */}
+      <FloatingSelectionToolbar
+        containerRef={containerRef}
+        onTransform={handleSelectionTransform}
+        isTransforming={isTransformingSelection}
+      />
     </div>
 
       {/* 🧾 Replayable Trajectory & Audit Receipt Trail Modal */}

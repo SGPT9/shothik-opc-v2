@@ -780,8 +780,8 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
 
           {/* ── Bottom Toolbar (Always Visible & Stably Positioned) ── */}
           <div className="flex items-center justify-between px-2.5 sm:px-3 py-1.5 sm:py-2 border-t border-zinc-100 dark:border-zinc-800/80 mt-0.5 transition-colors duration-200 gap-1.5">
-            {/* Left Controls: Attach + Voice Input + Tools Dropdown + Focus Selector */}
-            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
+            {/* Left Controls: Attach (+) + Reasoning Focus Mode */}
+            <div className="flex items-center gap-1.5 shrink-0">
               {/* ➕ Unified Action & Attachment Menu */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
@@ -795,7 +795,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   disabled={disabled || activeStreaming}
                   aria-label="Add attachment or open workspace"
                   title="Attach file or open workspace (+)"
-                  className="flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white transition cursor-pointer"
+                  className="flex items-center justify-center h-8 w-8 rounded-full border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:text-zinc-950 dark:hover:text-white transition cursor-pointer"
                 >
                   <Plus className={cn("h-4 w-4 transition-transform duration-200", attachMenuOpen && "rotate-45")} />
                 </button>
@@ -844,7 +844,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                       { Icon: Table2, label: "Smart Spreadsheet", action: () => dispatchArtifact("sheet"), color: "text-cyan-400" },
                       { Icon: Search, label: "Deep Research", action: () => dispatchArtifact("research"), color: "text-violet-400" },
                       { Icon: Code2, label: "Code Assistant", action: () => dispatchArtifact("code"), color: "text-emerald-400" },
-                      { Icon: BookOpen, label: "বই ও প্রকাশনা (BoiMela)", action: () => dispatchArtifact("boimela"), color: "text-rose-400" },
+                      { Icon: BookOpen, label: "বই মেলা ও সাহিত্য (BoiMela)", action: () => dispatchArtifact("boimela"), color: "text-rose-400" },
                       { Icon: FlaskConical, label: "Scenario Lab (30 Resilience Vectors)", action: () => { if (onOpenScenarioLab) onOpenScenarioLab(); else setIsScenarioLabOpen(true); }, color: "text-amber-400" },
                       { Icon: Phone, label: "Unified 3D Voice Studio", action: () => { if (onVoiceOrbClick) onVoiceOrbClick(); else setIsVoiceStudioOpen(true); }, color: "text-cyan-400" },
                       { Icon: Database, label: "RAG Knowledge Vault", action: () => setIsVaultOpen(true), color: "text-cyan-400" },
@@ -867,31 +867,7 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 )}
               </div>
 
-              {/* 🎤 Voice Input (Dictation) */}
-              <button
-                type="button"
-                onClick={isListening ? stopListening : startListening}
-                disabled={disabled || activeStreaming}
-                aria-label={isListening ? "Stop voice dictation" : "Start voice dictation"}
-                title={isListening ? "Listening... Click to stop voice typing" : "Voice Input (Speech-to-Text)"}
-                className={cn(
-                  "relative flex items-center justify-center h-8 w-8 rounded-full transition cursor-pointer",
-                  isListening
-                    ? "bg-blue-500/20 text-blue-500 border border-blue-500/40 shadow-xs ring-2 ring-blue-500/30"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                )}
-              >
-                {isListening ? (
-                  <>
-                    <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping opacity-60 pointer-events-none" />
-                    <MicOff className="h-4 w-4 text-blue-500 relative z-10" />
-                  </>
-                ) : (
-                  <Mic className="h-4 w-4" />
-                )}
-              </button>
-
-              {/* 🌐 Focus Mode Selector (Clean Bottom Toolbar Dropdown) */}
+              {/* 🌐 Focus Mode Selector (Perplexity-Style Clean Pill) */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
@@ -902,11 +878,11 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setModelMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
-                  className="flex items-center gap-1 h-8 px-1.5 sm:px-2 rounded-lg text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full border border-zinc-200/80 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-800/60 text-xs text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-700/60 transition cursor-pointer"
                   title="Select web reasoning & research focus mode"
                 >
                   <Globe className="h-3.5 w-3.5 text-brand shrink-0" />
-                  <span className="text-[11px] font-medium hidden md:inline">
+                  <span className="text-[11px] font-medium hidden sm:inline">
                     {PERPLEXITY_FOCUS_OPTIONS.find((f) => f.value === perplexityFocus)?.label || "Web & AI"}
                   </span>
                   <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
@@ -946,21 +922,16 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
               </div>
             </div>
 
-            {/* Right Controls: Model Selector + Send/Stop Button */}
-            <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-              {/* Token / Character Count for Long Documents */}
-              {textValue.length > 500 && (
-                <span className="hidden md:inline text-[9px] font-mono text-muted-foreground/60 mr-1 select-none" title="Estimated character and token length">
-                  {textValue.length.toLocaleString()} chars · ~{Math.round(textValue.length / 4)} tok
+            {/* Right Controls: Model Pill + Voice Dictation + Send/Stop Button */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {/* Document Length Indicator (Discreet & Non-Intrusive) */}
+              {textValue.length > 600 && (
+                <span className="hidden lg:inline text-[9px] font-mono text-muted-foreground/60 mr-1 select-none" title="Estimated character and token length">
+                  {textValue.length.toLocaleString()} ch · ~{Math.round(textValue.length / 4)} tok
                 </span>
               )}
 
-              {/* Keyboard Shortcut Hint */}
-              <span className="hidden lg:inline text-[9px] font-mono text-muted-foreground/40 mr-0.5 select-none" title="Press Enter to send, Shift+Enter for new line">
-                ↵ Send
-              </span>
-
-              {/* Model Selector */}
+              {/* Minimal Model Selector Pill */}
               <div className="relative" onClick={(e) => e.stopPropagation()}>
                 <button
                   type="button"
@@ -971,9 +942,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                     setFocusMenuOpen(false);
                   }}
                   disabled={disabled || activeStreaming}
-                  className="flex items-center gap-1 h-8 px-1.5 sm:px-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition cursor-pointer"
+                  className="flex items-center gap-1.5 h-8 px-2.5 rounded-full border border-zinc-200/80 dark:border-zinc-800 bg-zinc-100/70 dark:bg-zinc-800/60 text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-200/60 dark:hover:bg-zinc-700/60 transition cursor-pointer"
                 >
-                  <span className="hidden sm:inline">{activeModel.label}</span>
+                  <span className="hidden sm:inline text-[11px]">{activeModel.label}</span>
                   <span className="sm:hidden text-xs">⚡</span>
                   <ChevronDown className="h-3 w-3 opacity-60 shrink-0" />
                 </button>
@@ -1018,23 +989,47 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                 )}
               </div>
 
-              {/* Send / Stop / Voice Mode Orb Button (ChatGPT Pattern) */}
+              {/* Voice Input (Speech-to-Text Dictation) */}
+              <button
+                type="button"
+                onClick={isListening ? stopListening : startListening}
+                disabled={disabled || activeStreaming}
+                aria-label={isListening ? "Stop voice dictation" : "Start voice dictation"}
+                title={isListening ? "Listening... Click to stop voice typing" : "Voice Input (Speech-to-Text)"}
+                className={cn(
+                  "relative flex items-center justify-center h-8 w-8 rounded-full transition cursor-pointer",
+                  isListening
+                    ? "bg-blue-500/20 text-blue-500 border border-blue-500/40 shadow-xs ring-2 ring-blue-500/30"
+                    : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:bg-zinc-800"
+                )}
+              >
+                {isListening ? (
+                  <>
+                    <span className="absolute inset-0 rounded-full bg-blue-500/30 animate-ping opacity-60 pointer-events-none" />
+                    <MicOff className="h-4 w-4 text-blue-500 relative z-10" />
+                  </>
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </button>
+
+              {/* Send / Stop Action Button (ChatGPT Circular Style) */}
               {activeStreaming ? (
                 <Button
                   type="button"
                   variant="outline"
                   size="icon"
-                  className="h-9 w-9 sm:h-8 sm:w-8 rounded-xl border-destructive/40 bg-destructive/5 text-destructive hover:bg-destructive/10 transition cursor-pointer"
+                  className="h-8 w-8 rounded-full border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive/20 transition cursor-pointer"
                   onClick={dispatchStop}
                   aria-label="Stop generating"
                 >
-                  <Square className="h-4 w-4 sm:h-3.5 sm:w-3.5 fill-current" />
+                  <Square className="h-3.5 w-3.5 fill-current" />
                 </Button>
               ) : textValue.trim() || attachments.length > 0 ? (
                 <Button
                   type="button"
                   size="icon"
-                  className="h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-all duration-150 cursor-pointer shadow-2xs font-medium"
+                  className="h-8 w-8 rounded-full bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-200 transition-all duration-150 cursor-pointer shadow-xs"
                   onClick={handleTextSubmit}
                   disabled={disabled}
                   aria-label="Send message"
@@ -1051,9 +1046,9 @@ export const Composer = forwardRef<HTMLTextAreaElement, ComposerProps>(
                   disabled={disabled}
                   aria-label="Start Voice Mode"
                   title="Start Realtime Conversational Voice Mode"
-                  className="flex items-center justify-center h-9 w-9 sm:h-8 sm:w-8 rounded-xl bg-muted/60 hover:bg-muted border border-border/60 text-muted-foreground hover:text-foreground transition-all duration-150 cursor-pointer"
+                  className="flex items-center justify-center h-8 w-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 transition cursor-pointer"
                 >
-                  <Phone className="h-3.5 w-3.5 text-muted-foreground" />
+                  <Send className="h-3.5 w-3.5 opacity-40" />
                 </button>
               )}
             </div>
