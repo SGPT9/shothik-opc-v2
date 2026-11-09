@@ -125,8 +125,9 @@ const VerticalMenu = ({
   fetchFileHistories,
 }) => {
   const [showSidebar, setShowSidebar] = useState(false);
-  const { demo } = useSelector((state) => state.settings);
-  const { user } = useSelector((state) => state.auth);
+  // Optimization: use specific property selectors to prevent unnecessary re-renders
+  const demo = useSelector((state) => state.settings.demo);
+  const user = useSelector((state) => state.auth.user);
   const paidUser = user?.package && user.package !== "free";
 
   // 
