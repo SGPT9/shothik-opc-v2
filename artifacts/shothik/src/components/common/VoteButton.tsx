@@ -20,7 +20,9 @@ export default function VoteButton({
   layout = "vertical",
   size = "md",
 }: VoteButtonProps) {
-  const { accessToken } = useSelector((state: any) => state.auth);
+  // Bolt ⚡ Optimization: Select only the required property to prevent
+  // unnecessary re-renders when other auth state properties change
+  const accessToken = useSelector((state: any) => state.auth?.accessToken);
   const isAuthenticated = !!accessToken;
 
   const [optimisticDelta, setOptimisticDelta] = useState(0);
