@@ -27,8 +27,9 @@ import UserInfo from "./UserInfo";
 import WalletCredits from "./WalletCredits";
 
 export default function NavigationSidebar() {
-  const { accessToken } = useSelector((state) => state.auth);
-  const { sidebar } = useSelector((state) => state.settings);
+  // ⚡ Bolt: Prevent unnecessary re-renders by selecting specific properties
+  const accessToken = useSelector((state) => state.auth.accessToken);
+  const sidebar = useSelector((state) => state.settings.sidebar);
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const prevPathnameRef = useRef(pathname);
