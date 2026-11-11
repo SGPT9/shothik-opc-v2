@@ -83,7 +83,7 @@ export default function BkashCheckoutModal({
               <p className="text-xs text-slate-400">Automated Instant Merchant Settlement</p>
             </div>
           </div>
-          <button
+          <button aria-label="Close"
             onClick={onClose}
             className="text-slate-400 hover:text-white text-lg font-bold p-1 transition"
           >
