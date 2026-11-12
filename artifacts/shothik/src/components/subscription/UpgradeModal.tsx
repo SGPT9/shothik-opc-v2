@@ -48,7 +48,8 @@ export default function UpgradeModal({
   toolName,
   usageInfo,
 }: UpgradeModalProps) {
-  const { accessToken } = useSelector((state: RootState) => state.auth);
+  // ⚡ Bolt optimization: select specific property to prevent unnecessary re-renders
+  const accessToken = useSelector((state: RootState) => state.auth?.accessToken);
   const { countryCode } = useUserLocation();
   const currency = getCurrencyForCountry(countryCode);
   const [loadingTier, setLoadingTier] = useState<string | null>(null);
