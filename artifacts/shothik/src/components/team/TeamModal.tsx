@@ -48,10 +48,12 @@ export function TeamModal({ isOpen, onClose, initialTab = "agents" }: TeamModalP
           </div>
 
           {/* Tab Selector */}
-          <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-xs">
+          <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl border border-white/10 text-xs" role="tablist" aria-label="Team settings tabs">
             <button
+              role="tab"
+              aria-selected={activeTab === "agents"}
               onClick={() => setActiveTab("agents")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus:outline-none ${
                 activeTab === "agents"
                   ? "bg-indigo-600/30 border border-indigo-500/40 text-indigo-200"
                   : "text-zinc-400 hover:text-white"
@@ -62,8 +64,10 @@ export function TeamModal({ isOpen, onClose, initialTab = "agents" }: TeamModalP
             </button>
 
             <button
+              role="tab"
+              aria-selected={activeTab === "memory"}
               onClick={() => setActiveTab("memory")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus:outline-none ${
                 activeTab === "memory"
                   ? "bg-cyan-600/30 border border-cyan-500/40 text-cyan-200"
                   : "text-zinc-400 hover:text-white"
@@ -74,8 +78,10 @@ export function TeamModal({ isOpen, onClose, initialTab = "agents" }: TeamModalP
             </button>
 
             <button
+              role="tab"
+              aria-selected={activeTab === "schedule"}
               onClick={() => setActiveTab("schedule")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus:outline-none ${
                 activeTab === "schedule"
                   ? "bg-amber-600/30 border border-amber-500/40 text-amber-200"
                   : "text-zinc-400 hover:text-white"
