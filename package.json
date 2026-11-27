@@ -17,6 +17,7 @@
     "typecheck": "pnpm run typecheck:libs && pnpm --filter @workspace/shothik run typecheck",
     "typecheck:api": "pnpm run typecheck:libs && pnpm --filter @workspace/api-server run typecheck",
     "typecheck:all": "pnpm run typecheck:libs && pnpm -r --if-present run typecheck",
+    "test": "pnpm --filter @workspace/api-server --filter @workspace/shothik run test",
     "test:all": "pnpm -r test",
     "test:run": "pnpm --filter @workspace/api-server test",
     "test:api": "pnpm --filter @workspace/api-server run test",

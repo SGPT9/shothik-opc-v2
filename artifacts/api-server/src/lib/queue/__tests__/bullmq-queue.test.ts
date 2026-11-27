@@ -1,7 +1,10 @@
 import { describe, it, expect, afterAll } from "vitest";
 import { queueManager } from "../bullmq-queue";
+import { redisAvailable } from "../../../test-utils/live-services.js";
 
-describe("BullMQ Task Queue & Async Processors", () => {
+const hasRedis = await redisAvailable();
+
+describe.skipIf(!hasRedis)("BullMQ Task Queue & Async Processors", () => {
   afterAll(async () => {
     await queueManager.close();
   });
