@@ -1,6 +1,10 @@
-const HOST = "https://ers8j28a.ap-southeast.insforge.app";
-const API_KEY = "ik_9b4e11405dedf37af3bd726789a7749a";
-const ANON_KEY = "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+const HOST = process.env.INSFORGE_BASE_URL;
+const API_KEY = process.env.INSFORGE_API_KEY;
+const ANON_KEY = process.env.INSFORGE_ANON_KEY || "";
+if (!HOST || !API_KEY) {
+  console.error("INSFORGE_BASE_URL and INSFORGE_API_KEY must be set.");
+  process.exit(1);
+}
 
 async function runInsForgeAudit() {
   console.log("=================================================");

@@ -50,9 +50,17 @@ if (isProduction && !process.env.JWT_SECRET) {
   throw new Error("[Auth Security] CRITICAL: JWT_SECRET environment variable must be explicitly configured when NODE_ENV=production.");
 }
 const JWT_SECRET = process.env.JWT_SECRET || "shothik_dev_only_ephemeral_jwt_secret";
-const SUPABASE_JWT_SECRET =
-  process.env.SUPABASE_JWT_SECRET ||
-  "super-secret-jwt-token-with-at-least-32-characters-long";
+// The Supabase local-dev demo secret is public knowledge; never accept it in production,
+// otherwise anyone could forge a valid HS256 token.
+const SUPABASE_PUBLIC_DEMO_JWT = "super-secret-jwt-token-with-at-least-32-characters-long";
+const SUPABASE_JWT_SECRET = isProduction
+  ? (process.env.SUPABASE_JWT_SECRET && process.env.SUPABASE_JWT_SECRET !== SUPABASE_PUBLIC_DEMO_JWT
+      ? process.env.SUPABASE_JWT_SECRET
+      : "")
+  : process.env.SUPABASE_JWT_SECRET || SUPABASE_PUBLIC_DEMO_JWT;
+if (isProduction && JWT_SECRET.length < 32) {
+  throw new Error("[Auth Security] CRITICAL: JWT_SECRET must be at least 32 characters in production.");
+}
 const TRUSTED_SUPABASE_ISSUERS = new Set([
   "https://xgnzsikvguswhtozvokx.supabase.co/auth/v1",
   "http://127.0.0.1:54321/auth/v1",
