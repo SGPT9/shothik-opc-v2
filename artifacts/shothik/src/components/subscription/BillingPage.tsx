@@ -100,7 +100,8 @@ function UsageMeter({ label, info }: { label: string; info: UsageInfo }) {
 }
 
 export default function BillingPage() {
-  const { accessToken } = useSelector((state: RootState) => state.auth);
+  // ⚡ Bolt optimization: select specific property to prevent unnecessary re-renders
+  const accessToken = useSelector((state: RootState) => state.auth?.accessToken);
   const subscription = useSubscription();
   const usageLimits = useUsageLimits();
   const { countryCode } = useUserLocation();
