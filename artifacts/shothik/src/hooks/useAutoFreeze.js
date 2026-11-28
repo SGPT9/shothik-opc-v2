@@ -20,7 +20,9 @@ export const useAutoFreeze = ({
   enableLLM = false,
   shouldAutoFreeze = false,
 }) => {
-  const { accessToken, user } = useSelector((state) => state.auth);
+  // Optimization: Select specific properties to prevent unnecessary re-renders when other auth properties change
+  const accessToken = useSelector((state) => state.auth?.accessToken);
+  const user = useSelector((state) => state.auth?.user);
   const [autoFrozenTerms, setAutoFrozenTerms] = useState(new Map());
   const [userDisabledTerms, setUserDisabledTerms] = useState(new Set());
   const [isDetecting, setIsDetecting] = useState(false);

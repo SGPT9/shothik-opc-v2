@@ -1,4 +1,5 @@
 "use client";
+// secret-scan: demo-values-only (tokens in this file are fictional sample data)
 
 import { useState } from "react";
 import {
