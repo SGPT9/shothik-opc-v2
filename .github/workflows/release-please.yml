@@ -1,9 +1,10 @@
 name: Release Automation & Semver
 
+# Enterprise Actions policy restricts GITHUB_TOKEN from creating PRs (409).
+# Run manually via workflow_dispatch (or restore `push: branches: [main]` once a
+# RELEASE_PLEASE_TOKEN PAT or org-level PR creation permission is enabled).
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -16,6 +17,7 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
           release-type: node
           package-name: shothik-opc-v2
           changelog-types: '[{"type":"feat","section":"Features","hidden":false},{"type":"fix","section":"Bug Fixes","hidden":false},{"type":"perf","section":"Performance Improvements","hidden":false}]'
