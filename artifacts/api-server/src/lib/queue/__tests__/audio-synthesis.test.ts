@@ -4,6 +4,9 @@ import type { Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import aiToolsExtendedRouter from "../../../routes/ai-tools-extended";
 import { executeJobByType, handleAudioSynthesis } from "../task-processors";
+import { voiceDaemonAvailable } from "../../../test-utils/live-services.js";
+
+const hasVoiceDaemon = await voiceDaemonAvailable();
 
 describe("Wave A: Audio Synthesis Queue Processor & Voice AI Proxy", () => {
   let server: Server;
@@ -144,7 +147,7 @@ describe("Wave A: Audio Synthesis Queue Processor & Voice AI Proxy", () => {
       expect(json.error).toBeDefined();
     });
 
-    it("POST /api/v1/voice/synthesize returns synthesized WAV data URI and telemetry", async () => {
+    it.skipIf(!hasVoiceDaemon)("POST /api/v1/voice/synthesize returns synthesized WAV data URI and telemetry", async () => {
       const res = await fetch(`${baseUrl}/api/v1/voice/synthesize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -163,7 +166,7 @@ describe("Wave A: Audio Synthesis Queue Processor & Voice AI Proxy", () => {
       expect(json.persona).toBe("ayesha_sales");
     });
 
-    it("POST /api/voice/synthesize alias works identically", async () => {
+    it.skipIf(!hasVoiceDaemon)("POST /api/voice/synthesize alias works identically", async () => {
       const res = await fetch(`${baseUrl}/api/voice/synthesize`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

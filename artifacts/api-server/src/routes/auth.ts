@@ -3,6 +3,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "../lib/logger";
+import { SUPABASE_PROJECT_URL, verifySupabaseAsymmetricSignature } from "../lib/supabase-jwks";
 import { db, userCreditsTable, userProfilesTable, userSubscriptionsTable, userPreferencesTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 
@@ -50,10 +51,19 @@ if (isProduction && !process.env.JWT_SECRET) {
   throw new Error("[Auth Security] CRITICAL: JWT_SECRET environment variable must be explicitly configured when NODE_ENV=production.");
 }
 const JWT_SECRET = process.env.JWT_SECRET || "shothik_dev_only_ephemeral_jwt_secret";
-const SUPABASE_JWT_SECRET =
-  process.env.SUPABASE_JWT_SECRET ||
-  "super-secret-jwt-token-with-at-least-32-characters-long";
+// The Supabase local-dev demo secret is public knowledge; never accept it in production,
+// otherwise anyone could forge a valid HS256 token.
+const SUPABASE_PUBLIC_DEMO_JWT = "super-secret-jwt-token-with-at-least-32-characters-long";
+const SUPABASE_JWT_SECRET = isProduction
+  ? (process.env.SUPABASE_JWT_SECRET && process.env.SUPABASE_JWT_SECRET !== SUPABASE_PUBLIC_DEMO_JWT
+      ? process.env.SUPABASE_JWT_SECRET
+      : "")
+  : process.env.SUPABASE_JWT_SECRET || SUPABASE_PUBLIC_DEMO_JWT;
+if (isProduction && JWT_SECRET.length < 32) {
+  throw new Error("[Auth Security] CRITICAL: JWT_SECRET must be at least 32 characters in production.");
+}
 const TRUSTED_SUPABASE_ISSUERS = new Set([
+  `${SUPABASE_PROJECT_URL}/auth/v1`,
   "https://xgnzsikvguswhtozvokx.supabase.co/auth/v1",
   "http://127.0.0.1:54321/auth/v1",
   "http://localhost:54321/auth/v1",
@@ -187,16 +197,13 @@ function verifySupabaseJwt(parts: [string, string, string]): { userId: string; e
       }
     }
 
-    // In non-production or trusted Supabase Cloud/Local issuer bridge (e.g., ES256 asymmetric tokens or unconfigured cloud secret)
-    if (
-      !signatureVerified &&
-      !isProduction &&
-      typeof payload.iss === "string" &&
-      TRUSTED_SUPABASE_ISSUERS.has(payload.iss) &&
-      payload.aud === "authenticated" &&
-      signatureB64.length >= 32
-    ) {
-      signatureVerified = true;
+    // Supabase Cloud signs user tokens with asymmetric keys (ES256/RS256); verify against the
+    // project's public JWKS. Never accept a token on issuer/audience claims alone.
+    if (!signatureVerified && (header.alg === "ES256" || header.alg === "RS256")) {
+      signatureVerified =
+        typeof payload.iss === "string" &&
+        TRUSTED_SUPABASE_ISSUERS.has(payload.iss) &&
+        verifySupabaseAsymmetricSignature(header, signingInput, signatureB64);
     }
 
     if (!signatureVerified) return null;
