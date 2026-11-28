@@ -75,6 +75,7 @@ export const SolarMicroGridModal: React.FC<SolarMicroGridModalProps> = ({
 
   // Keyboard shortcut ⌘G / Ctrl+G
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "g") {
         e.preventDefault();

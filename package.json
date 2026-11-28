@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "lint": "eslint . --ext .ts,.tsx",
     "dev": "pnpm --filter @workspace/shothik run dev",
     "dev:api": "pnpm --filter @workspace/api-server run dev",
     "dev:mockup": "pnpm --filter @workspace/mockup-sandbox run dev",
@@ -12,10 +13,12 @@
     "build:web": "pnpm --filter @workspace/shothik run build",
     "build:api": "pnpm --filter @workspace/api-server run build",
     "build:pipeline": "powershell -ExecutionPolicy Bypass -File ./scripts/build-production.ps1",
-    "typecheck": "pnpm --filter @workspace/shothik run typecheck",
-    "typecheck:api": "pnpm --filter @workspace/api-server run typecheck",
-    "typecheck:all": "pnpm -r --if-present run typecheck",
-    "test": "pnpm --filter @workspace/api-server test",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm --filter @workspace/shothik run typecheck",
+    "typecheck:api": "pnpm run typecheck:libs && pnpm --filter @workspace/api-server run typecheck",
+    "typecheck:all": "pnpm run typecheck:libs && pnpm -r --if-present run typecheck",
+    "test": "pnpm --filter @workspace/api-server --filter @workspace/shothik run test",
+    "test:all": "pnpm -r test",
     "test:run": "pnpm --filter @workspace/api-server test",
     "test:api": "pnpm --filter @workspace/api-server run test",
     "test:ecc": "pnpm --filter @workspace/api-server test",
@@ -33,7 +36,8 @@
   "private": true,
   "dependencies": {
     "@receptron/laya": "^0.1.2",
-    "@replit/connectors-sdk": "^0.4.3"
+    "@replit/connectors-sdk": "^0.4.3",
+    "@supabase/supabase-js": "^2.118.0"
   },
   "devDependencies": {
     "@cloudflare/kv-asset-handler": "^0.5.0",
@@ -78,9 +82,17 @@
     "vitest": "^4.1.11",
     "wrangler": "^4.129.0"
   },
+  "packageManager": "pnpm@11.17.0",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=11.0.0"
+  },
   "overrides": {
     "@playwright/test": "^1.59.1",
-    "axios": "^1.7.9",
+    "axios": "^1.19.0",
+    "dompurify": ">=3.2.4",
+    "proxy-addr": ">=2.0.8",
+    "tinypool": ">=2.1.2",
     "prettier": "^3.9.6",
     "typescript": "^5.9.3"
   },

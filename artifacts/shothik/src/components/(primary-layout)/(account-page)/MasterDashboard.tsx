@@ -24,9 +24,9 @@ function timeAgo(ts: number): string {
 }
 
 export default function MasterDashboard({ masterId }: { masterId: string }) {
-  const agents = useQuery(api.twin.getAllByMaster, { masterId });
-  const notifications = useQuery(api.agent_notifications.getMasterNotifications, { masterId });
-  const unreadCount = useQuery(api.agent_notifications.getUnreadCount, { masterId });
+  const agents = useQuery(api.twin.getAllByMaster, masterId ? { masterId } : "skip");
+  const notifications = useQuery(api.agent_notifications.getMasterNotifications, masterId ? { masterId } : "skip");
+  const unreadCount = useQuery(api.agent_notifications.getUnreadCount, masterId ? { masterId } : "skip");
   const markAsRead = useMutation(api.agent_notifications.markAsRead);
   const markAllAsRead = useMutation(api.agent_notifications.markAllAsRead);
   const suspendTwin = useMutation(api.twin.suspendTwin);

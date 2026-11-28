@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getInsforgeBrowserClient } from '@/lib/insforge/client';
+import { communityLocal, seedChannelForForum, seedChatsForForum, seedPostsForForum } from '@/lib/community-seed';
 
 export interface Channel {
   id: string;
@@ -83,10 +84,13 @@ export function useChannel(channelId: string) {
       try {
         const client = getInsforgeBrowserClient();
         const { data: channels, error } = await (client as any).from('channels').select('*').eq('id', channelId).single();
-        if (error) throw error;
+        if (error || !channels) throw error || new Error('not found');
         setData(channels);
       } catch (err: any) {
-        setError(err.message);
+        // Offline / unknown to backend: fall back to seeded forum so the page still opens
+        const seeded = seedChannelForForum(channelId);
+        if (seeded) setData(seeded as Channel);
+        else setError(err?.message ?? 'not found');
       } finally {
         setLoading(false);
       }
@@ -107,14 +111,22 @@ export function usePosts(channelId: string) {
     if (!channelId) return;
     try {
       const client = getInsforgeBrowserClient();
-      const { data: posts, error } = await (client as any).from('posts').select('*').eq('channel_id', channelId).order('created_at', { ascending: false });
-      if (error) throw error;
-      
+      let posts: any[] = [];
+      try {
+        const res = await (client as any).from('posts').select('*').eq('channel_id', channelId).order('created_at', { ascending: false });
+        if (res.error) throw res.error;
+        posts = res.data || [];
+      } catch {
+        posts = [];
+      }
+      if (posts.length === 0) posts = seedPostsForForum(channelId);
+      posts = [...communityLocal.posts(channelId), ...posts];
+
       // Mock joined fields for UI
-      const enriched = (posts || []).map((p: any) => ({
+      const enriched = posts.map((p: any) => ({
         ...p,
         _id: p.id,
-        authorName: p.author_id.substring(0, 8),
+        authorName: String(p.author_id || 'anonymous').substring(0, 12),
         authorType: p.agent_id ? 'agent' : 'human',
         reactions: { intrigued: 0, skeptical: 0, impressed: 0, unsettled: 0 },
         shareToken: p.id,
@@ -145,14 +157,24 @@ export function useChatMessages(channelId: string) {
     if (!channelId) return;
     try {
       const client = getInsforgeBrowserClient();
-      const { data: chats, error } = await (client as any).from('comments').select('*').eq('post_id', channelId).order('created_at', { ascending: true });
-      if (error) throw error;
-      
-      const enriched = (chats || []).map((c: any) => ({
+      let chats: any[] = [];
+      try {
+        const res = await (client as any).from('comments').select('*').eq('post_id', channelId).order('created_at', { ascending: true });
+        if (res.error) throw res.error;
+        chats = res.data || [];
+      } catch {
+        chats = [];
+      }
+      if (chats.length === 0) chats = seedChatsForForum(channelId);
+      chats = [...chats, ...communityLocal.chats(channelId)];
+
+      const enriched = chats.map((c: any) => ({
         ...c,
         _id: c.id,
-        authorName: c.author_id.substring(0, 8),
-        authorType: 'human',
+        authorId: c.author_id,
+        createdAt: Date.parse(c.created_at) || Date.now(),
+        authorName: String(c.author_id || 'anonymous').replace(/^(agent_|founder_)/, '').substring(0, 12),
+        authorType: String(c.author_id || '').startsWith('agent_') ? 'agent' : 'human',
         message: c.content,
         replyToId: c.parent_id
       }));
@@ -206,7 +228,11 @@ export function useCommunityMutations() {
       title,
       content,
     }]);
-    if (error) throw error;
+    if (error) {
+      // Backend unreachable: keep the post locally so the user's work is not lost
+      communityLocal.addPost({ id: `local_${Date.now()}`, channel_id: channelId, author_id: authorName || authorId, title, content, upvotes: 0, downvotes: 0, created_at: new Date().toISOString() });
+      return null;
+    }
     return data;
   };
 
@@ -230,7 +256,10 @@ export function useCommunityMutations() {
       content: message,
       parent_id: replyToId,
     }]);
-    if (error) throw error;
+    if (error) {
+      communityLocal.addChat({ id: `local_${Date.now()}`, post_id: channelId, author_id: authorName || authorId, content: message, parent_id: replyToId, created_at: new Date().toISOString() });
+      return null;
+    }
     return data;
   };
 

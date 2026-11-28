@@ -10,7 +10,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 const AuthApplier = () => {
   const dispatch = useDispatch();
-  const { accessToken, _hydrated } = useSelector((state) => state.auth);
+  // ⚡ Bolt: Destructuring auth state causes unnecessary re-renders when other auth fields change. Use specific selectors.
+  const accessToken = useSelector((state) => state.auth?.accessToken);
+  const _hydrated = useSelector((state) => state.auth?._hydrated);
 
   useEffect(() => {
     if (!_hydrated) {

@@ -37,11 +37,13 @@ function formatNumber(number) {
 
 const AiDetector = () => {
   const [openSampleDrawer, setOpenSampleDrawer] = useState(false);
-  const { sidebar } = useSelector((state) => state.settings);
+  // ⚡ Bolt Performance Optimization: Select exact property to prevent unnecessary re-renders when other settings change
+  const sidebar = useSelector((state) => state.settings?.sidebar);
   const [showShareModal, setshowShareModal] = useState(false);
   const [outputContend, setOutputContend] = useState(null);
   const [scanAidetector] = useScanAidetectorMutation();
-  const { user } = useSelector((state) => state.auth);
+  // ⚡ Bolt Performance Optimization: Select exact property to prevent unnecessary re-renders when other auth properties change
+  const user = useSelector((state) => state.auth?.user);
   const [enableEdit, setEnableEdit] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [userInput, setUserInput] = useState("");

@@ -6,13 +6,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Coins, Sparkles, Zap, Crown, CreditCard, Smartphone, Landmark, CheckCircle2, GraduationCap, Rocket, ShoppingBag } from "lucide-react";
+import { Coins, Sparkles, Zap, Crown, CreditCard, Smartphone, Landmark, CheckCircle2, GraduationCap, Rocket, ShoppingBag, Headphones, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   CREDIT_PACKS,
   type PackId,
   type PaymentProvider,
-  getProviderForCountry,
   getPackPrice,
 } from "@/lib/payment-config";
 import { trackCreditPurchaseStarted } from "@/lib/posthog";
@@ -42,6 +41,24 @@ export const OUTCOME_PASSES_LIST: OutcomePassItem[] = [
     outcome: "Full thesis audit report with Turnitin-equivalent similarity index & PDF export",
     tag: "৳49 • Academic",
     icon: GraduationCap,
+  },
+  {
+    id: "AUDIOBOOK_BOOKTOK_PASS",
+    name: "Audiobook & BookTok Launch Pass",
+    priceBdt: 149,
+    credits: 150,
+    outcome: "24kHz Multi-Cast Bangla Audiobook Chapter, 3D Binaural Soundscape & 3 BookTok Video Reels",
+    tag: "৳149 • Audio/Video",
+    icon: Headphones,
+  },
+  {
+    id: "BOI_MELA_PRINT_PASS",
+    name: "Ekushey Boi Mela Print-Ready Book Pass",
+    priceBdt: 199,
+    credits: 200,
+    outcome: "6x9 PDF/X-1a Nilkhet Forma Typesetting, 3D Book Jacket, CIP & ISBN-13 Barcode & Legal Shield",
+    tag: "৳199 • Publishing",
+    icon: BookOpen,
   },
   {
     id: "PROJECT_VENTURE_PASS",
@@ -83,8 +100,6 @@ interface CreditPurchaseModalProps {
 
 export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurchaseModalProps) {
   const user = useSelector((state: any) => state.auth?.user);
-  const accessToken = useSelector((state: any) => state.auth?.accessToken);
-  const isAuthenticated = !!(user || accessToken);
 
   const [balance, setBalance] = useState<number>(550);
   const [purchasing, setPurchasing] = useState<string | null>(null);
@@ -100,14 +115,16 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
 
   const fetchBalance = useCallback(() => {
     const userId = user?.id || user?._id || "guest";
-    fetch("/api/v1/subscriptions/me", {
+    fetch(`/api/v1/subscriptions/credits?userId=${encodeURIComponent(userId)}`, {
       headers: { "x-user-id": userId },
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && data.data?.subscription) {
+        if (typeof data?.creditsBalance === "number") {
+          setBalance(data.creditsBalance);
+        } else if (data?.success && data?.data?.subscription) {
           const tier = data.data.subscription.tier;
-          const tierCredits = tier === "team" ? 50000 : tier === "pro" ? 15000 : 550;
+          const tierCredits = tier === "team" ? 5000 : tier === "pro" ? 1500 : 550;
           setBalance(tierCredits);
         }
       })
@@ -132,7 +149,6 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
     setError(null);
     setSuccessMsg(null);
 
-    // If an outcome-based pass is selected
     if (selectedPass) {
       try {
         const userId = user?.id || user?._id || "usr_default";
@@ -168,10 +184,10 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
 
     try {
       const tierBdtMap: Record<string, number> = {
-        starter: 499,
-        pro: 1499,
-        team: 4999,
-        enterprise: 9999,
+        starter: 100,
+        pro: 990,
+        team: 2400,
+        enterprise: 6000,
       };
 
       const userId = user?.id || user?._id || "guest";
@@ -185,7 +201,7 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
           trxId: manualTrxId.trim().toUpperCase(),
           provider: "bkash",
           tier: selectedTier,
-          amountBdt: tierBdtMap[selectedTier] || 1499,
+          amountBdt: tierBdtMap[selectedTier] || 990,
           userId,
         }),
       });
@@ -205,38 +221,13 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
     }
   };
 
-  const handleBkashCheckout = async (packId: PackId) => {
-    try {
-      const res = await fetch("/api/bkash/credits/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ packId }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.bkashURL) {
-          window.location.href = data.bkashURL;
-          return;
-        }
-      }
-    } catch {
-      // Fallback
-    }
-    setShowTrxInput(true);
-  };
-
   const handlePurchase = async (packId: PackId, tier: "starter" | "pro" | "team" | "enterprise") => {
     setSelectedTier(tier);
     setSelectedPass(null);
     setError(null);
     setSuccessMsg(null);
     trackCreditPurchaseStarted(provider, packId);
-
-    if (provider === "bkash") {
-      await handleBkashCheckout(packId);
-    } else {
-      setShowTrxInput(true);
-    }
+    setShowTrxInput(true);
   };
 
   const handleSelectPass = (pass: OutcomePassItem) => {
@@ -359,7 +350,7 @@ export default function CreditPurchaseModal({ open, onOpenChange }: CreditPurcha
 
         {/* TAB 1: OUTCOME PASSES */}
         {activeTab === "outcome_passes" && (
-          <div className="grid grid-cols-1 gap-2.5" role="list">
+          <div className="grid grid-cols-1 gap-2.5 max-h-72 overflow-y-auto pr-1" role="list">
             {OUTCOME_PASSES_LIST.map((pass) => {
               const Icon = pass.icon;
               const isSelected = selectedPass?.id === pass.id;

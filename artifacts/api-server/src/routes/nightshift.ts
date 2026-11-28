@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { nightshiftEngine } from "../lib/nightshift-engine.js";
 import { logger } from "../lib/logger.js";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -10,7 +11,8 @@ const router = Router();
  */
 router.post(["/v1/nightshift/run-cycle", "/api/v1/nightshift/run-cycle"], async (req: Request, res: Response): Promise<void> => {
   try {
-    const { userId = "usr_default", projectName = "VerifiQ AI" } = req.body;
+    const userId = resolveUserId(req, req.body?.userId || "usr_default");
+    const { projectName = "VerifiQ AI" } = req.body;
     const digest = await nightshiftEngine.runAutonomousCycle({ userId, projectName });
 
     res.status(200).json({

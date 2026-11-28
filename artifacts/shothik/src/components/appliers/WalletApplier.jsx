@@ -8,7 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 const WalletApplier = () => {
   const dispatch = useDispatch();
-  const { accessToken } = useSelector((state) => state.auth);
+  // ⚡ Bolt: Destructuring auth state causes unnecessary re-renders when other auth fields change. Use specific selectors.
+  const accessToken = useSelector((state) => state.auth?.accessToken);
 
   // Fetch wallet data automatically when user is logged in
   const { data: walletResponse, isLoading: walletQueryLoading } = useQuery({
@@ -54,4 +55,3 @@ const WalletApplier = () => {
 };
 
 export default WalletApplier;
-

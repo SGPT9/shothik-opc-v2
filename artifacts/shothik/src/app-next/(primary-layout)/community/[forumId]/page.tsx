@@ -4,8 +4,8 @@ import { useParams, useSearchParams } from "@/lib/navigation";
 import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { useChannel, usePosts, useChatMessages, useCommunityMutations } from "@/hooks/useCommunity";
-import ForumPost from "@/components/forum/ForumPost";
-import CountdownTimer from "@/components/forum/CountdownTimer";
+import ForumPost from "@/components/community/ForumPost";
+import CountdownTimer from "@/components/community/CountdownTimer";
 import { Send, Users, Bot, Eye, BookOpen, Calendar, MessageSquare, Hash, CornerDownRight } from "lucide-react";
 
 type ParticipantType = "agent_only" | "human_only" | "both";

@@ -1,10 +1,8 @@
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import useResponsive from "@/hooks/ui/useResponsive";
 import { cn } from "@/lib/utils";
-import { Gem } from "lucide-react";
-;
+import { Gem, Zap } from "lucide-react";
 import { Link } from "wouter";
 
 export function MessageTemplate({
@@ -32,7 +30,7 @@ export function MessageTemplate({
           )}
         >
           <div className="xl:scale-[1.2] select-none pointer-events-none">
-            <Image src="/fromTo-2.svg" alt="arrow" width={120} height={120} className="select-none pointer-events-none" />
+            <img src="/fromTo-2.svg" alt="arrow" width={120} height={120} className="select-none pointer-events-none" />
           </div>
         </div>
         {/* element ends */}
@@ -143,20 +141,31 @@ export function MessageTemplate({
             </p>
           </div>
         </div>
-        {/* upgrade button */}
-        <Link href={"/pricing"}>
-          <Button
-            // data-umami-event="Nav: Upgrade To Premium"
-            data-rybbit-event="clicked_upgrade_plan"
-            size={isXl ? "default" : "sm"}
-            variant="default"
-            rel="noopener"
-            className="max-w-fit"
-          >
-            <Gem className="h-5 w-5 md:h-6 md:w-6" />
-            Upgrade Plan
-          </Button>
-        </Link>
+        {/* upgrade action buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-2 mt-1">
+          <Link href={"/pricing"}>
+            <Button
+              data-rybbit-event="clicked_upgrade_plan"
+              size={isXl ? "default" : "sm"}
+              variant="default"
+              rel="noopener"
+              className="max-w-fit"
+            >
+              <Gem className="h-4 w-4 mr-1.5" />
+              Upgrade Plan
+            </Button>
+          </Link>
+          <Link href={"/pricing?pass=assignment_sprint"}>
+            <Button
+              size={isXl ? "default" : "sm"}
+              variant="outline"
+              className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 font-bold"
+            >
+              <Zap className="h-4 w-4 mr-1 text-emerald-400" />
+              Assignment Sprint Pass (৳149)
+            </Button>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -265,6 +274,7 @@ export function CreativeMessage() {
         "Copy writing",
         "Storytelling",
         "Expressive Tone",
+        "Creative Flare",
       ]}
       chipBgColors={["#8E33FF14", "#00B8D914", "#22C55E14", "#FFAB0014"]}
     />
