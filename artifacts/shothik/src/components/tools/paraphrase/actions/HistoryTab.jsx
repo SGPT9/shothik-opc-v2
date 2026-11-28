@@ -26,11 +26,13 @@ const HistoryTab = ({ onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
-  const { accessToken } = useSelector((state) => state.auth);
+  // Performance optimization: select specific property to avoid unnecessary re-renders
+  const accessToken = useSelector((state) => state.auth.accessToken);
 
-  const { activeHistory, histories, historyGroups } = useSelector(
-    (state) => state.paraphraseHistory,
-  );
+  // Performance optimization: select specific properties instead of full object destructuring to prevent unnecessary re-renders
+  const activeHistory = useSelector((state) => state.paraphraseHistory.activeHistory);
+  const histories = useSelector((state) => state.paraphraseHistory.histories);
+  const historyGroups = useSelector((state) => state.paraphraseHistory.historyGroups);
 
   const API_BASE =
     ENV.api_url +
