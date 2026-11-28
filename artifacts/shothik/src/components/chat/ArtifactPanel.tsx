@@ -1,47 +1,47 @@
 "use client";
 
-import { useState, useEffect, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense, type ComponentType } from "react";
 import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, PenLine, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown, ExternalLink } from "lucide-react";
 import { UndockedWindowManager } from "@/lib/chat/undocked-window";
-const SlidesArtifact = lazy(() => import("@/components/chat/artifacts/SlidesArtifact").then((mod) => ({ default: (mod as any).SlidesArtifact || (mod as any).default })));
-const SheetArtifact = lazy(() => import("@/components/chat/artifacts/SheetArtifact").then((mod) => ({ default: (mod as any).SheetArtifact || (mod as any).default })));
-const DeepResearchArtifact = lazy(() => import("@/components/chat/artifacts/DeepResearchArtifact").then((mod) => ({ default: (mod as any).DeepResearchArtifact || (mod as any).default })));
-const CodeArtifact = lazy(() => import("@/components/chat/artifacts/CodeArtifact").then((mod) => ({ default: (mod as any).CodeArtifact || (mod as any).default })));
-const ApprovalsArtifact = lazy(() => import("@/components/chat/artifacts/ApprovalsArtifact").then((mod) => ({ default: (mod as any).ApprovalsArtifact || (mod as any).default })));
-const DiagramArtifact = lazy(() => import("@/components/chat/artifacts/DiagramArtifact").then((mod) => ({ default: (mod as any).DiagramArtifact || (mod as any).default })));
-const DocArtifact = lazy(() => import("@/components/chat/artifacts/DocArtifact").then((mod) => ({ default: (mod as any).DocArtifact || (mod as any).default })));
+const SlidesArtifact = lazy(() => import("@/components/chat/artifacts/SlidesArtifact").then((mod) => ({ default: ((mod as any).SlidesArtifact || (mod as any).default) as ComponentType<any> })));
+const SheetArtifact = lazy(() => import("@/components/chat/artifacts/SheetArtifact").then((mod) => ({ default: ((mod as any).SheetArtifact || (mod as any).default) as ComponentType<any> })));
+const DeepResearchArtifact = lazy(() => import("@/components/chat/artifacts/DeepResearchArtifact").then((mod) => ({ default: ((mod as any).DeepResearchArtifact || (mod as any).default) as ComponentType<any> })));
+const CodeArtifact = lazy(() => import("@/components/chat/artifacts/CodeArtifact").then((mod) => ({ default: ((mod as any).CodeArtifact || (mod as any).default) as ComponentType<any> })));
+const ApprovalsArtifact = lazy(() => import("@/components/chat/artifacts/ApprovalsArtifact").then((mod) => ({ default: ((mod as any).ApprovalsArtifact || (mod as any).default) as ComponentType<any> })));
+const DiagramArtifact = lazy(() => import("@/components/chat/artifacts/DiagramArtifact").then((mod) => ({ default: ((mod as any).DiagramArtifact || (mod as any).default) as ComponentType<any> })));
+const DocArtifact = lazy(() => import("@/components/chat/artifacts/DocArtifact").then((mod) => ({ default: ((mod as any).DocArtifact || (mod as any).default) as ComponentType<any> })));
 import { CanvasSkeletonPreview } from "@/components/chat/artifacts/CanvasSkeletonPreview";
-const PonytailSynthesizerCard = lazy(() => import("@/components/canvas/PonytailSynthesizerCard").then((mod) => ({ default: (mod as any).PonytailSynthesizerCard || (mod as any).default })));
-const BoiMela3DPageFlipPreview = lazy(() => import("@/components/books/BoiMela3DPageFlipPreview").then((mod) => ({ default: (mod as any).BoiMela3DPageFlipPreview || (mod as any).default })));
-const CommerceActionCard = lazy(() => import("@/components/chat/CommerceActionCard").then((mod) => ({ default: (mod as any).CommerceActionCard || (mod as any).default })));
-const FCommerceBlueprints = lazy(() => import("@/components/commerce/FCommerceBlueprints").then((mod) => ({ default: (mod as any).FCommerceBlueprints || (mod as any).default })));
-const CommunityArtifact = lazy(() => import("@/components/chat/artifacts/CommunityArtifact").then((mod) => ({ default: (mod as any).CommunityArtifact || (mod as any).default })));
-const MultiAgentSwarmFlow = lazy(() => import("@/components/chat/artifacts/MultiAgentSwarmFlow").then((mod) => ({ default: (mod as any).MultiAgentSwarmFlow || (mod as any).default })));
-const SwarmAdversarialDebateModal = lazy(() => import("@/components/chat/SwarmAdversarialDebateModal").then((mod) => ({ default: (mod as any).SwarmAdversarialDebateModal || (mod as any).default })));
-const CareerStudioArtifact = lazy(() => import("@/components/chat/artifacts/CareerStudioArtifact").then((mod) => ({ default: (mod as any).CareerStudioArtifact || (mod as any).default })));
-const WhatsAppOrderSimulator = lazy(() => import("@/components/chat/artifacts/WhatsAppOrderSimulator").then((mod) => ({ default: (mod as any).WhatsAppOrderSimulator || (mod as any).default })));
-const VoicePitchToDeck = lazy(() => import("@/components/chat/artifacts/VoicePitchToDeck").then((mod) => ({ default: (mod as any).VoicePitchToDeck || (mod as any).default })));
-const PromptLabArtifact = lazy(() => import("@/components/chat/artifacts/PromptLabArtifact").then((mod) => ({ default: (mod as any).PromptLabArtifact || (mod as any).default })));
-const LegalContractArtifact = lazy(() => import("@/components/chat/artifacts/LegalContractArtifact").then((mod) => ({ default: (mod as any).LegalContractArtifact || (mod as any).default })));
-const ModelArenaArtifact = lazy(() => import("@/components/chat/artifacts/ModelArenaArtifact").then((mod) => ({ default: (mod as any).ModelArenaArtifact || (mod as any).default })));
-const TwinArtifact = lazy(() => import("@/components/chat/artifacts/TwinArtifact").then((mod) => ({ default: (mod as any).TwinArtifact || (mod as any).default })));
-const LeadScraperArtifact = lazy(() => import("@/components/chat/artifacts/LeadScraperArtifact").then((mod) => ({ default: (mod as any).LeadScraperArtifact || (mod as any).default })));
-const SeoContentArtifact = lazy(() => import("@/components/chat/artifacts/SeoContentArtifact").then((mod) => ({ default: (mod as any).SeoContentArtifact || (mod as any).default })));
-const ChatbotFlowArtifact = lazy(() => import("@/components/chat/artifacts/ChatbotFlowArtifact").then((mod) => ({ default: (mod as any).ChatbotFlowArtifact || (mod as any).default })));
-const VideoScriptArtifact = lazy(() => import("@/components/chat/artifacts/VideoScriptArtifact").then((mod) => ({ default: (mod as any).VideoScriptArtifact || (mod as any).default })));
-const VatTaxArtifact = lazy(() => import("@/components/chat/artifacts/VatTaxArtifact").then((mod) => ({ default: (mod as any).VatTaxArtifact || (mod as any).default })));
-const ProductPhotoArtifact = lazy(() => import("@/components/chat/artifacts/ProductPhotoArtifact").then((mod) => ({ default: (mod as any).ProductPhotoArtifact || (mod as any).default })));
-const SupplyChainArtifact = lazy(() => import("@/components/chat/artifacts/SupplyChainArtifact").then((mod) => ({ default: (mod as any).SupplyChainArtifact || (mod as any).default })));
-const VoiceDubbingArtifact = lazy(() => import("@/components/chat/artifacts/VoiceDubbingArtifact").then((mod) => ({ default: (mod as any).VoiceDubbingArtifact || (mod as any).default })));
-const BroadcastCampaignArtifact = lazy(() => import("@/components/chat/artifacts/BroadcastCampaignArtifact").then((mod) => ({ default: (mod as any).BroadcastCampaignArtifact || (mod as any).default })));
-const DisputeResolutionArtifact = lazy(() => import("@/components/chat/artifacts/DisputeResolutionArtifact").then((mod) => ({ default: (mod as any).DisputeResolutionArtifact || (mod as any).default })));
-const PriceWatcherArtifact = lazy(() => import("@/components/chat/artifacts/PriceWatcherArtifact").then((mod) => ({ default: (mod as any).PriceWatcherArtifact || (mod as any).default })));
-const OvernightReconciliationArtifact = lazy(() => import("@/components/chat/artifacts/OvernightReconciliationArtifact").then((mod) => ({ default: (mod as any).OvernightReconciliationArtifact || (mod as any).default })));
-const WebGpuEngineArtifact = lazy(() => import("@/components/chat/artifacts/WebGpuEngineArtifact").then((mod) => ({ default: (mod as any).WebGpuEngineArtifact || (mod as any).default })));
-const MarketingGrowthArtifact = lazy(() => import("@/components/chat/artifacts/MarketingGrowthArtifact").then((mod) => ({ default: (mod as any).MarketingGrowthArtifact || (mod as any).default })));
-const StoryGraphTreeArtifact = lazy(() => import("@/components/chat/artifacts/StoryGraphTreeArtifact").then((mod) => ({ default: (mod as any).StoryGraphTreeArtifact || (mod as any).default })));
-const NarrativeForecastView = lazy(() => import("@/components/chat/artifacts/NarrativeForecastView").then((mod) => ({ default: (mod as any).NarrativeForecastView || (mod as any).default })));
-const LiveAgentTraceTimeline = lazy(() => import("@/components/chat/LiveAgentTraceTimeline").then((mod) => ({ default: (mod as any).LiveAgentTraceTimeline || (mod as any).default })));
+const PonytailSynthesizerCard = lazy(() => import("@/components/canvas/PonytailSynthesizerCard").then((mod) => ({ default: ((mod as any).PonytailSynthesizerCard || (mod as any).default) as ComponentType<any> })));
+const BoiMela3DPageFlipPreview = lazy(() => import("@/components/books/BoiMela3DPageFlipPreview").then((mod) => ({ default: ((mod as any).BoiMela3DPageFlipPreview || (mod as any).default) as ComponentType<any> })));
+const CommerceActionCard = lazy(() => import("@/components/chat/CommerceActionCard").then((mod) => ({ default: ((mod as any).CommerceActionCard || (mod as any).default) as ComponentType<any> })));
+const FCommerceBlueprints = lazy(() => import("@/components/commerce/FCommerceBlueprints").then((mod) => ({ default: ((mod as any).FCommerceBlueprints || (mod as any).default) as ComponentType<any> })));
+const CommunityArtifact = lazy(() => import("@/components/chat/artifacts/CommunityArtifact").then((mod) => ({ default: ((mod as any).CommunityArtifact || (mod as any).default) as ComponentType<any> })));
+const MultiAgentSwarmFlow = lazy(() => import("@/components/chat/artifacts/MultiAgentSwarmFlow").then((mod) => ({ default: ((mod as any).MultiAgentSwarmFlow || (mod as any).default) as ComponentType<any> })));
+const SwarmAdversarialDebateModal = lazy(() => import("@/components/chat/SwarmAdversarialDebateModal").then((mod) => ({ default: ((mod as any).SwarmAdversarialDebateModal || (mod as any).default) as ComponentType<any> })));
+const CareerStudioArtifact = lazy(() => import("@/components/chat/artifacts/CareerStudioArtifact").then((mod) => ({ default: ((mod as any).CareerStudioArtifact || (mod as any).default) as ComponentType<any> })));
+const WhatsAppOrderSimulator = lazy(() => import("@/components/chat/artifacts/WhatsAppOrderSimulator").then((mod) => ({ default: ((mod as any).WhatsAppOrderSimulator || (mod as any).default) as ComponentType<any> })));
+const VoicePitchToDeck = lazy(() => import("@/components/chat/artifacts/VoicePitchToDeck").then((mod) => ({ default: ((mod as any).VoicePitchToDeck || (mod as any).default) as ComponentType<any> })));
+const PromptLabArtifact = lazy(() => import("@/components/chat/artifacts/PromptLabArtifact").then((mod) => ({ default: ((mod as any).PromptLabArtifact || (mod as any).default) as ComponentType<any> })));
+const LegalContractArtifact = lazy(() => import("@/components/chat/artifacts/LegalContractArtifact").then((mod) => ({ default: ((mod as any).LegalContractArtifact || (mod as any).default) as ComponentType<any> })));
+const ModelArenaArtifact = lazy(() => import("@/components/chat/artifacts/ModelArenaArtifact").then((mod) => ({ default: ((mod as any).ModelArenaArtifact || (mod as any).default) as ComponentType<any> })));
+const TwinArtifact = lazy(() => import("@/components/chat/artifacts/TwinArtifact").then((mod) => ({ default: ((mod as any).TwinArtifact || (mod as any).default) as ComponentType<any> })));
+const LeadScraperArtifact = lazy(() => import("@/components/chat/artifacts/LeadScraperArtifact").then((mod) => ({ default: ((mod as any).LeadScraperArtifact || (mod as any).default) as ComponentType<any> })));
+const SeoContentArtifact = lazy(() => import("@/components/chat/artifacts/SeoContentArtifact").then((mod) => ({ default: ((mod as any).SeoContentArtifact || (mod as any).default) as ComponentType<any> })));
+const ChatbotFlowArtifact = lazy(() => import("@/components/chat/artifacts/ChatbotFlowArtifact").then((mod) => ({ default: ((mod as any).ChatbotFlowArtifact || (mod as any).default) as ComponentType<any> })));
+const VideoScriptArtifact = lazy(() => import("@/components/chat/artifacts/VideoScriptArtifact").then((mod) => ({ default: ((mod as any).VideoScriptArtifact || (mod as any).default) as ComponentType<any> })));
+const VatTaxArtifact = lazy(() => import("@/components/chat/artifacts/VatTaxArtifact").then((mod) => ({ default: ((mod as any).VatTaxArtifact || (mod as any).default) as ComponentType<any> })));
+const ProductPhotoArtifact = lazy(() => import("@/components/chat/artifacts/ProductPhotoArtifact").then((mod) => ({ default: ((mod as any).ProductPhotoArtifact || (mod as any).default) as ComponentType<any> })));
+const SupplyChainArtifact = lazy(() => import("@/components/chat/artifacts/SupplyChainArtifact").then((mod) => ({ default: ((mod as any).SupplyChainArtifact || (mod as any).default) as ComponentType<any> })));
+const VoiceDubbingArtifact = lazy(() => import("@/components/chat/artifacts/VoiceDubbingArtifact").then((mod) => ({ default: ((mod as any).VoiceDubbingArtifact || (mod as any).default) as ComponentType<any> })));
+const BroadcastCampaignArtifact = lazy(() => import("@/components/chat/artifacts/BroadcastCampaignArtifact").then((mod) => ({ default: ((mod as any).BroadcastCampaignArtifact || (mod as any).default) as ComponentType<any> })));
+const DisputeResolutionArtifact = lazy(() => import("@/components/chat/artifacts/DisputeResolutionArtifact").then((mod) => ({ default: ((mod as any).DisputeResolutionArtifact || (mod as any).default) as ComponentType<any> })));
+const PriceWatcherArtifact = lazy(() => import("@/components/chat/artifacts/PriceWatcherArtifact").then((mod) => ({ default: ((mod as any).PriceWatcherArtifact || (mod as any).default) as ComponentType<any> })));
+const OvernightReconciliationArtifact = lazy(() => import("@/components/chat/artifacts/OvernightReconciliationArtifact").then((mod) => ({ default: ((mod as any).OvernightReconciliationArtifact || (mod as any).default) as ComponentType<any> })));
+const WebGpuEngineArtifact = lazy(() => import("@/components/chat/artifacts/WebGpuEngineArtifact").then((mod) => ({ default: ((mod as any).WebGpuEngineArtifact || (mod as any).default) as ComponentType<any> })));
+const MarketingGrowthArtifact = lazy(() => import("@/components/chat/artifacts/MarketingGrowthArtifact").then((mod) => ({ default: ((mod as any).MarketingGrowthArtifact || (mod as any).default) as ComponentType<any> })));
+const StoryGraphTreeArtifact = lazy(() => import("@/components/chat/artifacts/StoryGraphTreeArtifact").then((mod) => ({ default: ((mod as any).StoryGraphTreeArtifact || (mod as any).default) as ComponentType<any> })));
+const NarrativeForecastView = lazy(() => import("@/components/chat/artifacts/NarrativeForecastView").then((mod) => ({ default: ((mod as any).NarrativeForecastView || (mod as any).default) as ComponentType<any> })));
+const LiveAgentTraceTimeline = lazy(() => import("@/components/chat/LiveAgentTraceTimeline").then((mod) => ({ default: ((mod as any).LiveAgentTraceTimeline || (mod as any).default) as ComponentType<any> })));
 import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp, Activity, GitBranch } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 import { cn } from "@/lib/utils";
@@ -364,7 +364,7 @@ export function ArtifactPanel({
             onClick={() => {
               const manager = new UndockedWindowManager();
               manager.openUndockedWindow({
-                title: String(title || activeTab || "Shothik Canvas Artifact"),
+                title: String(docTitle || sheetTitle || slidesTopic || activeTab || "Shothik Canvas Artifact"),
                 type: String(activeTab || "document"),
                 content: String(docContent || sheetTitle || slidesTopic || researchSummary || ""),
                 activeTab: String(activeTab || "doc"),
@@ -392,7 +392,7 @@ export function ArtifactPanel({
 
       {/* ── Content area — tabs stay mounted once opened ── */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
-        <Suspense fallback={<CanvasSkeletonPreview />}>
+        <Suspense fallback={<CanvasSkeletonPreview tab={activeTab || "doc"} />}>
 
         {mounted.has("approvals") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "approvals" ? "block" : "hidden"}`}>

@@ -59,6 +59,14 @@ export default function SpecificAgentPage() {
   const renderComponent = () => {
     switch (agentType) {
       case "chat":
+      case "core":
+      case "planner":
+      case "architect":
+      case "security":
+      case "tdd":
+      case "analyst":
+      case "business":
+      case "writer":
         return <ChatAgentPage />;
       case "presentation":
       case "slides":
@@ -71,9 +79,10 @@ export default function SpecificAgentPage() {
       case "browse":
         return <Redirect to="/marketplace" replace />;
       case "call":
-        return <Redirect to="/twin?tab=video" replace />;
+      case "voice":
+        return <Redirect to="/voice" replace />;
       default:
-        return <NotFound />;
+        return <ChatAgentPage />;
     }
   };
 

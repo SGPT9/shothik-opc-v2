@@ -41,7 +41,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { OfflineSyncBadge } from "@/components/common/OfflineSyncBadge";
 import { DshExecutionDrawer } from "@/components/chat/DshExecutionDrawer";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
-import { getStoredChatSessions } from "@/lib/chat-sessions-store";
+import { getStoredChatSessions, saveChatSession, deleteChatSession } from "@/lib/chat-sessions-store";
 import type { ChatPersona } from "@/lib/chat/types";
 import { parseResponseToArtifacts } from "@/lib/artifacts/responseParser";
 import { 
@@ -78,6 +78,9 @@ import {
   Sliders,
   PlugZap,
   KeyRound,
+  Edit3,
+  Trash2,
+  Settings,
 } from "lucide-react";
 import { WebGpuInferenceService, type WebGpuCapability } from "@/lib/ai/WebGpuInferenceService";
 
@@ -89,6 +92,7 @@ export interface FleetAgent {
   color: string;
   bgLight: string;
   desc: string;
+  model?: string;
 }
 
 export const FLEET_AGENTS: FleetAgent[] = [
@@ -611,7 +615,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
 
       const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
-      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "";
 
       try {
         const res = await fetch(`${insforgeUrl}/functions/v1/analyze-repo`, {
@@ -701,7 +705,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
 
       const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
-      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "";
 
       try {
         const res = await fetch(`${insforgeUrl}/functions/v1/analyze-issues`, {
@@ -1069,75 +1073,20 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
         {/* ── Top Workspace Bar: ChatGPT-Style Agent Switcher & Work Mode Toggle ── */}
         <div className="h-12 border-b border-border/60 bg-background/80 backdrop-blur-md px-2 sm:px-4 flex items-center justify-between shrink-0 z-20 gap-2">
-          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
-            {/* Agent Fleet Dropdown */}
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsAgentMenuOpen(!isAgentMenuOpen)}
-                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary text-xs sm:text-sm font-semibold text-foreground transition border border-border/40 hover:border-border cursor-pointer shadow-xs"
-              >
-                <div className={`w-5 h-5 rounded-md ${activeAgent.bgLight} ${activeAgent.color} flex items-center justify-center shrink-0`}>
-                  <activeAgent.icon className="w-3.5 h-3.5" />
-                </div>
-                <span className="max-w-[85px] xs:max-w-[120px] sm:max-w-none truncate">{activeAgent.name}</span>
-                <span className="text-[10px] font-mono font-normal px-1.5 py-0.5 rounded-md bg-background/60 text-muted-foreground border border-border/30 hidden md:inline-block">
-                  {activeAgent.badge}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              </button>
-
-              {isAgentMenuOpen && (
-                <div className="absolute left-0 top-full mt-1.5 z-50 w-72 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl space-y-1 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-2.5 py-1 text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
-                    AI Personas & Workflows
-                  </div>
-                  {FLEET_AGENTS.map((agent) => {
-                    const isCurrent = agent.id === selectedAgentId;
-                    const IconComponent = agent.icon;
-                    return (
-                      <button
-                        key={agent.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAgentId(agent.id);
-                          setIsAgentMenuOpen(false);
-                        }}
-                        className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition cursor-pointer ${
-                          isCurrent ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50 text-foreground"
-                        }`}
-                      >
-                        <div className={`w-7 h-7 rounded-lg ${agent.bgLight} ${agent.color} flex items-center justify-center shrink-0 mt-0.5`}>
-                          <IconComponent className="w-4 h-4" />
-                        </div>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold">{agent.name}</span>
-                            <span className="text-[9px] font-mono text-muted-foreground">{agent.badge}</span>
-                          </div>
-                          <span className="text-[10px] text-muted-foreground line-clamp-1 leading-relaxed">
-                            {agent.desc}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          {/* Left Space / Thread Title (Perplexity-Style Minimal Header) */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 text-xs text-foreground/90 font-medium truncate max-w-[200px] sm:max-w-md">
+              <span className="text-muted-foreground hidden sm:inline">Workspace /</span>
+              <span className="font-semibold truncate">
+                {activeConversation?.title || (messages.length > 0 ? "Active Research Session" : "New Thread")}
+              </span>
             </div>
-
-            {/* Active Conversation Title */}
-            {messages.length > 0 && activeConversation && (
-              <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground/80 pl-2 border-l border-border/50 max-w-[200px] xl:max-w-[280px] truncate font-medium">
-                <span className="truncate">{activeConversation.title || "Active Research Session"}</span>
-              </div>
-            )}
 
             {/* Offline-First Sync & Outbox Badge */}
             <OfflineSyncBadge />
           </div>
 
-          {/* Right Zen Actions */}
+          {/* Right Zen Actions (Perplexity Strict Clean Header: Share, Canvas, ⋯) */}
           <div className="flex items-center gap-1.5 shrink-0">
             {/* 🔗 Public 1-Click Viral Share Button */}
             {messages.length > 0 && (
@@ -1151,15 +1100,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 <span className="hidden sm:inline">Share</span>
               </button>
             )}
-
-            {/* Live Edge Engine Indicator */}
-            <div
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs cursor-default select-none animate-in fade-in duration-300"
-              title="Shothik Neural Speculative Engine Active (Sub-15ms Edge Latency · Local Acceleration)"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Shothik ⚡ Edge</span>
-            </div>
 
             {/* Work Canvas Toggle Pill (only if messages > 0 or artifact is open) */}
             {(messages.length > 0 || artifactOpen) && (
@@ -1179,69 +1119,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </button>
             )}
 
-            {/* 📞 Call / Voice Studio Button — opens the 3D Voice Orb + background Scenario Lab */}
-            <button
-              type="button"
-              onClick={() => setIsVoiceOrbOpen(true)}
-              id="chat-call-button"
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
-                isVoiceOrbOpen
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                  : "bg-secondary/40 hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 border-border/30 hover:border-emerald-500/30"
-              )}
-              title="Start Voice Session (Voice Studio + Scenario Analytics)"
-              aria-label="Start Voice Session"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Call</span>
-            </button>
-
-            {/* 🎛️ LibreChat-Adapted Inference Parameters Button */}
-            <button
-              type="button"
-              onClick={() => setIsParametersOpen(true)}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
-                isParametersOpen
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                  : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
-              )}
-              title="Tune Inference Parameters (Temperature, Top-P, Tokens, System Prompt)"
-              aria-label="Tune Inference Parameters"
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Params</span>
-            </button>
-
-            {/* ⚡ LibreChat-Adapted MCP Servers & Tools Inspector */}
-            <button
-              type="button"
-              onClick={() => setIsMcpInspectorOpen(true)}
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
-                isMcpInspectorOpen
-                  ? "bg-cyan-500/20 text-cyan-400 border-cyan-500/40"
-                  : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
-              )}
-              title="MCP Servers & Tools Inspector"
-              aria-label="Inspect MCP Tools"
-            >
-              <PlugZap className="w-3.5 h-3.5 text-cyan-400" />
-              <span className="hidden md:inline">MCP</span>
-            </button>
-
-            {/* New Thread (+) */}
-            <button
-              type="button"
-              onClick={createNewConversation}
-              className="p-1.5 sm:p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer"
-              title="New Chat (Ctrl+Shift+O)"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-
-            {/* ⋯ Zen Overflow Menu (Export, Telemetry, Shortcuts) */}
+            {/* ⋯ Strict Perplexity Session Actions Menu (Share, Export, Rename, Delete, Settings) */}
             <div className="relative">
               <button
                 type="button"
@@ -1252,7 +1130,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     ? "bg-secondary text-foreground border-border/60"
                     : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
                 )}
-                title="More options & diagnostics"
+                title="Thread options"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -1262,19 +1140,25 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   className="absolute right-0 top-full mt-1.5 z-50 w-56 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/70 rounded-2xl shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
                   onClick={() => setIsMoreMenuOpen(false)}
                 >
+                  <button
+                    type="button"
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="font-medium">Share Link</span>
+                  </button>
+
                   {/* Export Options */}
                   {messages.length > 0 && (
                     <>
-                      <div className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        Export Session
-                      </div>
                       <button
                         type="button"
                         onClick={() => handleExportSession("md")}
                         className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
                       >
                         <FileTextIcon className="w-3.5 h-3.5 text-brand shrink-0" />
-                        <span className="font-medium">Markdown (.md)</span>
+                        <span className="font-medium">Export Markdown (.md)</span>
                       </button>
                       <button
                         type="button"
@@ -1282,12 +1166,12 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                         className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
                       >
                         <FileJson className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span className="font-medium">JSON (.json)</span>
+                        <span className="font-medium">Export JSON (.json)</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleExportSession("print")}
-                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer border-b border-border/40 pb-1.5 mb-1"
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
                       >
                         <Printer className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                         <span className="font-medium">Print / Save PDF</span>
@@ -1295,40 +1179,51 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     </>
                   )}
 
-                  {/* Tools & Shortcuts */}
-                  <div className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    Tools & Shortcuts
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsDshDrawerOpen(true)}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
-                  >
-                    <Cpu className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                    <span className="font-medium">Workflow Step Audit</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsByokModalOpen(true)}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
-                  >
-                    <KeyRound className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span className="font-medium">Custom API Endpoints (BYOK)</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsShortcutsOpen(true)}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
-                  >
-                    <Keyboard className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <span className="font-medium">Keyboard Shortcuts (?)</span>
-                  </button>
-                  {webGpuInfo?.isSupported && (
-                    <div className="px-2.5 py-1.5 text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 border-t border-border/30 mt-1">
-                      <Zap className="w-3 h-3 text-emerald-400" />
-                      <span>Turbo Engine Active</span>
-                    </div>
+                  {/* Rename Thread */}
+                  {messages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentTitle = activeConversation?.title || "Active Research Session";
+                        const newTitle = window.prompt("Rename thread:", currentTitle);
+                        if (newTitle && newTitle.trim()) {
+                          saveChatSession({ id: conversationId, title: newTitle.trim() });
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span className="font-medium">Rename Thread</span>
+                    </button>
                   )}
+
+                  {/* Delete Thread */}
+                  {messages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this conversation?")) {
+                          deleteChatSession(conversationId);
+                          createNewConversation();
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-red-500/10 text-xs text-red-500 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                      <span className="font-medium">Delete Thread</span>
+                    </button>
+                  )}
+
+                  <div className="border-t border-border/40 my-1" />
+
+                  {/* Settings */}
+                  <a
+                    href="/settings"
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-muted-foreground hover:text-foreground transition cursor-pointer"
+                  >
+                    <Settings className="w-3.5 h-3.5 shrink-0" />
+                    <span className="font-medium">Settings & Preferences</span>
+                  </a>
                 </div>
               )}
             </div>
