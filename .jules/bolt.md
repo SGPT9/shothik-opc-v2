@@ -1,4 +1,7 @@
 
+## 2023-11-01 - Avoid Redundant Array Filtering on Unrelated State Changes
+**Learning:** React components that filter arrays during render (like filtering search results based on a query) will recalculate those filters *every time* the component renders, even if the underlying data or search query hasn't changed (e.g., when a user switches tabs).
+**Action:** Always wrap expensive or moderately expensive filtering logic in `useMemo`, depending on the source data (e.g., `servers`, `searchQuery`). Also, hoist constant operations like `toLowerCase()` outside the `.filter` loop to avoid repeating them for every item.
 ## 2026-11-11 - Object destructuring in Redux useSelector
 **Learning:** Destructuring entire objects from Redux \`useSelector\` (e.g., \`const { accessToken } = useSelector(state => state.auth)\`) is a frequent performance anti-pattern in this codebase causing unnecessary re-renders.
 **Action:** Use specific property selectors instead (e.g., \`const accessToken = useSelector(state => state.auth?.accessToken)\`).
