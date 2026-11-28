@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { db, inventoryItemsTable } from "@workspace/db";
 
 export interface ChannelStockAllocation {
   daraz: number;
@@ -132,6 +133,39 @@ export class InventoryMatrixEngine {
     item.totalStock = sum;
     item.updatedAt = new Date().toISOString();
     this.items.set(sku, item);
+    try {
+      db.insert(inventoryItemsTable)
+        .values({
+          sku: item.sku,
+          name: item.name,
+          category: item.category,
+          totalStock: item.totalStock,
+          darazStock: channels.daraz,
+          shopifyStock: channels.shopify,
+          woocommerceStock: channels.woocommerce,
+          whatsappStock: channels.whatsapp,
+          darkHubReserve: channels.darkHubReserve,
+          unitCostBDT: String(item.unitCostBdt),
+          unitPriceBDT: String(item.sellingPriceBdt),
+          supplierName: item.supplier.name,
+          leadTimeDays: item.leadTimeDays,
+        })
+        .onConflictDoUpdate({
+          target: [inventoryItemsTable.sku],
+          set: {
+            totalStock: item.totalStock,
+            darazStock: channels.daraz,
+            shopifyStock: channels.shopify,
+            woocommerceStock: channels.woocommerce,
+            whatsappStock: channels.whatsapp,
+            darkHubReserve: channels.darkHubReserve,
+            updatedAt: new Date(),
+          },
+        })
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
     return item;
   }
 

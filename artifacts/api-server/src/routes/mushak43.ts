@@ -5,6 +5,8 @@ import {
   Mushak43Declaration
 } from '../lib/mushak43/mushak43-engine.js';
 
+import { persistEngineSnapshot } from '../lib/novel-engine/suite-manifest-store.js';
+
 export const mushak43Router = Router();
 
 // In-memory store for active Mushak-4.3 declarations
@@ -203,6 +205,8 @@ mushak43Router.post('/v1/mushak43/declarations/create', (req: Request, res: Resp
     });
 
     declarationStore.set(declaration.declarationId, declaration);
+    void persistEngineSnapshot('mushak43_declarations', declaration.declarationId, declaration);
+    void persistEngineSnapshot('mushak43_declarations', declaration.declarationId, declaration);
 
     res.json({
       success: true,

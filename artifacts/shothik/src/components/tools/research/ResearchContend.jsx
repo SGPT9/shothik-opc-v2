@@ -135,10 +135,18 @@ const ResearchContend = () => {
     try {
       setIsLoading(true);
       await fetchWithStreaming(content);
-      setIsLoading(false);
       setUserInput("");
     } catch (error) {
-      toast.error(error.message);
+      const errMsg = error?.message || error?.error || "Research query failed. Please sign in or check your connection.";
+      toast.error(typeof errMsg === "string" ? errMsg : JSON.stringify(errMsg));
+      setOutputContend((prev) => {
+        if (prev.length > 0 && prev[prev.length - 1].role === "assistant" && !prev[prev.length - 1].content) {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
+    } finally {
+      setIsLoading(false);
     }
   }
 

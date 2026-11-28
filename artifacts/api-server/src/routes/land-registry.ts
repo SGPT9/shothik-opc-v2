@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import { verifyAuthRequest } from "./auth.js";
 import { z } from "zod";
 import {
   DeedVerificationEngine,
@@ -261,6 +262,14 @@ landRegistryRouter.post(
   ],
   (req: Request, res: Response) => {
     try {
+      const verified = verifyAuthRequest(req);
+      if (!verified && process.env.NODE_ENV === "production") {
+        return res.status(401).json({
+          success: false,
+          error: "Unauthorized: Generating title search audit seals requires verified user authentication.",
+        });
+      }
+
       const parse = issueSealSchema.safeParse(req.body);
       if (!parse.success) {
         return res.status(400).json({

@@ -18,7 +18,7 @@ export interface DeerFlowHealthResponse {
 }
 
 export class DeerFlowService {
-  private static baseUrl = '/api/langgraph';
+  private static baseUrl = process.env.NEXT_PUBLIC_DEERFLOW_BACKEND_URL || '/api/hermes/deerflow';
 
   /**
    * Check if DeerFlow FastAPI backend service is online and healthy.

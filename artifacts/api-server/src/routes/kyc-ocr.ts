@@ -8,7 +8,7 @@ const engine = KycOcrEngine.getInstance();
  * POST /api/v1/kyc/ocr/process-nid
  * Processes Smart or Legacy NID image or OCR text payload
  */
-kycOcrRouter.post("/api/v1/kyc/ocr/process-nid", (req: Request, res: Response) => {
+kycOcrRouter.post(["/v1/kyc/ocr/process-nid", "/api/v1/kyc/ocr/process-nid"], (req: Request, res: Response) => {
   try {
     const { imagePayload, rawOcrText, expectedName } = req.body || {};
     const dossier = engine.processNid({
@@ -26,7 +26,7 @@ kycOcrRouter.post("/api/v1/kyc/ocr/process-nid", (req: Request, res: Response) =
  * POST /api/v1/kyc/ocr/process-trade-license
  * Processes Municipal or Union Parishad Trade License
  */
-kycOcrRouter.post("/api/v1/kyc/ocr/process-trade-license", (req: Request, res: Response) => {
+kycOcrRouter.post(["/v1/kyc/ocr/process-trade-license", "/api/v1/kyc/ocr/process-trade-license"], (req: Request, res: Response) => {
   try {
     const { imagePayload, rawOcrText, expectedBusinessName } = req.body || {};
     const dossier = engine.processTradeLicense({
@@ -44,7 +44,7 @@ kycOcrRouter.post("/api/v1/kyc/ocr/process-trade-license", (req: Request, res: R
  * POST /api/v1/kyc/ocr/verify-dossier
  * Validates cryptographic SHA-256 seal of a stored dossier
  */
-kycOcrRouter.post("/api/v1/kyc/ocr/verify-dossier", (req: Request, res: Response) => {
+kycOcrRouter.post(["/v1/kyc/ocr/verify-dossier", "/api/v1/kyc/ocr/verify-dossier"], (req: Request, res: Response) => {
   try {
     const { dossierId } = req.body || {};
     if (!dossierId) {
@@ -61,7 +61,7 @@ kycOcrRouter.post("/api/v1/kyc/ocr/verify-dossier", (req: Request, res: Response
  * GET /api/v1/kyc/ocr/dossiers
  * Lists all generated KYC dossiers
  */
-kycOcrRouter.get("/api/v1/kyc/ocr/dossiers", (_req: Request, res: Response) => {
+kycOcrRouter.get(["/v1/kyc/ocr/dossiers", "/api/v1/kyc/ocr/dossiers"], (_req: Request, res: Response) => {
   try {
     const dossiers = engine.listDossiers();
     return res.status(200).json({ success: true, count: dossiers.length, dossiers });

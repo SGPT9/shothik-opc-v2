@@ -40,6 +40,7 @@ export const CustomsTariffModal: React.FC<CustomsTariffModalProps> = ({ isOpen, 
 
   // Keyboard shortcut ⌘N / Ctrl+N
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "n") {
         e.preventDefault();

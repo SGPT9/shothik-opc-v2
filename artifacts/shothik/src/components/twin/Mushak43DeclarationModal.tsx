@@ -234,6 +234,7 @@ export const Mushak43DeclarationModal: React.FC<Mushak43DeclarationModalProps> =
 
   // Keyboard shortcut: ⌘4 or Ctrl+4
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "4") {
         e.preventDefault();

@@ -7,23 +7,27 @@
  * - Optional user details panel (hidden by default, opens contextually on artifacts).
  * - Multi-agent workflows (Research, Slides, Sheets, Code, Swarm, Voice) discoverable without first-paint clutter.
  */
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams } from "@/lib/navigation";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useChatSession } from "./hooks/useChatSession";
 import { useChatStreamEngine } from "./hooks/useChatStreamEngine";
 import { useAttachmentUploader } from "./hooks/useAttachmentUploader";
-import { useTwinHandoffDetector } from "./hooks/useTwinHandoffDetector";
 import { ComponentErrorBoundary } from "./components/ChatErrorBoundaries";
 
 import { Composer, type ComposerAction } from "@/components/chat/Composer";
 import { cn } from "@/lib/utils";
-import { needle3, needle2 } from "@/lib/ai/needle-dispatcher";
+import { needle3 } from "@/lib/ai/needle-dispatcher";
 import { useSecondMeCognitiveState } from "@/lib/memory/useSecondMeCognitiveState";
 import { Transcript } from "@/components/chat/Transcript";
+import { SemanticMemoryDrawer } from "@/components/chat/SemanticMemoryDrawer";
+import { PromptVariableModal } from "@/components/chat/PromptVariableModal";
+import { ParametersPanel, ChatParameters, DEFAULT_CHAT_PARAMETERS } from "@/components/chat/ParametersPanel";
+import { McpInspectorDrawer } from "@/components/chat/McpInspectorDrawer";
+import { ByokEndpointsModal } from "@/components/chat/ByokEndpointsModal";
+import { detectVariables } from "@/lib/chat/prompt-variables";
 import { ArtifactPanel, type ArtifactTab } from "@/components/chat/ArtifactPanel";
 import { EmptyChatGreeting } from "@/components/chat/EmptyChatGreeting";
-import { TwinCtaCard } from "@/components/chat/TwinCtaCard";
 import { UnifiedVoiceStudioModal } from "@/components/voice/UnifiedVoiceStudioModal";
 import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
 import { MonetizationPaywallModal } from "@/components/pricing/MonetizationPaywallModal";
@@ -37,7 +41,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/componen
 import { OfflineSyncBadge } from "@/components/common/OfflineSyncBadge";
 import { DshExecutionDrawer } from "@/components/chat/DshExecutionDrawer";
 import { mcpGuardrail } from "@/lib/mcp/McpGuardrailService";
-import { getStoredChatSessions } from "@/lib/chat-sessions-store";
+import { getStoredChatSessions, saveChatSession, deleteChatSession } from "@/lib/chat-sessions-store";
 import type { ChatPersona } from "@/lib/chat/types";
 import { parseResponseToArtifacts } from "@/lib/artifacts/responseParser";
 import { 
@@ -71,6 +75,12 @@ import {
   ShieldCheck,
   CheckCircle2,
   MoreHorizontal,
+  Sliders,
+  PlugZap,
+  KeyRound,
+  Edit3,
+  Trash2,
+  Settings,
 } from "lucide-react";
 import { WebGpuInferenceService, type WebGpuCapability } from "@/lib/ai/WebGpuInferenceService";
 
@@ -82,6 +92,7 @@ export interface FleetAgent {
   color: string;
   bgLight: string;
   desc: string;
+  model?: string;
 }
 
 export const FLEET_AGENTS: FleetAgent[] = [
@@ -117,12 +128,12 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
 
   const { streamState, startStream, stopStream } = useChatStreamEngine();
   const { attachments, addAttachment, removeAttachment, clearAttachments } = useAttachmentUploader();
-  const { hasStartupIntent } = useTwinHandoffDetector(messages);
-  const { workingState, updateDraft, addChip, removeChip, recallContext, recordDecision, autoExtractAndCommit } = useSecondMeCognitiveState({
+  const { removeChip, recallContext, autoExtractAndCommit } = useSecondMeCognitiveState({
     sessionId: conversationId,
   });
 
   const isMobile = useIsMobile();
+  const sentDeepPromptRef = useRef<string | null>(null);
 
   // ── Contextual User Details / Artifact panel (hidden by default) ──
   const [artifactOpen, setArtifactOpen] = useState(Boolean(initialTab || searchParams.get("tab")));
@@ -239,6 +250,23 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
   const [isAgentMenuOpen, setIsAgentMenuOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(typeof navigator !== "undefined" ? navigator.onLine : true);
   const activeAgent = FLEET_AGENTS.find(a => a.id === selectedAgentId) || FLEET_AGENTS[0];
+
+  // LibreChat-adapted state: DAG branch switcher, Semantic Memory Drawer, Prompt Variable Modal, Parameters & MCP
+  const [activeSiblingMap, setActiveSiblingMap] = useState<Record<string, number>>({});
+  const [isMemoryDrawerOpen, setIsMemoryDrawerOpen] = useState(false);
+  const [isPromptVariableModalOpen, setIsPromptVariableModalOpen] = useState(false);
+  const [variablePromptTemplate, setVariablePromptTemplate] = useState<string>("");
+  const [isParametersOpen, setIsParametersOpen] = useState(false);
+  const [chatParameters, setChatParameters] = useState<ChatParameters>(DEFAULT_CHAT_PARAMETERS);
+  const [isMcpInspectorOpen, setIsMcpInspectorOpen] = useState(false);
+  const [isByokModalOpen, setIsByokModalOpen] = useState(false);
+
+  const handleSwitchSibling = useCallback((parentKey: string, siblingIdx: number) => {
+    setActiveSiblingMap((prev) => ({
+      ...prev,
+      [parentKey]: siblingIdx,
+    }));
+  }, []);
 
   // Mobile Touch Gestures for 2GB RAM devices (Swipe Left = Canvas, Swipe Right = Chat)
   const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
@@ -463,6 +491,15 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       case "voice":
         setIsVoiceOrbOpen(true);
         break;
+      case "memory":
+        setIsMemoryDrawerOpen(true);
+        break;
+      case "parameters":
+        setIsParametersOpen(true);
+        break;
+      case "mcp":
+        setIsMcpInspectorOpen(true);
+        break;
       case "browser":
         handleSendMessage("Automate web workflow: navigate and gather intelligence");
         break;
@@ -578,7 +615,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
 
       const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
-      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "";
 
       try {
         const res = await fetch(`${insforgeUrl}/functions/v1/analyze-repo`, {
@@ -668,7 +705,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
 
       const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
-      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "";
 
       try {
         const res = await fetch(`${insforgeUrl}/functions/v1/analyze-issues`, {
@@ -738,10 +775,18 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
 
   // Intent-First Natural Language Routing Engine
   const handleSendMessage = useCallback(
-    async (text: string) => {
+    async (text: string, options?: { parentMessageId?: string; isRegeneration?: boolean; skipVariableCheck?: boolean }) => {
       if (!text.trim() && attachments.length === 0) return;
 
       const trimmedText = text.trim();
+
+      // Check for prompt template variables (LibreChat adaptation)
+      if (detectVariables(trimmedText) && !options?.skipVariableCheck) {
+        setVariablePromptTemplate(trimmedText);
+        setIsPromptVariableModalOpen(true);
+        return;
+      }
+
       const githubUrlRegex = /^(?:https?:\/\/)?(?:www\.)?github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/?$/i;
       const bareRepoRegex = /^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/;
 
@@ -819,13 +864,16 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       const userMsgId = `usr_${Date.now()}`;
       const assistantMsgId = `ast_${Date.now()}`;
 
-      addMessage({
-        id: userMsgId,
-        role: "user",
-        content: text.trim(),
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        attachments: attachments.map((a) => a.url),
-      });
+      if (!options?.isRegeneration) {
+        addMessage({
+          id: userMsgId,
+          role: "user",
+          content: text.trim(),
+          timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+          attachments: attachments.map((a) => a.url),
+          parentMessageId: options?.parentMessageId,
+        });
+      }
 
       clearAttachments();
 
@@ -835,6 +883,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
         content: "",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         isStreaming: true,
+        parentMessageId: options?.isRegeneration ? options?.parentMessageId : userMsgId,
       });
 
       const chatMode = autoChatMode;
@@ -922,6 +971,17 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     [addMessage, attachments, autoExtractAndCommit, clearAttachments, conversationId, finalizeLastAssistantMessage, recallContext, startStream, updateLastAssistantMessage, persona, updateMessageMetadata]
   );
 
+  // Deep-link: /?prompt=... sends once (used by Files "Query in Chat"), then clears the param
+  useEffect(() => {
+    const deepPrompt = searchParams.get("prompt");
+    if (!deepPrompt || sentDeepPromptRef.current === deepPrompt) return;
+    sentDeepPromptRef.current = deepPrompt;
+    handleSendMessage(deepPrompt);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("prompt");
+    window.history.replaceState({}, "", url.toString());
+  }, [searchParams, handleSendMessage]);
+
   // Control Layer: Checkpoint & Secret Resolution Handlers
   const handleApproveCheckpoint = useCallback(
     (checkpointId: string, message: any) => {
@@ -964,6 +1024,29 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
     [updateMessageMetadata]
   );
 
+  const handleEditMessage = useCallback(
+    (msg: any, newContent: string) => {
+      handleSendMessage(newContent, {
+        parentMessageId: msg.parentMessageId,
+      });
+    },
+    [handleSendMessage]
+  );
+
+  const handleRegenerate = useCallback(
+    (msg: any) => {
+      const parentId = msg.parentMessageId;
+      const userPrompt = messages.find((m) => (m.id || m._id) === parentId)?.content;
+      if (userPrompt) {
+        handleSendMessage(userPrompt, {
+          parentMessageId: parentId,
+          isRegeneration: true,
+        });
+      }
+    },
+    [messages, handleSendMessage]
+  );
+
   return (
     <div
       onTouchStart={handleTouchStart}
@@ -990,75 +1073,20 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       <div className="flex flex-1 flex-col min-w-0 h-full overflow-hidden">
         {/* ── Top Workspace Bar: ChatGPT-Style Agent Switcher & Work Mode Toggle ── */}
         <div className="h-12 border-b border-border/60 bg-background/80 backdrop-blur-md px-2 sm:px-4 flex items-center justify-between shrink-0 z-20 gap-2">
-          <div className="flex items-center gap-1.5 sm:gap-3 min-w-0">
-            {/* Agent Fleet Dropdown */}
-            <div className="relative shrink-0">
-              <button
-                type="button"
-                onClick={() => setIsAgentMenuOpen(!isAgentMenuOpen)}
-                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 rounded-xl bg-secondary/50 hover:bg-secondary text-xs sm:text-sm font-semibold text-foreground transition border border-border/40 hover:border-border cursor-pointer shadow-xs"
-              >
-                <div className={`w-5 h-5 rounded-md ${activeAgent.bgLight} ${activeAgent.color} flex items-center justify-center shrink-0`}>
-                  <activeAgent.icon className="w-3.5 h-3.5" />
-                </div>
-                <span className="max-w-[85px] xs:max-w-[120px] sm:max-w-none truncate">{activeAgent.name}</span>
-                <span className="text-[10px] font-mono font-normal px-1.5 py-0.5 rounded-md bg-background/60 text-muted-foreground border border-border/30 hidden md:inline-block">
-                  {activeAgent.badge}
-                </span>
-                <ChevronDown className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-              </button>
-
-              {isAgentMenuOpen && (
-                <div className="absolute left-0 top-full mt-1.5 z-50 w-72 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/60 rounded-2xl shadow-2xl space-y-1 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-2.5 py-1 text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-wider">
-                    AI Personas & Workflows
-                  </div>
-                  {FLEET_AGENTS.map((agent) => {
-                    const isCurrent = agent.id === selectedAgentId;
-                    const IconComponent = agent.icon;
-                    return (
-                      <button
-                        key={agent.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAgentId(agent.id);
-                          setIsAgentMenuOpen(false);
-                        }}
-                        className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition cursor-pointer ${
-                          isCurrent ? "bg-accent text-accent-foreground font-medium" : "hover:bg-accent/50 text-foreground"
-                        }`}
-                      >
-                        <div className={`w-7 h-7 rounded-lg ${agent.bgLight} ${agent.color} flex items-center justify-center shrink-0 mt-0.5`}>
-                          <IconComponent className="w-4 h-4" />
-                        </div>
-                        <div className="flex flex-col min-w-0 flex-1">
-                          <div className="flex items-center justify-between">
-                            <span className="text-xs font-semibold">{agent.name}</span>
-                            <span className="text-[9px] font-mono text-muted-foreground">{agent.badge}</span>
-                          </div>
-                          <span className="text-[10px] text-muted-foreground line-clamp-1 leading-relaxed">
-                            {agent.desc}
-                          </span>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          {/* Left Space / Thread Title (Perplexity-Style Minimal Header) */}
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-1.5 text-xs text-foreground/90 font-medium truncate max-w-[200px] sm:max-w-md">
+              <span className="text-muted-foreground hidden sm:inline">Workspace /</span>
+              <span className="font-semibold truncate">
+                {activeConversation?.title || (messages.length > 0 ? "Active Research Session" : "New Thread")}
+              </span>
             </div>
-
-            {/* Active Conversation Title */}
-            {messages.length > 0 && activeConversation && (
-              <div className="hidden lg:flex items-center gap-2 text-xs text-muted-foreground/80 pl-2 border-l border-border/50 max-w-[200px] xl:max-w-[280px] truncate font-medium">
-                <span className="truncate">{activeConversation.title || "Active Research Session"}</span>
-              </div>
-            )}
 
             {/* Offline-First Sync & Outbox Badge */}
             <OfflineSyncBadge />
           </div>
 
-          {/* Right Zen Actions */}
+          {/* Right Zen Actions (Perplexity Strict Clean Header: Share, Canvas, ⋯) */}
           <div className="flex items-center gap-1.5 shrink-0">
             {/* 🔗 Public 1-Click Viral Share Button */}
             {messages.length > 0 && (
@@ -1072,15 +1100,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 <span className="hidden sm:inline">Share</span>
               </button>
             )}
-
-            {/* Live Edge Engine Indicator */}
-            <div
-              className="hidden md:flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[11px] font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs cursor-default select-none animate-in fade-in duration-300"
-              title="Shothik Neural Speculative Engine Active (Sub-15ms Edge Latency · Local Acceleration)"
-            >
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              <span>Shothik ⚡ Edge</span>
-            </div>
 
             {/* Work Canvas Toggle Pill (only if messages > 0 or artifact is open) */}
             {(messages.length > 0 || artifactOpen) && (
@@ -1100,35 +1119,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
               </button>
             )}
 
-            {/* 📞 Call / Voice Studio Button — opens the 3D Voice Orb + background Scenario Lab */}
-            <button
-              type="button"
-              onClick={() => setIsVoiceOrbOpen(true)}
-              id="chat-call-button"
-              className={cn(
-                "flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer border shadow-xs",
-                isVoiceOrbOpen
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
-                  : "bg-secondary/40 hover:bg-emerald-500/10 text-muted-foreground hover:text-emerald-400 border-border/30 hover:border-emerald-500/30"
-              )}
-              title="Start Voice Session (Voice Studio + Scenario Analytics)"
-              aria-label="Start Voice Session"
-            >
-              <Phone className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Call</span>
-            </button>
-
-            {/* New Thread (+) */}
-            <button
-              type="button"
-              onClick={createNewConversation}
-              className="p-1.5 sm:p-2 rounded-xl bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground transition border border-border/30 cursor-pointer"
-              title="New Chat (Ctrl+Shift+O)"
-            >
-              <Plus className="w-4 h-4" />
-            </button>
-
-            {/* ⋯ Zen Overflow Menu (Export, Telemetry, Shortcuts) */}
+            {/* ⋯ Strict Perplexity Session Actions Menu (Share, Export, Rename, Delete, Settings) */}
             <div className="relative">
               <button
                 type="button"
@@ -1139,7 +1130,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     ? "bg-secondary text-foreground border-border/60"
                     : "bg-secondary/40 hover:bg-secondary text-muted-foreground hover:text-foreground border-border/30"
                 )}
-                title="More options & diagnostics"
+                title="Thread options"
               >
                 <MoreHorizontal className="w-4 h-4" />
               </button>
@@ -1149,19 +1140,25 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                   className="absolute right-0 top-full mt-1.5 z-50 w-56 p-1.5 bg-popover/95 backdrop-blur-xl border border-border/70 rounded-2xl shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95 duration-100"
                   onClick={() => setIsMoreMenuOpen(false)}
                 >
+                  <button
+                    type="button"
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                  >
+                    <Share2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span className="font-medium">Share Link</span>
+                  </button>
+
                   {/* Export Options */}
                   {messages.length > 0 && (
                     <>
-                      <div className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        Export Session
-                      </div>
                       <button
                         type="button"
                         onClick={() => handleExportSession("md")}
                         className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
                       >
                         <FileTextIcon className="w-3.5 h-3.5 text-brand shrink-0" />
-                        <span className="font-medium">Markdown (.md)</span>
+                        <span className="font-medium">Export Markdown (.md)</span>
                       </button>
                       <button
                         type="button"
@@ -1169,12 +1166,12 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                         className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
                       >
                         <FileJson className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                        <span className="font-medium">JSON (.json)</span>
+                        <span className="font-medium">Export JSON (.json)</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleExportSession("print")}
-                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer border-b border-border/40 pb-1.5 mb-1"
+                        className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
                       >
                         <Printer className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
                         <span className="font-medium">Print / Save PDF</span>
@@ -1182,32 +1179,51 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     </>
                   )}
 
-                  {/* Tools & Shortcuts */}
-                  <div className="px-2.5 py-1 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                    Tools & Shortcuts
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setIsDshDrawerOpen(true)}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
-                  >
-                    <Cpu className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                    <span className="font-medium">Workflow Step Audit</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsShortcutsOpen(true)}
-                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
-                  >
-                    <Keyboard className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
-                    <span className="font-medium">Keyboard Shortcuts (?)</span>
-                  </button>
-                  {webGpuInfo?.isSupported && (
-                    <div className="px-2.5 py-1.5 text-[11px] font-mono text-emerald-400 flex items-center gap-1.5 border-t border-border/30 mt-1">
-                      <Zap className="w-3 h-3 text-emerald-400" />
-                      <span>Turbo Engine Active</span>
-                    </div>
+                  {/* Rename Thread */}
+                  {messages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const currentTitle = activeConversation?.title || "Active Research Session";
+                        const newTitle = window.prompt("Rename thread:", currentTitle);
+                        if (newTitle && newTitle.trim()) {
+                          saveChatSession({ id: conversationId, title: newTitle.trim() });
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-foreground transition cursor-pointer"
+                    >
+                      <Edit3 className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span className="font-medium">Rename Thread</span>
+                    </button>
                   )}
+
+                  {/* Delete Thread */}
+                  {messages.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this conversation?")) {
+                          deleteChatSession(conversationId);
+                          createNewConversation();
+                        }
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-red-500/10 text-xs text-red-500 transition cursor-pointer"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                      <span className="font-medium">Delete Thread</span>
+                    </button>
+                  )}
+
+                  <div className="border-t border-border/40 my-1" />
+
+                  {/* Settings */}
+                  <a
+                    href="/settings"
+                    className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left hover:bg-muted/70 text-xs text-muted-foreground hover:text-foreground transition cursor-pointer"
+                  >
+                    <Settings className="w-3.5 h-3.5 shrink-0" />
+                    <span className="font-medium">Settings & Preferences</span>
+                  </a>
                 </div>
               )}
             </div>
@@ -1272,9 +1288,17 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     agentId={selectedAgentId}
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
+                    activeSiblingMap={activeSiblingMap}
+                    onSwitchSibling={handleSwitchSibling}
+                    onEditMessage={handleEditMessage}
+                    onRegenerate={handleRegenerate}
+                    onSelectOption={(val) => handleSendMessage(val)}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
                     onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
+                      if (mode) {
+                        setPersona(mode);
+                      }
                       handleSendMessage(prompt);
                       if (tab) {
                         handleOpenArtifact(tab);
@@ -1345,6 +1369,9 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                 isArtifactOpen={artifactOpen}
                 onToggleArtifact={setArtifactOpen}
                 onSelectPrompt={(prompt, mode, tab) => {
+                  if (mode) {
+                    setPersona(mode);
+                  }
                   handleSendMessage(prompt);
                   if (tab) {
                     handleOpenArtifact(tab);
@@ -1380,9 +1407,17 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
                     agentId={selectedAgentId}
                     isStreaming={streamState.isStreaming}
                     statusText={streamState.statusText}
+                    activeSiblingMap={activeSiblingMap}
+                    onSwitchSibling={handleSwitchSibling}
+                    onEditMessage={handleEditMessage}
+                    onRegenerate={handleRegenerate}
+                    onSelectOption={(val) => handleSendMessage(val)}
                     onOpenArtifact={(type) => handleOpenArtifact(type)}
                     onOpenSource={handleOpenSource}
                     onSelectPrompt={(prompt, mode, tab) => {
+                      if (mode) {
+                        setPersona(mode);
+                      }
                       handleSendMessage(prompt);
                       if (tab) {
                         handleOpenArtifact(tab);
@@ -1423,6 +1458,41 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             setIsVoiceOrbOpen(false);
             setVoiceActive(false);
           }}
+        />
+
+        {/* 🧠 LibreChat-Adapted Semantic Memory Drawer */}
+        <SemanticMemoryDrawer
+          isOpen={isMemoryDrawerOpen}
+          onClose={() => setIsMemoryDrawerOpen(false)}
+        />
+
+        {/* 📝 LibreChat-Adapted Prompt Template Variable Modal */}
+        <PromptVariableModal
+          isOpen={isPromptVariableModalOpen}
+          onClose={() => setIsPromptVariableModalOpen(false)}
+          promptTemplate={variablePromptTemplate}
+          onSubmit={(interpolated) => handleSendMessage(interpolated, { skipVariableCheck: true })}
+        />
+
+        {/* 🎛️ LibreChat-Adapted Inference Parameters Panel */}
+        <ParametersPanel
+          isOpen={isParametersOpen}
+          onClose={() => setIsParametersOpen(false)}
+          parameters={chatParameters}
+          onChange={setChatParameters}
+          activeModel={activeAgent?.model || activeAgent?.name || "Gemini 2.5 Flash"}
+        />
+
+        {/* ⚡ LibreChat-Adapted MCP Servers & Tools Inspector */}
+        <McpInspectorDrawer
+          isOpen={isMcpInspectorOpen}
+          onClose={() => setIsMcpInspectorOpen(false)}
+        />
+
+        {/* 🔑 LibreChat-Adapted Custom BYOK Provider Endpoints Modal */}
+        <ByokEndpointsModal
+          isOpen={isByokModalOpen}
+          onClose={() => setIsByokModalOpen(false)}
         />
 
         {/* 💳 Monetization & bKash/Nagad Paywall Portal Modal */}
@@ -1539,11 +1609,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
           onForkCreated={(newId) => switchConversation(newId)}
         />
 
-        <KeyboardShortcutsModal
-          open={isShortcutsOpen}
-          onOpenChange={setIsShortcutsOpen}
-        />
-
         <CommandPaletteModal
           open={isCommandPaletteOpen}
           onOpenChange={setIsCommandPaletteOpen}
@@ -1581,13 +1646,6 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
             time: new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
           }))}
         />
-
-        {isVoiceOrbOpen && (
-          <UnifiedVoiceStudioModal
-            isOpen={isVoiceOrbOpen}
-            onClose={() => setIsVoiceOrbOpen(false)}
-          />
-        )}
 
         {isSwarmDebateOpen && (
           <SwarmAdversarialDebateModal

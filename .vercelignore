@@ -11,39 +11,39 @@ node_modules
 **/.agents/**
 
 # Backend, models, microservices
-api
-api/**
-artifacts/api-server
-artifacts/api-server/**
-lib/hermes
-lib/hermes/**
-models
-models/**
-packages
-packages/**
-deploy
-deploy/**
+/api
+/api/**
+/artifacts/api-server
+/artifacts/api-server/**
+/lib/hermes
+/lib/hermes/**
+/models
+/models/**
+/packages
+/packages/**
+/deploy
+/deploy/**
 
 # Subrepos & references
-shothik-opc-v2
-shothik-soup
-deer-flow-backend
-github-prompt-reverse-engineer
-reference-repos
-reference-repos/**
+/shothik-opc-v2
+/shothik-soup
+/deer-flow-backend
+/github-prompt-reverse-engineer
+/reference-repos
+/reference-repos/**
 
 # Cache & logs
 .turbo
 **/.turbo/**
 .cache
 **/.cache/**
-playwright-report
-test-results
-coverage
-scratch
-tmp
-data
-.data
+/playwright-report
+/test-results
+/coverage
+/scratch
+/tmp
+/data
+/.data
 *.log
 *.sqlite
 *.db
@@ -55,7 +55,10 @@ data
 *.zip
 
 # Docs & tests
-docs/**
-attached_assets/**
-scripts/**
-tests/**
+/docs/**
+/attached_assets/**
+/scripts/**
+/tests/**
+
+# Leftover Next.js middleware (app is Vite; next/server is not installed)
+/middleware.ts

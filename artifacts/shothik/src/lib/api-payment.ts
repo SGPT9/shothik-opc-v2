@@ -5,8 +5,18 @@ const getAccessToken = (): string | null => {
   return localStorage.getItem("accessToken");
 };
 
+const getBaseUrl = (): string => {
+  if (process.env.NEXT_PUBLIC_PAYMENT_SYSTEM_URL) {
+    return process.env.NEXT_PUBLIC_PAYMENT_SYSTEM_URL;
+  }
+  if (typeof window !== "undefined") {
+    return "";
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_PAYMENT_SYSTEM_URL || "",
+  baseURL: getBaseUrl(),
   timeout: 8000,
 });
 

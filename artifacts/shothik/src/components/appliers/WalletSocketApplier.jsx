@@ -7,7 +7,9 @@ import { io } from "socket.io-client";
 
 const WalletSocketApplier = () => {
   const dispatch = useDispatch();
-  const { accessToken, user } = useSelector((state) => state.auth);
+  // ⚡ Bolt: Destructuring auth state causes unnecessary re-renders when other auth fields change. Use specific selectors.
+  const accessToken = useSelector((state) => state.auth?.accessToken);
+  const user = useSelector((state) => state.auth?.user);
   const socketRef = useRef(null);
   const isConnectedRef = useRef(false);
 

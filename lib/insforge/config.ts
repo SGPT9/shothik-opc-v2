@@ -1,9 +1,9 @@
 function readPublicEnv(name: "NEXT_PUBLIC_INSFORGE_URL" | "NEXT_PUBLIC_INSFORGE_ANON_KEY") {
   switch (name) {
     case "NEXT_PUBLIC_INSFORGE_URL":
-      return process.env.NEXT_PUBLIC_INSFORGE_URL;
+      return process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_INSFORGE_URL || "https://xgnzsikvguswhtozvokx.supabase.co";
     case "NEXT_PUBLIC_INSFORGE_ANON_KEY":
-      return process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY;
+      return process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || "sb_publishable_pa1rLrMH8sLguAUhbTHfmw_wAcIY9hY";
   }
 }
 

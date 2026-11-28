@@ -1,5 +1,3 @@
-
-
 import { useSelector } from "react-redux";
 import { useGetUsesLimitQuery } from "@/redux/api/tools/toolsApi";
 import { motion, AnimatePresence } from "framer-motion";
@@ -46,9 +44,9 @@ const TOOL_CONFIG = {
 };
 
 function UsageBar({ used, total, color, label, icon: Icon }) {
-  const percentage = total === 99999 ? 0 : Math.min((used / total) * 100, 100);
-  const remaining = total === 99999 ? "Unlimited" : `${Math.max(0, total - used)} left`;
-  const isUnlimited = total === 99999;
+  const isUnlimited = total === -1 || total === 99999;
+  const percentage = isUnlimited ? 0 : Math.min((used / total) * 100, 100);
+  const remaining = isUnlimited ? "Unlimited" : `${Math.max(0, total - used)} left`;
 
   return (
     <div className="flex items-center gap-3">
@@ -115,8 +113,10 @@ export default function UsageTracker({ currentTool, compact = false }) {
 
   const totalUsedPercentage = useMemo(() => {
     if (!paraphraseLimits) return 0;
-    const pUsed = paraphraseLimits.totalWordLimit === 99999 ? 0 :
-      ((paraphraseLimits.totalWordLimit - paraphraseLimits.remainingWord) / paraphraseLimits.totalWordLimit) * 100;
+    const pUsed =
+      paraphraseLimits.totalWordLimit === -1 || paraphraseLimits.totalWordLimit === 99999
+        ? 0
+        : ((paraphraseLimits.totalWordLimit - paraphraseLimits.remainingWord) / paraphraseLimits.totalWordLimit) * 100;
     return Math.round(pUsed);
   }, [paraphraseLimits]);
 
@@ -267,7 +267,7 @@ export default function UsageTracker({ currentTool, compact = false }) {
             className="flex items-center justify-center gap-2 mt-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl text-xs font-semibold hover:from-blue-600 hover:to-indigo-600 transition-colors cursor-pointer shadow-md shadow-blue-500/20"
           >
             <Crown size={13} />
-            Upgrade — Plans from $7.99/mo
+            Upgrade — Passes from ৳100 ($0.85)
             <ArrowRight size={13} />
           </motion.div>
         </Link>
@@ -291,7 +291,7 @@ export function InlineUsageBadge({ tool }) {
 
   const remaining = limits.remainingWord;
   const total = limits.totalWordLimit;
-  if (total === 99999) return null;
+  if (total === -1 || total === 99999) return null;
 
   const percentage = ((total - remaining) / total) * 100;
 

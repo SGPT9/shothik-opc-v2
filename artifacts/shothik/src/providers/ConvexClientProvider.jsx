@@ -1,4 +1,3 @@
-
 import { ConvexProviderWithAuth, ConvexReactClient } from "convex/react";
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -14,10 +13,12 @@ const isValidConvexUrl =
   !convexUrl.includes("placeholder");
 
 let convex = null;
-try {
-  convex = new ConvexReactClient(convexUrl);
-} catch (e) {
-  console.warn("[ConvexClientProvider] Failed to init Convex client:", e);
+if (isValidConvexUrl) {
+  try {
+    convex = new ConvexReactClient(convexUrl);
+  } catch (e) {
+    console.warn("[ConvexClientProvider] Failed to init Convex client:", e);
+  }
 }
 
 function useAuthFromAuthProvider() {
@@ -32,7 +33,6 @@ function useAuthFromAuthProvider() {
   const [convexToken, setConvexToken] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const lastTokenRef = useRef(null);
-
 
   useEffect(() => {
     if (!isAuthenticated || !user?._id) {
@@ -103,4 +103,3 @@ export default function ConvexClientProvider({ children }) {
     </ConvexProviderWithAuth>
   );
 }
-

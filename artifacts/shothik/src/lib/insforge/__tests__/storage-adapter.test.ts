@@ -46,7 +46,7 @@ describe("InsForgeStorageAdapter Module", () => {
   it("deletes file from storage bucket", async () => {
     const success = await InsForgeStorageAdapter.deleteFile("artifacts", "uploads/test.png");
     expect(success).toBe(true);
-    expect(mockRemove).toHaveBeenCalledWith("uploads/test.png");
+    expect(mockRemove).toHaveBeenCalledWith(["uploads/test.png"]);
   });
 
   it("generates public URL for a file key", () => {
