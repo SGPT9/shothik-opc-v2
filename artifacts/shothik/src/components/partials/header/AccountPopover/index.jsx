@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { HelpCircle, LogIn, Mail, User } from "lucide-react";
+import { BookOpen, HelpCircle, LogIn, Mail, Ticket, User, Wallet } from "lucide-react";
 
 export default function AccountPopover() {
   const { accessToken, user } = useSelector((state) => state.auth);
@@ -119,6 +119,25 @@ export default function AccountPopover() {
                 </div>
               </div>
             </button>
+          )}
+
+          {user?.email && (
+            <>
+              {[
+                { label: "Billing & Credits", path: "/account/billing", Icon: Wallet },
+                { label: "Outcome Passes", path: "/pricing", Icon: Ticket },
+                { label: "My Writing Studio", path: "/writing-studio?projects=1", Icon: BookOpen },
+              ].map(({ label, path, Icon }) => (
+                <button
+                  key={path}
+                  onClick={() => handleClickItem(path)}
+                  className="hover:bg-primary/10 flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm"
+                >
+                  <Icon className="h-5 w-5" />
+                  <span>{label}</span>
+                </button>
+              ))}
+            </>
           )}
 
           {!user?.email && (

@@ -81,7 +81,12 @@ temp-open-design/
 .trae
 .windsurf
 .vercel
+.superpowers/
 .env*
+!.superpowers/
+.env.example
+!.superpowers/
+.env.*.example
 
 # Reference clones & deployment archives
 inkos-clone/
@@ -119,3 +124,23 @@ logs/
 
 
 
+# Local Python environments & external reference repositories
+.venv-antigravity/
+antigravity-sdk-python/
+deerflow_repo/
+jiuwenswarm_repo/
+externals/
+open-duet/
+rea/
+github-prompt-reverse-engineer/
+
+# Local Graphify Knowledge Graph Cache
+graphify-out/
+
+
+# Build/test artifacts (audit cleanup)
+playwright-report/
+test-results/
+.claude-flow/logs/
+
+*.pem

@@ -19,6 +19,11 @@ const SUSPICIOUS_SECRETS = [
   /AIza[0-9A-Za-z-_]{35}/, // Google API key
   /ghp_[0-9a-zA-Z]{36}/,   // GitHub Personal Access Token
   /sk-[a-zA-Z0-9]{48}/,    // OpenAI legacy key pattern
+  /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----\s*\n\s*[A-Za-z0-9+/=]{40,}/, // Inline PEM private key
+  /(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|rediss?):\/\/[^:\s"'`/@]+:[A-Za-z0-9._~%-]{12,}@(?!localhost|127\.0\.0\.1)[^\s"'`]+/, // DB URL with real password
+  /\bik_[a-f0-9]{32}\b/,   // InsForge API key
+  /\banon_[a-f0-9]{48,}\b/, // InsForge anon key
+  /ctx7sk-[a-f0-9-]{30,}/,  // Context7 API key
 ];
 
 const IGNORED_DIRS = new Set([
@@ -44,42 +49,71 @@ function scanDir(dir) {
         scanDir(path.join(dir, entry.name));
       }
     } else if (entry.isFile()) {
-      const ext = path.extname(entry.name);
-      if (['.ts', '.tsx', '.js', '.jsx', '.json', '.md', '.yaml', '.yml'].includes(ext)) {
-        const fullPath = path.join(dir, entry.name);
-        try {
-          const content = fs.readFileSync(fullPath, "utf-8");
-          if (DANGEROUS_UNICODE.test(content)) {
-            console.error(`❌ [Unicode Hazard] Suspicious control characters in ${path.relative(repoRoot, fullPath)}`);
-            violations++;
-          }
-          for (const secretRegex of SUSPICIOUS_SECRETS) {
-            const matches = content.match(secretRegex);
-            if (matches && !fullPath.includes(".example") && !fullPath.includes("__tests__")) {
-              const matchedStr = matches[0].toLowerCase();
-              if (
-                !matchedStr.includes("mock_") &&
-                !matchedStr.includes("dev_") &&
-                !matchedStr.includes("test_") &&
-                !matchedStr.includes("dummy_") &&
-                !matchedStr.includes("placeholder") &&
-                !matchedStr.includes("shothik_local_")
-              ) {
-                console.error(`❌ [Secret Hazard] Potential hardcoded credential in ${path.relative(repoRoot, fullPath)}`);
-                violations++;
-              }
-            }
-          }
-        } catch {
-          // ignore binary or unreadable
-        }
-      }
+      scanFile(path.join(dir, entry.name));
     }
   }
 }
 
-scanDir(path.join(repoRoot, "artifacts", "api-server", "src"));
-scanDir(path.join(repoRoot, "packages", "gortex", "src"));
+function isTestFile(fullPath) {
+  return fullPath.includes("__tests__") || /\.(test|spec)\.[cm]?[jt]sx?$/.test(fullPath);
+}
+
+function scanFile(fullPath) {
+  const ext = path.extname(fullPath);
+  if (!['.ts', '.tsx', '.js', '.jsx', '.mjs', '.cjs', '.json', '.md', '.yaml', '.yml', '.toml'].includes(ext)) return;
+  if (fullPath.endsWith("pnpm-lock.yaml")) return;
+  try {
+    const content = fs.readFileSync(fullPath, "utf-8");
+    // Files containing only fictional demo values can opt out with this marker.
+    const demoAllowed = content.includes("secret-scan: demo-values-only");
+    if (DANGEROUS_UNICODE.test(content)) {
+      console.error(`❌ [Unicode Hazard] Suspicious control characters in ${path.relative(repoRoot, fullPath)}`);
+      violations++;
+    }
+    for (const secretRegex of SUSPICIOUS_SECRETS) {
+      const matches = content.match(secretRegex);
+      if (matches && !demoAllowed && !fullPath.includes(".example") && !isTestFile(fullPath)) {
+        const matchedStr = matches[0].toLowerCase();
+        if (
+          !matchedStr.includes("mock_") &&
+          !matchedStr.includes("dev_") &&
+          !matchedStr.includes("test_") &&
+          !matchedStr.includes("dummy_") &&
+          !matchedStr.includes("placeholder") &&
+          !matchedStr.includes("your-") &&
+          !matchedStr.includes("shothik_local_")
+        ) {
+          console.error(`❌ [Secret Hazard] Potential hardcoded credential in ${path.relative(repoRoot, fullPath)}`);
+          violations++;
+        }
+      }
+    }
+  } catch {
+    // ignore binary or unreadable
+  }
+}
+
+const SCAN_ROOTS = [
+  ["artifacts", "api-server", "src"],
+  ["artifacts", "shothik", "src"],
+  ["packages", "gortex", "src"],
+  ["lib"],
+  ["app"],
+  ["scripts"],
+  ["supabase"],
+];
+for (const parts of SCAN_ROOTS) {
+  const dir = path.join(repoRoot, ...parts);
+  if (fs.existsSync(dir)) scanDir(dir);
+}
+// Top-level files (ad-hoc scripts, MCP configs, etc.)
+for (const entry of fs.readdirSync(repoRoot, { withFileTypes: true })) {
+  if (entry.isFile()) scanFile(path.join(repoRoot, entry.name));
+}
+for (const cfg of [".cursor/mcp.json"]) {
+  const p = path.join(repoRoot, cfg);
+  if (fs.existsSync(p)) scanFile(p);
+}
 
 if (violations > 0) {
   console.error(`\n❌ Pre-commit failed: ${violations} security/unicode hazards detected.`);

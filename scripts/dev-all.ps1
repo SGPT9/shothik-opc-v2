@@ -13,8 +13,8 @@ $repoRoot = (Get-Item -Path $PSScriptRoot).Parent.FullName
 Set-Location $repoRoot
 
 Write-Host ""
-Write-Host "Cleaning up stale processes on ports 5000, 5001 and 8080..." -ForegroundColor DarkYellow
-foreach ($port in @(5000, 5001, 8080)) {
+Write-Host "Cleaning up stale processes on ports 5000, 5001, 8000, 8001 and 8080..." -ForegroundColor DarkYellow
+foreach ($port in @(5000, 5001, 8000, 8001, 8080)) {
     $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
     foreach ($conn in $conns) {
         $pid_ = $conn.OwningProcess
@@ -34,9 +34,20 @@ Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$re
 # Optional AI Services
 if ($IncludeAI) {
     $deerVenvPy = "D:\ai_venvs\deerflow\Scripts\python.exe"
-    if (Test-Path $deerVenvPy) {
+    $deerBackendDir = Join-Path $repoRoot "deerflow_repo\backend"
+    if ((Test-Path $deerVenvPy) -and (Test-Path $deerBackendDir)) {
         Write-Host "Starting DeerFlow Backend on Port 8000..." -ForegroundColor Cyan
-        Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$repoRoot\deer-flow-backend\backend'; & '$deerVenvPy' main.py"
+        Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$deerBackendDir'; & '$deerVenvPy' -m uvicorn app.gateway.app:app --host 0.0.0.0 --port 8000"
+    }
+
+    $banglaVoicePy = "D:\ai_venvs\bangla-audio-ai\Scripts\python.exe"
+    $banglaVoiceDir = Join-Path (Split-Path $repoRoot -Parent) "bangla-audio-ai"
+    if (-not (Test-Path $banglaVoicePy)) {
+        $banglaVoicePy = "python"
+    }
+    if (Test-Path (Join-Path $banglaVoiceDir "src\api\server.py")) {
+        Write-Host "Starting Bangla Audio AI (OpenVINO Voice Service) on Port 8001..." -ForegroundColor Cyan
+        Start-Process powershell -ArgumentList "-NoExit", "-Command", "Set-Location '$banglaVoiceDir'; & '$banglaVoicePy' -m src.api.server"
     }
 }
 

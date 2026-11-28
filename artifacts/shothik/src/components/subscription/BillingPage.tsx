@@ -1,6 +1,4 @@
-
-
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/redux/store";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +14,6 @@ import {
   TIER_ORDER,
   formatPrice,
   getCurrencyForCountry,
-  type CurrencyCode,
   type UsageLimitKey,
 } from "@/lib/subscription-tiers";
 import { useUserLocation } from "@/hooks/utils/useUserLocation";
@@ -30,7 +27,10 @@ import {
   AlertCircle,
   ExternalLink,
   Shield,
+  Coins,
+  Smartphone,
 } from "lucide-react";
+import { Link } from "wouter";
 
 const USAGE_LABELS: Record<UsageLimitKey, string> = {
   plagiarismChecks: "Plagiarism Checks",
@@ -44,17 +44,32 @@ const USAGE_LABELS: Record<UsageLimitKey, string> = {
 
 const TIER_ICONS: Record<string, React.ReactNode> = {
   free: <Zap className="h-6 w-6" />,
+  starter: <Zap className="h-6 w-6" />,
   student: <GraduationCap className="h-6 w-6" />,
+  student_plus: <GraduationCap className="h-6 w-6" />,
   researcher: <FlaskConical className="h-6 w-6" />,
+  creator_pro: <FlaskConical className="h-6 w-6" />,
   pro: <Crown className="h-6 w-6" />,
+  studio_max: <Crown className="h-6 w-6" />,
 };
 
 const TIER_COLORS: Record<string, string> = {
   free: "text-zinc-400",
+  starter: "text-zinc-400",
   student: "text-blue-400",
+  student_plus: "text-blue-400",
   researcher: "text-violet-400",
+  creator_pro: "text-violet-400",
   pro: "text-amber-400",
+  studio_max: "text-amber-400",
 };
+
+function normalizeLegacyTierKey(tier: string): keyof typeof SUBSCRIPTION_TIERS {
+  if (tier === "studio_max" || tier === "pro") return "pro";
+  if (tier === "creator_pro" || tier === "researcher") return "researcher";
+  if (tier === "student_plus" || tier === "student") return "student";
+  return "free";
+}
 
 function UsageMeter({ label, info }: { label: string; info: UsageInfo }) {
   if (info.isUnlimited) {
@@ -93,6 +108,35 @@ export default function BillingPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [portalLoading, setPortalLoading] = useState(false);
   const [portalError, setPortalError] = useState<string | null>(null);
+  const [creditsBalance, setCreditsBalance] = useState<number | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    const loadCredits = async () => {
+      try {
+        const headers: Record<string, string> = {};
+        if (accessToken) {
+          headers.Authorization = `Bearer ${accessToken}`;
+        }
+        const res = await fetch("/api/v1/subscriptions/credits", { headers });
+        if (!res.ok) return;
+        const json = await res.json();
+        const bal =
+          json?.data?.creditsBalance ??
+          json?.creditsBalance ??
+          null;
+        if (mounted && typeof bal === "number") {
+          setCreditsBalance(bal);
+        }
+      } catch {
+        // Fallback handled in render
+      }
+    };
+    loadCredits();
+    return () => {
+      mounted = false;
+    };
+  }, [accessToken]);
 
   if (subscription.isLoading || usageLimits.isLoading) {
     return (
@@ -102,10 +146,24 @@ export default function BillingPage() {
     );
   }
 
-  const tierConfig = SUBSCRIPTION_TIERS[subscription.tier];
+  const normalizedTier = normalizeLegacyTierKey(subscription.tier);
+  const tierConfig = SUBSCRIPTION_TIERS[normalizedTier] || SUBSCRIPTION_TIERS.free;
+  const displayCredits =
+    creditsBalance !== null
+      ? creditsBalance
+      : normalizedTier === "pro"
+        ? 1500
+        : normalizedTier === "researcher"
+          ? 550
+          : normalizedTier === "student"
+            ? 150
+            : 30;
 
   const handleManageBilling = async () => {
-    if (!accessToken) return;
+    if (!accessToken) {
+      window.location.href = "/pricing";
+      return;
+    }
 
     setPortalLoading(true);
     setPortalError(null);
@@ -119,15 +177,21 @@ export default function BillingPage() {
         body: JSON.stringify({}),
       });
 
+      if (!res.ok) {
+        // Local MFS (bKash / Nagad / SSLCommerz) users manage plans directly on /pricing
+        window.location.href = "/pricing";
+        return;
+      }
+
       const data = await res.json();
       if (data.portalUrl) {
         window.location.href = data.portalUrl;
       } else {
-        setPortalError(data.error || "Failed to open billing portal");
-        setPortalLoading(false);
+        window.location.href = "/pricing";
       }
     } catch {
-      setPortalError("Failed to connect to billing service");
+      window.location.href = "/pricing";
+    } finally {
       setPortalLoading(false);
     }
   };
@@ -146,7 +210,7 @@ export default function BillingPage() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div className="lg:col-span-5 xl:col-span-4">
+        <div className="lg:col-span-5 xl:col-span-4 space-y-4">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm font-medium tracking-wider uppercase text-muted-foreground">
@@ -156,9 +220,9 @@ export default function BillingPage() {
             <CardContent className="space-y-4">
               <div className="flex items-center gap-3">
                 <div
-                  className={`flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ${TIER_COLORS[subscription.tier]}`}
+                  className={`flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 ${TIER_COLORS[subscription.tier] || TIER_COLORS[normalizedTier]}`}
                 >
-                  {TIER_ICONS[subscription.tier]}
+                  {TIER_ICONS[subscription.tier] || TIER_ICONS[normalizedTier]}
                 </div>
                 <div>
                   <h3 className="text-xl font-bold">{tierConfig.name}</h3>
@@ -259,7 +323,7 @@ export default function BillingPage() {
               )}
 
               {subscription.isPaid &&
-                subscription.tier !== "pro" && (
+                normalizedTier !== "pro" && (
                   <Button
                     variant="outline"
                     className="w-full gap-2"
@@ -270,7 +334,7 @@ export default function BillingPage() {
                     {
                       SUBSCRIPTION_TIERS[
                         TIER_ORDER[
-                          TIER_ORDER.indexOf(subscription.tier) + 1
+                          TIER_ORDER.indexOf(normalizedTier) + 1
                         ] as keyof typeof SUBSCRIPTION_TIERS
                       ]?.name
                     }
@@ -279,11 +343,59 @@ export default function BillingPage() {
             </CardContent>
           </Card>
 
-          <Card className="mt-4">
+          {/* Universal Task Credits Wallet Card */}
+          <Card
+            className="border-emerald-500/30 bg-gradient-to-br from-emerald-950/20 via-card to-card"
+            data-testid="card-universal-credits-wallet"
+          >
+            <CardHeader className="pb-2">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-xs font-semibold tracking-wider uppercase text-emerald-400 flex items-center gap-1.5">
+                  <Coins className="h-4 w-4" />
+                  Universal Task Credits Wallet
+                </CardTitle>
+                <Badge
+                  variant="outline"
+                  className="border-emerald-500/40 text-emerald-300 text-[10px]"
+                >
+                  All 4 Modes
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-baseline justify-between">
+                <div>
+                  <span className="text-3xl font-extrabold font-mono text-emerald-400">
+                    {displayCredits.toLocaleString()}
+                  </span>
+                  <span className="ml-1.5 text-xs text-muted-foreground">
+                    available credits
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Powers Academic Turnitin audits, 45-Capability InkOS Studio (Voice Cast, BookTok, Print PDF), Venture Twin & ERP.
+              </p>
+              <div className="flex gap-2 pt-1">
+                <Link href="/pricing">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full text-xs gap-1.5 border-emerald-500/40 text-emerald-300 hover:bg-emerald-500/10 cursor-pointer"
+                  >
+                    <Smartphone className="h-3.5 w-3.5 text-pink-400" />
+                    <span>Top-Up / Outcome Passes (bKash & Card)</span>
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
             <CardContent className="pt-6">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Shield className="h-4 w-4" />
-                <span>Payments secured by Stripe</span>
+                <span>Payments secured by Stripe, bKash & Nagad</span>
               </div>
             </CardContent>
           </Card>
@@ -355,7 +467,7 @@ export default function BillingPage() {
       <UpgradeModal
         open={showUpgradeModal}
         onOpenChange={setShowUpgradeModal}
-        currentTier={subscription.tier}
+        currentTier={normalizedTier}
       />
     </div>
   );

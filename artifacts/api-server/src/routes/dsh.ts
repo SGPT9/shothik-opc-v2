@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { dshRuntime } from "../lib/dsh-runtime";
 import { logger } from "../lib/logger";
+import { resolveUserId } from "../middleware/auth.js";
 
 export const dshRouter = Router();
 
@@ -10,7 +11,8 @@ export const dshRouter = Router();
  */
 dshRouter.post("/v1/dsh/sessions/init", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { userId, title, initialContext } = req.body;
+    const { userId: bodyUserId, title, initialContext } = req.body;
+    const userId = resolveUserId(req, typeof bodyUserId === "string" ? bodyUserId : "");
 
     if (!userId || typeof userId !== "string") {
       res.status(400).json({ success: false, error: "Missing required field: 'userId' (string)" });
@@ -122,7 +124,8 @@ dshRouter.get("/v1/dsh/sessions/:sessionId/replay", async (req: Request, res: Re
  */
 dshRouter.get("/v1/dsh/sessions", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = typeof req.query.userId === "string" ? req.query.userId : undefined;
+    const resolved = resolveUserId(req, "");
+    const userId = resolved || undefined;
     const sessions = await dshRuntime.listSessions(userId);
 
     res.json({

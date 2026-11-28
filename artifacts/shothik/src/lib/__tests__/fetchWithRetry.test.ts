@@ -80,13 +80,18 @@ describe('fetchWithRetry', () => {
   it('throws on network error after exhausting retries', async () => {
     fetchMock.mockRejectedValue(new Error('Network error'));
 
-    await expect(
-      fetchWithRetry('https://example.com', undefined, {
+    let threw = false;
+    try {
+      await fetchWithRetry('https://example.com', undefined, {
         maxRetries: 0,
         baseDelay: 1,
         maxDelay: 5,
-      }),
-    ).rejects.toThrow('Network error');
+      });
+    } catch (err: any) {
+      threw = true;
+      expect(err.message).toContain('Network error');
+    }
+    expect(threw).toBe(true);
   });
 
   it('passes init options to fetch', async () => {

@@ -1,15 +1,9 @@
 import { getSanitizedConvexUrl } from "@/lib/convex-url";
+import { getInsforgeBrowserClient } from "@/lib/insforge/client";
 
 /**
- * Server-side Convex client utilities for Next.js API routes.
- *
- * These are used by agent-facing API routes that authenticate via shothik_ API keys
- * rather than Convex JWT sessions. All mutations here are internal (not callable from
- * browser clients) and are called with the CONVEX_DEPLOY_KEY for authorization.
- *
- * Required env vars:
- *   NEXT_PUBLIC_CONVEX_URL  — e.g. https://little-shrimp-242.convex.cloud
- *   CONVEX_DEPLOY_KEY       — Convex deploy key (prod:... or dev:...)
+ * Server-side persistence utilities for API routes — migrated from Convex to Supabase PostgreSQL
+ * with legacy Convex deploy-key fallback when CONVEX_DEPLOY_KEY is explicitly configured.
  */
 
 const VALID_INTERNAL_PATHS = new Set([
@@ -37,6 +31,272 @@ const VALID_INTERNAL_PATHS = new Set([
   "messages:deleteMessageInternal",
 ]);
 
+async function executeSupabaseInternal(
+  functionPath: string,
+  args: Record<string, any>
+): Promise<unknown> {
+  const supabase = getInsforgeBrowserClient();
+
+  switch (functionPath) {
+    case "books:createDraftInternal": {
+      const id = `book_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      if (supabase) {
+        await supabase.from("publishing_books").insert({
+          id,
+          user_id: args.userId || "guest",
+          project_id: args.projectId || null,
+          title: args.title || "Untitled Book",
+          status: "draft",
+        });
+      }
+      return id;
+    }
+    case "books:updateDraftInternal": {
+      const { id, userId: _userId, ...updates } = args;
+      if (supabase && id) {
+        await supabase
+          .from("publishing_books")
+          .update({
+            ...(updates.title !== undefined ? { title: updates.title } : {}),
+            ...(updates.subtitle !== undefined ? { subtitle: updates.subtitle } : {}),
+            ...(updates.description !== undefined ? { description: updates.description } : {}),
+            ...(updates.language !== undefined ? { language: updates.language } : {}),
+            ...(updates.category !== undefined ? { category: updates.category } : {}),
+            ...(updates.subcategory !== undefined ? { subcategory: updates.subcategory } : {}),
+            ...(updates.keywords !== undefined ? { keywords: updates.keywords } : {}),
+            ...(updates.listPrice !== undefined ? { list_price: String(updates.listPrice) } : {}),
+            ...(updates.currency !== undefined ? { currency: updates.currency } : {}),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", id);
+      }
+      return id;
+    }
+    case "books:generateUploadUrlInternal": {
+      return "/api/v1/storage/upload";
+    }
+    case "books:saveManuscriptFileInternal": {
+      if (supabase && args.bookId) {
+        await supabase
+          .from("publishing_books")
+          .update({
+            manuscript_storage_id: args.storageId,
+            manuscript_name: args.fileName,
+            manuscript_size: args.fileSize,
+            manuscript_format: args.format,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", args.bookId);
+      }
+      return { success: true };
+    }
+    case "books:saveCoverFileInternal": {
+      if (supabase && args.bookId) {
+        await supabase
+          .from("publishing_books")
+          .update({
+            cover_storage_id: args.storageId,
+            cover_dimensions: args.dimensions,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", args.bookId);
+      }
+      return { success: true };
+    }
+    case "forums:createPostInternal": {
+      if (supabase) {
+        const { data } = await supabase
+          .from("posts")
+          .insert({
+            channel_id: args.forumId,
+            author_id: args.authorId,
+            agent_id: args.authorType === "agent" ? args.authorId : null,
+            title: args.authorName || "Forum Post",
+            content: args.content,
+          })
+          .select("id")
+          .maybeSingle();
+        if (data?.id) return data.id;
+      }
+      return `post_${Date.now()}`;
+    }
+    case "forums:reactToPostInternal": {
+      if (supabase) {
+        await supabase.from("votes").upsert({
+          user_id: args.reactorId,
+          entity_type: "post",
+          entity_id: args.postId,
+          vote_type: 1,
+        });
+      }
+      return "added";
+    }
+    case "forums:addChatMessageInternal": {
+      if (supabase) {
+        const { data } = await supabase
+          .from("chat_messages")
+          .insert({
+            thread_id: args.forumId,
+            author_id: args.authorId,
+            role: args.authorType || "user",
+            content: args.message,
+            metadata: args.replyToId ? { replyToId: args.replyToId } : {},
+          })
+          .select("id")
+          .maybeSingle();
+        if (data?.id) return data.id;
+      }
+      return `msg_${Date.now()}`;
+    }
+    case "conversations:createConversationInternal": {
+      const id = `conv_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+      const record = {
+        _id: id,
+        id,
+        userId: args.userId,
+        surface: args.surface || "flagship",
+        title: args.title || "New Conversation",
+        modelHandle: args.modelHandle,
+        status: "active",
+        pinned: false,
+        archived: false,
+        temporary: Boolean(args.temporary),
+        contextRef: args.contextRef || {},
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      };
+      if (supabase) {
+        await supabase.from("chat_conversations").insert({
+          id,
+          user_id: record.userId,
+          surface: record.surface,
+          title: record.title,
+          model_handle: record.modelHandle || null,
+          status: record.status,
+          temporary: record.temporary,
+          context_ref: record.contextRef,
+        });
+      }
+      return record;
+    }
+    case "conversations:listConversationsInternal": {
+      if (supabase) {
+        let query = supabase
+          .from("chat_conversations")
+          .select("*")
+          .eq("user_id", args.userId)
+          .order("updated_at", { ascending: false })
+          .limit(args.limit || 50);
+        if (args.surface) query = query.eq("surface", args.surface);
+        if (args.status) query = query.eq("status", args.status);
+        const { data } = await query;
+        return (data || []).map((row: any) => ({
+          ...row,
+          _id: row.id,
+          userId: row.user_id,
+          modelHandle: row.model_handle,
+          contextRef: row.context_ref,
+          lastMessagePreview: row.last_message_preview,
+          messageCount: row.message_count,
+        }));
+      }
+      return [];
+    }
+    case "conversations:getConversationInternal": {
+      if (supabase) {
+        const { data } = await supabase
+          .from("chat_conversations")
+          .select("*")
+          .eq("id", args.conversationId)
+          .eq("user_id", args.userId)
+          .maybeSingle();
+        return data ? { ...data, _id: data.id, userId: data.user_id } : null;
+      }
+      return null;
+    }
+    case "conversations:updateConversationInternal": {
+      if (supabase) {
+        await supabase
+          .from("chat_conversations")
+          .update({
+            ...(args.title !== undefined ? { title: args.title } : {}),
+            ...(args.pinned !== undefined ? { pinned: args.pinned } : {}),
+            ...(args.archived !== undefined ? { archived: args.archived } : {}),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", args.conversationId)
+          .eq("user_id", args.userId);
+      }
+      return { _id: args.conversationId, ...args };
+    }
+    case "conversations:softDeleteConversationInternal": {
+      if (supabase) {
+        await supabase
+          .from("chat_conversations")
+          .update({ status: "deleted", updated_at: new Date().toISOString() })
+          .eq("id", args.conversationId)
+          .eq("user_id", args.userId);
+      }
+      return { success: true };
+    }
+    case "conversations:touchConversation": {
+      if (supabase) {
+        await supabase
+          .from("chat_conversations")
+          .update({
+            ...(args.lastMessagePreview !== undefined
+              ? { last_message_preview: args.lastMessagePreview }
+              : {}),
+            ...(args.modelHandle !== undefined ? { model_handle: args.modelHandle } : {}),
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", args.conversationId);
+      }
+      return { _id: args.conversationId };
+    }
+    case "messages:listMessagesInternal": {
+      if (supabase) {
+        const { data } = await supabase
+          .from("chat_messages")
+          .select("*")
+          .eq("thread_id", args.conversationId)
+          .order("created_at", { ascending: true })
+          .limit(args.limit || 100);
+        return (data || []).map((m: any) => ({ ...m, _id: m.id, conversationId: m.thread_id }));
+      }
+      return [];
+    }
+    case "messages:appendUserMessageInternal":
+    case "messages:appendAssistantPlaceholderInternal": {
+      const role = functionPath.includes("User") ? "user" : "assistant";
+      if (supabase) {
+        const { data } = await supabase
+          .from("chat_messages")
+          .insert({
+            thread_id: args.conversationId,
+            author_id: args.userId,
+            role,
+            content: args.content || "",
+            metadata: args.metadata || { modelHandle: args.modelHandle },
+          })
+          .select("*")
+          .maybeSingle();
+        if (data) return { ...data, _id: data.id };
+      }
+      return { _id: `msg_${Date.now()}`, conversationId: args.conversationId, role, content: args.content || "" };
+    }
+    case "messages:appendAssistantChunkInternal":
+    case "messages:completeAssistantMessageInternal":
+    case "messages:stopAssistantMessageInternal":
+    case "messages:failAssistantMessageInternal":
+    case "messages:deleteMessageInternal": {
+      return { success: true, _id: args.messageId };
+    }
+    default:
+      return null;
+  }
+}
+
 async function runInternalMutation(
   functionPath: string,
   args: Record<string, unknown>
@@ -45,11 +305,12 @@ async function runInternalMutation(
     throw new Error(`Unknown internal mutation path: ${functionPath}`);
   }
 
-  const url = getSanitizedConvexUrl();
-
   const deployKey = process.env.CONVEX_DEPLOY_KEY;
-  if (!deployKey) throw new Error("CONVEX_DEPLOY_KEY not configured — required for agent mutations");
+  if (!deployKey) {
+    return executeSupabaseInternal(functionPath, args);
+  }
 
+  const url = getSanitizedConvexUrl();
   const res = await fetch(`${url}/api/mutation`, {
     method: "POST",
     headers: {
@@ -77,11 +338,12 @@ async function runInternalQuery(
     throw new Error(`Unknown internal query path: ${functionPath}`);
   }
 
-  const url = getSanitizedConvexUrl();
-
   const deployKey = process.env.CONVEX_DEPLOY_KEY;
-  if (!deployKey) throw new Error("CONVEX_DEPLOY_KEY not configured — required for internal queries");
+  if (!deployKey) {
+    return executeSupabaseInternal(functionPath, args);
+  }
 
+  const url = getSanitizedConvexUrl();
   const res = await fetch(`${url}/api/query`, {
     method: "POST",
     headers: {

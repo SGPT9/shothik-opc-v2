@@ -213,7 +213,7 @@ export default function FilesPage() {
   };
 
   const handleDownload = (file: FileItem) => {
-    const content = file.content || `# ${file.name}\n\nExported from Polsia Platform.`;
+    const content = file.content || `# ${file.name}\n\nExported from Shothik AI.`;
     const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -444,12 +444,28 @@ export default function FilesPage() {
               <span>{copied ? "Copied Markdown" : "Copy Markdown"}</span>
             </button>
             <a
-              href={`/agents/chat?doc=${encodeURIComponent(selectedFile.name)}`}
+              href={`/?prompt=${encodeURIComponent(`Using my uploaded document "${selectedFile.name}", summarize the key points.`)}`}
               className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold transition shadow-xs cursor-pointer no-underline"
             >
               <MessageSquare className="w-3.5 h-3.5" />
               <span>Query in Chat</span>
             </a>
+            <button
+              onClick={() => {
+                const id = `vault-${Date.now()}`;
+                saveOfflineManuscript({
+                  id,
+                  title: selectedFile.name.replace(/\.[^/.]+$/, ""),
+                  content: selectedFile.content || `# ${selectedFile.name}`,
+                  updatedAt: Date.now(),
+                });
+                window.location.href = `/writing-studio?projectId=${encodeURIComponent(id)}`;
+              }}
+              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg bg-purple-700 hover:bg-purple-600 text-white text-xs font-semibold transition shadow-xs cursor-pointer"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Open in Studio</span>
+            </button>
           </div>
 
           {/* RAG Chunks Inspector */}
