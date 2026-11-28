@@ -115,8 +115,7 @@ const ParaphraseContend = () => {
   };
 
   const [showLanguageDetect, setShowLanguageDetect] = useState(false);
-  // Optimization: Select specific property instead of destructuring to prevent unnecessary re-renders
-  const accessToken = useSelector((state) => state.auth.accessToken);
+  const accessToken = useSelector((state) => state.auth?.accessToken);
   const [outputHistoryIndex, setOutputHistoryIndex] = useState(0);
   const [highlightSentence, setHighlightSentence] = useState(0);
   const [selectedMode, setSelectedModeState] = useState("Standard");
@@ -129,8 +128,7 @@ const ParaphraseContend = () => {
   const [outputWordCount, setOutputWordCount] = useState(0);
   const [outputHistory, setOutputHistory] = useState([]);
   const [outputContend, setOutputContend] = useState("");
-  // Optimization: Select specific property instead of destructuring to prevent unnecessary re-renders
-  const user = useSelector((state) => state.auth.user);
+  const user = useSelector((state) => state.auth?.user);
   const frozenWords = useSetState(initialFrozenWords);
   const frozenPhrases = useSetState(initialFrozenPhrase);
   const [recommendedFreezeWords, setRecommendedFreezeWords] = useState([]);
@@ -217,8 +215,7 @@ const ParaphraseContend = () => {
     user?.package === "value_plan" ||
     user?.package === "unlimited";
 
-  // Optimization: Select specific property instead of destructuring to prevent unnecessary re-renders
-  const paraphraseOptions = useSelector((state) => state.settings.paraphraseOptions);
+  const paraphraseOptions = useSelector((state) => state.settings?.paraphraseOptions);
 
   const {
     autoFrozenTerms,
