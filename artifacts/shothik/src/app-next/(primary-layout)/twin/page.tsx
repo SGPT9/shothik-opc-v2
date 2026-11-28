@@ -88,7 +88,7 @@ const KycOcrModal = lazy(() => import("@/components/twin/KycOcrModal").then((m) 
 const RtoFraudShieldModal = lazy(() => import("@/components/twin/RtoFraudShieldModal").then((m) => ({ default: m.RtoFraudShieldModal })));
 const FlashSaleInventoryModal = lazy(() => import("@/components/twin/FlashSaleInventoryModal").then((m) => ({ default: m.FlashSaleInventoryModal })));
 const LandRegistryModal = lazy(() => import("@/components/twin/LandRegistryModal").then((m) => ({ default: m.LandRegistryModal })));
-const CreatorCashoutModal = dynamic(() => import("@/components/credits/CreatorCashoutModal"), { ssr: false });
+const CreatorCashoutModal = lazy(() => import("@/components/credits/CreatorCashoutModal"));
 const ScenarioLabModal = lazy(() => import("@/components/scenariolab/ScenarioLabModal").then((m) => ({ default: m.ScenarioLabModal })));
 const UnifiedVoiceStudioModal = lazy(() => import("@/components/voice/UnifiedVoiceStudioModal").then((m) => ({ default: m.UnifiedVoiceStudioModal })));
 const AgentMarketplaceModal = lazy(() => import("@/components/marketplace/AgentMarketplaceModal").then((m) => ({ default: m.AgentMarketplaceModal })));
