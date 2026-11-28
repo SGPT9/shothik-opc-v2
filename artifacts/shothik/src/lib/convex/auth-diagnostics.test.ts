@@ -22,6 +22,7 @@ describe("diagnoseConvexJwtConfig", () => {
     vi.clearAllMocks();
     vi.stubEnv("CONVEX_SITE_URL", "https://example.convex.site");
     vi.stubEnv("JWT_PRIVATE_KEY", "private-key");
+    vi.stubEnv("CONVEX_JWT_PUBLIC_KEY_N", "expected-test-modulus");
   });
 
   afterEach(() => {

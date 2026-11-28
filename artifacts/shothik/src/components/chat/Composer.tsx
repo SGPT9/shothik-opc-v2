@@ -47,17 +47,18 @@ import {
   useCallback,
   lazy,
   Suspense,
+  type ComponentType,
 } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { FileAttachmentBar } from "./FileAttachmentBar";
 import { PERPLEXITY_FOCUS_OPTIONS, type PerplexityFocusMode } from "@/components/perplexity/PerplexityFocusSelector";
 import type { ChatPersona } from "@/lib/chat/types";
-const RagKnowledgeVaultModal = lazy(() => import("./RagKnowledgeVaultModal").then((mod) => ({ default: (mod as any).RagKnowledgeVaultModal || (mod as any).default })));
-const CourierTrackingModal = lazy(() => import("@/components/common/CourierTrackingModal").then((mod) => ({ default: (mod as any).CourierTrackingModal || (mod as any).default })));
-const ScenarioLabModal = lazy(() => import("@/components/scenariolab/ScenarioLabModal").then((mod) => ({ default: (mod as any).ScenarioLabModal || (mod as any).default })));
-const UnifiedVoiceStudioModal = lazy(() => import("@/components/voice/UnifiedVoiceStudioModal").then((mod) => ({ default: (mod as any).UnifiedVoiceStudioModal || (mod as any).default })));
-const TeamModal = lazy(() => import("@/components/team/TeamModal").then((mod) => ({ default: (mod as any).TeamModal || (mod as any).default })));
+const RagKnowledgeVaultModal = lazy(() => import("./RagKnowledgeVaultModal").then((mod) => ({ default: ((mod as any).RagKnowledgeVaultModal || (mod as any).default) as ComponentType<any> })));
+const CourierTrackingModal = lazy(() => import("@/components/common/CourierTrackingModal").then((mod) => ({ default: ((mod as any).CourierTrackingModal || (mod as any).default) as ComponentType<any> })));
+const ScenarioLabModal = lazy(() => import("@/components/scenariolab/ScenarioLabModal").then((mod) => ({ default: ((mod as any).ScenarioLabModal || (mod as any).default) as ComponentType<any> })));
+const UnifiedVoiceStudioModal = lazy(() => import("@/components/voice/UnifiedVoiceStudioModal").then((mod) => ({ default: ((mod as any).UnifiedVoiceStudioModal || (mod as any).default) as ComponentType<any> })));
+const TeamModal = lazy(() => import("@/components/team/TeamModal").then((mod) => ({ default: ((mod as any).TeamModal || (mod as any).default) as ComponentType<any> })));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

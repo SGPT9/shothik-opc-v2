@@ -1,12 +1,15 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import express from "express";
 import projectsRouter from "../projects.js";
+import { postgresAvailable } from "../../test-utils/live-services.js";
+
+const hasPostgres = await postgresAvailable();
 
 const app = express();
 app.use(express.json());
 app.use("/api", projectsRouter);
 
-describe("Project Room Link & Plot Branching", () => {
+describe.skipIf(!hasPostgres)("Project Room Link & Plot Branching", () => {
   let server: any;
   let baseUrl: string;
   const testUserId = `test_owner_${Date.now()}`;
