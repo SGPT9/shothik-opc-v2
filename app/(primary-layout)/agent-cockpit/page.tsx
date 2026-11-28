@@ -132,9 +132,9 @@ export default function AgentCockpitPage() {
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
                   aria-label="Clear search"
-                  className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs font-bold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 rounded"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-2.5 top-2 text-slate-500 hover:text-white text-xs font-bold focus-visible:ring-2 focus-visible:outline-none"
                 >
                   ✕
                 </button>

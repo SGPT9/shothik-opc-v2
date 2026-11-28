@@ -1,3 +1,6 @@
+## 2023-11-07 - Missing aria-labels on character-based close buttons
+**Learning:** Buttons using text characters like ✕ for icons often lack aria-labels, making them inaccessible to screen readers.
+**Action:** Always check for and add aria-labels to icon-only buttons, especially those using character symbols.
 ## 2024-11-12 - Missing ARIA Roles on Custom Tab Implementations
 **Learning:** Found a recurring pattern in custom tab implementations (like `TeamModal`) lacking the proper accessibility tree structure (`role="tablist"` and `role="tab"`) as well as active/selected state mapping (`aria-selected`). This negatively impacts screen reader users who cannot interpret the relationship between these interactive elements.
 **Action:** When implementing or updating custom tab navigation components across the design system, proactively ensure they are wrapped in a `role="tablist"` container with `aria-label` context, and each tab uses `role="tab"`, `aria-selected`, and `focus-visible` styles.
