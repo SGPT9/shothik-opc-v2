@@ -8,6 +8,10 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
+// Behind Vercel/Nginx/Cloudflare: trust the first proxy hop so rate limiting
+// keys on the real client IP instead of the proxy address.
+app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
+
 // Secure HTTP response headers
 app.use(
   helmet({
@@ -125,7 +129,11 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
     success: false,
     error: {
       code: err.code || "INTERNAL_SERVER_ERROR",
-      message: err.message || "An unexpected server error occurred",
+      // Do not leak internal error details (SQL, stack-derived text) on 5xx in production.
+      message:
+        statusCode >= 500 && process.env.NODE_ENV === "production"
+          ? "An unexpected server error occurred"
+          : err.message || "An unexpected server error occurred",
     },
   });
 });
