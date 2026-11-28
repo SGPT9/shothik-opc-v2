@@ -11,7 +11,9 @@ import { useDispatch, useSelector } from "react-redux";
 
 export const useChat = () => {
   const dispatch = useDispatch();
-  const { currentChatId, title } = useSelector((state) => state.researchChat);
+  // ⚡ Bolt: Using specific property selectors to prevent unnecessary re-renders
+  const currentChatId = useSelector((state) => state.researchChat.currentChatId);
+  const title = useSelector((state) => state.researchChat.title);
 
   const [createChat] = useCreateChatMutation();
   const [updateChatName] = useUpdateChatNameMutation();

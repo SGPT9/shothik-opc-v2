@@ -1,5 +1,6 @@
 'use client';
 
+import React, { useMemo } from 'react';
 import SvgColor from '@/components/common/SvgColor';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -94,8 +95,18 @@ function Divider() {
 
 function NewButtonWithPopup() {
   const { t } = useTranslation();
-  const WRITING_TOOLS = WRITING_TOOL_KEYS.map((tool) => ({ ...tool, label: t(tool.key) }));
-  const AGENT_TOOLS = AGENT_TOOL_KEYS.map((tool) => ({ ...tool, label: t(tool.key) }));
+
+  // ⚡ Bolt optimization: Memoize tool arrays to prevent unnecessary re-allocations on every render
+  const WRITING_TOOLS = useMemo(() =>
+    WRITING_TOOL_KEYS.map((tool) => ({ ...tool, label: t(tool.key) })),
+    [t]
+  );
+
+  // ⚡ Bolt optimization: Memoize tool arrays to prevent unnecessary re-allocations on every render
+  const AGENT_TOOLS = useMemo(() =>
+    AGENT_TOOL_KEYS.map((tool) => ({ ...tool, label: t(tool.key) })),
+    [t]
+  );
 
   return (
     <div className="group relative mx-1 w-[54px]">
