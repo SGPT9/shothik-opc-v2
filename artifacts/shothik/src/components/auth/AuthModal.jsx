@@ -17,7 +17,8 @@ const AuthModal = ({ isOpen, onClose, children }) => {
 
 export const LoginModal = ({ children }) => {
   const dispatch = useDispatch();
-  const { showLoginModal } = useSelector((state) => state.auth);
+  // Optimization: Direct property selection prevents unnecessary re-renders when other auth state properties change.
+  const showLoginModal = useSelector((state) => state.auth.showLoginModal);
 
   const handleClose = () => {
     dispatch(setShowLoginModal(false));
@@ -32,7 +33,8 @@ export const LoginModal = ({ children }) => {
 
 export const RegisterModal = ({ children }) => {
   const dispatch = useDispatch();
-  const { showRegisterModal } = useSelector((state) => state.auth);
+  // Optimization: Direct property selection prevents unnecessary re-renders when other auth state properties change.
+  const showRegisterModal = useSelector((state) => state.auth.showRegisterModal);
 
   const handleClose = () => {
     dispatch(setShowRegisterModal(false));
