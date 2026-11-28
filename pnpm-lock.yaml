@@ -741,8 +741,8 @@ importers:
         specifier: ^0.3.11
         version: 0.3.11
       posthog-js:
-        specifier: ^1.410.6
-        version: 1.413.3
+        specifier: ^1.454.4
+        version: 1.454.4(@types/react@19.2.14)(react@19.1.0)
       pptxgenjs:
         specifier: ^4.0.1
         version: 4.0.1
@@ -2061,14 +2061,14 @@ packages:
   '@poppinss/exception@1.2.3':
     resolution: {integrity: sha512-dCED+QRChTVatE9ibtoaxc+WkdzOSjYTKi/+uacHWIsfodVfpsueo3+DKpgU5Px8qXjgmXkSvhXvSCz3fnP9lw==}
 
-  '@posthog/browser-common@0.4.0':
-    resolution: {integrity: sha512-W9DCGVks15docUMPvJ2nd8NS16Gn74bsGWuaeg31beEKFSjdW8wvnQ1ETY6WSql5pYxZb3GdJmEUZVVstKSrBQ==}
+  '@posthog/browser-common@0.13.1':
+    resolution: {integrity: sha512-2e7AVKc8F1mDGnqvEE6Mu/5wcojDXeK4ddeq0B2o1X5iwDVJ7XSH+7Rf3qNHkqwUZLCT9aoUe2mkgfM9vIo5kA==}
 
-  '@posthog/core@1.50.2':
-    resolution: {integrity: sha512-El7y/ipZ45OFBRTN/+ixat9Nw21bW+pKKnX0G+rG4rWxBtDA47Ub/ZUnHvZNhAufNInQr4AYCUeWQsuJsTcoKg==}
+  '@posthog/core@1.69.2':
+    resolution: {integrity: sha512-toMfPKklwLW+a4ZY3/EzM3GNMVXmk2ylGb8NPJXRH4igXMoI8wgNL2jqXOiglWAXqFBLZGYFN1oQx6LVmUTxTg==}
 
-  '@posthog/types@1.408.0':
-    resolution: {integrity: sha512-xMY8QrRKsTYu4A4Of7XF/xEt0HcnZOWwnICm3do7tGKA0lTlnnr4YW0AHQN1Uv2P3BDqf5GQoqh91MKE+dgdcA==}
+  '@posthog/types@1.427.1':
+    resolution: {integrity: sha512-Kx9hWf6Au64CrBLafscANAeswkRFUMs4zlU9/gwB2Hf/9ggU9YNjbw/MQA5tt7cbzTCkh+4fNIPjQeJz7/j63w==}
 
   '@prisma/config@7.4.0':
     resolution: {integrity: sha512-EnNrZMwZ9+O6UlG+YO9SP3VhVw4zwMahDRzQm3r0DQn9KeU5NwzmaDAY+BzACrgmaU71Id1/0FtWIDdl7xQp9g==}
@@ -4379,6 +4379,9 @@ packages:
   core-js@3.50.0:
     resolution: {integrity: sha512-BRWgOLKkFeCgRudR6zrs8p9XJZcE14grzKMMssoYrk6krtuEZ7MTKPIY5RzOnqsEKIR9kst7wNzphttraT+Yqw==}
 
+  core-js@3.51.0:
+    resolution: {integrity: sha512-7bDKx/5jm5MxzsXxc93g6Z2+4ZsuT/MddrfRmTDJNAkWsYWHU8EVNEsBiIEWnMAMCHMmRfUEjkuo3jeNBOIHRw==}
+
   core-util-is@1.0.3:
     resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
@@ -4664,6 +4667,9 @@ packages:
 
   dompurify@3.4.17:
     resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
+
+  dompurify@3.5.0:
+    resolution: {integrity: sha512-LYC0ZkE8P1V42JsRYTwMdme/2ET8SpOc5AA2eOFjP/IadvRd2fwiT4TVz5vkfy0XUx12aS2UaRkTnfVPNOv9vw==}
 
   dotenv@16.6.1:
     resolution: {integrity: sha512-uBq4egWHTcTt33a72vpSG0z3HnPuIl6NqYcTrKEg2azoEyl2hpW0zqlxysq2pK9HlDIHyHyakeYaYnSAwd8bow==}
@@ -6777,8 +6783,16 @@ packages:
     resolution: {integrity: sha512-Jtc2612XINuBjIl/QTWsV5UvE8UHuNblcO3vVADSrKsrc6RqGX6lOW1cEo3CM2v0XG4Nat8nI+YM7/f26VxXLw==}
     engines: {node: '>=12'}
 
-  posthog-js@1.413.3:
-    resolution: {integrity: sha512-UoAymtZYVr84Ldp0ITXmlK4Q3GE8vU7GW8wC+aCput5RrKVJ8wkAPc12n3ElmKRlvLL+oD+Fotjc7n3wYG0RGQ==}
+  posthog-js@1.454.4:
+    resolution: {integrity: sha512-+jmSIhJxzMGvJNd88+9L6+Nka/CinOOoWfzpcj4U7VwQmLA3ptIsIij+j0Oo+ar7vc8eaHjIuuQEHDs3WTCK+g==}
+    peerDependencies:
+      '@types/react': '>=16.8.0'
+      react: '>=16.8.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      react:
+        optional: true
 
   posthog-node@5.51.6:
     resolution: {integrity: sha512-r+Ge3p0OnOcOWeTnvKZmAtDwECeIoyNTyxBxuZc8wM6RHCQ9j2Xrhogrf39HSq1Y2gIOpWLqIDRmWDcu7xmqcA==}
@@ -8262,11 +8276,11 @@ packages:
   web-tree-sitter@0.24.5:
     resolution: {integrity: sha512-+J/2VSHN8J47gQUAvF8KDadrfz6uFYVjxoxbKWDoXVsH2u7yLdarCnIURnrMA6uSRkgX3SdmqM5BOoQjPdSh5w==}
 
-  web-vitals@5.3.0:
-    resolution: {integrity: sha512-q6LWsLatGYZp5VGBIOvbTj6JBV2nOmC8KvWztXBmwJcfFAzhwKwbOxhUH306XY3CcaZDUlSmSuNPBsCn0bFu+g==}
+  web-vitals@6.2.1:
+    resolution: {integrity: sha512-rLcLXA2sx6+9dE88NHFubwTtGxpK4yYBLj6qHPdFoCaLr0cXGb4efOqtKLlm4loGA4OEKHIQKMKzZkKyOh5ctw==}
 
-  web-vitals@6.0.0:
-    resolution: {integrity: sha512-Guaibvy/+uNtL6Bsu4jmMJGzuSl91oeRH5iO9pPRbYftnFUr3yqT1TUNX/OE4o9HexuEMU3Kb/Wg7iKhlffZUA==}
+  web-vitals@6.2.3:
+    resolution: {integrity: sha512-Dmy+vdO1UPMqXiAtZSNayhl4f794Bxfd94W4HIj2HlYtczEQfEOon969memlcpcHrTuOKLa5baFjX7WbgmOq+A==}
 
   webidl-conversions@3.0.1:
     resolution: {integrity: sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ==}
@@ -9428,16 +9442,20 @@ snapshots:
 
   '@poppinss/exception@1.2.3': {}
 
-  '@posthog/browser-common@0.4.0':
+  '@posthog/browser-common@0.13.1':
     dependencies:
-      '@posthog/core': 1.50.2
-      '@posthog/types': 1.408.0
+      '@posthog/core': 1.69.2
+      '@posthog/types': 1.427.1
+      dompurify: 3.5.0
+      preact: 10.29.8
+    transitivePeerDependencies:
+      - preact-render-to-string
 
-  '@posthog/core@1.50.2':
+  '@posthog/core@1.69.2':
     dependencies:
-      '@posthog/types': 1.408.0
+      '@posthog/types': 1.427.1
 
-  '@posthog/types@1.408.0': {}
+  '@posthog/types@1.427.1': {}
 
   '@prisma/config@7.4.0':
     dependencies:
@@ -12081,7 +12099,7 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
       '@types/raf': 3.4.3
-      core-js: 3.50.0
+      core-js: 3.51.0
       raf: 3.4.1
       regenerator-runtime: 0.13.11
       rgbcolor: 1.0.1
@@ -12258,7 +12276,10 @@ snapshots:
 
   core-js-pure@3.50.0: {}
 
-  core-js@3.50.0: {}
+  core-js@3.50.0:
+    optional: true
+
+  core-js@3.51.0: {}
 
   core-util-is@1.0.3: {}
 
@@ -12506,6 +12527,10 @@ snapshots:
       csstype: 3.2.3
 
   dompurify@3.4.17:
+    optionalDependencies:
+      '@types/trusted-types': 2.0.7
+
+  dompurify@3.5.0:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -15043,24 +15068,27 @@ snapshots:
 
   postgres@3.4.7: {}
 
-  posthog-js@1.413.3:
+  posthog-js@1.454.4(@types/react@19.2.14)(react@19.1.0):
     dependencies:
-      '@posthog/browser-common': 0.4.0
-      '@posthog/core': 1.50.2
-      '@posthog/types': 1.408.0
-      core-js: 3.50.0
-      dompurify: 3.4.17
+      '@posthog/browser-common': 0.13.1
+      '@posthog/core': 1.69.2
+      '@posthog/types': 1.427.1
+      core-js: 3.51.0
+      dompurify: 3.5.0
       fflate: 0.4.9
       preact: 10.29.8
       query-selector-shadow-dom: 1.0.1
-      web-vitals: 5.3.0
-      web-vitals-soft-navs: web-vitals@6.0.0
+      web-vitals: 6.2.3
+      web-vitals-soft-navs: web-vitals@6.2.1
+    optionalDependencies:
+      '@types/react': 19.2.14
+      react: 19.1.0
     transitivePeerDependencies:
       - preact-render-to-string
 
   posthog-node@5.51.6:
     dependencies:
-      '@posthog/core': 1.50.2
+      '@posthog/core': 1.69.2
 
   pptxgenjs@4.0.1:
     dependencies:
@@ -16885,9 +16913,9 @@ snapshots:
   web-tree-sitter@0.24.5:
     optional: true
 
-  web-vitals@5.3.0: {}
+  web-vitals@6.2.1: {}
 
-  web-vitals@6.0.0: {}
+  web-vitals@6.2.3: {}
 
   webidl-conversions@3.0.1: {}
 
