@@ -28,17 +28,11 @@ async function parsePemKey(pemRaw: string): Promise<CryptoKey> {
 
 async function getPrivateKey() {
   if (cachedPrivateKey) return cachedPrivateKey;
-
-  if (process.env.JWT_PRIVATE_KEY) {
-    try {
-      cachedPrivateKey = await parsePemKey(process.env.JWT_PRIVATE_KEY);
-      return cachedPrivateKey;
-    } catch {
-      // Fallback to source-controlled private key if env string is malformed
-    }
+  const pem = getConfiguredConvexJwtPrivateKeyPem();
+  if (!pem) {
+    throw new Error("JWT_PRIVATE_KEY is not configured.");
   }
-
-  cachedPrivateKey = await parsePemKey(getConfiguredConvexJwtPrivateKeyPem());
+  cachedPrivateKey = await parsePemKey(pem);
   return cachedPrivateKey;
 }
 

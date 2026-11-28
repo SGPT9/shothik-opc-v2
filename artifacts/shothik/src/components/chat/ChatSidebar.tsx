@@ -1,5 +1,3 @@
-
-
 import { useState, useMemo } from "react";
 import { 
   MessageSquare, 
@@ -15,14 +13,18 @@ import {
   Clock, 
   MoreVertical,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  Tag,
+  Check
 } from "lucide-react";
+
 export interface ChatSidebarItem {
   _id: string;
   title: string;
   _creationTime?: number;
   updatedAt?: number;
   pinned?: boolean;
+  tags?: string[];
   modelHandle?: string;
   lastMessageSnippet?: string;
   messageCount?: number;
@@ -36,6 +38,7 @@ export interface ChatSidebarProps {
   onRenameConversation?: (id: string, newTitle: string) => void;
   onDeleteConversation?: (id: string) => void;
   onPinConversation?: (id: string, pinned: boolean) => void;
+  onUpdateTags?: (id: string, tags: string[]) => void;
   onOpenParallelSpace?: () => void;
   onOpenDataSheet?: () => void;
   onOpenSlideDeck?: () => void;
@@ -52,6 +55,7 @@ export function ChatSidebar({
   onRenameConversation,
   onDeleteConversation,
   onPinConversation,
+  onUpdateTags,
   onOpenParallelSpace,
   onOpenDataSheet,
   onOpenSlideDeck,
@@ -68,16 +72,33 @@ export function ChatSidebar({
     onNewChat?.();
   };
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTag, setActiveTag] = useState<string | null>(null);
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
   const [isWritingSuiteOpen, setIsWritingSuiteOpen] = useState(false);
+  const [tagModalChatId, setTagModalChatId] = useState<string | null>(null);
+  const [newTagInput, setNewTagInput] = useState("");
 
-  // Filter conversations by search query
+  // Extract all unique tags across conversations
+  const availableTags = useMemo(() => {
+    const set = new Set<string>(["Work", "Research", "Prompts", "Coding"]);
+    (conversations || []).forEach((c) => {
+      if (Array.isArray(c?.tags)) {
+        c.tags.forEach((t) => set.add(t));
+      }
+    });
+    return Array.from(set);
+  }, [conversations]);
+
+  // Filter conversations by search query AND active tag
   const filteredConversations = useMemo(() => {
-    const list = Array.isArray(conversations) ? conversations : [];
+    let list = Array.isArray(conversations) ? conversations : [];
+    if (activeTag) {
+      list = list.filter((c) => Array.isArray(c.tags) && c.tags.includes(activeTag));
+    }
     if (!searchQuery.trim()) return list;
     const query = searchQuery.toLowerCase().trim();
-    return list.filter(c => (c.title || "").toLowerCase().includes(query));
-  }, [conversations, searchQuery]);
+    return list.filter((c) => (c.title || "").toLowerCase().includes(query));
+  }, [conversations, searchQuery, activeTag]);
 
   // Group conversations by date (Today, Yesterday, Previous 7 Days, Older)
   const groupedConversations = useMemo(() => {
@@ -102,6 +123,27 @@ export function ChatSidebar({
 
     return { today, yesterday, past7Days, older };
   }, [filteredConversations]);
+
+  const handleToggleChatTag = (chatId: string, tag: string) => {
+    if (!onUpdateTags) return;
+    const chat = conversations.find((c) => String(c._id) === chatId);
+    const existingTags = chat?.tags || [];
+    const newTags = existingTags.includes(tag)
+      ? existingTags.filter((t) => t !== tag)
+      : [...existingTags, tag];
+    onUpdateTags(chatId, newTags);
+  };
+
+  const handleAddCustomTag = (chatId: string) => {
+    if (!newTagInput.trim() || !onUpdateTags) return;
+    const formatted = newTagInput.trim().replace(/^#/, "");
+    const chat = conversations.find((c) => String(c._id) === chatId);
+    const existingTags = chat?.tags || [];
+    if (!existingTags.includes(formatted)) {
+      onUpdateTags(chatId, [...existingTags, formatted]);
+    }
+    setNewTagInput("");
+  };
 
   return (
     <div className="flex flex-col h-full w-72 sm:w-80 bg-slate-950 dark:bg-black border-r border-slate-800 dark:border-zinc-800/90 text-slate-100 font-sans transition-all duration-300 select-none">
@@ -156,6 +198,38 @@ export function ChatSidebar({
             </button>
           )}
         </div>
+
+        {/* LibreChat-Adapted Tag Filter Chips Bar */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar text-[11px]">
+          <button
+            type="button"
+            onClick={() => setActiveTag(null)}
+            className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer shrink-0 ${
+              activeTag === null
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                : "bg-white/[0.04] text-zinc-400 hover:text-zinc-200 border border-transparent"
+            }`}
+          >
+            #All
+          </button>
+          {availableTags.map((tag) => {
+            const isSelected = activeTag === tag;
+            return (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => setActiveTag(isSelected ? null : tag)}
+                className={`px-2.5 py-1 rounded-lg font-medium transition cursor-pointer shrink-0 ${
+                  isSelected
+                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                    : "bg-white/[0.04] text-zinc-400 hover:text-zinc-200 border border-transparent"
+                }`}
+              >
+                #{tag}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Grouped Session List */}
@@ -169,14 +243,20 @@ export function ChatSidebar({
 
         {filteredConversations.length === 0 && (
           <div className="text-center py-8 px-4 text-zinc-400 text-xs font-sans space-y-2.5">
-            <p>No conversations match &ldquo;{searchQuery}&rdquo;</p>
-            {searchQuery && (
+            <p>
+              No conversations match {activeTag ? `tag #${activeTag}` : ""}{" "}
+              {searchQuery ? `& "${searchQuery}"` : ""}
+            </p>
+            {(searchQuery || activeTag) && (
               <button
                 type="button"
-                onClick={() => setSearchQuery("")}
+                onClick={() => {
+                  setSearchQuery("");
+                  setActiveTag(null);
+                }}
                 className="px-3 py-1 bg-white/[0.08] hover:bg-white/[0.15] text-zinc-200 rounded-lg text-xs font-medium transition cursor-pointer"
               >
-                Clear filter
+                Clear filters
               </button>
             )}
           </div>
@@ -257,6 +337,69 @@ export function ChatSidebar({
           )}
         </div>
       </div>
+
+      {/* Tag Edit Dialog / Mini Modal */}
+      {tagModalChatId && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 w-full max-w-sm space-y-3 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-white/10 pb-2">
+              <span className="text-xs font-semibold text-white flex items-center gap-1.5">
+                <Tag className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Manage Conversation Tags</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setTagModalChatId(null)}
+                className="text-zinc-400 hover:text-white text-xs cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-1.5">
+              {availableTags.map((tag) => {
+                const chat = conversations.find((c) => String(c._id) === tagModalChatId);
+                const isTagged = chat?.tags?.includes(tag);
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    onClick={() => handleToggleChatTag(tagModalChatId, tag)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1.5 ${
+                      isTagged
+                        ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40"
+                        : "bg-white/5 text-zinc-400 hover:text-zinc-200 border border-white/5"
+                    }`}
+                  >
+                    <span>#{tag}</span>
+                    {isTagged && <Check className="w-3 h-3 text-emerald-400" />}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-1.5 pt-2 border-t border-white/10">
+              <input
+                type="text"
+                value={newTagInput}
+                onChange={(e) => setNewTagInput(e.target.value)}
+                placeholder="New tag..."
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleAddCustomTag(tagModalChatId);
+                }}
+                className="flex-1 bg-black/40 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-emerald-500/50"
+              />
+              <button
+                type="button"
+                onClick={() => handleAddCustomTag(tagModalChatId)}
+                className="px-3 py-1 bg-emerald-500 text-zinc-950 rounded-lg text-xs font-bold hover:bg-emerald-400 transition cursor-pointer"
+              >
+                Add
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -288,14 +431,40 @@ export function ChatSidebar({
                       : "text-slate-200 hover:bg-slate-900 hover:text-white font-medium"
                   }`}
                 >
-                  <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <MessageSquare className={`w-4.5 h-4.5 shrink-0 ${isActive ? "text-emerald-400" : "text-slate-400"}`} />
-                    <span className="truncate">{chat.title || "Untitled Chat"}</span>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate">{chat.title || "Untitled Chat"}</div>
+                      {chat.tags && chat.tags.length > 0 && (
+                        <div className="flex items-center gap-1 mt-0.5 flex-wrap">
+                          {chat.tags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-white/5 text-zinc-400 border border-white/5"
+                            >
+                              #{tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 shrink-0">
                     {chat.pinned && (
                       <Pin className="w-4 h-4 text-amber-400 shrink-0 ml-1" />
+                    )}
+                    {isHovered && onUpdateTags && (
+                      <span
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setTagModalChatId(String(chat._id));
+                        }}
+                        className="p-1.5 hover:text-emerald-400 text-slate-400 transition cursor-pointer min-w-[28px] min-h-[28px] flex items-center justify-center"
+                        title="Edit Tags / Bookmarks"
+                      >
+                        <Tag className="w-3.5 h-3.5" />
+                      </span>
                     )}
                     {isHovered && onDeleteConversation && (
                       <span

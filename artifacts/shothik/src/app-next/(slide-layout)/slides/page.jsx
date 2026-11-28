@@ -12,11 +12,11 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
 // --- Component that uses useSearchParams ---
 function SlidesPreviewContent() {
-  const [slidesData, setSlidesData] = useState(null);
-  const [slidesLoading, setSlidesLoading] = useState(true);
-  const [slidesError, setSlidesError] = useState(null);
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project_id");
+  const [slidesData, setSlidesData] = useState(null);
+  const [slidesLoading, setSlidesLoading] = useState(Boolean(projectId));
+  const [slidesError, setSlidesError] = useState(null);
   const { isPresentationOpen, closePresentation } = usePresentation();
   const apiServiceRef = useRef(null);
 
@@ -80,6 +80,8 @@ function SlidesPreviewContent() {
     if (projectId) {
       setSlidesLoading(true);
       fetchSlidesData();
+    } else {
+      setSlidesLoading(false);
     }
   }, [projectId, fetchSlidesData]);
 
@@ -122,8 +124,22 @@ function SlidesPreviewContent() {
     return (
       <>
         <SlidePreviewNavbar slidesData={slidesData} projectId={projectId} />
-        <div className="flex min-h-[50vh] flex-col items-center justify-center gap-2">
-          <p className="text-foreground">No slides available</p>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 text-center px-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-500/10 text-indigo-500">
+            <svg className="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 3h20" /><path d="M21 3v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V3" /><path d="m7 21 5-5 5 5" />
+            </svg>
+          </div>
+          <h2 className="text-xl font-bold text-foreground">No slides available</h2>
+          <p className="text-sm text-muted-foreground max-w-md">
+            Generate an AI slide deck with structured outlines, speaker notes, and custom design templates in seconds.
+          </p>
+          <a
+            href="/slide-generation"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand/90 transition shadow-xs no-underline"
+          >
+            Create Slide Deck
+          </a>
         </div>
       </>
     );

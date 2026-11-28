@@ -25,6 +25,12 @@ import { PlatformServiceTriggerCard } from "./PlatformServiceTriggerCard";
 import { useTwinHandoffDetector } from "../agents/hooks/useTwinHandoffDetector";
 import { EpistemicProvenanceBadge } from "./EpistemicProvenanceBadge";
 import { GitHubRepoCard } from "./GitHubRepoCard";
+import { SiblingSwitch } from "./SiblingSwitch";
+import { AskOptions } from "./AskOptions";
+import { DiffView } from "./DiffView";
+import { MessageTokenBadge } from "./MessageTokenBadge";
+import { FloatingSelectionToolbar } from "./FloatingSelectionToolbar";
+import { getActiveBranch, getParentKey, type ParentChatMessage } from "@/lib/chat/message-tree";
 import { cn } from "@/lib/utils";
 import type { ChatMessage, ChatPersona } from "@/lib/chat/types";
 import { useRef, useEffect, useState, useMemo } from "react";
@@ -119,6 +125,10 @@ interface TranscriptProps {
   onSubmitSecret?: (checkpointId: string, secretValue: string, message: ChatMessage) => void;
   onAnalyzeIssues?: (message: ChatMessage) => void;
   onOpenPlatformServices?: () => void;
+  activeSiblingMap?: Record<string, number>;
+  onSwitchSibling?: (parentKey: string, siblingIdx: number) => void;
+  onEditMessage?: (message: ChatMessage, newContent: string) => void;
+  onSelectOption?: (optionValue: string, message: ChatMessage) => void;
   className?: string;
   agentId?: string;
 }
@@ -142,10 +152,48 @@ export function Transcript({
   onSubmitSecret,
   onAnalyzeIssues,
   onOpenPlatformServices,
+  activeSiblingMap,
+  onSwitchSibling,
+  onEditMessage,
+  onSelectOption,
   className,
   agentId = "core",
 }: TranscriptProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isTransformingSelection, setIsTransformingSelection] = useState(false);
+
+  const handleSelectionTransform = async (
+    action: "polish" | "bangla_harmony" | "forecast" | "shorten" | "custom",
+    selectedText: string,
+    customPrompt?: string
+  ) => {
+    setIsTransformingSelection(true);
+    try {
+      let promptQuery = "";
+      if (action === "polish") {
+        promptQuery = `Fix grammar, polish phrasing, and improve clarity of this text:\n\n"${selectedText}"`;
+      } else if (action === "bangla_harmony") {
+        promptQuery = `Translate and harmoniously adapt this text into standard, natural Bengali:\n\n"${selectedText}"`;
+      } else if (action === "shorten") {
+        promptQuery = `Summarize this text in 1 punchy, concise paragraph:\n\n"${selectedText}"`;
+      } else if (action === "forecast") {
+        promptQuery = `Generate a 3-scenario strategic forecast based on this text:\n\n"${selectedText}"`;
+      } else if (action === "custom" && customPrompt) {
+        promptQuery = `${customPrompt}:\n\n"${selectedText}"`;
+      }
+
+      if (promptQuery && onSelectPrompt) {
+        onSelectPrompt(promptQuery);
+      } else if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(selectedText);
+      }
+    } catch (err) {
+      console.error("Selection transformation failed:", err);
+    } finally {
+      setIsTransformingSelection(false);
+    }
+  };
   const lowRamConfig = LowRamStylexOptimizerService.detectDeviceCapabilities();
   const [visibleLimit, setVisibleLimit] = useState(lowRamConfig.virtualizationBatchSize);
   const [trajectoryOpen, setTrajectoryOpen] = useState(false);
@@ -202,9 +250,17 @@ export function Transcript({
         description: content.slice(0, 500),
         intent,
       });
-      window.location.href = `/writing-studio?projectId=${encodeURIComponent(created._id)}`;
+      if (onOpenArtifact) {
+        onOpenArtifact("doc", message);
+      } else {
+        window.location.href = `/writing-studio?projectId=${encodeURIComponent(created._id)}`;
+      }
     } else {
-      window.location.href = "/writing-studio";
+      if (onOpenArtifact) {
+        onOpenArtifact("doc", message);
+      } else {
+        window.location.href = "/writing-studio";
+      }
     }
   };
 
@@ -238,12 +294,17 @@ export function Transcript({
   };
 
   const handleSaveEdit = () => {
-    if (editingText.trim() && onSelectPrompt) {
+    if (editingText.trim() && editingMsgId) {
       dispatchTelemetry("user_edited_prompt_turn", {
         msgId: editingMsgId,
         newLength: editingText.length,
       });
-      onSelectPrompt(editingText.trim());
+      const targetMsg = messages.find((m) => (m._id || (m as any).id) === editingMsgId);
+      if (targetMsg && onEditMessage) {
+        onEditMessage(targetMsg, editingText.trim());
+      } else if (onSelectPrompt) {
+        onSelectPrompt(editingText.trim());
+      }
       setEditingMsgId(null);
       setEditingText("");
     }
@@ -281,9 +342,36 @@ export function Transcript({
     }
   };
 
+  const [internalSiblingMap, setInternalSiblingMap] = useState<Record<string, number>>(activeSiblingMap || {});
+
+  useEffect(() => {
+    if (activeSiblingMap) {
+      setInternalSiblingMap(activeSiblingMap);
+    }
+  }, [activeSiblingMap]);
+
+  // Directed Acyclic Graph (DAG) branch resolution adapted from LibreChat
+  const { activeBranch } = useMemo(() => {
+    return getActiveBranch({
+      messages,
+      siblingMap: internalSiblingMap,
+    });
+  }, [messages, internalSiblingMap]);
+
+  const handleSwitchSibling = (parentMessageId: string | undefined | null, newIdx: number) => {
+    const parentKey = getParentKey(parentMessageId);
+    setInternalSiblingMap((prev) => {
+      const next = { ...prev, [parentKey]: newIdx };
+      onSwitchSibling?.(parentKey, newIdx);
+      return next;
+    });
+  };
+
+  const activeMessages = activeBranch.length > 0 ? (activeBranch as ChatMessage[]) : messages;
+
   // Dynamic DOM node virtualization for budget devices (Ticket #1)
-  const slicedMessages = lowRamConfig.isLowEndDevice ? messages.slice(-visibleLimit) : messages;
-  const hasMoreMessages = lowRamConfig.isLowEndDevice && messages.length > visibleLimit;
+  const slicedMessages = lowRamConfig.isLowEndDevice ? activeMessages.slice(-visibleLimit) : activeMessages;
+  const hasMoreMessages = lowRamConfig.isLowEndDevice && activeMessages.length > visibleLimit;
 
   // Multi-signal contextual trigger for Twin, Academic publishing, and Logistics
   const twinTrigger = useTwinHandoffDetector(messages, messages[0]?._id);
@@ -311,7 +399,7 @@ export function Transcript({
         @keyframes dotBounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-5px)} }
       `}</style>
 
-      <div className="relative flex-1 h-full overflow-hidden">
+      <div ref={containerRef} className="relative flex-1 h-full overflow-hidden">
         <ScrollArea
           className={cn("h-full", className)}
           onScrollCapture={(e) => {
@@ -433,8 +521,15 @@ export function Transcript({
                       </div>
                     )}
 
-                    {/* Action Bar (Copy + Edit + Timestamp) */}
-                    <div className="flex items-center gap-1 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    {/* Action Bar (Copy + Edit + Sibling Switch + Timestamp) */}
+                    <div className="flex items-center gap-1.5 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {Boolean((message as any).siblingCount && (message as any).siblingCount > 1) && (
+                        <SiblingSwitch
+                          siblingIdx={(message as any).siblingIndex ?? 0}
+                          siblingCount={(message as any).siblingCount}
+                          onSelectSibling={(newIdx) => handleSwitchSibling(message.parentMessageId, newIdx)}
+                        />
+                      )}
                       <button
                         type="button"
                         onClick={() => handleCopyUserPrompt(msgKey, message.content)}
@@ -580,6 +675,22 @@ export function Transcript({
                       />
                       {isMsgStreaming && displayContent && <StreamingCursor />}
                     </div>
+                  )}
+
+                  {/* ── Interactive Decision Cards (AskOptions adapted from LibreChat) ── */}
+                  {(message.metadata as any)?.askOptions && Array.isArray((message.metadata as any).askOptions) && (
+                    <AskOptions
+                      options={(message.metadata as any).askOptions}
+                      onSelectOption={(val) => onSelectOption ? onSelectOption(val, message) : onSelectPrompt?.(val)}
+                    />
+                  )}
+
+                  {/* ── Visual Unified Code Diff View (DiffView adapted from LibreChat) ── */}
+                  {(message.metadata as any)?.diff && (
+                    <DiffView
+                      diffText={(message.metadata as any).diff}
+                      fileName={(message.metadata as any).diffFileName}
+                    />
                   )}
 
                   {/* ── Control Layer: Human-in-the-Loop Approval Checkpoint ── */}
@@ -793,9 +904,17 @@ export function Transcript({
                     />
                   )}
 
-                  {/* Follow-up action bar — minimal: Copy + Regenerate + ⋯ */}
+                  {/* Follow-up action bar — minimal: Sibling Switch + Copy + Regenerate + ⋯ */}
                   {!canStop && displayContent && (
-                    <div className="flex items-center gap-1 pt-1.5 flex-wrap opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-150">
+                    <div className="flex items-center gap-1.5 pt-1.5 flex-wrap opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-150">
+                      {Boolean((message as any).siblingCount && (message as any).siblingCount > 1) && (
+                        <SiblingSwitch
+                          siblingIdx={(message as any).siblingIndex ?? 0}
+                          siblingCount={(message as any).siblingCount}
+                          onSelectSibling={(newIdx) => handleSwitchSibling(message.parentMessageId, newIdx)}
+                        />
+                      )}
+
                       {/* Copy */}
                       <button
                         onClick={() => handleCopyAssistantMessage(message)}
@@ -948,6 +1067,20 @@ export function Transcript({
                           ? new Date(message.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                           : (message as any).timestamp || ""}
                       </span>
+
+                      {/* LibreChat-Adapted Message Token Telemetry & Latency Badge */}
+                      {Boolean((message as any).metrics || (message.metadata as any)?.tokens || (message.metadata as any)?.latencySeconds) && (
+                        <MessageTokenBadge
+                          metrics={(message as any).metrics || {
+                            promptTokens: (message.metadata as any)?.tokens?.prompt,
+                            completionTokens: (message.metadata as any)?.tokens?.completion,
+                            totalTokens: (message.metadata as any)?.tokens?.total,
+                            latencySeconds: (message.metadata as any)?.latencySeconds,
+                            modelName: (message.metadata as any)?.model,
+                            costEstimatedUsd: (message.metadata as any)?.costEstimatedUsd,
+                          }}
+                        />
+                      )}
                     </div>
                   )}
 
@@ -993,6 +1126,13 @@ export function Transcript({
           <ChevronDown className="w-3.5 w-3.5 text-brand animate-bounce" />
         </button>
       )}
+
+      {/* ✍️ Floating Linguistic Selection Toolbar (ChatGPT Canvas Pattern) */}
+      <FloatingSelectionToolbar
+        containerRef={containerRef}
+        onTransform={handleSelectionTransform}
+        isTransforming={isTransformingSelection}
+      />
     </div>
 
       {/* 🧾 Replayable Trajectory & Audit Receipt Trail Modal */}

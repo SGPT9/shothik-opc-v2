@@ -25,15 +25,22 @@ sandboxRouter.get("/v1/sandbox/runtimes", (_req: Request, res: Response): void =
  */
 sandboxRouter.post("/v1/sandbox/run", async (req: Request, res: Response): Promise<void> => {
   try {
-    if (process.env.NODE_ENV === "production") {
-      const authUser = verifyAuthRequest(req);
-      if (!authUser) {
-        res.status(401).json({
-          success: false,
-          error: "Authentication required to execute code in production sandbox",
-        });
-        return;
-      }
+    // Arbitrary code runs directly on the API host; the regex guard in code-sandbox
+    // is defense-in-depth only. Require an explicit opt-in and always require auth.
+    if (process.env.CODE_SANDBOX_ENABLED !== "true" && process.env.NODE_ENV === "production") {
+      res.status(403).json({
+        success: false,
+        error: "Code sandbox is disabled. Set CODE_SANDBOX_ENABLED=true only on an isolated runner.",
+      });
+      return;
+    }
+    const authUser = verifyAuthRequest(req);
+    if (!authUser && process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+      res.status(401).json({
+        success: false,
+        error: "Authentication required to execute code in the sandbox",
+      });
+      return;
     }
 
     const { language = "javascript", code, timeoutMs = 10000, environmentVars } = req.body;
