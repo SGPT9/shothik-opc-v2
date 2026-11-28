@@ -1,51 +1,51 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown } from "lucide-react";
-import { SlidesArtifact }       from "@/components/chat/artifacts/SlidesArtifact";
-import { SheetArtifact }        from "@/components/chat/artifacts/SheetArtifact";
-import { DeepResearchArtifact } from "@/components/chat/artifacts/DeepResearchArtifact";
-import { CodeArtifact }         from "@/components/chat/artifacts/CodeArtifact";
-import { ApprovalsArtifact }    from "@/components/chat/artifacts/ApprovalsArtifact";
-import { DiagramArtifact }      from "@/components/chat/artifacts/DiagramArtifact";
-import { DocArtifact }          from "@/components/chat/artifacts/DocArtifact";
+import { useState, useEffect, lazy, Suspense, type ComponentType } from "react";
+import { X, Presentation, Table2, BookOpen, Code2, History, Terminal, Network, FileText, Wand2, Globe, Clock, Truck, Users, Sparkles, PenLine, Maximize2, Minimize2, Copy, Check, BatteryCharging, ShieldCheck, ChevronDown, ExternalLink } from "lucide-react";
+import { UndockedWindowManager } from "@/lib/chat/undocked-window";
+const SlidesArtifact = lazy(() => import("@/components/chat/artifacts/SlidesArtifact").then((mod) => ({ default: ((mod as any).SlidesArtifact || (mod as any).default) as ComponentType<any> })));
+const SheetArtifact = lazy(() => import("@/components/chat/artifacts/SheetArtifact").then((mod) => ({ default: ((mod as any).SheetArtifact || (mod as any).default) as ComponentType<any> })));
+const DeepResearchArtifact = lazy(() => import("@/components/chat/artifacts/DeepResearchArtifact").then((mod) => ({ default: ((mod as any).DeepResearchArtifact || (mod as any).default) as ComponentType<any> })));
+const CodeArtifact = lazy(() => import("@/components/chat/artifacts/CodeArtifact").then((mod) => ({ default: ((mod as any).CodeArtifact || (mod as any).default) as ComponentType<any> })));
+const ApprovalsArtifact = lazy(() => import("@/components/chat/artifacts/ApprovalsArtifact").then((mod) => ({ default: ((mod as any).ApprovalsArtifact || (mod as any).default) as ComponentType<any> })));
+const DiagramArtifact = lazy(() => import("@/components/chat/artifacts/DiagramArtifact").then((mod) => ({ default: ((mod as any).DiagramArtifact || (mod as any).default) as ComponentType<any> })));
+const DocArtifact = lazy(() => import("@/components/chat/artifacts/DocArtifact").then((mod) => ({ default: ((mod as any).DocArtifact || (mod as any).default) as ComponentType<any> })));
 import { CanvasSkeletonPreview } from "@/components/chat/artifacts/CanvasSkeletonPreview";
-import { PonytailSynthesizerCard } from "@/components/canvas/PonytailSynthesizerCard";
-import { ReplitTerminalConsole } from "@/components/chat/ReplitTerminalConsole";
-import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
-import { CommerceActionCard } from "@/components/chat/CommerceActionCard";
-import { ParallelAgentSpace } from "@/components/chat/ParallelAgentSpace";
-import { FCommerceBlueprints } from "@/components/commerce/FCommerceBlueprints";
-import { CommunityArtifact } from "@/components/chat/artifacts/CommunityArtifact";
-import { MultiAgentSwarmFlow } from "@/components/chat/artifacts/MultiAgentSwarmFlow";
-import { SwarmAdversarialDebateModal } from "@/components/chat/SwarmAdversarialDebateModal";
-import { CareerStudioArtifact } from "@/components/chat/artifacts/CareerStudioArtifact";
-import { WhatsAppOrderSimulator } from "@/components/chat/artifacts/WhatsAppOrderSimulator";
-import { VoicePitchToDeck } from "@/components/chat/artifacts/VoicePitchToDeck";
-import { PromptLabArtifact } from "@/components/chat/artifacts/PromptLabArtifact";
-import { LegalContractArtifact } from "@/components/chat/artifacts/LegalContractArtifact";
-import { ModelArenaArtifact } from "@/components/chat/artifacts/ModelArenaArtifact";
-import { TwinArtifact } from "@/components/chat/artifacts/TwinArtifact";
-import { LeadScraperArtifact } from "@/components/chat/artifacts/LeadScraperArtifact";
-import { SeoContentArtifact } from "@/components/chat/artifacts/SeoContentArtifact";
-import { ChatbotFlowArtifact } from "@/components/chat/artifacts/ChatbotFlowArtifact";
-import { VideoScriptArtifact } from "@/components/chat/artifacts/VideoScriptArtifact";
-import { VatTaxArtifact } from "@/components/chat/artifacts/VatTaxArtifact";
-import { ProductPhotoArtifact } from "@/components/chat/artifacts/ProductPhotoArtifact";
-import { SupplyChainArtifact } from "@/components/chat/artifacts/SupplyChainArtifact";
-import { VoiceDubbingArtifact } from "@/components/chat/artifacts/VoiceDubbingArtifact";
-import { BroadcastCampaignArtifact } from "@/components/chat/artifacts/BroadcastCampaignArtifact";
-import { DisputeResolutionArtifact } from "@/components/chat/artifacts/DisputeResolutionArtifact";
-import { PriceWatcherArtifact } from "@/components/chat/artifacts/PriceWatcherArtifact";
-import { OvernightReconciliationArtifact } from "@/components/chat/artifacts/OvernightReconciliationArtifact";
-import { WebGpuEngineArtifact } from "@/components/chat/artifacts/WebGpuEngineArtifact";
-import { MarketingGrowthArtifact } from "@/components/chat/artifacts/MarketingGrowthArtifact";
-import { StoryGraphTreeArtifact } from "@/components/chat/artifacts/StoryGraphTreeArtifact";
-import { NarrativeForecastView } from "@/components/chat/artifacts/NarrativeForecastView";
-import { LiveAgentTraceTimeline } from "@/components/chat/LiveAgentTraceTimeline";
+const PonytailSynthesizerCard = lazy(() => import("@/components/canvas/PonytailSynthesizerCard").then((mod) => ({ default: ((mod as any).PonytailSynthesizerCard || (mod as any).default) as ComponentType<any> })));
+const BoiMela3DPageFlipPreview = lazy(() => import("@/components/books/BoiMela3DPageFlipPreview").then((mod) => ({ default: ((mod as any).BoiMela3DPageFlipPreview || (mod as any).default) as ComponentType<any> })));
+const CommerceActionCard = lazy(() => import("@/components/chat/CommerceActionCard").then((mod) => ({ default: ((mod as any).CommerceActionCard || (mod as any).default) as ComponentType<any> })));
+const FCommerceBlueprints = lazy(() => import("@/components/commerce/FCommerceBlueprints").then((mod) => ({ default: ((mod as any).FCommerceBlueprints || (mod as any).default) as ComponentType<any> })));
+const CommunityArtifact = lazy(() => import("@/components/chat/artifacts/CommunityArtifact").then((mod) => ({ default: ((mod as any).CommunityArtifact || (mod as any).default) as ComponentType<any> })));
+const MultiAgentSwarmFlow = lazy(() => import("@/components/chat/artifacts/MultiAgentSwarmFlow").then((mod) => ({ default: ((mod as any).MultiAgentSwarmFlow || (mod as any).default) as ComponentType<any> })));
+const SwarmAdversarialDebateModal = lazy(() => import("@/components/chat/SwarmAdversarialDebateModal").then((mod) => ({ default: ((mod as any).SwarmAdversarialDebateModal || (mod as any).default) as ComponentType<any> })));
+const CareerStudioArtifact = lazy(() => import("@/components/chat/artifacts/CareerStudioArtifact").then((mod) => ({ default: ((mod as any).CareerStudioArtifact || (mod as any).default) as ComponentType<any> })));
+const WhatsAppOrderSimulator = lazy(() => import("@/components/chat/artifacts/WhatsAppOrderSimulator").then((mod) => ({ default: ((mod as any).WhatsAppOrderSimulator || (mod as any).default) as ComponentType<any> })));
+const VoicePitchToDeck = lazy(() => import("@/components/chat/artifacts/VoicePitchToDeck").then((mod) => ({ default: ((mod as any).VoicePitchToDeck || (mod as any).default) as ComponentType<any> })));
+const PromptLabArtifact = lazy(() => import("@/components/chat/artifacts/PromptLabArtifact").then((mod) => ({ default: ((mod as any).PromptLabArtifact || (mod as any).default) as ComponentType<any> })));
+const LegalContractArtifact = lazy(() => import("@/components/chat/artifacts/LegalContractArtifact").then((mod) => ({ default: ((mod as any).LegalContractArtifact || (mod as any).default) as ComponentType<any> })));
+const ModelArenaArtifact = lazy(() => import("@/components/chat/artifacts/ModelArenaArtifact").then((mod) => ({ default: ((mod as any).ModelArenaArtifact || (mod as any).default) as ComponentType<any> })));
+const TwinArtifact = lazy(() => import("@/components/chat/artifacts/TwinArtifact").then((mod) => ({ default: ((mod as any).TwinArtifact || (mod as any).default) as ComponentType<any> })));
+const LeadScraperArtifact = lazy(() => import("@/components/chat/artifacts/LeadScraperArtifact").then((mod) => ({ default: ((mod as any).LeadScraperArtifact || (mod as any).default) as ComponentType<any> })));
+const SeoContentArtifact = lazy(() => import("@/components/chat/artifacts/SeoContentArtifact").then((mod) => ({ default: ((mod as any).SeoContentArtifact || (mod as any).default) as ComponentType<any> })));
+const ChatbotFlowArtifact = lazy(() => import("@/components/chat/artifacts/ChatbotFlowArtifact").then((mod) => ({ default: ((mod as any).ChatbotFlowArtifact || (mod as any).default) as ComponentType<any> })));
+const VideoScriptArtifact = lazy(() => import("@/components/chat/artifacts/VideoScriptArtifact").then((mod) => ({ default: ((mod as any).VideoScriptArtifact || (mod as any).default) as ComponentType<any> })));
+const VatTaxArtifact = lazy(() => import("@/components/chat/artifacts/VatTaxArtifact").then((mod) => ({ default: ((mod as any).VatTaxArtifact || (mod as any).default) as ComponentType<any> })));
+const ProductPhotoArtifact = lazy(() => import("@/components/chat/artifacts/ProductPhotoArtifact").then((mod) => ({ default: ((mod as any).ProductPhotoArtifact || (mod as any).default) as ComponentType<any> })));
+const SupplyChainArtifact = lazy(() => import("@/components/chat/artifacts/SupplyChainArtifact").then((mod) => ({ default: ((mod as any).SupplyChainArtifact || (mod as any).default) as ComponentType<any> })));
+const VoiceDubbingArtifact = lazy(() => import("@/components/chat/artifacts/VoiceDubbingArtifact").then((mod) => ({ default: ((mod as any).VoiceDubbingArtifact || (mod as any).default) as ComponentType<any> })));
+const BroadcastCampaignArtifact = lazy(() => import("@/components/chat/artifacts/BroadcastCampaignArtifact").then((mod) => ({ default: ((mod as any).BroadcastCampaignArtifact || (mod as any).default) as ComponentType<any> })));
+const DisputeResolutionArtifact = lazy(() => import("@/components/chat/artifacts/DisputeResolutionArtifact").then((mod) => ({ default: ((mod as any).DisputeResolutionArtifact || (mod as any).default) as ComponentType<any> })));
+const PriceWatcherArtifact = lazy(() => import("@/components/chat/artifacts/PriceWatcherArtifact").then((mod) => ({ default: ((mod as any).PriceWatcherArtifact || (mod as any).default) as ComponentType<any> })));
+const OvernightReconciliationArtifact = lazy(() => import("@/components/chat/artifacts/OvernightReconciliationArtifact").then((mod) => ({ default: ((mod as any).OvernightReconciliationArtifact || (mod as any).default) as ComponentType<any> })));
+const WebGpuEngineArtifact = lazy(() => import("@/components/chat/artifacts/WebGpuEngineArtifact").then((mod) => ({ default: ((mod as any).WebGpuEngineArtifact || (mod as any).default) as ComponentType<any> })));
+const MarketingGrowthArtifact = lazy(() => import("@/components/chat/artifacts/MarketingGrowthArtifact").then((mod) => ({ default: ((mod as any).MarketingGrowthArtifact || (mod as any).default) as ComponentType<any> })));
+const StoryGraphTreeArtifact = lazy(() => import("@/components/chat/artifacts/StoryGraphTreeArtifact").then((mod) => ({ default: ((mod as any).StoryGraphTreeArtifact || (mod as any).default) as ComponentType<any> })));
+const NarrativeForecastView = lazy(() => import("@/components/chat/artifacts/NarrativeForecastView").then((mod) => ({ default: ((mod as any).NarrativeForecastView || (mod as any).default) as ComponentType<any> })));
+const LiveAgentTraceTimeline = lazy(() => import("@/components/chat/LiveAgentTraceTimeline").then((mod) => ({ default: ((mod as any).LiveAgentTraceTimeline || (mod as any).default) as ComponentType<any> })));
 import { Briefcase, MessageSquare, Mic, Scale, Swords, Bot, Target, GitFork, Clapperboard, Calculator, Camera, Boxes, Radio, SendHorizontal, ShieldAlert, TrendingDown, Moon, Zap, TrendingUp, Activity, GitBranch } from "lucide-react";
 import { useCanvasRealtimeSync } from "@/hooks/useCanvasRealtimeSync";
 import { cn } from "@/lib/utils";
+import { saveOfflineManuscript } from "@/lib/offline/offline-storage";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -134,9 +134,6 @@ export function ArtifactPanel({
   onSheetDataChange,
   onCodeSnippetChange,
 }: ArtifactPanelProps) {
-  // Version History State (Pillar 5)
-  const [selectedVersion, setSelectedVersion] = useState<string>("v3");
-  const [showTerminal, setShowTerminal] = useState<boolean>(false);
   const [copied, setCopied] = useState<boolean>(false);
   const [internalMaximized, setInternalMaximized] = useState<boolean>(false);
   const effectiveMaximized = onToggleMaximize ? isMaximized : internalMaximized;
@@ -152,6 +149,20 @@ export function ArtifactPanel({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeTab, onClose]);
+
+  const studioContent =
+    activeTab === "research" ? researchSummary || researchQuery || ""
+    : activeTab === "code" ? codeSnippet || ""
+    : activeTab === "doc" ? docContent || ""
+    : "";
+
+  // Promote the canvas draft into a Writing Studio project (Claude/ChatGPT canvas parity)
+  const handleOpenInStudio = () => {
+    const id = `canvas-${Date.now()}`;
+    const title = (activeTab === "doc" ? docTitle : activeTab === "research" ? researchQuery : codeFilename) || "Canvas Draft";
+    saveOfflineManuscript({ id, title: title.slice(0, 80), content: studioContent, updatedAt: Date.now() });
+    window.location.href = `/writing-studio?projectId=${encodeURIComponent(id)}`;
+  };
 
   const handleCopyContent = () => {
     let contentToCopy = "";
@@ -199,46 +210,6 @@ export function ArtifactPanel({
 
   if (!activeTab) return null;
 
-  // Only show tabs that have content OR are the currently active tab (per DeepSeek-close spec)
-  const tabsWithContent = new Set<ArtifactTab>([activeTab]);
-  // Core work studio tabs readily accessible
-  tabsWithContent.add("approvals");
-  tabsWithContent.add("slides");
-  tabsWithContent.add("community");
-  tabsWithContent.add("commerce");
-  tabsWithContent.add("whatsapp");
-  tabsWithContent.add("career");
-  tabsWithContent.add("voicepitch");
-  tabsWithContent.add("promptlab");
-  tabsWithContent.add("legal");
-  tabsWithContent.add("arena");
-  tabsWithContent.add("twin");
-  tabsWithContent.add("leads");
-  tabsWithContent.add("seo");
-  tabsWithContent.add("flows");
-  tabsWithContent.add("video");
-  tabsWithContent.add("vattax");
-  tabsWithContent.add("photo");
-  tabsWithContent.add("inventory");
-  tabsWithContent.add("dubbing");
-  tabsWithContent.add("broadcast");
-  tabsWithContent.add("disputes");
-  tabsWithContent.add("pricewatcher");
-  tabsWithContent.add("swarm");
-  tabsWithContent.add("boimela");
-  tabsWithContent.add("synthesizer");
-  tabsWithContent.add("sheet");
-  tabsWithContent.add("research");
-  tabsWithContent.add("code");
-  tabsWithContent.add("diagram");
-  tabsWithContent.add("doc");
-  // Sources and History always show when panel is open — they provide contextual depth
-  tabsWithContent.add("sources");
-  tabsWithContent.add("history");
-  // Also show any previously mounted tabs
-  mounted.forEach((tab) => tabsWithContent.add(tab));
-
-  const visibleTabs = TABS.filter(({ id }) => tabsWithContent.has(id));
 
   return (
     <div
@@ -342,6 +313,18 @@ export function ArtifactPanel({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0 ml-2">
+          {studioContent && (
+            <button
+              type="button"
+              onClick={handleOpenInStudio}
+              className="flex shrink-0 items-center gap-1 h-7 px-2 rounded-lg text-[11px] font-semibold text-brand bg-brand/10 hover:bg-brand/20 transition cursor-pointer"
+              title="Open this draft in InkOS Writing Studio"
+            >
+              <PenLine className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Open in Studio</span>
+            </button>
+          )}
+
           {/* 1-Click Copy Raw Content */}
           <button
             type="button"
@@ -375,6 +358,25 @@ export function ArtifactPanel({
             )}
           </button>
 
+          {/* LibreChat-Adapted Pop-Out / Undocked Window (Multi-Monitor) */}
+          <button
+            type="button"
+            onClick={() => {
+              const manager = new UndockedWindowManager();
+              manager.openUndockedWindow({
+                title: String(docTitle || sheetTitle || slidesTopic || activeTab || "Shothik Canvas Artifact"),
+                type: String(activeTab || "document"),
+                content: String(docContent || sheetTitle || slidesTopic || researchSummary || ""),
+                activeTab: String(activeTab || "doc"),
+              });
+            }}
+            aria-label="Pop out to separate window"
+            className="hidden sm:flex shrink-0 items-center justify-center h-7 w-7 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/60 transition cursor-pointer"
+            title="Pop out into separate window (Multi-monitor)"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+          </button>
+
           {/* Close Canvas (✕) */}
           <button
             type="button"
@@ -390,16 +392,11 @@ export function ArtifactPanel({
 
       {/* ── Content area — tabs stay mounted once opened ── */}
       <div className="flex-1 min-h-0 relative overflow-hidden">
+        <Suspense fallback={<CanvasSkeletonPreview tab={activeTab || "doc"} />}>
 
         {mounted.has("approvals") && (
           <div className={`absolute inset-0 overflow-hidden ${activeTab === "approvals" ? "block" : "hidden"}`}>
             <ApprovalsArtifact />
-          </div>
-        )}
-
-        {mounted.has("slides") && (
-          <div className={`absolute inset-0 overflow-hidden ${activeTab === "slides" ? "block" : "hidden"}`}>
-            <SlidesArtifact initialTopic={slidesTopic} isStreaming={isStreaming} />
           </div>
         )}
 
@@ -723,16 +720,9 @@ export function ArtifactPanel({
             </div>
           </div>
         )}
+        </Suspense>
       </div>
 
-      {/* ── Pillar 3: Terminal Console Drawer ── */}
-      {showTerminal && (
-        <ReplitTerminalConsole
-          isStreaming={isStreaming}
-          onClose={() => setShowTerminal(false)}
-          className="m-2 shrink-0 border-t border-slate-800"
-        />
-      )}
     </div>
   );
 }

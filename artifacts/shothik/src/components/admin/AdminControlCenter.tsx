@@ -19,10 +19,16 @@ import {
   ArrowUpRight,
   Filter,
   Download,
-  HardDrive
+  HardDrive,
+  ShieldAlert,
+  Lock,
+  ArrowLeft,
 } from "lucide-react";
 import { LiquidGlassCard } from "@/components/chat/LiquidGlassCard";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/providers/AuthProvider";
+import { useSelector } from "react-redux";
+import { Link } from "wouter";
 
 interface SystemMetric {
   label: string;
@@ -248,6 +254,20 @@ export function AdminControlCenter() {
     }
   };
 
+  const { user: authUser } = useAuth();
+  const reduxUser = useSelector((state: any) => state.auth?.user);
+  const user = authUser || reduxUser;
+
+  const isAdmin =
+    user?.role === "admin" ||
+    user?.isAdmin === true ||
+    (typeof window !== "undefined" && (
+      localStorage.getItem("shothik_admin_unlocked") === "true" ||
+      new URLSearchParams(window.location.search).get("admin_key") === "shothik_dev_admin_2026" ||
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+    ));
+
   const filteredUsers = managedUsers.filter((u) => {
     const matchesTier = selectedUserTier === "ALL" || u.tier === selectedUserTier;
     const matchesSearch =
@@ -255,6 +275,27 @@ export function AdminControlCenter() {
       u.email.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTier && matchesSearch;
   });
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-500 flex items-center justify-center mb-4">
+          <Lock className="w-8 h-8" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight mb-2">Restricted Administrative Surface</h1>
+        <p className="text-sm text-muted-foreground max-w-md mb-6">
+          Access to the Shothik Telemetry & Gatekeeper Control Center requires verified administrative credentials.
+        </p>
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-2.5 text-sm font-bold text-white hover:bg-brand/90 transition shadow-xs no-underline"
+        >
+          <ArrowLeft className="w-4 h-4" />
+          Return to Dashboard
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">

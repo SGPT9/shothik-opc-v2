@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { db, commodityLCTable } from "@workspace/db";
 
 export interface CommodityTickerItem {
   commodityId: string;
@@ -97,6 +98,25 @@ export class CommodityLCEngine {
     });
 
     const sha256LienSeal = createHash("sha256").update(sealPayload).digest("hex");
+
+    try {
+      db.insert(commodityLCTable)
+        .values({
+          lcNumber,
+          commodityName: params.commodityName,
+          buyerName: params.buyerName,
+          sellerName: params.sellerName,
+          quantityTons: String(params.quantity),
+          unitPricePerTonBDT: String(params.unitPriceBDT),
+          totalValueBDT: String(totalAmount),
+          escrowStatus: "opened",
+          lcContractSealSha256: sha256LienSeal,
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     return {
       lcNumber,

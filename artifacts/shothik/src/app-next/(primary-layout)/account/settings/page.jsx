@@ -7,6 +7,7 @@ import BillingPage from "@/components/subscription/BillingPage";
 import CreditPurchaseModal from "@/components/credits/CreditPurchaseModal";
 import MyLibrarySection from "@/components/credits/MyLibrarySection";
 import ShareAnalyticsSection from "@/components/(primary-layout)/(account-page)/ShareAnalyticsSection";
+import { TeamSettingsPanel } from "@/components/team/TeamSettingsPanel";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -315,7 +316,8 @@ export default function AccountSettings() {
           <MyLibrarySection />
         </TabsContent>
 
-        <TabsContent value="agents" className="my-6 sm:my-8">
+        <TabsContent value="agents" className="my-6 sm:my-8 space-y-6">
+          <TeamSettingsPanel />
           {user?._id || user?.email ? (
             <MasterDashboard masterId={user._id ?? user.email} />
           ) : (

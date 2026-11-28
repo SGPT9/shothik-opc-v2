@@ -1,9 +1,13 @@
 import { Router, Request, Response } from "express";
 import crypto from "crypto";
+import fs from "fs";
+import path from "path";
 import { openDataLoader } from "../lib/document-parsing/opendataloader-bridge";
 import { ragEngine } from "../lib/rag-engine";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { resolveUserId } from "../middleware/auth.js";
+import { supabaseStorageService } from "../lib/storage/supabase-storage.js";
 
 const router = Router();
 
@@ -14,7 +18,8 @@ const router = Router();
  */
 router.post("/v1/files/upload", idempotencyMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
-    const { filename = "document.pdf", fileBase64, rawContent, userId = "usr_default", metadata } = req.body;
+    const { filename = "document.pdf", fileBase64, rawContent, userId: bodyUserId, metadata } = req.body;
+    const userId = resolveUserId(req, typeof bodyUserId === "string" ? bodyUserId : "usr_default");
 
     if (!fileBase64 && !rawContent) {
       res.status(400).json({
@@ -30,6 +35,20 @@ router.post("/v1/files/upload", idempotencyMiddleware, async (req: Request, res:
     if (fileBase64) {
       const buffer = Buffer.from(fileBase64, "base64");
       fileHash = crypto.createHash("sha256").update(buffer).digest("hex");
+      // Persist raw binary to disk for download & printing safely without path traversal
+      try {
+        const safeUserId = path.basename(userId).replace(/[^a-zA-Z0-9_-]/g, "") || "usr_default";
+        const uploadDir = path.resolve(process.cwd(), "artifacts/api-server/data/uploads", safeUserId);
+        if (!fs.existsSync(uploadDir)) {
+          fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        const safeFilename = path.basename(filename).replace(/[^a-zA-Z0-9._-]/g, "_");
+        const savedFilePath = path.join(uploadDir, `${fileHash}_${safeFilename}`);
+        await fs.promises.writeFile(savedFilePath, buffer);
+      } catch (err: any) {
+        logger.warn({ error: err.message }, "[files] Failed to cache raw file binary");
+      }
+
       const lower = filename.toLowerCase();
 
       if (lower.endsWith(".pdf")) {
@@ -142,7 +161,7 @@ router.post("/v1/files/batch-upload", async (req: Request, res: Response): Promi
  */
 router.get("/v1/files", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
     const allDocs = await ragEngine.listDocuments(userId);
 
     res.status(200).json({
@@ -162,8 +181,8 @@ router.get("/v1/files", async (req: Request, res: Response): Promise<void> => {
  */
 router.get("/v1/files/:docId/content", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
-    const { docId } = req.params;
+    const userId = resolveUserId(req, "usr_default");
+    const docId = String(req.params.docId);
     const allDocs = await ragEngine.listDocuments(userId);
     const doc = allDocs.find((d) => d.id === docId);
 
@@ -187,8 +206,8 @@ router.get("/v1/files/:docId/content", async (req: Request, res: Response): Prom
  */
 router.delete("/v1/files/:docId", async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || (req.query.userId as string) || "usr_default";
-    const { docId } = req.params;
+    const userId = resolveUserId(req, "usr_default");
+    const docId = String(req.params.docId ?? "");
     await ragEngine.deleteDocument(userId, docId as string);
     res.status(200).json({
       success: true,
@@ -236,6 +255,65 @@ router.post("/v1/files/ocr", idempotencyMiddleware, async (req: Request, res: Re
   } catch (error: any) {
     logger.error({ error: error.message }, "[files/ocr] OCR processing failure");
     res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/v1/storage/resumable-session
+ * Provisions a signed TUS upload ticket for Supabase Storage with user isolation
+ */
+router.post("/v1/storage/resumable-session", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { bucket = "manuscripts", filename, contentType, metadata, userId: bodyUserId } = req.body;
+    const userId = resolveUserId(req, typeof bodyUserId === "string" ? bodyUserId : "usr_default");
+
+    if (!filename) {
+      res.status(400).json({ success: false, error: "filename is required" });
+      return;
+    }
+
+    const session = await supabaseStorageService.createUploadSession({
+      bucket,
+      filename,
+      userId,
+      contentType,
+      metadata,
+    });
+
+    res.status(200).json({
+      success: true,
+      session,
+    });
+  } catch (error: any) {
+    logger.error({ error: error.message }, "[files/storage] Failed to create upload session");
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+/**
+ * GET /api/v1/files/:docId/download
+ * Download raw original binary file
+ */
+router.get("/v1/files/:docId/download", async (req: Request, res: Response): Promise<void> => {
+  try {
+    const targetDocId = String(req.params.docId ?? "");
+    const userId = resolveUserId(req, "usr_default");
+    const uploadDir = path.resolve(process.cwd(), "artifacts/api-server/data/uploads", userId);
+    
+    if (fs.existsSync(uploadDir)) {
+      const files = fs.readdirSync(uploadDir);
+      const match = files.find((f: string) => f.startsWith(targetDocId) || f.includes(targetDocId));
+      if (match) {
+        const fullPath = path.join(uploadDir, match);
+        res.download(fullPath);
+        return;
+      }
+    }
+    
+    res.status(404).json({ success: false, error: "Raw binary file not found on disk" });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
   }
 });
 

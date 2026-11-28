@@ -1,9 +1,13 @@
 import { Router, type Request, type Response } from "express";
-import { eq, desc } from "drizzle-orm";
+import crypto from "crypto";
+import { eq, desc, or, and } from "drizzle-orm";
 import { db } from "@workspace/db";
 import { projectsTable, writingAutosaveTable } from "@workspace/db";
 import { logger } from "../lib/logger";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
+import { resolveUserId } from "../middleware/auth.js";
+import { CrdtSyncProvider } from "../lib/realtime/crdt-sync-provider.js";
+import { AuthorshipCertificateEngine } from "../lib/security/authorship-certificate-engine.js";
 
 const router = Router();
 
@@ -18,7 +22,7 @@ const router = Router();
  */
 router.get("/v1/projects", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const projects = await db
       .select()
       .from(projectsTable)
@@ -39,11 +43,12 @@ router.get("/v1/projects", async (req: Request, res: Response) => {
  */
 router.get("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
+    const userId = resolveUserId(req);
     const id = String(req.params.id);
     const [project] = await db
       .select()
       .from(projectsTable)
-      .where(eq(projectsTable.id, id));
+      .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)));
 
     if (!project) {
       res.status(404).json({ success: false, error: "Project not found" });
@@ -64,7 +69,14 @@ router.get("/v1/projects/:id", async (req: Request, res: Response) => {
  */
 router.post("/v1/projects", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
+    if (userId === "guest" && process.env.NODE_ENV === "production") {
+      res.status(401).json({
+        success: false,
+        error: "Unauthorized: Please sign in to create and manage project workspaces.",
+      });
+      return;
+    }
     const { title, type, template, description, sections, settings } = req.body;
 
     if (!title || !type) {
@@ -98,7 +110,7 @@ router.post("/v1/projects", idempotencyMiddleware, async (req: Request, res: Res
  */
 router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const id = String(req.params.id);
     const updates: Record<string, unknown> = {};
 
@@ -119,7 +131,7 @@ router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
     const [updated] = await db
       .update(projectsTable)
       .set(updates)
-      .where(eq(projectsTable.id, id))
+      .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)))
       .returning();
 
     if (!updated) {
@@ -140,11 +152,12 @@ router.patch("/v1/projects/:id", async (req: Request, res: Response) => {
  */
 router.delete("/v1/projects/:id", async (req: Request, res: Response) => {
   try {
+    const userId = resolveUserId(req);
     const id = String(req.params.id);
 
     const [deleted] = await db
       .delete(projectsTable)
-      .where(eq(projectsTable.id, id))
+      .where(and(eq(projectsTable.id, id), eq(projectsTable.userId, userId)))
       .returning();
 
     if (!deleted) {
@@ -169,7 +182,7 @@ router.delete("/v1/projects/:id", async (req: Request, res: Response) => {
  */
 router.post("/v1/writing/autosave", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const { localProjectId, content, wordCount } = req.body;
 
     if (!localProjectId) {
@@ -209,7 +222,7 @@ router.post("/v1/writing/autosave", async (req: Request, res: Response) => {
  */
 router.get("/v1/writing/autosave/:localProjectId", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const localProjectId = String(req.params.localProjectId);
 
     const rows = await db
@@ -231,7 +244,7 @@ router.get("/v1/writing/autosave/:localProjectId", async (req: Request, res: Res
  */
 router.post("/v1/writing/sections", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const { localProjectId, sections } = req.body;
 
     if (!localProjectId) {
@@ -270,7 +283,7 @@ router.post("/v1/writing/sections", async (req: Request, res: Response) => {
  */
 router.get("/v1/writing/sections/:localProjectId", async (req: Request, res: Response) => {
   try {
-    const userId = (req.headers["x-user-id"] as string) || "guest";
+    const userId = resolveUserId(req);
     const localProjectId = String(req.params.localProjectId);
 
     const rows = await db
@@ -293,6 +306,322 @@ router.get("/v1/writing/sections/:localProjectId", async (req: Request, res: Res
   } catch (err: any) {
     logger.error({ err }, "Failed to get sections");
     res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Figma/Miro-Style Room Links & "Git for Writers" Plot Branching
+// ---------------------------------------------------------------------------
+
+/**
+ * POST /api/v1/projects/create-share-link
+ * Generate or retrieve a shareable Figma/Miro-style room link.
+ */
+router.post("/v1/projects/create-share-link", async (req: Request, res: Response) => {
+  try {
+    const userId = resolveUserId(req);
+    const { projectId, accessMode = "link_edit", passcode } = req.body;
+
+    if (!projectId) {
+      res.status(400).json({ success: false, error: "projectId is required" });
+      return;
+    }
+
+    const [project] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, projectId));
+
+    if (!project) {
+      res.status(404).json({ success: false, error: "Project not found" });
+      return;
+    }
+
+    const shareToken = project.shareToken || `prj_sh_${crypto.randomBytes(4).toString("hex")}`;
+    const passcodeHash = passcode ? crypto.createHash("sha256").update(passcode).digest("hex") : project.passcodeHash;
+
+    const [updated] = await db
+      .update(projectsTable)
+      .set({
+        shareToken,
+        accessMode,
+        passcodeHash,
+        updatedAt: new Date(),
+      })
+      .where(eq(projectsTable.id, projectId))
+      .returning();
+
+    const shareUrl = `/studio?room=${shareToken}`;
+
+    res.json({
+      success: true,
+      data: {
+        projectId: updated.id,
+        shareToken: updated.shareToken,
+        accessMode: updated.accessMode,
+        shareUrl,
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to create share link");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/projects/branches
+ * Create a 'Git for Writers' alternative storyline branch.
+ */
+router.post("/v1/projects/branches", async (req: Request, res: Response) => {
+  try {
+    const userId = resolveUserId(req);
+    const { parentProjectId, branchName } = req.body;
+
+    if (!parentProjectId || !branchName) {
+      res.status(400).json({ success: false, error: "parentProjectId and branchName are required" });
+      return;
+    }
+
+    const [parent] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, parentProjectId));
+
+    if (!parent) {
+      res.status(404).json({ success: false, error: "Parent project not found" });
+      return;
+    }
+
+    const lineageRootId = parent.lineageRootId || parent.id;
+    const branchTitle = `${parent.title} (Branch: ${branchName})`;
+
+    const [branch] = await db
+      .insert(projectsTable)
+      .values({
+        userId,
+        title: branchTitle,
+        type: parent.type,
+        template: parent.template,
+        description: parent.description,
+        content: parent.content,
+        sections: parent.sections,
+        settings: parent.settings,
+        wordCount: parent.wordCount,
+        progress: parent.progress,
+        parentProjectId: parent.id,
+        branchName,
+        lineageRootId,
+      })
+      .returning();
+
+    res.status(201).json({ success: true, data: branch });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to create plot branch");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * GET /api/v1/projects/:id/branches
+ * List all branches across the lineage for a given project.
+ */
+router.get("/v1/projects/:id/branches", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+
+    const [target] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, id));
+
+    if (!target) {
+      res.status(404).json({ success: false, error: "Project not found" });
+      return;
+    }
+
+    const rootId = target.lineageRootId || target.id;
+
+    const branches = await db
+      .select()
+      .from(projectsTable)
+      .where(or(eq(projectsTable.parentProjectId, rootId), eq(projectsTable.lineageRootId, rootId), eq(projectsTable.id, rootId)))
+      .orderBy(desc(projectsTable.updatedAt));
+
+    res.json({ success: true, data: branches });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to list project branches");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/projects/:id/branches/:branchId/merge
+ * Reconcile and merge an alternative plot branch back into the canonical draft.
+ */
+router.post("/v1/projects/:id/branches/:branchId/merge", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const branchId = String(req.params.branchId);
+
+    const [target] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, id));
+
+    if (!target) {
+      res.status(404).json({ success: false, error: "Canonical project not found" });
+      return;
+    }
+
+    const [branch] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, branchId));
+
+    if (!branch) {
+      res.status(404).json({ success: false, error: "Branch project not found" });
+      return;
+    }
+
+    const mergeResult = CrdtSyncProvider.mergeText(
+      target.content || "",
+      branch.content || ""
+    );
+
+    const [updated] = await db
+      .update(projectsTable)
+      .set({
+        content: mergeResult.mergedText,
+        wordCount: mergeResult.mergedText.trim() ? mergeResult.mergedText.trim().split(/\s+/).length : 0,
+        updatedAt: new Date(),
+      })
+      .where(eq(projectsTable.id, target.id))
+      .returning();
+
+    res.json({
+      success: true,
+      data: {
+        mergedProject: updated,
+        branchId: branch.id,
+        mergeResult,
+      },
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to merge plot branch");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/projects/:id/authorship-certificate
+ * Issues an immutable, cryptographically signed Authorship Certificate anchored in audit history.
+ */
+router.post("/v1/projects/:id/authorship-certificate", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const userId = resolveUserId(req);
+
+    const [project] = await db
+      .select()
+      .from(projectsTable)
+      .where(eq(projectsTable.id, id));
+
+    if (!project) {
+      res.status(404).json({ success: false, error: "Project not found" });
+      return;
+    }
+
+    const certificate = AuthorshipCertificateEngine.createCertificate({
+      projectId: project.id,
+      title: project.title,
+      authorId: userId,
+      content: project.content || "",
+      createdAt: project.createdAt ? new Date(project.createdAt) : undefined,
+    });
+
+    res.status(201).json({
+      success: true,
+      data: certificate,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to generate authorship certificate");
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+/**
+ * POST /api/v1/projects/:id/roles
+ * Updates collaborator role and custom claims mode (student, ta, professor, publisher)
+ */
+router.post("/v1/projects/:id/roles", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const userId = resolveUserId(req);
+    const { targetUserId = userId, role = "student" } = req.body;
+
+    const validRoles = ["student", "ta", "professor", "publisher"];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid role. Must be one of: ${validRoles.join(", ")}`,
+      });
+    }
+
+    // Role preset mappings enforced at database RLS level
+    const rolePresets: Record<string, { canEdit: boolean; canComment: boolean; canGrade: boolean; canPublish: boolean; customClaim: string }> = {
+      student: { canEdit: true, canComment: true, canGrade: false, canPublish: false, customClaim: "role:student" },
+      ta: { canEdit: false, canComment: true, canGrade: false, canPublish: false, customClaim: "role:teaching_assistant" },
+      professor: { canEdit: true, canComment: true, canGrade: true, canPublish: true, customClaim: "role:head_professor" },
+      publisher: { canEdit: true, canComment: true, canGrade: false, canPublish: true, customClaim: "role:publisher_chief" },
+    };
+
+    const granted = rolePresets[role];
+
+    if (db) {
+      try {
+        const [proj] = await db
+          .select()
+          .from(projectsTable)
+          .where(eq(projectsTable.id, id));
+
+        if (proj) {
+          const currentSettings = (proj.settings as Record<string, unknown>) || {};
+          const collaboratorRoles = (currentSettings.collaboratorRoles as Record<string, unknown>) || {};
+          collaboratorRoles[targetUserId] = {
+            role,
+            ...granted,
+            assignedAt: new Date().toISOString(),
+          };
+
+          await db
+            .update(projectsTable)
+            .set({
+              settings: {
+                ...currentSettings,
+                collaboratorRoles,
+              },
+              updatedAt: new Date(),
+            })
+            .where(eq(projectsTable.id, id));
+        }
+      } catch (err: any) {
+        logger.warn(`[projects-roles] DB role update fallback: ${err.message}`);
+      }
+    }
+
+    logger.info(`[projects-roles] Assigned role '${role}' to user ${targetUserId} for project ${id}`);
+    return res.status(200).json({
+      success: true,
+      projectId: id,
+      targetUserId,
+      role,
+      permissions: granted,
+      customClaim: granted.customClaim,
+      message: `Assigned role '${role}' with custom claims permissions.`,
+    });
+  } catch (err: any) {
+    logger.error({ err }, "Failed to assign project role");
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

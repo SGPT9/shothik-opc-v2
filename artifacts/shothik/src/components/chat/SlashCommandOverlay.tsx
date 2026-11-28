@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Target, Calendar, MessageSquare, BookOpen, CheckCircle, Code2, ShieldAlert, Sparkles } from 'lucide-react';
+import { Target, Calendar, MessageSquare, BookOpen, CheckCircle, Code2, ShieldAlert, Sparkles, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface SlashCommandOption {
@@ -16,6 +16,12 @@ export interface SlashCommandOption {
 }
 
 export const SLASH_COMMANDS: SlashCommandOption[] = [
+  {
+    command: 'team',
+    label: '/team',
+    description: 'Open Autonomous Team & Subagent Orchestration Studio',
+    icon: Users,
+  },
   {
     command: 'goal',
     label: '/goal',

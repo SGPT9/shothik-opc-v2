@@ -33,7 +33,7 @@ export async function getAuthToken(req: Request | Headers | any): Promise<string
 export async function getAuthenticatedUser() {
   try {
     const insforge = await createInsforgeServerClient();
-    const { data, error } = await insforge.auth.getCurrentUser();
+    const { data, error } = await insforge.auth.getUser();
     if (data?.user && !error) {
       return normalizeInsforgeUser(data.user);
     }
@@ -62,7 +62,7 @@ export async function getAuthenticatedUser() {
 export async function getChatAuthenticatedUser() {
   try {
     const insforge = await createInsforgeServerClient();
-    const { data, error } = await insforge.auth.getCurrentUser();
+    const { data, error } = await insforge.auth.getUser();
     if (data?.user && !error) {
       return normalizeInsforgeUser(data.user);
     }

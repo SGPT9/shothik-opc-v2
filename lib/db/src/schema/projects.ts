@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 
 /**
  * Projects table — migrated from Convex `projects` collection.
- * Stores writing studio projects, research projects, and assignments.
+ * Stores writing studio projects, research projects, assignments, and Git for Writers plot branches.
  */
 export const projectsTable = pgTable("projects", {
   id: uuid("id").defaultRandom().primaryKey(),
@@ -19,6 +19,14 @@ export const projectsTable = pgTable("projects", {
   wordCount: integer("word_count").notNull().default(0),
   progress: integer("progress").notNull().default(0),
   starred: boolean("starred").notNull().default(false),
+  // Figma/Miro-style Room Collaboration Links
+  shareToken: text("share_token").unique(),
+  accessMode: text("access_mode").notNull().default("private"), // "private" | "link_view" | "link_edit"
+  passcodeHash: text("passcode_hash"),
+  // Git for Writers — Plot Branching & Lineage
+  parentProjectId: uuid("parent_project_id"),
+  branchName: text("branch_name").notNull().default("main"),
+  lineageRootId: uuid("lineage_root_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -30,3 +38,26 @@ export const insertProjectSchema = createInsertSchema(projectsTable).omit({
 });
 export type InsertProject = z.infer<typeof insertProjectSchema>;
 export type Project = typeof projectsTable.$inferSelect;
+
+/**
+ * Saved Reports table — persistent cloud storage for executive briefs, pitch decks, tax reviews, and financial analyses.
+ */
+export const savedReportsTable = pgTable("saved_reports", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull(),
+  title: text("title").notNull(),
+  type: text("type").notNull().default("markdown"), // "markdown" | "slides" | "sheet" | "pdf"
+  snippet: text("snippet").notNull().default(""),
+  content: text("content").notNull().default(""),
+  chatId: text("chat_id").notNull(),
+  metadata: jsonb("metadata").$type<Record<string, unknown>>().default({}),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertSavedReportSchema = createInsertSchema(savedReportsTable).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertSavedReport = z.infer<typeof insertSavedReportSchema>;
+export type SavedReport = typeof savedReportsTable.$inferSelect;

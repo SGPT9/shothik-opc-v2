@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { semanticMemory } from "../lib/semantic-memory";
 import { logger } from "../lib/logger";
+import { resolveUserId } from "../middleware/auth.js";
 
 export const memoryRouter = Router();
 
@@ -10,7 +11,8 @@ export const memoryRouter = Router();
  */
 const handleMemorize = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { userId, content, category, metadata } = req.body;
+    const { userId: bodyUserId, content, category, metadata } = req.body;
+    const userId = resolveUserId(req, typeof bodyUserId === "string" ? bodyUserId : "default");
 
     if (!userId || typeof userId !== "string" || !content || typeof content !== "string") {
       res.status(400).json({
@@ -99,6 +101,26 @@ const handleListMemories = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ success: false, error: err.message });
   }
 };
+
+const handleSearchMemories = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const q = typeof req.query.q === "string" ? req.query.q : "";
+    const userId = resolveUserId(req, typeof req.query.userId === "string" ? req.query.userId : "default");
+    if (!q) {
+      const all = await semanticMemory.listMemories(userId);
+      res.json(all.map((m) => ({ id: m.id, content: m.content, category: m.category, createdAt: m.createdAt })));
+      return;
+    }
+    const recallResult = await semanticMemory.recall(userId, q, 10);
+    res.json(recallResult.memories.map((m) => ({ id: m.id, content: m.content, category: m.category, createdAt: m.createdAt })));
+  } catch (err: any) {
+    logger.error(`[memory-router] Failed to search memory: ${err.message}`);
+    res.status(500).json({ success: false, error: err.message });
+  }
+};
+
+memoryRouter.get("/memory/search", handleSearchMemories);
+memoryRouter.get("/v1/memory/search", handleSearchMemories);
 
 memoryRouter.get("/memory/:userId", handleListMemories);
 memoryRouter.get("/v1/memory/:userId", handleListMemories);

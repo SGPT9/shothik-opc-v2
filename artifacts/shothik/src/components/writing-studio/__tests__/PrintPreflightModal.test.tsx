@@ -9,30 +9,26 @@ describe('PrintPreflightModal Component', () => {
       <PrintPreflightModal
         isOpen={true}
         onClose={vi.fn()}
-        title="Echoes of Bengal"
-        pageCount={160}
-        isbn="978-0-306-40615-7"
+        projectId="proj_demo_bengali"
       />
     );
 
-    expect(screen.getByText(/Physical Print Preflight/i)).toBeInTheDocument();
-    expect(screen.getByText(/Spine Width/i)).toBeInTheDocument();
-    expect(screen.getByText(/978-0-306-40615-7/i)).toBeInTheDocument();
+    expect(screen.getByText(/Print Preflight/i)).toBeInTheDocument();
+    expect(screen.getByText(/স্পাইন পুরুত্ব/i)).toBeInTheDocument();
   });
 
-  it('allows changing paper stock and recalculates spine width', () => {
+  it('allows changing paper stock and updates selection', () => {
     render(
       <PrintPreflightModal
         isOpen={true}
         onClose={vi.fn()}
-        title="Echoes of Bengal"
-        pageCount={200}
+        projectId="proj_demo_bengali"
       />
     );
 
-    const select = screen.getByRole('combobox');
-    fireEvent.change(select, { target: { value: '100_gsm_cream' } });
-
-    expect(screen.getByText(/13.6/i)).toBeInTheDocument();
+    const selects = screen.getAllByRole('combobox');
+    expect(selects.length).toBeGreaterThanOrEqual(2);
+    fireEvent.change(selects[1], { target: { value: 'art_paper_100gsm' } });
+    expect(selects[1]).toHaveValue('art_paper_100gsm');
   });
 });

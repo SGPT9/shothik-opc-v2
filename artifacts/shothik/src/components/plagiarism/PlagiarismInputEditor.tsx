@@ -65,7 +65,8 @@ const calculateTextSimilarity = (str1: string, str2: string): number => {
   
   if (words1.length === 0 || words2.length === 0) return 0;
   
-  const commonWords = words1.filter(w => words2.includes(w));
+  const words2Set = new Set(words2);
+  const commonWords = words1.filter(w => words2Set.has(w));
   const totalWords = Math.max(words1.length, words2.length);
   
   return commonWords.length / totalWords;
