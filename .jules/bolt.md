@@ -1,3 +1,7 @@
+
+## 2024-05-18 - Avoid Object Destructuring with useSelector
+**Learning:** Destructuring entire objects from Redux `useSelector` (e.g., `const { accessToken } = useSelector(state => state.auth)`) is a frequent performance anti-pattern in this codebase causing unnecessary re-renders when unrelated properties change.
+**Action:** Use specific property selectors instead (e.g., `const accessToken = useSelector(state => state.auth.accessToken)`).
 ## 2024-03-24 - React Redux useSelector Destructuring Anti-pattern
 **Learning:** Destructuring entire objects from Redux `useSelector` (e.g., `const { accessToken } = useSelector(state => state.auth)`) is a frequent performance anti-pattern in this codebase causing unnecessary re-renders. Every time any property in the `auth` state changes, every component destructuring from it will re-render, even if the specific property they need didn't change.
 **Action:** Use specific property selectors instead. Replace `const { prop } = useSelector(state => state.slice)` with `const prop = useSelector(state => state.slice.prop)`.
