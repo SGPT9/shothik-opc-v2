@@ -95,7 +95,7 @@ Configure the following in `.env.local`:
 ```env
 # InsForge BaaS Connection
 VITE_INSFORGE_URL=https://ers8j28a.ap-southeast.insforge.app
-VITE_INSFORGE_ANON_KEY=anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b
+VITE_INSFORGE_ANON_KEY=<your-insforge-anon-key>
 ```
 
 ### 2. Connect to the Express API Gateway (`artifacts/api-server`)

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { z } from "zod";
 import { RtoFraudEngine, FraudCategory } from "../lib/logistics/rto-fraud-engine.js";
+import { verifyAuthRequest } from "./auth.js";
 
 export const rtoFraudRouter = Router();
 
@@ -87,6 +88,14 @@ rtoFraudRouter.post(
   ["/api/v1/logistics/fraud/report", "/v1/logistics/fraud/report"],
   (req: Request, res: Response) => {
     try {
+      const verified = verifyAuthRequest(req);
+      if (!verified && process.env.NODE_ENV === "production") {
+        return res.status(401).json({
+          success: false,
+          error: "Unauthorized: Merchant authentication required to submit delivery fraud reports.",
+        });
+      }
+
       const parse = reportFraudSchema.safeParse(req.body);
       if (!parse.success) {
         return res.status(400).json({
@@ -119,13 +128,31 @@ rtoFraudRouter.post(
  */
 rtoFraudRouter.get(
   ["/api/v1/logistics/fraud/blacklist", "/v1/logistics/fraud/blacklist"],
-  (_req: Request, res: Response) => {
+  (req: Request, res: Response) => {
     try {
+      const isProduction = process.env.NODE_ENV === "production";
+      const verified = verifyAuthRequest(req);
+      const shouldMask = isProduction && !verified;
       const list = RtoFraudEngine.listBlacklist();
+      const sanitized = list.map((item) => {
+        if (!shouldMask) return item;
+        const raw = item.phone || "";
+        const masked = raw.length > 7 ? `${raw.slice(0, 5)}****${raw.slice(-2)}` : "****";
+        return {
+          ...item,
+          phone: masked,
+          reports: item.reports.map((r) => ({
+            ...r,
+            reporterMerchant: r.reporterMerchant ? `${r.reporterMerchant.slice(0, 3)}***` : "Merchant",
+            notes: "[Redacted - Authentication required]",
+          })),
+        };
+      });
+
       return res.status(200).json({
         success: true,
-        count: list.length,
-        blacklist: list,
+        count: sanitized.length,
+        blacklist: sanitized,
       });
     } catch (error: any) {
       return res.status(500).json({

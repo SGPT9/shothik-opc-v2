@@ -26,11 +26,11 @@ import {
   Heart,
   Share2
 } from "lucide-react";
-import CountdownTimer from "@/components/forum/CountdownTimer";
+import CountdownTimer from "@/components/community/CountdownTimer";
 import ReviewerFundDashboard from "@/components/credits/ReviewerFundDashboard";
 import { useTranslation } from "@/i18n";
 import { useChannels, useHotPosts } from "@/hooks/useCommunity";
-import ForumPost from "@/components/forum/ForumPost";
+import ForumPost from "@/components/community/ForumPost";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -116,20 +116,76 @@ const SEED_HUMAN_POSTS = [
   },
 ];
 
+const LOCAL_STORAGE_POSTS_KEY = "shothik_community_posts_v1";
+
+function loadSavedHumanPosts() {
+  if (typeof window === "undefined") return SEED_HUMAN_POSTS;
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_POSTS_KEY);
+    if (!raw) return SEED_HUMAN_POSTS;
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      const ids = new Set(parsed.map((p: any) => p.id));
+      const seedsToAdd = SEED_HUMAN_POSTS.filter((s) => !ids.has(s.id));
+      return [...parsed, ...seedsToAdd];
+    }
+    return SEED_HUMAN_POSTS;
+  } catch {
+    return SEED_HUMAN_POSTS;
+  }
+}
+
 export default function CommunityPage() {
   const { t } = useTranslation();
   const { data: openForums, loading: channelsLoading } = useChannels();
   const { data: hotPosts, loading: hotPostsLoading } = useHotPosts();
   const [activeTab, setActiveTab] = useState<"hot" | "agent_swarm">("agent_swarm");
-  const [selectedAgent, setSelectedAgent] = useState("@github-fixer");
+  const [selectedAgent, setSelectedAgent] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Local human posts state with rich seeds
-  const [humanPosts, setHumanPosts] = useState(SEED_HUMAN_POSTS);
+  // Local human posts state with rich seeds and persistent storage
+  const [humanPosts, setHumanPosts] = useState(loadSavedHumanPosts);
   const [isNewPostModalOpen, setIsNewPostModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
   const [newCategory, setNewCategory] = useState("Architecture");
+
+  // Agent dispatches: live reactions, replies and persona filtering (no browser alert())
+  const [dispatches, setDispatches] = useState(() =>
+    MOCK_AGENT_DISPATCHES.map((d) => ({ ...d, replies: [] as string[] }))
+  );
+  const [replyOpenId, setReplyOpenId] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState("");
+  const [notice, setNotice] = useState<string | null>(null);
+
+  const flash = (msg: string) => {
+    setNotice(msg);
+    setTimeout(() => setNotice(null), 2000);
+  };
+
+  const handleDispatchReaction = (id: string, emoji: string) =>
+    setDispatches((prev) =>
+      prev.map((d) =>
+        d.id === id
+          ? { ...d, reactions: d.reactions.map((r) => (r.emoji === emoji ? { ...r, count: r.count + 1 } : r)) }
+          : d
+      )
+    );
+
+  const handleSendReply = (id: string) => {
+    const text = replyText.trim();
+    if (!text) return;
+    setDispatches((prev) => prev.map((d) => (d.id === id ? { ...d, replies: [...d.replies, text] } : d)));
+    setReplyText("");
+    setReplyOpenId(null);
+    flash("Reply sent — the agent will review it");
+  };
+
+  const handleShare = (id: string, title: string) => {
+    const url = `${window.location.origin}/community?post=${encodeURIComponent(id)}`;
+    navigator.clipboard?.writeText(`${title}\n${url}`);
+    flash("Link copied");
+  };
 
   const handleCreatePost = (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,14 +203,18 @@ export default function CommunityPage() {
       category: newCategory,
     };
 
-    setHumanPosts([newPost, ...humanPosts]);
+    const nextPosts = [newPost, ...humanPosts];
+    setHumanPosts(nextPosts);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_POSTS_KEY, JSON.stringify(nextPosts));
+    } catch {}
     setNewTitle("");
     setNewContent("");
     setIsNewPostModalOpen(false);
   };
 
   const handleToggleReaction = (postId: string, emoji: string) => {
-    setHumanPosts(humanPosts.map(p => {
+    const updated = humanPosts.map(p => {
       if (p.id !== postId) return p;
       const existing = p.reactions.find(r => r.emoji === emoji);
       let updatedReactions;
@@ -164,8 +224,19 @@ export default function CommunityPage() {
         updatedReactions = [...p.reactions, { emoji, count: 1 }];
       }
       return { ...p, reactions: updatedReactions };
-    }));
+    });
+    setHumanPosts(updated);
+    try {
+      localStorage.setItem(LOCAL_STORAGE_POSTS_KEY, JSON.stringify(updated));
+    } catch {}
   };
+
+  const visibleDispatches = dispatches.filter((d) => {
+    if (selectedAgent !== "all" && d.agent !== selectedAgent) return false;
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return d.title.toLowerCase().includes(q) || d.content.toLowerCase().includes(q);
+  });
 
   const totalPosts = (openForums?.reduce((sum: number, f: any) => sum + (f.postCount ?? 0), 0) ?? 0) + humanPosts.length;
 
@@ -177,6 +248,12 @@ export default function CommunityPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 select-text">
+      {notice && (
+        <div role="status" className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background shadow-lg">
+          {notice}
+        </div>
+      )}
+
       {/* Header */}
       <div className="mb-8 flex items-start justify-between gap-4">
         <div>
@@ -218,6 +295,17 @@ export default function CommunityPage() {
           <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-medium">● 140 Sub-Agents Online</span>
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <button
+            onClick={() => setSelectedAgent("all")}
+            className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-xs whitespace-nowrap transition cursor-pointer ${
+              selectedAgent === "all"
+                ? "border-indigo-500 bg-indigo-50 text-indigo-950 dark:bg-indigo-500/15 dark:text-indigo-200 font-semibold shadow-xs"
+                : "border-zinc-200 bg-zinc-50/80 text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-zinc-400 dark:hover:text-zinc-100 dark:hover:bg-white/[0.06]"
+            }`}
+          >
+            <Bot className="h-3.5 w-3.5 text-indigo-400" />
+            <span>All agents</span>
+          </button>
           {POLSIA_AGENT_PERSONAS.map((agent) => {
             const Icon = agent.icon;
             const isSelected = selectedAgent === agent.handle;
@@ -303,7 +391,10 @@ export default function CommunityPage() {
 
       {activeTab === "agent_swarm" ? (
         <div className="space-y-4 mb-8">
-          {MOCK_AGENT_DISPATCHES.map((dispatch) => (
+          {visibleDispatches.length === 0 && (
+            <p className="py-10 text-center text-xs text-muted-foreground">No dispatches match this agent or search.</p>
+          )}
+          {visibleDispatches.map((dispatch) => (
             <div
               key={dispatch.id}
               className="rounded-2xl border border-zinc-200 dark:border-white/[0.08] bg-white dark:bg-black/40 backdrop-blur-xl p-5 transition hover:border-indigo-400 dark:hover:border-indigo-500/40 shadow-xs"
@@ -331,7 +422,7 @@ export default function CommunityPage() {
                   {dispatch.reactions.map((r, i) => (
                     <button
                       key={i}
-                      onClick={() => alert(`Upvoted dispatch: ${dispatch.title}`)}
+                      onClick={() => handleDispatchReaction(dispatch.id, r.emoji)}
                       className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-zinc-200 dark:border-white/[0.08] bg-zinc-50 dark:bg-white/[0.04] hover:bg-zinc-100 dark:hover:bg-white/[0.08] text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer transition"
                     >
                       <span>{r.emoji}</span>
@@ -340,14 +431,36 @@ export default function CommunityPage() {
                   ))}
                 </div>
                 <button
-                  onClick={() => {
-                    alert(`Opened reply thread with ${dispatch.agent} on behalf of ${dispatch.company}`);
-                  }}
+                  onClick={() => setReplyOpenId(replyOpenId === dispatch.id ? null : dispatch.id)}
                   className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 cursor-pointer"
                 >
                   Reply or Ask Review ➔
                 </button>
               </div>
+
+              {dispatch.replies.length > 0 && (
+                <div className="mt-3 space-y-1.5 border-t border-zinc-100 dark:border-white/[0.06] pt-3">
+                  {dispatch.replies.map((r, i) => (
+                    <p key={i} className="text-xs text-zinc-700 dark:text-zinc-300 pl-3 border-l-2 border-indigo-500/40">{r}</p>
+                  ))}
+                </div>
+              )}
+
+              {replyOpenId === dispatch.id && (
+                <div className="mt-3 flex gap-2">
+                  <input
+                    autoFocus
+                    value={replyText}
+                    onChange={(e) => setReplyText(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleSendReply(dispatch.id)}
+                    placeholder={`Reply to ${dispatch.agent} or request a review…`}
+                    className="flex-1 bg-zinc-50 dark:bg-black/50 border border-zinc-200 dark:border-white/[0.12] rounded-xl px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                  />
+                  <Button size="sm" onClick={() => handleSendReply(dispatch.id)} className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs">
+                    Send
+                  </Button>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -403,7 +516,7 @@ export default function CommunityPage() {
 
                 <div className="flex items-center gap-3">
                   <button
-                    onClick={() => alert(`Discussion shared: ${post.title}`)}
+                    onClick={() => handleShare(post.id, post.title)}
                     className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition cursor-pointer"
                   >
                     <Share2 className="h-3.5 w-3.5" />

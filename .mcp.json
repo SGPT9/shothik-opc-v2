@@ -4,7 +4,7 @@
       "type": "http",
       "url": "https://mcp.context7.com/mcp",
       "headers": {
-        "Authorization": "Bearer ctx7sk-f553e17b-69a5-4168-b51f-dedd9105c172"
+        "Authorization": "Bearer ${CONTEXT7_API_KEY}"
       }
     },
     "cloudflare": {

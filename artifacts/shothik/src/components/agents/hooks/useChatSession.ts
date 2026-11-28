@@ -40,6 +40,11 @@ export function useChatSession(initialConversationId?: string) {
         isStreaming: msg.isStreaming ?? (msg.status === "streaming"),
         status: (msg.status ?? (msg.isStreaming ? "streaming" : "completed")) as any,
         metadata: msg.metadata || {},
+        parentMessageId: (msg as any).parentMessageId !== undefined
+          ? (msg as any).parentMessageId
+          : prev.length > 0
+          ? (prev[prev.length - 1].id || prev[prev.length - 1]._id)
+          : undefined,
       };
       const next = [...prev, normalizedMsg];
       // Save session title from first user message if present

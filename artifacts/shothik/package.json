@@ -93,6 +93,7 @@
     "@react-oauth/google": "^0.13.5",
     "@reduxjs/toolkit": "^2.12.0",
     "@stripe/stripe-js": "^9.12.1",
+    "@supabase/supabase-js": "^2.118.0",
     "@tanstack/react-query-devtools": "^5.101.4",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.14.9",

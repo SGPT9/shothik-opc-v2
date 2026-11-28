@@ -48,7 +48,8 @@ const mapSections = (
     sources:
       section?.sources?.map((source) => ({
         title: source?.title ?? "Unknown source",
-        url: source?.url ?? "",
+        url: source?.url ?? (source as any)?.sourceUrl ?? "",
+        sourceUrl: (source as any)?.sourceUrl ?? source?.url ?? "",
         snippet: source?.snippet ?? "",
         matchType: source?.matchType ?? "paraphrased",
         confidence: (source?.confidence ?? "unknown").toLowerCase(),
@@ -68,7 +69,8 @@ const mapSources = (
   if (!sources) return [];
   return sources.map((source) => ({
     title: source?.title ?? "Unknown source",
-    url: source?.url ?? "",
+    url: source?.url ?? (source as any)?.sourceUrl ?? "",
+    sourceUrl: (source as any)?.sourceUrl ?? source?.url ?? "",
     snippet: source?.snippet ?? "",
     matchType: source?.matchType ?? "paraphrased",
     confidence: (source?.confidence ?? "unknown").toLowerCase(),
@@ -146,6 +148,8 @@ const mapFlags = (raw: RawPlagiarismResponse): PlagiarismFlags => {
 export const mapToReport = (raw: RawPlagiarismResponse): PlagiarismReport => {
   const sections = mapSections(raw.paraphrasedSections);
   const score = mapScore(raw.overallSimilarity);
+  const auditHashSha256 = raw.auditHashSha256 ?? raw.report?.auditHashSha256;
+  const auditHash = auditHashSha256 ?? raw.auditHash ?? raw.analysisId;
 
   return {
     score,
@@ -161,5 +165,7 @@ export const mapToReport = (raw: RawPlagiarismResponse): PlagiarismReport => {
     exactPlagiarismPercentage: mapScore(raw.exactPlagiarismPercentage),
     analysisId: raw.analysisId,
     isLocalAnalysis: raw.is_fallback ?? false,
+    auditHash,
+    auditHashSha256,
   };
 };

@@ -1,9 +1,14 @@
-import { db, keyCustodyTable } from "@workspace/db";
-import { eq, and } from "drizzle-orm";
+import { db, keyCustodyTable, userConnectorsTable } from "@workspace/db";
+import { eq, and, sql } from "drizzle-orm";
 import crypto from "crypto";
 import { logger } from "./logger";
 
-const ENCRYPTION_SECRET = process.env.KEY_VAULT_SECRET || process.env.BETTER_AUTH_SECRET || "shothik-default-vault-secure-seed-key-32bytes!";
+const isProd = process.env.NODE_ENV === "production";
+const configuredSecret = process.env.KEY_VAULT_SECRET || process.env.BETTER_AUTH_SECRET;
+if (isProd && !configuredSecret) {
+  logger.error("[UserKeyVault] CRITICAL: KEY_VAULT_SECRET is unset in production environment! Using ephemeral instance key.");
+}
+const ENCRYPTION_SECRET = configuredSecret || (!isProd ? "shothik-default-vault-secure-seed-key-32bytes!" : crypto.randomBytes(32).toString("hex"));
 
 // Derive 32-byte key
 const keyBuffer = crypto.createHash("sha256").update(ENCRYPTION_SECRET).digest();
@@ -69,6 +74,26 @@ export class UserKeyVault {
 
     if (shouldProbeDb) {
       try {
+        // Attempt native Supabase Vault storage if available
+        try {
+          const secretName = `${userId}:${provider.toLowerCase()}`;
+          const secretValue = JSON.stringify(credentials);
+          await db.execute(sql`
+            DO $$
+            BEGIN
+              IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'supabase_vault') THEN
+                IF EXISTS (SELECT 1 FROM vault.secrets WHERE name = ${secretName}) THEN
+                  PERFORM vault.update_secret((SELECT id FROM vault.secrets WHERE name = ${secretName} LIMIT 1), ${secretValue});
+                ELSE
+                  PERFORM vault.create_secret(${secretValue}, ${secretName}, ${`BYOK credential for ${provider}`});
+                END IF;
+              END IF;
+            END $$;
+          `);
+        } catch {
+          // Fallback to keyCustodyTable
+        }
+
         const existing = await db
           .select()
           .from(keyCustodyTable)
@@ -93,6 +118,22 @@ export class UserKeyVault {
             sealedKey: sealed,
           });
         }
+
+        const rawSecret = credentials.apiKey || credentials.secretKey || '';
+        const masked = rawSecret.length > 7 ? `${rawSecret.slice(0, 4)}••••${rawSecret.slice(-3)}` : '••••';
+        await db.insert(userConnectorsTable).values({
+          userId,
+          connectorId: provider.toLowerCase(),
+          connected: true,
+          encryptedCredentials: sealed,
+          maskedKey: masked,
+          endpointUrl: credentials.endpointUrl || null,
+          lastVerifiedAt: new Date(),
+          updatedAt: new Date(),
+        }).onConflictDoUpdate({
+          target: [userConnectorsTable.userId, userConnectorsTable.connectorId],
+          set: { connected: true, encryptedCredentials: sealed, maskedKey: masked, endpointUrl: credentials.endpointUrl || null, lastVerifiedAt: new Date(), updatedAt: new Date() },
+        }).catch(() => {});
         logger.info({ userId, provider }, "[UserKeyVault] Stored user BYOK credentials securely");
       } catch (err: any) {
         isPostgresAvailable = false;
@@ -114,6 +155,22 @@ export class UserKeyVault {
 
     if (shouldProbeDb) {
       try {
+        // Attempt native Supabase Vault retrieval
+        try {
+          const secretName = `${userId}:${provider.toLowerCase()}`;
+          const vaultRes: any = await db.execute(sql`
+            SELECT decrypted_secret 
+            FROM vault.decrypted_secrets 
+            WHERE name = ${secretName} 
+            LIMIT 1
+          `);
+          if (vaultRes?.rows?.[0]?.decrypted_secret) {
+            return JSON.parse(vaultRes.rows[0].decrypted_secret);
+          }
+        } catch {
+          // Fallback to keyCustodyTable
+        }
+
         const records = await db
           .select()
           .from(keyCustodyTable)

@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { ModeSwitcherHeader } from '../navigation/ModeSwitcherHeader';
 import { PolishedWriteView } from '../PolishedWriteView';
 import { PublishingPage } from '../PublishingPage';
-import { FormattingView } from '@/components/tools/writing-studio/workspace/FormattingView';
+import { FormattingView } from '@/components/writing-studio/workspace/FormattingView';
 
 type Mode = 'write' | 'format' | 'publish';
 

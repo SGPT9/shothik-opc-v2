@@ -1,28 +1,26 @@
 /**
- * FAANG-Grade PolishedWriteView Orchestrator.
+ * FAANG-Grade PolishedWriteView Orchestrator — Replit-Inspired Comfort Edition.
  *
- * Full Feature Matrix:
- *  - Mode Switcher: "write" (Editor + Live Split Preview) | "format" (Typesetting Proof + Metadata) | "publish" (EPUB / PDF Preflight)
- *  - Chapter Sync: LeftSidebar chapter list with word counts & synopses.
- *  - CenterEditor: Bidirectional TipTap binding with ghost text and inline diff.
- *  - LiveDocumentPreview: Real-time 6x9 trade book rendering with zoom and page simulation.
- *  - 3-Fold Canvas Switcher: Instant jump to ReplitBookWorkspace.
+ * Ergonomic Highlights:
+ *  - Calm 44px Replit Context Bar with 4 Mode-Aware Pinned Tools + `✨ All 45+ InkOS Tools (Ctrl+Shift+P)` Dock.
+ *  - Conversational InkOS Suggestions inside `RightPanel` AI Co-Writer chat + `/slash` commands + Ambient Co-Pilot Whispers.
+ *  - Inline Selection Floating Pill in `CenterEditor` for zero-friction De-Slop, 5-Senses, Dialect, and Co-Writer queries.
+ *  - Wide Writing Canvas by default (`showPreview = false` in Write mode) + Zen Focus Mode (`Ctrl+\`).
  */
 import React, { useState, useCallback, useEffect, lazy, Suspense, useMemo } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import {
-  Download,
   FileDown,
   BookOpen,
-  Edit3,
   Sparkles,
-  X,
-  Check,
-  SplitSquareHorizontal,
   Columns3,
   Eye,
-  Sliders,
   Printer,
+  Command,
+  Maximize2,
+  Minimize2,
+  Users,
+  Zap,
+  Volume2,
 } from "lucide-react";
 import { ModeSwitcherHeader } from "./navigation/ModeSwitcherHeader";
 import { LeftSidebar } from "./layout/LeftSidebar";
@@ -39,6 +37,65 @@ import { ManuscriptImportModal } from "./ManuscriptImportModal";
 import { BoiMela3DPageFlipPreview } from "@/components/books/BoiMela3DPageFlipPreview";
 import { NilkhetOrderModal } from "@/components/books/NilkhetOrderModal";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { AudioNarrationPlayer } from "@/components/audio/AudioNarrationPlayer";
+import { CollaborativePresence } from "./CollaborativePresence";
+const RoomShareModal = lazy(() => import("./components/RoomShareModal").then((mod) => ({ default: mod.RoomShareModal })));
+const PlotBranchModal = lazy(() => import("./components/PlotBranchModal").then((mod) => ({ default: mod.PlotBranchModal })));
+const AuthorshipCertificateModal = lazy(() => import("./components/AuthorshipCertificateModal").then((mod) => ({ default: mod.AuthorshipCertificateModal })));
+const PodcastAudioModal = lazy(() => import("./components/PodcastAudioModal").then((mod) => ({ default: mod.PodcastAudioModal })));
+const ResumableUploadModal = lazy(() => import("./components/ResumableUploadModal").then((mod) => ({ default: mod.ResumableUploadModal })));
+const BilingualSplitModal = lazy(() => import("./components/BilingualSplitModal").then((mod) => ({ default: mod.BilingualSplitModal })));
+const NarrativeForecastModal = lazy(() => import("./components/NarrativeForecastModal").then((mod) => ({ default: mod.NarrativeForecastModal })));
+const InteractiveStoryGraphModal = lazy(() => import("./components/InteractiveStoryGraphModal").then((mod) => ({ default: mod.InteractiveStoryGraphModal })));
+const SemanticDeslopModal = lazy(() => import("./components/SemanticDeslopModal").then((mod) => ({ default: mod.SemanticDeslopModal })));
+const DirectorsTabletopModal = lazy(() => import("./components/DirectorsTabletopModal").then((mod) => ({ default: mod.DirectorsTabletopModal })));
+const ShortFictionPackageModal = lazy(() => import("./components/ShortFictionPackageModal").then((mod) => ({ default: mod.ShortFictionPackageModal })));
+const ChekhovGunModal = lazy(() => import("./components/ChekhovGunModal").then((mod) => ({ default: mod.ChekhovGunModal })));
+const LiteraryStyleDnaModal = lazy(() => import("./components/LiteraryStyleDnaModal").then((mod) => ({ default: mod.LiteraryStyleDnaModal })));
+const MultiverseSandboxModal = lazy(() => import("./components/MultiverseSandboxModal").then((mod) => ({ default: mod.MultiverseSandboxModal })));
+const AutopilotDaemonModal = lazy(() => import("./components/AutopilotDaemonModal").then((mod) => ({ default: mod.AutopilotDaemonModal })));
+const StoryBibleHudModal = lazy(() => import("./components/StoryBibleHudModal").then((mod) => ({ default: mod.StoryBibleHudModal })));
+const VoiceCastingModal = lazy(() => import("./components/VoiceCastingModal").then((mod) => ({ default: mod.VoiceCastingModal })));
+const PhonemeTunerModal = lazy(() => import("./components/PhonemeTunerModal").then((mod) => ({ default: mod.PhonemeTunerModal })));
+const BinauralSoundscapeModal = lazy(() => import("./components/BinauralSoundscapeModal").then((mod) => ({ default: mod.BinauralSoundscapeModal })));
+const BookTokTeaserModal = lazy(() => import("./components/BookTokTeaserModal").then((mod) => ({ default: mod.BookTokTeaserModal })));
+const RoomBlockingModal = lazy(() => import("./components/RoomBlockingModal").then((mod) => ({ default: mod.RoomBlockingModal })));
+const ScriptStoryboardModal = lazy(() => import("./components/ScriptStoryboardModal").then((mod) => ({ default: mod.ScriptStoryboardModal })));
+const RetentionRadarModal = lazy(() => import("./components/RetentionRadarModal").then((mod) => ({ default: mod.RetentionRadarModal })));
+const TensionEkgModal = lazy(() => import("./components/TensionEkgModal").then((mod) => ({ default: mod.TensionEkgModal })));
+const RelationshipGraphModal = lazy(() => import("./components/RelationshipGraphModal").then((mod) => ({ default: mod.RelationshipGraphModal })));
+const DialectTranspilerModal = lazy(() => import("./components/DialectTranspilerModal").then((mod) => ({ default: mod.DialectTranspilerModal })));
+const ShowrunnersTableModal = lazy(() => import("./components/ShowrunnersTableModal").then((mod) => ({ default: mod.ShowrunnersTableModal })));
+const CharacterMessengerModal = lazy(() => import("./components/CharacterMessengerModal").then((mod) => ({ default: mod.CharacterMessengerModal })));
+const BetaReadersModal = lazy(() => import("./components/BetaReadersModal").then((mod) => ({ default: mod.BetaReadersModal })));
+const CharacterDuetModal = lazy(() => import("./components/CharacterDuetModal").then((mod) => ({ default: mod.CharacterDuetModal })));
+const BlockCatalyzerModal = lazy(() => import("./components/BlockCatalyzerModal").then((mod) => ({ default: mod.BlockCatalyzerModal })));
+const SensoryPaletteModal = lazy(() => import("./components/SensoryPaletteModal").then((mod) => ({ default: mod.SensoryPaletteModal })));
+const MfaWorkshopModal = lazy(() => import("./components/MfaWorkshopModal").then((mod) => ({ default: mod.MfaWorkshopModal })));
+const StreamerModeModal = lazy(() => import("./components/StreamerModeModal").then((mod) => ({ default: mod.StreamerModeModal })));
+const CognitiveFrictionModal = lazy(() => import("./components/CognitiveFrictionModal").then((mod) => ({ default: mod.CognitiveFrictionModal })));
+const SurrealistDreamscapeModal = lazy(() => import("./components/SurrealistDreamscapeModal").then((mod) => ({ default: mod.SurrealistDreamscapeModal })));
+const LoreWikiModal = lazy(() => import("./components/LoreWikiModal").then((mod) => ({ default: mod.LoreWikiModal })));
+const ChronoBraiderModal = lazy(() => import("./components/ChronoBraiderModal").then((mod) => ({ default: mod.ChronoBraiderModal })));
+const PlotDivergenceModal = lazy(() => import("./components/PlotDivergenceModal").then((mod) => ({ default: mod.PlotDivergenceModal })));
+const SpatialGpsModal = lazy(() => import("./components/SpatialGpsModal").then((mod) => ({ default: mod.SpatialGpsModal })));
+const ItemLedgerModal = lazy(() => import("./components/ItemLedgerModal").then((mod) => ({ default: mod.ItemLedgerModal })));
+const LivingEpilogueModal = lazy(() => import("./components/LivingEpilogueModal").then((mod) => ({ default: mod.LivingEpilogueModal })));
+const CulturalOriginalityModal = lazy(() => import("./components/CulturalOriginalityModal").then((mod) => ({ default: mod.CulturalOriginalityModal })));
+const PrintPreflightModal = lazy(() => import("./components/PrintPreflightModal").then((mod) => ({ default: mod.PrintPreflightModal })));
+const BookJacketModal = lazy(() => import("./components/BookJacketModal").then((mod) => ({ default: mod.BookJacketModal })));
+const CipBarcodeModal = lazy(() => import("./components/CipBarcodeModal").then((mod) => ({ default: mod.CipBarcodeModal })));
+const WebnovelPaywallModal = lazy(() => import("./components/WebnovelPaywallModal").then((mod) => ({ default: mod.WebnovelPaywallModal })));
+const PolyglotMatrixModal = lazy(() => import("./components/PolyglotMatrixModal").then((mod) => ({ default: mod.PolyglotMatrixModal })));
+const ReadingScalerModal = lazy(() => import("./components/ReadingScalerModal").then((mod) => ({ default: mod.ReadingScalerModal })));
+const RoyaltySplitModal = lazy(() => import("./components/RoyaltySplitModal").then((mod) => ({ default: mod.RoyaltySplitModal })));
+const LegalShieldModal = lazy(() => import("./components/LegalShieldModal").then((mod) => ({ default: mod.LegalShieldModal })));
+const InkOsCommandDockModal = lazy(() => import("./components/InkOsCommandDockModal").then((mod) => ({ default: mod.InkOsCommandDockModal })));
+const DeepResearchStudioModal = lazy(() => import("@/components/twin/DeepResearchStudioModal").then((mod) => ({ default: mod.DeepResearchStudioModal })));
+import { INKOS_TOOLS, type InkOsToolId } from "./config/inkos-tool-catalog";
+import UpgradeModal from "@/components/subscription/UpgradeModal";
+import { useSubscription } from "@/hooks/subscription/useSubscription";
 
 const PublishingPage = lazy(() => import("./PublishingPage") as any);
 
@@ -61,10 +118,169 @@ export function PolishedWriteView({
   const projectType: ProjectType = projectTypeProp || project?.type || "book";
   const [mode, setMode] = useState<Mode>("write");
   const [is3FoldMode, setIs3FoldMode] = useState(false);
-  const [showPreview, setShowPreview] = useState(true);
+  // Default showPreview to false in Write mode so CenterEditor gets +440px of comfortable width
+  const [showPreview, setShowPreview] = useState(false);
+  const [isZenMode, setIsZenMode] = useState(false);
+  const [isCommandDockOpen, setIsCommandDockOpen] = useState(false);
+  const [isDeepResearchModalOpen, setIsDeepResearchModalOpen] = useState(false);
+  const [isNarrationModalOpen, setIsNarrationModalOpen] = useState(false);
+  const [externalChatPrompt, setExternalChatPrompt] = useState<string | null>(null);
   const [preview3D, setPreview3D] = useState(true);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [isNilkhetModalOpen, setIsNilkhetModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isBranchModalOpen, setIsBranchModalOpen] = useState(false);
+  const [isCertificateModalOpen, setIsCertificateModalOpen] = useState(false);
+  const [isPodcastModalOpen, setIsPodcastModalOpen] = useState(false);
+  const [isResumableModalOpen, setIsResumableModalOpen] = useState(false);
+  const [isBilingualModalOpen, setIsBilingualModalOpen] = useState(false);
+  const [isForecastModalOpen, setIsForecastModalOpen] = useState(false);
+  const [isStoryGraphModalOpen, setIsStoryGraphModalOpen] = useState(false);
+  const [isDeslopModalOpen, setIsDeslopModalOpen] = useState(false);
+  const [isTabletopModalOpen, setIsTabletopModalOpen] = useState(false);
+  const [isShortFictionModalOpen, setIsShortFictionModalOpen] = useState(false);
+  const [isChekhovModalOpen, setIsChekhovModalOpen] = useState(false);
+  const [isStyleDnaModalOpen, setIsStyleDnaModalOpen] = useState(false);
+  const [isMultiverseModalOpen, setIsMultiverseModalOpen] = useState(false);
+  const [isAutopilotModalOpen, setIsAutopilotModalOpen] = useState(false);
+  const [isStoryBibleModalOpen, setIsStoryBibleModalOpen] = useState(false);
+  const [isVoiceCastingModalOpen, setIsVoiceCastingModalOpen] = useState(false);
+  const [isPhonemeModalOpen, setIsPhonemeModalOpen] = useState(false);
+  const [isSoundscapeModalOpen, setIsSoundscapeModalOpen] = useState(false);
+  const [isBookTokModalOpen, setIsBookTokModalOpen] = useState(false);
+  const [isRoomBlockingModalOpen, setIsRoomBlockingModalOpen] = useState(false);
+  const [isScriptStoryboardModalOpen, setIsScriptStoryboardModalOpen] = useState(false);
+  const [isRetentionRadarModalOpen, setIsRetentionRadarModalOpen] = useState(false);
+  const [isTensionEkgModalOpen, setIsTensionEkgModalOpen] = useState(false);
+  const [isRelationshipGraphModalOpen, setIsRelationshipGraphModalOpen] = useState(false);
+  const [isDialectTranspilerModalOpen, setIsDialectTranspilerModalOpen] = useState(false);
+  const [isShowrunnersModalOpen, setIsShowrunnersModalOpen] = useState(false);
+  const [isCharacterMessengerModalOpen, setIsCharacterMessengerModalOpen] = useState(false);
+  const [isBetaReadersModalOpen, setIsBetaReadersModalOpen] = useState(false);
+  const [isCharacterDuetModalOpen, setIsCharacterDuetModalOpen] = useState(false);
+  const [isBlockCatalyzerModalOpen, setIsBlockCatalyzerModalOpen] = useState(false);
+  const [isSensoryPaletteModalOpen, setIsSensoryPaletteModalOpen] = useState(false);
+  const [isMfaWorkshopModalOpen, setIsMfaWorkshopModalOpen] = useState(false);
+  const [isStreamerModeModalOpen, setIsStreamerModeModalOpen] = useState(false);
+  const [isCognitiveFrictionModalOpen, setIsCognitiveFrictionModalOpen] = useState(false);
+  const [isSurrealistModalOpen, setIsSurrealistModalOpen] = useState(false);
+  const [isLoreWikiModalOpen, setIsLoreWikiModalOpen] = useState(false);
+  const [isChronoBraiderModalOpen, setIsChronoBraiderModalOpen] = useState(false);
+  const [isPlotDivergenceModalOpen, setIsPlotDivergenceModalOpen] = useState(false);
+  const [isSpatialGpsModalOpen, setIsSpatialGpsModalOpen] = useState(false);
+  const [isItemLedgerModalOpen, setIsItemLedgerModalOpen] = useState(false);
+  const [isLivingEpilogueModalOpen, setIsLivingEpilogueModalOpen] = useState(false);
+  const [isCulturalOriginalityModalOpen, setIsCulturalOriginalityModalOpen] = useState(false);
+  const [isPrintPreflightModalOpen, setIsPrintPreflightModalOpen] = useState(false);
+  const [isBookJacketModalOpen, setIsBookJacketModalOpen] = useState(false);
+  const [isCipBarcodeModalOpen, setIsCipBarcodeModalOpen] = useState(false);
+  const [isWebnovelPaywallModalOpen, setIsWebnovelPaywallModalOpen] = useState(false);
+  const [isPolyglotMatrixModalOpen, setIsPolyglotMatrixModalOpen] = useState(false);
+  const [isReadingScalerModalOpen, setIsReadingScalerModalOpen] = useState(false);
+  const [isRoyaltySplitModalOpen, setIsRoyaltySplitModalOpen] = useState(false);
+  const [isLegalShieldModalOpen, setIsLegalShieldModalOpen] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [studioCredits, setStudioCredits] = useState<number>(550);
+  const subscription = useSubscription();
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/v1/subscriptions/credits")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((json) => {
+        const bal = json?.data?.creditsBalance ?? json?.creditsBalance;
+        if (active && typeof bal === "number") {
+          setStudioCredits(bal);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "B" || e.key === "b")) {
+        e.preventDefault();
+        setIsStoryBibleModalOpen((prev) => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "P" || e.key === "p")) {
+        e.preventDefault();
+        setIsCommandDockOpen((prev) => !prev);
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === "\\") {
+        e.preventDefault();
+        setIsZenMode((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  // Unified dispatcher for opening any of the 45+ InkOS tools from Chat, Inline Selection, Context Bar, or Command Dock
+  const handleOpenInkOsTool = useCallback((toolId: InkOsToolId) => {
+    switch (toolId) {
+      case "story-bible": setIsStoryBibleModalOpen(true); break;
+      case "deslop": setIsDeslopModalOpen(true); break;
+      case "forecast": setIsForecastModalOpen(true); break;
+      case "story-graph": setIsStoryGraphModalOpen(true); break;
+      case "tabletop": setIsTabletopModalOpen(true); break;
+      case "short-fiction": setIsShortFictionModalOpen(true); break;
+      case "chekhov": setIsChekhovModalOpen(true); break;
+      case "style-dna": setIsStyleDnaModalOpen(true); break;
+      case "multiverse": setIsMultiverseModalOpen(true); break;
+      case "autopilot": setIsAutopilotModalOpen(true); break;
+      case "voice-casting": setIsVoiceCastingModalOpen(true); break;
+      case "phoneme-tuner": setIsPhonemeModalOpen(true); break;
+      case "soundscape": setIsSoundscapeModalOpen(true); break;
+      case "booktok": setIsBookTokModalOpen(true); break;
+      case "room-blocking": setIsRoomBlockingModalOpen(true); break;
+      case "storyboard": setIsScriptStoryboardModalOpen(true); break;
+      case "retention-radar": setIsRetentionRadarModalOpen(true); break;
+      case "tension-ekg": setIsTensionEkgModalOpen(true); break;
+      case "relations": setIsRelationshipGraphModalOpen(true); break;
+      case "dialect-transpiler": setIsDialectTranspilerModalOpen(true); break;
+      case "showrunners": setIsShowrunnersModalOpen(true); break;
+      case "char-messenger": setIsCharacterMessengerModalOpen(true); break;
+      case "beta-readers": setIsBetaReadersModalOpen(true); break;
+      case "character-duet": setIsCharacterDuetModalOpen(true); break;
+      case "block-catalyzer": setIsBlockCatalyzerModalOpen(true); break;
+      case "sensory-palette": setIsSensoryPaletteModalOpen(true); break;
+      case "mfa-workshop": setIsMfaWorkshopModalOpen(true); break;
+      case "streamer-mode": setIsStreamerModeModalOpen(true); break;
+      case "cognitive-friction": setIsCognitiveFrictionModalOpen(true); break;
+      case "dreamscape": setIsSurrealistModalOpen(true); break;
+      case "lore-wiki": setIsLoreWikiModalOpen(true); break;
+      case "chrono-braider": setIsChronoBraiderModalOpen(true); break;
+      case "plot-divergence": setIsPlotDivergenceModalOpen(true); break;
+      case "spatial-gps": setIsSpatialGpsModalOpen(true); break;
+      case "item-ledger": setIsItemLedgerModalOpen(true); break;
+      case "living-epilogue": setIsLivingEpilogueModalOpen(true); break;
+      case "folk-scorer": setIsCulturalOriginalityModalOpen(true); break;
+      case "print-preflight": setIsPrintPreflightModalOpen(true); break;
+      case "book-jacket": setIsBookJacketModalOpen(true); break;
+      case "cip-barcode": setIsCipBarcodeModalOpen(true); break;
+      case "webnovel-paywall": setIsWebnovelPaywallModalOpen(true); break;
+      case "polyglot-matrix": setIsPolyglotMatrixModalOpen(true); break;
+      case "reading-scaler": setIsReadingScalerModalOpen(true); break;
+      case "royalty-split": setIsRoyaltySplitModalOpen(true); break;
+      case "legal-shield": setIsLegalShieldModalOpen(true); break;
+      case "bilingual-split": setIsBilingualModalOpen(true); break;
+      case "branches": setIsBranchModalOpen(true); break;
+      case "copyright": setIsCertificateModalOpen(true); break;
+      case "podcast": setIsPodcastModalOpen(true); break;
+      case "share": setIsShareModalOpen(true); break;
+      case "upload": setIsResumableModalOpen(true); break;
+      case "import-manuscript": setIsImportOpen(true); break;
+    }
+  }, []);
+
+  // Pinned mode-aware tools (only 4 relevant tools shown in the top bar per mode!)
+  const pinnedModeTools = useMemo(
+    () => INKOS_TOOLS.filter((t) => t.pinnedInModes?.includes(mode)).slice(0, 4),
+    [mode]
+  );
 
   // Initialize chapter manuscript structure from agent generation
   const initialChapters = useMemo(() => {
@@ -123,13 +339,7 @@ export function PolishedWriteView({
     isSaving,
     lastSaved,
     wordCount,
-    citationCount,
-    readinessScore,
-    referenceList,
     setContent,
-    setCitationStyle,
-    setIsSaving,
-    setLastSaved,
   } = useWritingEditor(initialContent, project?.title || bookTitle);
 
   const { pushHistory, undo, redo, canUndo, canRedo } = useWritingHistory(initialContent);
@@ -183,7 +393,7 @@ export function PolishedWriteView({
     [setContent]
   );
 
-  // If user switches to full 3-Fold 5-Mode Workspace
+  // If user switches to full 3-Fold 5-Mode Workspace (now synced with live content!)
   if (is3FoldMode) {
     return (
       <ReplitBookWorkspace
@@ -194,6 +404,8 @@ export function PolishedWriteView({
           synopsis: c.synopsis || "",
           wordCount: c.wordCount || 0,
         }))}
+        initialContent={content}
+        onContentChange={handleContentChange}
         onBack={() => setIs3FoldMode(false)}
       />
     );
@@ -201,9 +413,9 @@ export function PolishedWriteView({
 
   return (
     <div className="flex h-screen w-full flex-col overflow-hidden bg-background">
-      {/* Top Header Mode Switcher */}
+      {/* ── Calm 44px Replit-Inspired Context Header ── */}
       <ComponentErrorBoundary title="Header Navigation Error">
-        <div className="flex items-center justify-between border-b border-border bg-background px-4 py-2">
+        <div className="flex items-center justify-between border-b border-border bg-background px-4 py-1.5 gap-2">
           <ModeSwitcherHeader
             projectName={title}
             currentMode={mode}
@@ -211,23 +423,110 @@ export function PolishedWriteView({
             isSaving={isSaving}
             lastSaved={lastSaved}
           />
-          <div className="flex items-center gap-2">
+
+          {/* Center: Mode-Aware Pinned Tools (4 Context Pills) + ✨ All 45+ InkOS Tools Dock */}
+          <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
+            {pinnedModeTools.map((tool) => (
+              <Button
+                key={tool.id}
+                size="sm"
+                variant="outline"
+                data-testid={`pinned-tool-${tool.id}`}
+                onClick={() => handleOpenInkOsTool(tool.id)}
+                className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-zinc-200 dark:border-zinc-800 hover:border-brand/50 hover:bg-brand/5 shrink-0 cursor-pointer"
+                title={`${tool.title} (${tool.titleBn}) — ${tool.description}`}
+              >
+                <span>{tool.emoji}</span>
+                <span>{tool.shortLabel}</span>
+              </Button>
+            ))}
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-open-inkos-dock"
+              onClick={() => setIsCommandDockOpen(true)}
+              className="h-7 px-3 text-xs font-bold gap-1.5 border-brand/40 bg-brand/10 text-brand hover:bg-brand/20 shrink-0 cursor-pointer"
+              title="Browse & Search All 45+ InkOS Studio Tools (Ctrl+Shift+P)"
+            >
+              <Command className="h-3.5 w-3.5" />
+              <span>✨ All 45 InkOS Tools</span>
+              <kbd className="hidden md:inline text-[10px] font-mono opacity-75 px-1 bg-brand/15 rounded">
+                ⌃⇧P
+              </kbd>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-open-deep-research"
+              onClick={() => setIsDeepResearchModalOpen(true)}
+              className="h-7 px-2.5 text-xs font-bold gap-1.5 border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/20 shrink-0 cursor-pointer"
+              title="Open Deep Research Assistant & Citations"
+            >
+              <Sparkles className="h-3.5 w-3.5 text-emerald-500" />
+              <span>🔬 Deep Research</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-narrate-studio"
+              onClick={() => setIsNarrationModalOpen(true)}
+              className="h-7 px-2.5 text-xs font-bold gap-1.5 border-purple-500/40 bg-purple-500/10 text-purple-700 dark:text-purple-300 hover:bg-purple-500/20 shrink-0 cursor-pointer"
+              title="Narrate chapter with Bangla Voice AI"
+            >
+              <Volume2 className="h-3.5 w-3.5 text-purple-500" />
+              <span>🔊 Voice Narration</span>
+            </Button>
+          </div>
+
+          {/* Right: Credits HUD, Presence, Share, Live Preview, 3-Fold IDE & Zen Mode */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-studio-credit-hud"
+              onClick={() => setIsUpgradeModalOpen(true)}
+              className="h-7 px-2.5 text-xs font-bold gap-1.5 border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 cursor-pointer"
+              title="Universal Shothik Wallet · 0 Credits for Writing & Story Bible (#10), 1-3 Credits for AI/Audio/Print Checkpoints"
+            >
+              <Zap className="h-3.5 w-3.5 text-amber-400" />
+              <span>⚡ {studioCredits} Credits</span>
+            </Button>
+
+            <CollaborativePresence
+              bookId={project?._id || project?.id || "default"}
+              currentChapterTitle={activeChapter?.title}
+            />
+
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setIsShareModalOpen(true)}
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              title="Share Room with Live Presence & Passcode"
+            >
+              <Users className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Share</span>
+            </Button>
+
             <Button
               size="sm"
               variant="outline"
               onClick={() => setIsImportOpen(true)}
-              className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-border text-muted-foreground hover:text-foreground cursor-pointer"
-              title="Import Word, PDF, Text, or Bijoy Manuscript"
+              className="h-7 px-2 text-xs font-semibold gap-1 border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 cursor-pointer"
+              title="Import DOCX / Markdown / TXT Manuscript"
             >
-              <FileDown className="h-3.5 w-3.5 text-indigo-400" />
-              <span>Import Manuscript</span>
+              <FileDown className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Import</span>
             </Button>
 
             <Button
               size="sm"
               variant="outline"
               onClick={() => setShowPreview((p) => !p)}
-              className={`h-7 px-2.5 text-xs font-semibold gap-1.5 cursor-pointer ${
+              className={`h-7 px-2 text-xs font-semibold gap-1 cursor-pointer ${
                 showPreview
                   ? "bg-indigo-500/15 text-indigo-400 border-indigo-500/40"
                   : "text-muted-foreground border-border"
@@ -235,18 +534,34 @@ export function PolishedWriteView({
               title="Toggle Live 6x9 Book Render Split Screen"
             >
               <Eye className="h-3.5 w-3.5" />
-              <span>Live Book Render</span>
+              <span className="hidden xl:inline">6×9 Proof</span>
             </Button>
 
             <Button
               size="sm"
               variant="outline"
               onClick={() => setIs3FoldMode(true)}
-              className="h-7 px-2.5 text-xs font-semibold gap-1.5 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
+              className="h-7 px-2 text-xs font-semibold gap-1 border-indigo-500/40 text-indigo-400 hover:bg-indigo-500/10 cursor-pointer"
               title="Open 3-Fold IDE with Fortune Sheet, Mindmap, and Slide Pitch"
             >
               <Columns3 className="h-3.5 w-3.5" />
-              <span>3-Fold IDE Canvas</span>
+              <span className="hidden xl:inline">3-Fold IDE</span>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              data-testid="button-zen-mode"
+              onClick={() => setIsZenMode((z) => !z)}
+              className={`h-7 px-2 text-xs font-semibold gap-1 cursor-pointer ${
+                isZenMode
+                  ? "bg-amber-500/15 text-amber-400 border-amber-500/40"
+                  : "text-muted-foreground border-border"
+              }`}
+              title="Toggle Zen Distraction-Free Writing Mode (Ctrl+\)"
+            >
+              {isZenMode ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
+              <span className="hidden 2xl:inline">{isZenMode ? "Exit Zen" : "Zen"}</span>
             </Button>
           </div>
         </div>
@@ -254,8 +569,8 @@ export function PolishedWriteView({
 
       {/* Main Workspace Layout */}
       <div className="flex flex-1 min-h-0 w-full overflow-hidden">
-        {/* Left Sidebar Chapter Tree (Visible in Write & Format Modes) */}
-        {mode !== "publish" && (
+        {/* Left Sidebar Chapter Tree (Hidden in Publish or Zen Mode) */}
+        {mode !== "publish" && !isZenMode && (
           <ComponentErrorBoundary title="Left Sidebar Error">
             <LeftSidebar
               chapters={chapters as any}
@@ -269,7 +584,7 @@ export function PolishedWriteView({
           </ComponentErrorBoundary>
         )}
 
-        {/* ── Mode 1: Write (Editor + Optional Live Split Preview) ── */}
+        {/* ── Mode 1: Write (Editor + Optional Live Split Preview + Conversational Co-Writer) ── */}
         {mode === "write" && (
           <div className="flex flex-1 min-w-0 h-full overflow-hidden">
             {/* Center Rich Text Editor */}
@@ -284,6 +599,12 @@ export function PolishedWriteView({
                   citationStyle={citationStyle as any}
                   showPreview={showPreview}
                   onTogglePreview={() => setShowPreview((p) => !p)}
+                  onOpenInkOsTool={(toolId) => handleOpenInkOsTool(toolId)}
+                  onAskCoWriter={(promptText) => {
+                    if (isZenMode) setIsZenMode(false);
+                    setExternalChatPrompt(promptText);
+                  }}
+                  onOpenCommandDock={() => setIsCommandDockOpen(true)}
                   onUndo={() => {
                     const prev = undo();
                     if (prev !== null) setContent(prev);
@@ -296,9 +617,9 @@ export function PolishedWriteView({
               </ComponentErrorBoundary>
             </div>
 
-            {/* Live 6x9 Book Render Split View */}
-            {showPreview && (
-              <div className="w-[440px] shrink-0 h-full border-l border-border bg-muted/20 overflow-hidden hidden lg:block">
+            {/* Live 6x9 Book Render Split View (Opt-in so Editor stays wide by default) */}
+            {showPreview && !isZenMode && (
+              <div className="w-[420px] shrink-0 h-full border-l border-border bg-muted/20 overflow-hidden hidden lg:block">
                 <ComponentErrorBoundary title="Live Document Preview Error">
                   <LiveDocumentPreview
                     content={content}
@@ -309,15 +630,23 @@ export function PolishedWriteView({
               </div>
             )}
 
-            {/* Right Panel AI Auditor & Co-writer */}
-            <ComponentErrorBoundary title="Auditor Panel Error">
-              <RightPanel
-                content={content}
-                projectId={project?._id || "default"}
-                projectTitle={title}
-                projectType={projectType}
-              />
-            </ComponentErrorBoundary>
+            {/* Right Panel AI Auditor & Co-writer with Embedded InkOS Action Chips */}
+            {!isZenMode && (
+              <ComponentErrorBoundary title="Auditor Panel Error">
+                <RightPanel
+                  content={content}
+                  projectId={project?._id || "default"}
+                  projectTitle={title}
+                  projectType={projectType}
+                  onOpenInkOsTool={(toolId) => handleOpenInkOsTool(toolId)}
+                  onInsertToEditor={(snippet) =>
+                    handleContentChange(content ? `${content}\n\n<p>${snippet}</p>` : `<p>${snippet}</p>`)
+                  }
+                  externalChatPrompt={externalChatPrompt}
+                  onClearExternalChatPrompt={() => setExternalChatPrompt(null)}
+                />
+              </ComponentErrorBoundary>
+            )}
           </div>
         )}
 
@@ -479,6 +808,14 @@ export function PolishedWriteView({
       {/* Status Bar Footer */}
       <StatusBar wordCount={wordCount} />
 
+      {/* ✨ Categorized 5-Pillar InkOS Command Dock Modal (Ctrl+Shift+P) */}
+      <InkOsCommandDockModal
+        isOpen={isCommandDockOpen}
+        onClose={() => setIsCommandDockOpen(false)}
+        onSelectTool={(toolId) => handleOpenInkOsTool(toolId)}
+        studioCredits={studioCredits}
+      />
+
       {/* Manuscript Import Modal */}
       <ManuscriptImportModal
         isOpen={isImportOpen}
@@ -493,6 +830,384 @@ export function PolishedWriteView({
         bookTitle={title}
         pageCount={Math.max(48, Math.ceil(wordCount / 250))}
         authorName={project?.author || "Shothik Author"}
+      />
+
+      {/* Supabase DeepTech Modals (Lazy Loaded) */}
+      <Suspense fallback={null}>
+      <RoomShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+      />
+      <PlotBranchModal
+        isOpen={isBranchModalOpen}
+        onClose={() => setIsBranchModalOpen(false)}
+        projectId={project?._id || project?.id || "default"} 
+        projectTitle={title}
+        onMergeComplete={(merged) => {
+          setContent(merged);
+        }}
+      />
+      <AuthorshipCertificateModal
+        isOpen={isCertificateModalOpen}
+        onClose={() => setIsCertificateModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        authorName={project?.author || "Tareq Masud"}
+      />
+      <PodcastAudioModal
+        isOpen={isPodcastModalOpen}
+        onClose={() => setIsPodcastModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        chapters={chapters}
+      />
+      <ResumableUploadModal
+        isOpen={isResumableModalOpen}
+        onClose={() => setIsResumableModalOpen(false)}
+        bucket="academic-manuscripts"
+      />
+      <BilingualSplitModal
+        isOpen={isBilingualModalOpen}
+        onClose={() => setIsBilingualModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        initialContent={content}
+      />
+      <NarrativeForecastModal
+        isOpen={isForecastModalOpen}
+        onClose={() => setIsForecastModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+      />
+      <InteractiveStoryGraphModal
+        isOpen={isStoryGraphModalOpen}
+        onClose={() => setIsStoryGraphModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+      />
+      <SemanticDeslopModal
+        isOpen={isDeslopModalOpen}
+        onClose={() => setIsDeslopModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentContent={content}
+        onApplyRevision={(newContent) => setContent(newContent)}
+      />
+      <DirectorsTabletopModal
+        isOpen={isTabletopModalOpen}
+        onClose={() => setIsTabletopModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
+      />
+      <ShortFictionPackageModal
+        isOpen={isShortFictionModalOpen}
+        onClose={() => setIsShortFictionModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onApplyChapters={(newChapters) => {
+          setChapters(newChapters as any);
+          if (newChapters.length > 0 && newChapters[0].content) {
+            setContent(newChapters.map((c) => `## ${c.title}\n\n${c.content}`).join("\n\n---\n\n"));
+          }
+        }}
+      />
+      <ChekhovGunModal
+        isOpen={isChekhovModalOpen}
+        onClose={() => setIsChekhovModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+      />
+      <LiteraryStyleDnaModal
+        isOpen={isStyleDnaModalOpen}
+        onClose={() => setIsStyleDnaModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        currentManuscriptText={content}
+        onApplyContinuation={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
+      />
+      <MultiverseSandboxModal
+        isOpen={isMultiverseModalOpen}
+        onClose={() => setIsMultiverseModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onInsertScene={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
+      />
+      <AutopilotDaemonModal
+        isOpen={isAutopilotModalOpen}
+        onClose={() => setIsAutopilotModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onApplyFixToManuscript={(before, after) => {
+          setContent((prev) => (prev ? prev.replace(before, after) : after));
+        }}
+      />
+      <StoryBibleHudModal
+        isOpen={isStoryBibleModalOpen}
+        onClose={() => setIsStoryBibleModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        onInsertProseToEditor={(prose) => setContent((prev) => (prev ? `${prev}\n\n${prose}` : prose))}
+      />
+      <VoiceCastingModal
+        isOpen={isVoiceCastingModalOpen}
+        onClose={() => setIsVoiceCastingModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <PhonemeTunerModal
+        isOpen={isPhonemeModalOpen}
+        onClose={() => setIsPhonemeModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <BinauralSoundscapeModal
+        isOpen={isSoundscapeModalOpen}
+        onClose={() => setIsSoundscapeModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <BookTokTeaserModal
+        isOpen={isBookTokModalOpen}
+        onClose={() => setIsBookTokModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <RoomBlockingModal
+        isOpen={isRoomBlockingModalOpen}
+        onClose={() => setIsRoomBlockingModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <ScriptStoryboardModal
+        isOpen={isScriptStoryboardModalOpen}
+        onClose={() => setIsScriptStoryboardModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        currentManuscriptText={content}
+        onInsertToManuscript={(insertedScript) => {
+          setContent((prev) => prev + "\n\n" + insertedScript);
+        }}
+      />
+      <RetentionRadarModal
+        isOpen={isRetentionRadarModalOpen}
+        onClose={() => setIsRetentionRadarModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <TensionEkgModal
+        isOpen={isTensionEkgModalOpen}
+        onClose={() => setIsTensionEkgModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <RelationshipGraphModal
+        isOpen={isRelationshipGraphModalOpen}
+        onClose={() => setIsRelationshipGraphModalOpen(false)}
+        projectId={project?._id || project?.id || "default"}
+        projectTitle={title}
+        currentManuscriptText={content}
+      />
+      <DialectTranspilerModal
+        isOpen={isDialectTranspilerModalOpen}
+        onClose={() => setIsDialectTranspilerModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(updated) => setContent(updated)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <ShowrunnersTableModal
+        isOpen={isShowrunnersModalOpen}
+        onClose={() => setIsShowrunnersModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(updated) => setContent(content + updated)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CharacterMessengerModal
+        isOpen={isCharacterMessengerModalOpen}
+        onClose={() => setIsCharacterMessengerModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(updated) => setContent(content + updated)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <BetaReadersModal
+        isOpen={isBetaReadersModalOpen}
+        onClose={() => setIsBetaReadersModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(updated) => setContent(updated)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CharacterDuetModal
+        isOpen={isCharacterDuetModalOpen}
+        onClose={() => setIsCharacterDuetModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <BlockCatalyzerModal
+        isOpen={isBlockCatalyzerModalOpen}
+        onClose={() => setIsBlockCatalyzerModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <SensoryPaletteModal
+        isOpen={isSensoryPaletteModalOpen}
+        onClose={() => setIsSensoryPaletteModalOpen(false)}
+        activeEditorText={content}
+        onApplyToManuscript={(inserted) => setContent(content + "\n\n" + inserted)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <MfaWorkshopModal
+        isOpen={isMfaWorkshopModalOpen}
+        onClose={() => setIsMfaWorkshopModalOpen(false)}
+        manuscriptText={content}
+        onApplyRevision={(revised) => setContent(content + "\n\n" + revised)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <StreamerModeModal
+        isOpen={isStreamerModeModalOpen}
+        onClose={() => setIsStreamerModeModalOpen(false)}
+        manuscriptText={content}
+        onApplyBranch={(branchText) => setContent(content + "\n\n" + branchText)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CognitiveFrictionModal
+        isOpen={isCognitiveFrictionModalOpen}
+        onClose={() => setIsCognitiveFrictionModalOpen(false)}
+        manuscriptText={content}
+        onApplyRevision={(revised) => setContent(revised)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <SurrealistDreamscapeModal
+        isOpen={isSurrealistModalOpen}
+        onClose={() => setIsSurrealistModalOpen(false)}
+        manuscriptText={content}
+        onApplyProse={(prose) => setContent(content + "\n\n" + prose)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <LoreWikiModal
+        isOpen={isLoreWikiModalOpen}
+        onClose={() => setIsLoreWikiModalOpen(false)}
+        manuscriptText={content}
+        onInsertLore={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <ChronoBraiderModal
+        isOpen={isChronoBraiderModalOpen}
+        onClose={() => setIsChronoBraiderModalOpen(false)}
+        manuscriptText={content}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <PlotDivergenceModal
+        isOpen={isPlotDivergenceModalOpen}
+        onClose={() => setIsPlotDivergenceModalOpen(false)}
+        manuscriptText={content}
+        onApplyDivergence={(prose) => setContent(content + prose)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <SpatialGpsModal
+        isOpen={isSpatialGpsModalOpen}
+        onClose={() => setIsSpatialGpsModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <ItemLedgerModal
+        isOpen={isItemLedgerModalOpen}
+        onClose={() => setIsItemLedgerModalOpen(false)}
+        manuscriptText={content}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <LivingEpilogueModal
+        isOpen={isLivingEpilogueModalOpen}
+        onClose={() => setIsLivingEpilogueModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CulturalOriginalityModal
+        isOpen={isCulturalOriginalityModalOpen}
+        onClose={() => setIsCulturalOriginalityModalOpen(false)}
+        manuscriptText={content}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <PrintPreflightModal
+        isOpen={isPrintPreflightModalOpen}
+        onClose={() => setIsPrintPreflightModalOpen(false)}
+        manuscriptText={content}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <BookJacketModal
+        isOpen={isBookJacketModalOpen}
+        onClose={() => setIsBookJacketModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <CipBarcodeModal
+        isOpen={isCipBarcodeModalOpen}
+        onClose={() => setIsCipBarcodeModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <WebnovelPaywallModal
+        isOpen={isWebnovelPaywallModalOpen}
+        onClose={() => setIsWebnovelPaywallModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <PolyglotMatrixModal
+        isOpen={isPolyglotMatrixModalOpen}
+        onClose={() => setIsPolyglotMatrixModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <ReadingScalerModal
+        isOpen={isReadingScalerModalOpen}
+        onClose={() => setIsReadingScalerModalOpen(false)}
+        onInsertProse={(snippet) => setContent(snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <RoyaltySplitModal
+        isOpen={isRoyaltySplitModalOpen}
+        onClose={() => setIsRoyaltySplitModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <LegalShieldModal
+        isOpen={isLegalShieldModalOpen}
+        onClose={() => setIsLegalShieldModalOpen(false)}
+        onInsertProse={(snippet) => setContent(content + snippet)}
+        projectId={project?._id || project?.id || "default"}
+      />
+      <Dialog open={isNarrationModalOpen} onOpenChange={setIsNarrationModalOpen}>
+        <DialogContent className="sm:max-w-xl p-4 bg-background">
+          <AudioNarrationPlayer
+            text={content}
+            title={title || "Chapter Narration"}
+          />
+        </DialogContent>
+      </Dialog>
+      {isDeepResearchModalOpen && (
+        <DeepResearchStudioModal
+          isOpen={isDeepResearchModalOpen}
+          onClose={() => setIsDeepResearchModalOpen(false)}
+          onInsertContent={(md) => setContent(content + "\n\n" + md)}
+        />
+      )}
+      </Suspense>
+      <UpgradeModal
+        open={isUpgradeModalOpen}
+        onOpenChange={setIsUpgradeModalOpen}
+        currentTier={subscription.tier}
       />
     </div>
   );

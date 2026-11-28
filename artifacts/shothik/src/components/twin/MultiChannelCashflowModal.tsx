@@ -270,6 +270,7 @@ export const MultiChannelCashflowModal: React.FC<MultiChannelCashflowModalProps>
   }, [isOpen]);
 
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "m") {
         e.preventDefault();

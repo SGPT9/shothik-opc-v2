@@ -24,7 +24,7 @@ import TypingAnimation from "../common/TypingAnimation";
 import InputArea from "../presentation/InputAreas";
 import MetadataDisplay from "./MetaDataDisplay";
 import StarPromptCards from "./StarPromptCards";
-import { FooterCta } from "./SheetAgentPage";
+import FooterCta from "./SheetFooterCta";
 
 // Updated MessageBubble component
 const MessageBubble = ({

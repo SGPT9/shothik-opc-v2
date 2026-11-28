@@ -66,9 +66,12 @@ if ($LASTEXITCODE -ne 0) {
     Write-Host "  [X] Web Frontend build failed!" -ForegroundColor Red
     exit 1
 }
-$webDist = Join-Path $repoRoot "artifacts\shothik\dist\index.html"
+$webDist = Join-Path $repoRoot "artifacts\shothik\dist\public\index.html"
+if (-not (Test-Path $webDist)) {
+    $webDist = Join-Path $repoRoot "artifacts\shothik\dist\index.html"
+}
 if (Test-Path $webDist) {
-    Write-Host "  [OK] Web Frontend compiled -> artifacts/shothik/dist/" -ForegroundColor Green
+    Write-Host "  [OK] Web Frontend compiled -> $webDist" -ForegroundColor Green
 }
 
 $sw.Stop()

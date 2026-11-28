@@ -35,6 +35,7 @@ import {
   Rocket,
   Sparkles,
   TrendingUp,
+  Users,
 } from "lucide-react";
 import { Link } from "wouter";
 import { usePathname } from "@/lib/navigation";
@@ -48,9 +49,11 @@ import ThemeToggle from "./ThemeToggle";
 import { useTranslation } from "@/i18n";
 import { OfflineSyncStatusBadge } from "@/components/sync/OfflineSyncStatusBadge";
 import { useAuth } from "@/providers/AuthProvider";
+import { fetchAgents } from "@/services/agent-team.service";
+import { useCreditBalance } from "@/hooks/useCreditBalance";
 
-
-const NotificationBell = lazy(() => import("@/components/forum/NotificationBell"));
+const NotificationBell = lazy(() => import("@/components/community/NotificationBell"));
+const TeamModal = lazy(() => import("@/components/team/TeamModal"));
 
 const navLinkKeys = [
   { key: "nav.about", href: "/about-us" },
@@ -88,13 +91,22 @@ export default function Header({ className, layout }) {
   const { accessToken, user: reduxUser } = useSelector((state) => state.auth);
   const { user: authUser } = useAuth();
   const user = reduxUser || authUser;
-  const userCredits = authUser?.credits ?? reduxUser?.credits ?? 550;
+  const userCredits = useCreditBalance(authUser?.credits ?? reduxUser?.credits) ?? 0;
   const { theme } = useSelector((state) => state.settings);
   const [mounted, setMounted] = useState(false);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [agentCount, setAgentCount] = useState(3);
   const { t } = useTranslation();
 
   useEffect(() => {
     setMounted(true);
+    fetchAgents()
+      .then((data) => {
+        if (Array.isArray(data) && data.length > 0) {
+          setAgentCount(data.length);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const { isLoading } = useGetUserQuery(undefined, {
@@ -150,6 +162,18 @@ export default function Header({ className, layout }) {
 
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-2">
+              {/* 👥 Autonomous Team Badge */}
+              <button
+                type="button"
+                onClick={() => setTeamModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-100 dark:bg-black/60 border border-zinc-300 dark:border-white/[0.12] hover:border-indigo-500/50 text-zinc-950 dark:text-zinc-100 hover:text-indigo-600 dark:hover:text-indigo-300 font-mono text-xs font-bold transition no-underline shadow-2xs backdrop-blur-xl cursor-pointer"
+                title="Autonomous Agent Team & Orchestration Studio (Click to configure)"
+                data-testid="header-team-badge"
+              >
+                <Users className="h-3.5 w-3.5 text-indigo-500 dark:text-indigo-400" />
+                <span>{agentCount} Agents</span>
+              </button>
+
               {/* ⚡ Credit Badge */}
               <Link
                 href="/pricing"
@@ -215,6 +239,12 @@ export default function Header({ className, layout }) {
           theme={theme}
           setTheme={(value) => dispatch(updateTheme(value))}
         />
+
+        <Suspense fallback={null}>
+          {teamModalOpen && (
+            <TeamModal isOpen={teamModalOpen} onClose={() => setTeamModalOpen(false)} />
+          )}
+        </Suspense>
       </header>
     );
   }

@@ -1,6 +1,6 @@
 
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 function useQuery(_ref: unknown, _args?: unknown) { return null; }
 import { api } from "@/convex/_generated/api";
 import { Link } from "wouter";
