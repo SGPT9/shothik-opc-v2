@@ -2,9 +2,11 @@ import fs from "fs";
 import path from "path";
 import logger from "./src/logger.js";
 
-const DATABASE_URL =
-  process.env.DATABASE_URL ||
-  "postgresql://postgres:13ff0168da9026128eaf9c8df528eeed@ers8j28a.ap-southeast.database.insforge.app:5432/insforge?sslmode=require";
+const DATABASE_URL = process.env.INSFORGE_DATABASE_URL || process.env.DATABASE_URL || "";
+if (!DATABASE_URL) {
+  console.error("INSFORGE_DATABASE_URL (or DATABASE_URL) must be set.");
+  process.exit(1);
+}
 
 console.log("============================================================");
 console.log(" [InsForge Postgres Schema Migration Runner]");

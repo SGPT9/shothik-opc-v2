@@ -2,6 +2,9 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import app from "../../app.js";
+import { deerFlowSkillsAvailable } from "../../test-utils/live-services.js";
+
+const hasDeerFlow = deerFlowSkillsAvailable();
 
 describe("MCP Gateway Routes (/api/mcp)", () => {
   let server: Server;
@@ -48,7 +51,7 @@ describe("MCP Gateway Routes (/api/mcp)", () => {
     expect(json.content).toContain("Server node and port audit");
   });
 
-  it("GET /api/mcp/capabilities discovers DeerFlow 2.0 research and data skills", async () => {
+  it.skipIf(!hasDeerFlow)("GET /api/mcp/capabilities discovers DeerFlow 2.0 research and data skills", async () => {
     const res = await fetch(`${baseUrl}/api/mcp/capabilities`);
     expect(res.status).toBe(200);
     const json = (await res.json()) as any;
@@ -61,7 +64,7 @@ describe("MCP Gateway Routes (/api/mcp)", () => {
     expect(hasSlr).toBe(true);
   });
 
-  it("GET /api/mcp/capabilities/:id retrieves DeerFlow deep-research metadata and source", async () => {
+  it.skipIf(!hasDeerFlow)("GET /api/mcp/capabilities/:id retrieves DeerFlow deep-research metadata and source", async () => {
     const res = await fetch(`${baseUrl}/api/mcp/capabilities/deep-research`);
     expect(res.status).toBe(200);
     const json = (await res.json()) as any;

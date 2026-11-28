@@ -1,6 +1,10 @@
 import pg from "pg";
 
-const DATABASE_URL = "postgresql://postgres:13ff0168da9026128eaf9c8df528eeed@ers8j28a.ap-southeast.database.insforge.app:5432/insforge?sslmode=require";
+const DATABASE_URL = process.env.INSFORGE_DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error("INSFORGE_DATABASE_URL is not set. Export it before running this script.");
+  process.exit(1);
+}
 
 async function provisionInsForgeBuckets() {
   console.log("=================================================");
