@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { db, auditJournalEntriesTable } from "@workspace/db";
+import { desc } from "drizzle-orm";
 
 /**
  * Shothik NBR Statutory Audit Dossier & Double-Entry Ledger Reconciler (Slice 34)
@@ -36,7 +38,8 @@ export interface JournalEntry {
     | "vat_mushak_6_3"
     | "customs_duty"
     | "franchise_royalty"
-    | "courier_payout";
+    | "courier_payout"
+    | "mfs_payout";
   postedAt: string;
   memo: string;
   lines: JournalEntryLine[];
@@ -232,7 +235,78 @@ export class AuditLedgerEngine {
     };
 
     this.journals.set(entry.entryId, entry);
+
+    // Persist double-entry transaction directly to PostgreSQL audit_journal_entries table via Drizzle ORM
+    try {
+      db.insert(auditJournalEntriesTable)
+        .values({
+          entryId: entry.entryId,
+          transactionRef: entry.transactionRef,
+          transactionType: entry.transactionType,
+          memo: entry.memo,
+          lines: entry.lines,
+          totalDebitBdt: String(entry.totalDebitBdt),
+          totalCreditBdt: String(entry.totalCreditBdt),
+          isBalanced: entry.isBalanced,
+          auditHash: entry.auditHash,
+          initiatorKind: entry.initiatorKind,
+          initiatorId: entry.initiatorId,
+          postedAt: new Date(entry.postedAt),
+        })
+        .onConflictDoNothing()
+        .catch(() => {
+          // In-memory ledger remains authoritative fallback
+        });
+    } catch {
+      // Non-blocking in-memory fallback
+    }
+
     return { success: true, entry };
+  }
+
+  /**
+   * Post a balanced double-entry transaction to the General Ledger with awaited PostgreSQL persistence (WAL)
+   */
+  static async postJournalEntryAsync(params: {
+    transactionRef: string;
+    transactionType: JournalEntry["transactionType"];
+    memo: string;
+    initiatorKind?: InitiatorKind;
+    initiatorId?: string;
+    lines: {
+      accountCode: string;
+      debitBdt: number;
+      creditBdt: number;
+      description?: string;
+    }[];
+  }): Promise<{ success: boolean; entry?: JournalEntry; error?: string }> {
+    const result = this.postJournalEntry(params);
+    if (!result.success || !result.entry) {
+      return result;
+    }
+
+    try {
+      await db.insert(auditJournalEntriesTable)
+        .values({
+          entryId: result.entry.entryId,
+          transactionRef: result.entry.transactionRef,
+          transactionType: result.entry.transactionType,
+          memo: result.entry.memo,
+          lines: result.entry.lines,
+          totalDebitBdt: String(result.entry.totalDebitBdt),
+          totalCreditBdt: String(result.entry.totalCreditBdt),
+          isBalanced: result.entry.isBalanced,
+          auditHash: result.entry.auditHash,
+          initiatorKind: result.entry.initiatorKind,
+          initiatorId: result.entry.initiatorId,
+          postedAt: new Date(result.entry.postedAt),
+        })
+        .onConflictDoNothing();
+    } catch {
+      // In-memory ledger remains authoritative fallback
+    }
+
+    return result;
   }
 
   /**
@@ -354,6 +428,52 @@ export class AuditLedgerEngine {
       list = list.filter((j) => (j.initiatorKind || "person") === filter.initiatorKind);
     }
     return list;
+  }
+
+  /**
+   * Asynchronously list journal entries, falling back to PostgreSQL if memory is empty
+   */
+  static async listJournalsAsync(filter?: { nobodyWatching?: boolean; initiatorKind?: InitiatorKind }): Promise<JournalEntry[]> {
+    const memoryList = this.listJournals(filter);
+    if (memoryList.length > 0) {
+      return memoryList;
+    }
+
+    try {
+      const rows = await db
+        .select()
+        .from(auditJournalEntriesTable)
+        .orderBy(desc(auditJournalEntriesTable.postedAt));
+
+      if (rows.length > 0) {
+        let entries: JournalEntry[] = rows.map((r) => ({
+          entryId: r.entryId,
+          transactionRef: r.transactionRef,
+          transactionType: r.transactionType as any,
+          postedAt: r.postedAt.toISOString(),
+          memo: r.memo,
+          lines: r.lines as any,
+          totalDebitBdt: Number(r.totalDebitBdt),
+          totalCreditBdt: Number(r.totalCreditBdt),
+          isBalanced: r.isBalanced,
+          auditHash: r.auditHash,
+          initiatorKind: (r.initiatorKind as any) || "person",
+          initiatorId: r.initiatorId ?? undefined,
+        }));
+
+        if (filter?.nobodyWatching) {
+          entries = entries.filter((j) => (j.initiatorKind || "person") !== "person");
+        }
+        if (filter?.initiatorKind) {
+          entries = entries.filter((j) => (j.initiatorKind || "person") === filter.initiatorKind);
+        }
+        return entries;
+      }
+    } catch {
+      // In-memory fallback
+    }
+
+    return [];
   }
 
   /**

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { db, ivrCallRecordsTable, courierConsignmentsTable } from "@workspace/db";
 
 export interface OrderItem {
   sku: string;
@@ -99,6 +100,21 @@ export class CodIvrEngine {
    */
   public static generateIVRCallPlan(order: CODOrderInput): IVRCallPlan {
     const callId = `IVR-${Date.now()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    try {
+      db.insert(ivrCallRecordsTable)
+        .values({
+          callId,
+          orderId: order.orderId,
+          customerPhone: order.customerPhone,
+          customerName: order.customerName,
+          codAmountBDT: String(order.codAmount),
+          callStatus: "scheduled",
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
     const dialect = order.dialect || "dhaka_standard";
     const itemListStr = order.items.map(i => `${i.quantity}x ${i.name}`).join(", ");
 
@@ -326,6 +342,28 @@ export class CodIvrEngine {
     });
 
     const verificationHashSha256 = createHash("sha256").update(sealPayload).digest("hex");
+
+    try {
+      db.insert(courierConsignmentsTable)
+        .values({
+          consignmentId,
+          orderId: order.orderId,
+          courierProvider,
+          trackingCode,
+          customerName: order.customerName,
+          customerPhone: order.customerPhone,
+          deliveryAddress: `${parsedAddress.roadAndHouse}, ${parsedAddress.thana}, ${parsedAddress.district}`,
+          zone: parsedAddress.zoneType,
+          codAmountBDT: String(order.codAmount),
+          deliveryChargeBDT: String(parsedAddress.standardDeliveryChargeBDT),
+          status: "booked_ready_for_pickup",
+          verificationHashSha256,
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     return {
       consignmentId,

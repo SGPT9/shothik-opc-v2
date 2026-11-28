@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  sharedDraft: "",
   paraphrase: { input: {}, output: {} },
   humanize: { input: {}, output: {} },
   grammarFix: { input: {}, output: {} },
@@ -12,6 +13,9 @@ const inputOutputSlice = createSlice({
   name: "inputOutput",
   initialState,
   reducers: {
+    setSharedDraft: (state, action) => {
+      state.sharedDraft = action.payload || "";
+    },
     setParaphraseValues: (state, action) => {
       state.paraphrase[action.payload.type] = { ...action.payload.values };
     },
@@ -31,6 +35,7 @@ const inputOutputSlice = createSlice({
 });
 
 export const {
+  setSharedDraft,
   setParaphraseValues,
   setHumanizedValues,
   setGrammarFixValues,

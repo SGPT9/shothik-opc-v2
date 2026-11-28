@@ -63,7 +63,7 @@ router.get(["/health/readiness", "/healthz/readiness"], (_req: Request, res: Res
 /**
  * Deep diagnostic probe covering telemetry, memory, and subsystem operational status
  */
-router.get(["/health/deep", "/api/v1/health/deep"], (_req: Request, res: Response) => {
+router.get(["/health/deep", "/v1/health/deep", "/api/v1/health/deep"], (_req: Request, res: Response) => {
   const mem = process.memoryUsage();
   res.status(200).json({
     platform: "Shothik Unified AI Platform",

@@ -3,6 +3,9 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { logger } from "../lib/logger";
+import { SUPABASE_PROJECT_URL, verifySupabaseAsymmetricSignature } from "../lib/supabase-jwks";
+import { db, userCreditsTable, userProfilesTable, userSubscriptionsTable, userPreferencesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
@@ -43,7 +46,112 @@ function verifyPassword(password: string, combined: string): boolean {
   }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "shothik_unified_auth_secret_2026_bd";
+const isProduction = process.env.NODE_ENV === "production";
+if (isProduction && !process.env.JWT_SECRET) {
+  throw new Error("[Auth Security] CRITICAL: JWT_SECRET environment variable must be explicitly configured when NODE_ENV=production.");
+}
+const JWT_SECRET = process.env.JWT_SECRET || "shothik_dev_only_ephemeral_jwt_secret";
+// The Supabase local-dev demo secret is public knowledge; never accept it in production,
+// otherwise anyone could forge a valid HS256 token.
+const SUPABASE_PUBLIC_DEMO_JWT = "super-secret-jwt-token-with-at-least-32-characters-long";
+const SUPABASE_JWT_SECRET = isProduction
+  ? (process.env.SUPABASE_JWT_SECRET && process.env.SUPABASE_JWT_SECRET !== SUPABASE_PUBLIC_DEMO_JWT
+      ? process.env.SUPABASE_JWT_SECRET
+      : "")
+  : process.env.SUPABASE_JWT_SECRET || SUPABASE_PUBLIC_DEMO_JWT;
+if (isProduction && JWT_SECRET.length < 32) {
+  throw new Error("[Auth Security] CRITICAL: JWT_SECRET must be at least 32 characters in production.");
+}
+const TRUSTED_SUPABASE_ISSUERS = new Set([
+  `${SUPABASE_PROJECT_URL}/auth/v1`,
+  "https://xgnzsikvguswhtozvokx.supabase.co/auth/v1",
+  "http://127.0.0.1:54321/auth/v1",
+  "http://localhost:54321/auth/v1",
+]);
+
+function syncUserToPostgres(user: StoredUser): void {
+  try {
+    db.insert(userProfilesTable)
+      .values({
+        id: user.id,
+        email: user.email.toLowerCase(),
+        name: user.name,
+        role: user.role || "user",
+        country: user.country || "BD",
+        credits: user.credits ?? 500,
+        tier: user.tier || "starter",
+        authProvider: user.authProvider || "supabase",
+        passwordHash: user.passwordHash || null,
+      })
+      .onConflictDoUpdate({
+        target: userProfilesTable.id,
+        set: {
+          email: user.email.toLowerCase(),
+          name: user.name,
+          role: user.role || "user",
+          country: user.country || "BD",
+          credits: user.credits ?? 500,
+          tier: user.tier || "starter",
+          updatedAt: new Date(),
+        },
+      })
+      .catch(() => {});
+
+    db.insert(userCreditsTable)
+      .values({
+        userId: user.id,
+        balance: user.credits ?? 500,
+        lifetimeEarned: user.credits ?? 500,
+        lifetimeSpent: 0,
+      })
+      .onConflictDoNothing()
+      .catch(() => {});
+
+    db.insert(userSubscriptionsTable)
+      .values({
+        userId: user.id,
+        tier: user.tier || "starter",
+        status: "active",
+      })
+      .onConflictDoNothing()
+      .catch(() => {});
+  } catch {
+    // non-blocking write-through
+  }
+}
+
+function ensureSupabaseUserHydrated(claims: {
+  sub: string;
+  email: string;
+  user_metadata?: Record<string, any>;
+  role?: string;
+}): StoredUser {
+  const normalizedEmail = claims.email.toLowerCase();
+  const existing = usersById.get(claims.sub) || usersByEmail.get(normalizedEmail);
+  if (existing) {
+    return existing;
+  }
+
+  const meta = claims.user_metadata || {};
+  const hydrated: StoredUser = {
+    id: claims.sub,
+    _id: claims.sub,
+    name: meta.name || meta.full_name || normalizedEmail.split("@")[0] || "Shothik User",
+    email: normalizedEmail,
+    role: meta.role || (claims.role === "service_role" ? "admin" : "user"),
+    country: meta.country || "BD",
+    credits: typeof meta.credits === "number" ? meta.credits : 500,
+    tier: meta.tier || "starter",
+    authProvider: "supabase",
+    createdAt: new Date().toISOString(),
+  };
+
+  usersById.set(hydrated.id, hydrated);
+  usersByEmail.set(hydrated.email, hydrated);
+  persistUsers();
+  syncUserToPostgres(hydrated);
+  return hydrated;
+}
 
 function generateToken(userId: string, email: string): string {
   const payload = Buffer.from(
@@ -57,12 +165,79 @@ function generateToken(userId: string, email: string): string {
   return `${payload}.${signature}`;
 }
 
-function verifyToken(token: string): { userId: string; email: string } | null {
+function verifySupabaseJwt(parts: [string, string, string]): { userId: string; email: string } | null {
   try {
-    const [payload, signature] = token.split(".");
+    const [headerB64, payloadB64, signatureB64] = parts;
+    const header = JSON.parse(Buffer.from(headerB64, "base64url").toString("utf-8"));
+    const payload = JSON.parse(Buffer.from(payloadB64, "base64url").toString("utf-8"));
+
+    const userId = payload.sub || payload.userId;
+    const email = payload.email || (userId ? `${userId}@shothik.local` : "");
+    if (!userId || typeof userId !== "string") return null;
+
+    // Check expiration (Supabase exp is in seconds; handle ms if > 1e11)
+    if (typeof payload.exp === "number") {
+      const expMs = payload.exp > 1e11 ? payload.exp : payload.exp * 1000;
+      if (expMs < Date.now()) return null;
+    }
+
+    const signingInput = `${headerB64}.${payloadB64}`;
+    let signatureVerified = false;
+
+    if (header.alg === "HS256") {
+      for (const secret of [SUPABASE_JWT_SECRET, JWT_SECRET]) {
+        if (!secret) continue;
+        const expectedSig = crypto.createHmac("sha256", secret).update(signingInput).digest("base64url");
+        const sigBuf = Buffer.from(signatureB64);
+        const expectedBuf = Buffer.from(expectedSig);
+        if (sigBuf.length === expectedBuf.length && crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+          signatureVerified = true;
+          break;
+        }
+      }
+    }
+
+    // Supabase Cloud signs user tokens with asymmetric keys (ES256/RS256); verify against the
+    // project's public JWKS. Never accept a token on issuer/audience claims alone.
+    if (!signatureVerified && (header.alg === "ES256" || header.alg === "RS256")) {
+      signatureVerified =
+        typeof payload.iss === "string" &&
+        TRUSTED_SUPABASE_ISSUERS.has(payload.iss) &&
+        verifySupabaseAsymmetricSignature(header, signingInput, signatureB64);
+    }
+
+    if (!signatureVerified) return null;
+
+    ensureSupabaseUserHydrated({
+      sub: userId,
+      email,
+      user_metadata: payload.user_metadata,
+      role: payload.role,
+    });
+
+    return { userId, email };
+  } catch {
+    return null;
+  }
+}
+
+export function verifyToken(token: string): { userId: string; email: string } | null {
+  try {
+    const parts = token.split(".");
+    // 1. Standard 3-part RFC 7519 JWT (Supabase Auth)
+    if (parts.length === 3) {
+      return verifySupabaseJwt(parts as [string, string, string]);
+    }
+
+    // 2. Legacy 2-part HMAC token (Backward-compatible bridge & Vitest suite)
+    const [payload, signature] = parts;
     if (!payload || !signature) return null;
     const expectedSig = crypto.createHmac("sha256", JWT_SECRET).update(payload).digest("base64url");
-    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSig))) return null;
+    const sigBuf = Buffer.from(signature);
+    const expectedBuf = Buffer.from(expectedSig);
+    if (sigBuf.length !== expectedBuf.length || !crypto.timingSafeEqual(sigBuf, expectedBuf)) {
+      return null;
+    }
     const data = JSON.parse(Buffer.from(payload, "base64url").toString("utf-8"));
     if (data.exp && data.exp < Date.now()) return null;
     return { userId: data.userId, email: data.email };
@@ -71,17 +246,30 @@ function verifyToken(token: string): { userId: string; email: string } | null {
   }
 }
 
+export function verifyAuthRequest(req: Request): { userId: string; email: string } | null {
+  const token = extractToken(req);
+  if (!token) return null;
+  return verifyToken(token);
+}
+
+let persistTimer: NodeJS.Timeout | null = null;
 function persistUsers(): void {
-  try {
-    const dir = path.dirname(USERS_FILE_PATH);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  if (persistTimer) clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    try {
+      const dir = path.dirname(USERS_FILE_PATH);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      const allUsers = Array.from(usersById.values());
+      fs.promises.writeFile(USERS_FILE_PATH, JSON.stringify(allUsers, null, 2), "utf-8").catch((err: any) => {
+        logger.error({ error: err?.message }, "[Auth] Failed to persist users file asynchronously");
+      });
+    } catch (err: any) {
+      logger.error({ error: err.message }, "[Auth] Failed to schedule users file persistence");
     }
-    const allUsers = Array.from(usersById.values());
-    fs.writeFileSync(USERS_FILE_PATH, JSON.stringify(allUsers, null, 2), "utf-8");
-  } catch (err: any) {
-    logger.error({ error: err.message }, "[Auth] Failed to persist users file");
-  }
+  }, 50);
+  persistTimer.unref?.();
 }
 
 function loadUsers(): void {
@@ -98,44 +286,78 @@ function loadUsers(): void {
     logger.warn({ error: err.message }, "[Auth] Initializing fresh users table");
   }
 
-  // Pre-seed developer and tester accounts if not present
-  if (!usersByEmail.has("dev@shothik.local")) {
-    const devUser: StoredUser = {
-      id: "dev_user_local",
-      _id: "dev_user_local",
-      name: "Developer",
-      email: "dev@shothik.local",
-      passwordHash: hashPassword("Developer123!"),
-      role: "admin",
-      country: "BD",
-      credits: 1500,
-      tier: "enterprise",
-      authProvider: "local_dev",
-      createdAt: new Date().toISOString(),
-    };
-    usersByEmail.set(devUser.email.toLowerCase(), devUser);
-    usersById.set(devUser.id, devUser);
+  // Only pre-seed local developer/tester accounts outside production
+  if (!isProduction) {
+    const devSeedPassword = process.env.DEV_SEED_PASSWORD || crypto.randomBytes(16).toString("hex");
+    if (!usersByEmail.has("dev@shothik.local")) {
+      const devUser: StoredUser = {
+        id: "dev_user_local",
+        _id: "dev_user_local",
+        name: "Developer",
+        email: "dev@shothik.local",
+        passwordHash: hashPassword(devSeedPassword),
+        role: "admin",
+        country: "BD",
+        credits: 1500,
+        tier: "enterprise",
+        authProvider: "local_dev",
+        createdAt: new Date().toISOString(),
+      };
+      usersByEmail.set(devUser.email.toLowerCase(), devUser);
+      usersById.set(devUser.id, devUser);
+    }
+
+    if (!usersByEmail.has("tester@shothik.ai")) {
+      const testerUser: StoredUser = {
+        id: "usr_tester_shothik_01",
+        _id: "usr_tester_shothik_01",
+        name: "Shothik Beta Tester",
+        email: "tester@shothik.ai",
+        passwordHash: hashPassword(devSeedPassword),
+        role: "user",
+        country: "BD",
+        credits: 500,
+        tier: "starter",
+        authProvider: "credentials",
+        createdAt: new Date().toISOString(),
+      };
+      usersByEmail.set(testerUser.email.toLowerCase(), testerUser);
+      usersById.set(testerUser.id, testerUser);
+    }
+
+    persistUsers();
   }
 
-  if (!usersByEmail.has("tester@shothik.ai")) {
-    const testerUser: StoredUser = {
-      id: "usr_tester_shothik_01",
-      _id: "usr_tester_shothik_01",
-      name: "Shothik Beta Tester",
-      email: "tester@shothik.ai",
-      passwordHash: hashPassword("Tester123!"),
-      role: "user",
-      country: "BD",
-      credits: 500,
-      tier: "starter",
-      authProvider: "credentials",
-      createdAt: new Date().toISOString(),
-    };
-    usersByEmail.set(testerUser.email.toLowerCase(), testerUser);
-    usersById.set(testerUser.id, testerUser);
+  // Hydrate existing user profiles from PostgreSQL (public.user_profiles) asynchronously
+  try {
+    db.select()
+      .from(userProfilesTable)
+      .limit(500)
+      .then((rows) => {
+        for (const r of rows) {
+          if (!usersById.has(r.id)) {
+            const hydrated: StoredUser = {
+              id: r.id,
+              _id: r.id,
+              name: r.name,
+              email: r.email.toLowerCase(),
+              passwordHash: r.passwordHash || undefined,
+              role: r.role || "user",
+              country: r.country || "BD",
+              credits: r.credits ?? 500,
+              tier: r.tier || "starter",
+              authProvider: r.authProvider || "supabase",
+              createdAt: r.createdAt ? r.createdAt.toISOString() : new Date().toISOString(),
+            };
+            usersById.set(hydrated.id, hydrated);
+            usersByEmail.set(hydrated.email, hydrated);
+          }
+        }
+      })
+      .catch(() => {});
+  } catch {
+    // ignore if db not ready during unit test boot
   }
-
-  persistUsers();
 }
 
 // Initialize users on boot
@@ -146,7 +368,7 @@ function sanitizeUser(user: StoredUser) {
   return rest;
 }
 
-function extractToken(req: Request): string | null {
+export function extractToken(req: Request): string | null {
   const authHeader = req.headers["authorization"] || req.headers["Authorization"];
   if (typeof authHeader === "string" && authHeader.startsWith("Bearer ")) {
     return authHeader.slice(7).trim();
@@ -155,11 +377,24 @@ function extractToken(req: Request): string | null {
   if (typeof tokenHeader === "string" && tokenHeader.trim()) {
     return tokenHeader.trim();
   }
-  // Check cookie if cookie-parser is mounted
   if ((req as any).cookies?.shothik_session) {
     return (req as any).cookies.shothik_session;
   }
   return null;
+}
+
+function sanitizeRedirectPath(rawNext: unknown): string {
+  if (typeof rawNext !== "string" || !rawNext.trim()) return "/twin";
+  try {
+    const decoded = decodeURIComponent(rawNext.trim());
+    // Must be a strictly local relative path starting with single '/' and no control chars
+    if (decoded.startsWith("/") && !decoded.startsWith("//") && !/[\r\n<>"'`\\]/.test(decoded)) {
+      return decoded;
+    }
+  } catch {
+    // ignore malformed URI component
+  }
+  return "/twin";
 }
 
 /**
@@ -197,7 +432,7 @@ router.post(["/auth/sign-up", "/v1/auth/sign-up", "/sign-up"], (req: Request, re
       passwordHash: hashPassword(password),
       role: "user",
       country: String(country || "BD"),
-      credits: 500, // Welcome gift of 500 credits
+      credits: 500,
       tier: "starter",
       authProvider: "credentials",
       createdAt: new Date().toISOString(),
@@ -206,6 +441,7 @@ router.post(["/auth/sign-up", "/v1/auth/sign-up", "/sign-up"], (req: Request, re
     usersByEmail.set(normalizedEmail, newUser);
     usersById.set(userId, newUser);
     persistUsers();
+    syncUserToPostgres(newUser);
 
     const token = generateToken(userId, normalizedEmail);
 
@@ -274,7 +510,7 @@ router.post(["/auth/sign-out", "/v1/auth/sign-out", "/sign-out"], (_req: Request
 
 /**
  * GET /api/auth/session
- * Returns authenticated user context based on token, header, or Cloudflare Access
+ * Returns authenticated user context based on verified token
  */
 router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res: Response) => {
   const token = extractToken(req);
@@ -292,9 +528,10 @@ router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res
     }
   }
 
-  // Cloudflare Zero Trust header support
+  // Cloudflare Zero Trust header support (requires both email and JWT assertion header, plus explicit CF_ACCESS_ENABLED)
   const cfEmail = req.headers["cf-access-authenticated-user-email"] as string | undefined;
-  if (cfEmail) {
+  const cfJwtAssertion = req.headers["cf-access-jwt-assertion"] as string | undefined;
+  if (cfEmail && cfJwtAssertion && process.env.CF_ACCESS_ENABLED === "true") {
     let user = usersByEmail.get(cfEmail.toLowerCase());
     if (!user) {
       const userId = `cf_usr_${cfEmail.replace(/[^a-zA-Z0-9]/g, "_")}`;
@@ -320,8 +557,8 @@ router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res
     });
   }
 
-  // Fallback dev account if explicitly requested via query or header
-  const isDevExplicit = req.query.dev === "1" || req.headers["x-dev-mode"] === "true";
+  // Fallback dev account ONLY allowed when NODE_ENV !== 'production'
+  const isDevExplicit = !isProduction && (req.query.dev === "1" || req.headers["x-dev-mode"] === "true");
   if (isDevExplicit) {
     const devUser = usersByEmail.get("dev@shothik.local");
     return res.status(200).json({
@@ -341,12 +578,19 @@ router.get(["/auth/session", "/v1/auth/session", "/session"], (req: Request, res
 
 /**
  * GET /api/auth/oauth/google
- * Test Google sign-in simulation for immediate tester onboarding
+ * Test Google sign-in simulation for local/dev tester onboarding (disabled in production unless ALLOW_DEV_OAUTH_SIMULATION=true)
  */
 router.get(["/auth/oauth/google", "/v1/auth/oauth/google"], (req: Request, res: Response) => {
-  const nextPath = (req.query.next as string) || "/twin";
-  
-  // Provision or retrieve demo Google tester
+  if (isProduction && process.env.ALLOW_DEV_OAUTH_SIMULATION !== "true") {
+    res.status(403).json({
+      success: false,
+      message: "Simulated Google OAuth is disabled in production. Configure real OAuth credentials.",
+    });
+    return;
+  }
+
+  const safeNextPath = sanitizeRedirectPath(req.query.next);
+
   const googleEmail = "tester.google@shothik.ai";
   let user = usersByEmail.get(googleEmail);
   if (!user) {
@@ -370,7 +614,6 @@ router.get(["/auth/oauth/google", "/v1/auth/oauth/google"], (req: Request, res: 
 
   const token = generateToken(user.id, user.email);
 
-  // Return a small HTML redirect that writes the token into localStorage and forwards to the app
   res.send(`
     <!DOCTYPE html>
     <html>
@@ -381,10 +624,10 @@ router.get(["/auth/oauth/google", "/v1/auth/oauth/google"], (req: Request, res: 
           <p>Redirecting to your workspace...</p>
         </div>
         <script>
-          localStorage.setItem("jwt_token", "${token}");
-          localStorage.setItem("accessToken", "${token}");
+          localStorage.setItem("jwt_token", ${JSON.stringify(token)});
+          localStorage.setItem("accessToken", ${JSON.stringify(token)});
           localStorage.setItem("shothik_user", ${JSON.stringify(JSON.stringify(sanitizeUser(user)))});
-          window.location.replace("${decodeURIComponent(nextPath)}");
+          window.location.replace(${JSON.stringify(safeNextPath)});
         </script>
       </body>
     </html>
@@ -401,6 +644,10 @@ router.post("/auth/convex-token", (req: Request, res: Response) => {
         return res.status(200).json({ token, user: sanitizeUser(user) });
       }
     }
+  }
+
+  if (isProduction) {
+    return res.status(401).json({ success: false, message: "Unauthorized." });
   }
 
   return res.status(200).json({
@@ -443,6 +690,12 @@ router.post(["/auth/login", "/v1/auth/login", "/login"], (req: Request, res: Res
     const { email, password, oneTapUser } = req.body || {};
 
     if (oneTapUser && email) {
+      if (isProduction) {
+        return res.status(401).json({
+          success: false,
+          message: "Unverified One-Tap login is disabled in production.",
+        });
+      }
       const normalizedEmail = String(email).trim().toLowerCase();
       let user = usersByEmail.get(normalizedEmail);
       if (!user) {
@@ -599,11 +852,40 @@ router.post(["/user/profile-update", "/v1/user/profile-update"], (req: Request, 
   if (name && typeof name === "string") user.name = name.trim();
   if (country && typeof country === "string") user.country = country.trim();
   persistUsers();
+  syncUserToPostgres(user);
 
   return res.status(200).json({
     success: true,
     message: "Profile updated successfully.",
     data: sanitizeUser(user),
+    user: sanitizeUser(user),
+  });
+});
+
+/**
+ * POST /api/auth/supabase-sync
+ * Synchronizes a verified Supabase Auth session token with the backend profile & starter credits
+ */
+router.post(["/auth/supabase-sync", "/v1/auth/supabase-sync"], (req: Request, res: Response) => {
+  const token = extractToken(req) || req.body?.accessToken;
+  if (!token || typeof token !== "string") {
+    return res.status(401).json({ success: false, message: "Missing Supabase access token." });
+  }
+
+  const verified = verifyToken(token);
+  if (!verified) {
+    return res.status(401).json({ success: false, message: "Invalid or expired Supabase token." });
+  }
+
+  const user = ensureSupabaseUserHydrated({
+    sub: verified.userId,
+    email: verified.email,
+    user_metadata: req.body?.userMetadata || req.body?.user_metadata,
+  });
+
+  return res.status(200).json({
+    success: true,
+    token,
     user: sanitizeUser(user),
   });
 });
@@ -633,5 +915,61 @@ router.post(["/auth/logout", "/v1/auth/logout"], (_req: Request, res: Response) 
   return res.status(200).json({ success: true, message: "Logged out successfully." });
 });
 
-export default router;
+router.get(["/user/preferences", "/v1/user/preferences", "/account/preferences", "/v1/account/preferences"], async (req: Request, res: Response) => {
+  const token = extractToken(req);
+  const verified = token ? verifyToken(token) : null;
+  const userId = verified?.userId || String(req.headers["x-user-id"] || "usr_default");
+  try {
+    const [prefs] = await db
+      .select()
+      .from(userPreferencesTable)
+      .where(eq(userPreferencesTable.userId, userId))
+      .catch(() => []);
+    return res.status(200).json({
+      success: true,
+      data: prefs || {
+        userId,
+        locale: "bn-BD",
+        theme: "dark",
+        studioMode: "publishing_and_venture",
+        notifications: { email: true, whatsapp: true, nightshiftDigest: true },
+        taxProfile: {},
+      },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
 
+router.put(["/user/preferences", "/v1/user/preferences", "/account/preferences", "/v1/account/preferences"], async (req: Request, res: Response) => {
+  const token = extractToken(req);
+  const verified = token ? verifyToken(token) : null;
+  const userId = verified?.userId || String(req.headers["x-user-id"] || "usr_default");
+  const { locale = "bn-BD", theme = "dark", studioMode = "publishing_and_venture", notifications = {}, taxProfile = {} } = req.body || {};
+  try {
+    await db
+      .insert(userPreferencesTable)
+      .values({
+        userId,
+        locale,
+        theme,
+        studioMode,
+        notifications,
+        taxProfile,
+        updatedAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: userPreferencesTable.userId,
+        set: { locale, theme, studioMode, notifications, taxProfile, updatedAt: new Date() },
+      })
+      .catch(() => {});
+    return res.status(200).json({
+      success: true,
+      data: { userId, locale, theme, studioMode, notifications, taxProfile },
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+export default router;

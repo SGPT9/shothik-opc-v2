@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@insforge/sdk';
+import { createClient } from '@supabase/supabase-js';
 
-// Initialize InsForge client
-const client = createClient({
-  baseUrl: process.env.NEXT_PUBLIC_INSFORGE_URL || 'https://ers8j28a.ap-southeast.insforge.app',
-  anonKey: process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || 'anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b'
-});
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_INSFORGE_URL || 'https://xgnzsikvguswhtozvokx.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_INSFORGE_ANON_KEY || 'sb_publishable_pa1rLrMH8sLguAUhbTHfmw_wAcIY9hY';
+
+// Initialize Supabase client
+const client = createClient(supabaseUrl, supabaseAnonKey);
 
 export interface Channel {
   id: string;

@@ -44,7 +44,9 @@ export interface BackgroundJob<T = any> {
 export class TaskQueueManager extends EventEmitter {
   private static instance: TaskQueueManager;
   private jobs = new Map<string, BackgroundJob>();
-  private isProcessing = false;
+  private activeWorkerCount = 0;
+  private readonly maxConcurrency = 4;
+  private readonly maxInMemoryHistory = 1000;
 
   public static getInstance(): TaskQueueManager {
     if (!TaskQueueManager.instance) {
@@ -70,6 +72,20 @@ export class TaskQueueManager extends EventEmitter {
       if (existingInMemory) {
         logger.info({ idempotencyKey, jobId: existingInMemory.id }, "[TaskQueue] Idempotent job reused from memory");
         return existingInMemory as BackgroundJob<T>;
+      }
+    }
+
+    // Memory Leak Guard: Evict completed/DLQ jobs when reaching cap (Finding 7)
+    if (this.jobs.size >= this.maxInMemoryHistory) {
+      for (const [jobId, j] of this.jobs.entries()) {
+        if (j.status === "completed" || j.status === "dlq") {
+          this.jobs.delete(jobId);
+          if (this.jobs.size < this.maxInMemoryHistory - 100) break;
+        }
+      }
+      if (this.jobs.size >= this.maxInMemoryHistory) {
+        const oldestKey = this.jobs.keys().next().value;
+        if (oldestKey) this.jobs.delete(oldestKey);
       }
     }
 
@@ -151,12 +167,17 @@ export class TaskQueueManager extends EventEmitter {
    * Process next queued job (Durable execution worker)
    */
   private async processNext(): Promise<void> {
-    if (this.isProcessing) return;
+    if (this.activeWorkerCount >= this.maxConcurrency) return;
 
     const nextJob = Array.from(this.jobs.values()).find((j) => j.status === "queued");
     if (!nextJob) return;
 
-    this.isProcessing = true;
+    this.activeWorkerCount++;
+
+    // Parallel drain: spawn additional worker if concurrency limit allows
+    if (this.activeWorkerCount < this.maxConcurrency) {
+      setImmediate(() => this.processNext());
+    }
     nextJob.status = "active";
     nextJob.startedAt = new Date().toISOString();
     nextJob.progress = 10;
@@ -233,7 +254,7 @@ export class TaskQueueManager extends EventEmitter {
         }
       }
     } finally {
-      this.isProcessing = false;
+      this.activeWorkerCount = Math.max(0, this.activeWorkerCount - 1);
       // Continue processing next in queue
       setImmediate(() => this.processNext());
     }

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { ragEngine } from "../lib/rag-engine.js";
 import { logger } from "../lib/logger.js";
+import { resolveUserId } from "../middleware/auth.js";
 
 export const ragRouter = Router();
 
@@ -10,7 +11,8 @@ export const ragRouter = Router();
  */
 ragRouter.post("/v1/rag/ingest", async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, content, userId = "usr_default", sourceType = "text", sourceUrl, metadata } = req.body;
+    const { title, content, userId: bodyUserId = "usr_default", sourceType = "text", sourceUrl, metadata } = req.body;
+    const userId = resolveUserId(req, bodyUserId);
 
     if (!title || typeof title !== "string") {
       res.status(400).json({ success: false, error: "Missing or invalid 'title' (string required)" });
@@ -116,7 +118,7 @@ ragRouter.post("/v1/rag/rerank", async (req: Request, res: Response): Promise<vo
  */
 ragRouter.get("/v1/rag/documents", (req: Request, res: Response): void => {
   try {
-    const userId = (req.query.userId as string) || "usr_default";
+    const userId = resolveUserId(req, "usr_default");
     const documents = ragEngine.listDocuments(userId);
 
     res.json({
@@ -138,7 +140,7 @@ ragRouter.get("/v1/rag/documents", (req: Request, res: Response): void => {
 ragRouter.delete("/v1/rag/documents/:docId", async (req: Request, res: Response): Promise<void> => {
   try {
     const docId = String(req.params.docId);
-    const userId = typeof req.query.userId === "string" ? req.query.userId : "usr_default";
+    const userId = resolveUserId(req, typeof req.query.userId === "string" ? req.query.userId : "usr_default");
 
     const deleted = await ragEngine.deleteDocument(userId, docId);
     if (!deleted) {

@@ -1,5 +1,7 @@
 import fs from "fs";
 import path from "path";
+import { db, semanticMemoriesTable } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import { logger } from "./logger";
 
 export interface MemoryEntry {
@@ -162,6 +164,29 @@ export class MemoriSemanticMemoryStore implements MemoryProvider {
 
     this.memoryStore.set(userId, userMemories);
     this.saveToDisk();
+    try {
+      db.insert(semanticMemoriesTable)
+        .values({
+          id: entry.id,
+          userId: entry.userId,
+          category: entry.category,
+          content: entry.content,
+          keywords: entry.keywords,
+          metadata: entry.metadata || {},
+        })
+        .onConflictDoUpdate({
+          target: semanticMemoriesTable.id,
+          set: {
+            content: entry.content,
+            keywords: entry.keywords,
+            metadata: entry.metadata || {},
+            updatedAt: new Date(),
+          },
+        })
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     logger.info(`[semantic-memory] Memorized entry ${entry.id} for user ${userId} [category: ${category}]`);
     return entry;
@@ -227,6 +252,11 @@ export class MemoriSemanticMemoryStore implements MemoryProvider {
     if (filtered.length !== initialLen) {
       this.memoryStore.set(userId, filtered);
       this.saveToDisk();
+      try {
+        db.delete(semanticMemoriesTable).where(eq(semanticMemoriesTable.id, memoryId)).catch(() => {});
+      } catch {
+        // non-blocking
+      }
       logger.info(`[semantic-memory] Deleted memory ${memoryId} for user ${userId}`);
       return true;
     }

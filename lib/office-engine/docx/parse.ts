@@ -3459,19 +3459,19 @@ function convertibleHyperlink(instr: string): { href: string; tooltip?: string }
 /** every field instruction is EMBED/LINK (the object-field forms of legacy OLE) */
 function onlyOleFields(xml: string): boolean {
   if (xml.includes('<w:fldSimple')) return false
-  const instrs = xml.match(/<w:instrText[^>]*>[\s\S]*?<\/w:instrText>/g) ?? []
+  const instrs = (xml.match(/<w:instrText[^>]*>[\s\S]*?<\/w:instrText>/g) ?? []) as string[]
   if (instrs.length === 0) return false
-  return instrs.every((fragment) =>
+  return instrs.every((fragment: string) =>
     /^\s*(EMBED|LINK)\b/.test(decodeEntities(fragment.replace(/<[^>]+>/g, ''))),
   )
 }
 
 function onlyXeFields(xml: string): boolean {
   if (xml.includes('<w:fldSimple')) return false
-  const instrs = xml.match(/<w:instrText[^>]*>[\s\S]*?<\/w:instrText>/g) ?? []
+  const instrs = (xml.match(/<w:instrText[^>]*>[\s\S]*?<\/w:instrText>/g) ?? []) as string[]
   if (instrs.length === 0) return false
   let checkboxInstrs = 0
-  const ok = instrs.every((fragment) => {
+  const ok = instrs.every((fragment: string) => {
     const text = decodeEntities(fragment.replace(/<[^>]+>/g, ''))
     if (/^\s*FORMCHECKBOX\s*$/.test(text)) {
       checkboxInstrs++
@@ -5311,8 +5311,8 @@ function hfContentFromXml(
       const cached = /<w:fldChar[^>]*w:fldCharType="separate"[^>]*\/>([\s\S]*)$/.exec(span)?.[1]
       // complete result runs between separate and end (partial run fragments at the edges drop out)
       return emit(
-        (cached?.match(/<w:r(?:\s[^>]*)?>[\s\S]*?<\/w:r>/g) ?? [])
-          .filter((run) => run.includes('<w:t'))
+        ((cached?.match(/<w:r(?:\s[^>]*)?>[\s\S]*?<\/w:r>/g) ?? []) as string[])
+          .filter((run: string) => run.includes('<w:t'))
           .join(''),
       )
     },
@@ -5360,15 +5360,15 @@ async function readHeaderFooterPart(
   paras: HfParagraph[]
   images?: HfImage[]
 } | null> {
-  const refs = documentXml.match(new RegExp(`<w:${kind}Reference[^>]*/>`, 'g')) ?? []
-  const typed = refs.find((r) => r.includes(`w:type="${hfType}"`))
+  const refs = (documentXml.match(new RegExp(`<w:${kind}Reference[^>]*/>`, 'g')) ?? []) as string[]
+  const typed = refs.find((r: string) => r.includes(`w:type="${hfType}"`))
   // untyped references count as default (w:type is technically required but often
   // omitted); non-schema w:type="odd" is Word's default (odd-page) part too
   const ref =
     hfType === 'default'
       ? (typed ??
-        refs.find((r) => r.includes('w:type="odd"')) ??
-        refs.find((r) => !/w:type="/.test(r)))
+        refs.find((r: string) => r.includes('w:type="odd"')) ??
+        refs.find((r: string) => !/w:type="/.test(r)))
       : typed
   if (!ref) return null
   const rId = /r:id="([^"]+)"/.exec(ref)?.[1]

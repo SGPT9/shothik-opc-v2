@@ -1,21 +1,31 @@
-import { createClient } from "@insforge/sdk";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getInsforgePublicConfig, hasInsforgePublicConfig } from "./config";
+import type { Database } from "./database.types";
 
-type InsforgeClient = ReturnType<typeof createClient>;
+export type { Database };
+export type SupabaseBrowserClient = SupabaseClient<Database>;
+export type InsforgeClient = SupabaseClient<Database>;
 
-let browserClient: InsforgeClient | null = null;
+let browserClient: SupabaseClient<Database> | null = null;
 
-/** Singleton Insforge browser client; null when public config is missing. */
-export function getInsforgeBrowserClient(): InsforgeClient | null {
+/** Singleton Supabase browser client; null when public config is missing. */
+export function getInsforgeBrowserClient(): SupabaseClient<Database> | null {
   if (!hasInsforgePublicConfig()) return null;
   if (!browserClient) {
     const { baseUrl, anonKey } = getInsforgePublicConfig();
-    browserClient = createClient({ baseUrl, anonKey });
+    browserClient = createClient<Database>(baseUrl, anonKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
   }
   return browserClient;
 }
 
-export function createBrowserClient(): InsforgeClient | null {
+export const getSupabaseBrowserClient = getInsforgeBrowserClient;
+
+export function createBrowserClient(): SupabaseClient<Database> | null {
   return getInsforgeBrowserClient();
 }
 
