@@ -92,6 +92,7 @@ export interface FleetAgent {
   color: string;
   bgLight: string;
   desc: string;
+  model?: string;
 }
 
 export const FLEET_AGENTS: FleetAgent[] = [
@@ -614,7 +615,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
 
       const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
-      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "";
 
       try {
         const res = await fetch(`${insforgeUrl}/functions/v1/analyze-repo`, {
@@ -704,7 +705,7 @@ export function ChatAgentPage({ initialTab }: ChatAgentPageProps = {}) {
       });
 
       const insforgeUrl = (import.meta as any).env?.VITE_INSFORGE_URL || "https://ers8j28a.ap-southeast.insforge.app";
-      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+      const anonKey = (import.meta as any).env?.VITE_INSFORGE_ANON_KEY || "";
 
       try {
         const res = await fetch(`${insforgeUrl}/functions/v1/analyze-issues`, {

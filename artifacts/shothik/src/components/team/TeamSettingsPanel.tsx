@@ -51,8 +51,9 @@ export function TeamSettingsPanel() {
             <div className="flex items-center gap-2">
               <button
                 type="button"
+                aria-pressed={defaultPolicy === "auto"}
                 onClick={() => setDefaultPolicy("auto")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus:outline-none ${
                   defaultPolicy === "auto"
                     ? "bg-indigo-500/20 border-indigo-500/50 text-indigo-400"
                     : "bg-muted/40 border-border text-muted-foreground hover:bg-muted"
@@ -62,8 +63,9 @@ export function TeamSettingsPanel() {
               </button>
               <button
                 type="button"
+                aria-pressed={defaultPolicy === "manual"}
                 onClick={() => setDefaultPolicy("manual")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition focus-visible:ring-2 focus-visible:ring-indigo-500 focus:outline-none ${
                   defaultPolicy === "manual"
                     ? "bg-amber-500/20 border-amber-500/50 text-amber-400"
                     : "bg-muted/40 border-border text-muted-foreground hover:bg-muted"

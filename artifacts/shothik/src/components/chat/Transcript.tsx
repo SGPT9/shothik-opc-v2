@@ -184,7 +184,7 @@ export function Transcript({
       }
 
       if (promptQuery && onSelectPrompt) {
-        onSelectPrompt(promptQuery, "core");
+        onSelectPrompt(promptQuery);
       } else if (typeof navigator !== "undefined" && navigator.clipboard) {
         await navigator.clipboard.writeText(selectedText);
       }

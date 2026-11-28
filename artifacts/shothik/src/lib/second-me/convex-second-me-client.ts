@@ -69,7 +69,8 @@ export async function runSecondMeMutation<T = unknown>(
   args: Record<string, unknown>
 ): Promise<T> {
   const userId = (args.userId as string) || "";
-  const supabase = getInsforgeBrowserClient();
+  // key_custody is not in the generated table typings yet; keep the client loosely typed here.
+  const supabase = getInsforgeBrowserClient() as any;
 
   switch (functionPath) {
     case "secondMePersistence:upsertKeyCustody": {
