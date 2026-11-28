@@ -267,6 +267,7 @@ export const FieldAgentPosModal: React.FC<FieldAgentPosModalProps> = ({
 
   // Global Shortcut listener (⌘P / Ctrl+P)
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "p") {
         e.preventDefault();

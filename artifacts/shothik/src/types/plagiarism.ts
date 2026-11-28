@@ -3,6 +3,7 @@ export type RiskLevel = "LOW" | "MEDIUM" | "HIGH";
 export interface PlagiarismSource {
   title: string;
   url: string;
+  sourceUrl?: string;
   snippet: string;
   matchType: string;
   confidence: string;
@@ -60,6 +61,8 @@ export interface PlagiarismReport {
   exactPlagiarismPercentage?: number;
   analysisId?: string;
   isLocalAnalysis?: boolean;
+  auditHash?: string;
+  auditHashSha256?: string;
 }
 
 // Raw API response types (for mapper)
@@ -83,6 +86,9 @@ export interface RawPlagiarismResponse {
   language?: RawLanguage;
   analysisId?: string;
   is_fallback?: boolean;
+  auditHash?: string;
+  auditHashSha256?: string;
+  report?: any;
 }
 
 export interface RawParaphrasedSection {

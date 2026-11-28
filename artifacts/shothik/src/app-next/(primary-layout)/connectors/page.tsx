@@ -192,8 +192,26 @@ const INITIAL_CONNECTORS: Connector[] = [
   },
 ];
 
+// Connection toggles survive reloads even when the backend is unreachable
+const LOCAL_KEY = "shothik_connectors_state_v1";
+function readLocalState(): Record<string, boolean> {
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+function writeLocalState(id: string, connected: boolean) {
+  try {
+    localStorage.setItem(LOCAL_KEY, JSON.stringify({ ...readLocalState(), [id]: connected }));
+  } catch {}
+}
+
 export default function ConnectorsPage() {
-  const [connectors, setConnectors] = useState<Connector[]>(INITIAL_CONNECTORS);
+  const [connectors, setConnectors] = useState<Connector[]>(() => {
+    const local = readLocalState();
+    return INITIAL_CONNECTORS.map((c) => (c.id in local ? { ...c, connected: local[c.id] } : c));
+  });
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("ALL");
 
@@ -224,6 +242,8 @@ export default function ConnectorsPage() {
                     endpointUrl: userSaved.endpointUrl || c.endpointUrl,
                   };
                 }
+                // A connector the user explicitly disconnected stays disconnected
+                if (c.id in readLocalState()) return { ...c, connected: readLocalState()[c.id] };
                 return c;
               })
             );
@@ -258,11 +278,13 @@ export default function ConnectorsPage() {
         }),
       });
 
+      const maskedKey = apiKeyInput.length > 7 ? `${apiKeyInput.slice(0, 4)}••••${apiKeyInput.slice(-3)}` : '••••';
       setConnectors(connectors.map(c => 
         c.id === selectedConnector.id 
-          ? { ...c, connected: true, apiKeyPlaceholder: apiKeyInput, endpointUrl: endpointInput }
+          ? { ...c, connected: true, apiKeyPlaceholder: maskedKey, endpointUrl: endpointInput }
           : c
       ));
+      writeLocalState(selectedConnector.id, true);
       setSelectedConnector(null);
     } catch (err) {
       console.error("Failed to save connector key:", err);
@@ -311,6 +333,7 @@ export default function ConnectorsPage() {
       }
     }
 
+    writeLocalState(id, !target.connected);
     setConnectors(connectors.map(c => c.id === id ? { ...c, connected: !c.connected } : c));
   };
 

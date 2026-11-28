@@ -27,7 +27,8 @@ export interface UsageLimitsState {
 }
 
 export function useUsageLimits(): UsageLimitsState {
-  const { user } = useSelector((state: RootState) => state.auth);
+  // ⚡ Bolt optimization: select specific property to prevent unnecessary re-renders
+  const user = useSelector((state: RootState) => state.auth?.user);
   const userId = user?._id || user?.id || user?.email || "";
 
   const [subscription, setSubscription] = useState<any>(null);

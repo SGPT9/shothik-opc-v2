@@ -39,19 +39,19 @@ const ScanProgress = ({ loading, elapsedTime = 0, estimatedTotalTime }: ScanProg
     },
     {
       id: "searching",
-      label: t("tools.plagiarism.scanSteps.searchingLabel"),
+      label: "Searching SearXNG (Google, Bing, Academic)",
       description: t("tools.plagiarism.scanSteps.searchingDesc"),
       checked: false,
     },
     {
       id: "analyzing",
-      label: t("tools.plagiarism.scanSteps.comparingLabel"),
+      label: "Evaluating Web Snippets & N-Grams",
       description: t("tools.plagiarism.scanSteps.comparingDesc"),
       checked: false,
     },
     {
       id: "generating",
-      label: t("tools.plagiarism.scanSteps.generatingLabel"),
+      label: "Generating UGC Academic Audit Hash",
       description: t("tools.plagiarism.scanSteps.generatingDesc"),
       checked: false,
     },
@@ -155,7 +155,16 @@ const ScanProgress = ({ loading, elapsedTime = 0, estimatedTotalTime }: ScanProg
       <CardContent className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold">{t("tools.plagiarism.scan.scanningInProgress")}</h3>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <h3 className="text-lg font-semibold">{t("tools.plagiarism.scan.scanningInProgress")}</h3>
+              <span
+                data-testid="badge-live-web-active"
+                className="relative inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 animate-pulse"
+              >
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                🌐 Live Web Radar Active
+              </span>
+            </div>
             <p className="text-muted-foreground text-sm">
               {t("tools.plagiarism.scan.analyzingContent")}
             </p>

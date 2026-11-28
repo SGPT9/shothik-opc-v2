@@ -38,16 +38,19 @@ import CreatorCashoutModal from "@/components/credits/CreatorCashoutModal";
 
 export default function AccountWalletSection() {
   const dispatch = useDispatch();
-  const { accessToken, user } = useSelector((state: RootState) => state.auth || {});
+  // ⚡ Bolt Performance Optimization: Select individual properties instead of destructuring
+  // the entire auth object to prevent unnecessary re-renders when unrelated auth state changes.
+  const accessToken = useSelector((state: RootState) => state.auth?.accessToken);
+  const user = useSelector((state: RootState) => state.auth?.user);
 
   const [isOfflineTrxOpen, setIsOfflineTrxOpen] = useState(false);
   const [isCashoutOpen, setIsCashoutOpen] = useState(false);
 
 
   // Get wallet from Redux state
-  const { wallet, isLoading: walletLoading } = useSelector(
-    (state: RootState) => state.user_wallet || { wallet: null, isLoading: false },
-  );
+  // ⚡ Bolt Performance Optimization: Select wallet properties individually to avoid re-renders
+  const wallet = useSelector((state: RootState) => state.user_wallet?.wallet || null);
+  const walletLoading = useSelector((state: RootState) => state.user_wallet?.isLoading || false);
 
   // Pagination state for payment transactions
   const [paymentPage, setPaymentPage] = useState(1);

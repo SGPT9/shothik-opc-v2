@@ -3,7 +3,8 @@ import { useCallback, useMemo } from "react";
 import { adaptToLegacy } from "@/adapters/LegacyPlagiarismAdapter";
 import usePlagiarismReport from "./usePlagiarismReport";
 
-const useGlobalPlagiarismCheck = (text) => {
+const useGlobalPlagiarismCheck = (text, options) => {
+  const resolvedOptions = typeof options === "object" ? options : { liveWeb: options };
   const {
     loading,
     report,
@@ -14,7 +15,7 @@ const useGlobalPlagiarismCheck = (text) => {
     retryWithBackoff,
     manualRefresh,
     reset,
-  } = usePlagiarismReport(text ?? "");
+  } = usePlagiarismReport(text ?? "", resolvedOptions);
 
   // Adapt to legacy format for backward compatibility
   const legacyData = useMemo(() => {
@@ -22,16 +23,16 @@ const useGlobalPlagiarismCheck = (text) => {
   }, [report]);
 
   const runCheck = useCallback(
-    (forceRefresh = false) => {
-      // If forceRefresh is true, pass it through
-      // Otherwise, call triggerCheck without options (it will check cache)
-      if (forceRefresh) {
-        return triggerCheck({ forceRefresh: true });
+    (forceRefreshOrOptions = false) => {
+      if (typeof forceRefreshOrOptions === "boolean") {
+        return triggerCheck({ forceRefresh: forceRefreshOrOptions, liveWeb: resolvedOptions?.liveWeb });
       }
-      // Default behavior: check cache first, then run fresh scan if no cache
-      return triggerCheck();
+      return triggerCheck({
+        liveWeb: resolvedOptions?.liveWeb,
+        ...(forceRefreshOrOptions || {}),
+      });
     },
-    [triggerCheck],
+    [triggerCheck, resolvedOptions?.liveWeb],
   );
 
   return {

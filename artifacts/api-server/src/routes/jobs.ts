@@ -3,6 +3,7 @@ import { taskQueue, JobType, JobProgressEvent } from "../lib/queue/task-queue";
 import { dbAutoSync } from "../lib/db-bootstrap";
 import { validateRequest } from "../lib/middleware/zod-validator";
 import { JobSubmitSchema } from "@workspace/api-zod";
+import { resolveUserId } from "../middleware/auth.js";
 
 const router = Router();
 
@@ -86,7 +87,8 @@ router.get("/v1/jobs/:jobId/stream", (req: Request, res: Response): void => {
     res.write(`data: ${JSON.stringify(event)}\n\n`);
     if (event.status === "completed" || event.status === "failed" || event.status === "dlq") {
       cleanup();
-      res.write(`data: ${JSON.stringify({ type: "done", result: job.result, error: job.error })}\n\n`);
+      const freshJob = taskQueue.getJob(jobId as string) || job;
+      res.write(`data: ${JSON.stringify({ type: "done", result: freshJob.result, error: freshJob.error })}\n\n`);
       res.write("data: [DONE]\n\n");
       res.end();
     }
@@ -127,7 +129,7 @@ router.get("/v1/jobs/:jobId", (req: Request, res: Response): void => {
  * List all active and completed background jobs for a user
  */
 router.get("/v1/jobs", (req: Request, res: Response): void => {
-  const userId = (req.query.userId as string) || (req.headers["x-user-id"] as string) || "usr_default";
+  const userId = resolveUserId(req, "usr_default");
   const jobs = taskQueue.listJobs(userId);
 
   res.status(200).json({

@@ -40,21 +40,14 @@ export function getConvexSiteUrl(): string {
 }
 
 function readPrivateKeyPem() {
-  const envPem = process.env.JWT_PRIVATE_KEY;
-  if (envPem) {
-    let candidate = envPem.replace(/\\n/g, "\n").trim();
-    if (!candidate.startsWith("-----BEGIN")) {
-      candidate = `-----BEGIN PRIVATE KEY-----\n${candidate}\n-----END PRIVATE KEY-----`;
-    }
-    try {
-      crypto.createPrivateKey(candidate);
-      return candidate;
-    } catch {
-      // Fallback to source-controlled key if process.env.JWT_PRIVATE_KEY is malformed
-    }
+  const pem = getConfiguredConvexJwtPrivateKeyPem();
+  if (!pem) return "";
+  try {
+    crypto.createPrivateKey(pem);
+  } catch {
+    // Return the malformed PEM so diagnostics report CONVEX_JWT_PRIVATE_KEY_INVALID.
   }
-
-  return getConfiguredConvexJwtPrivateKeyPem();
+  return pem;
 }
 
 export function diagnoseConvexJwtConfig(): ConvexAuthDiagnostics {

@@ -15,8 +15,8 @@ A production-grade **pnpm workspace monorepo** powering [Shothik AI](https://app
 ```
 /
 ├── artifacts/
-│   ├── shothik/          # Vite + React Web Frontend (Amar Ekushey Studio, Chat, Swarm)
-│   └── api-server/       # Express Backend API Gateway (Port 3001 / 4000)
+│   ├── shothik/          # Vite + React Web Frontend (Port 5000 — Studio, Chat, Twin, Swarm)
+│   └── api-server/       # Express Backend API Gateway (Port 8080)
 ├── lib/
 │   ├── db/               # PostgreSQL & SQLite Drizzle ORM Schemas and Migrations
 │   └── hermes/           # Shared Zod Contracts, Types & Core Utilities
@@ -111,16 +111,16 @@ Create a `.env.local` file in the root:
 DATABASE_URL="postgresql://postgres:password@ers8j28a.ap-southeast.database.insforge.app:5432/insforge?sslmode=require"
 BETTER_AUTH_SECRET="your-better-auth-secret-key-32-chars"
 OLLAMA_HOST="http://127.0.0.1:11434"
-PORT=3001
-VITE_API_URL="http://localhost:3001"
+PORT=8080
+VITE_API_URL="http://localhost:8080"
 ```
 
 ### 4. Run Development Servers
 ```bash
-# Start API Gateway (Port 3001)
+# Start API Gateway (Port 8080)
 pnpm --filter @workspace/api-server run dev
 
-# Start Frontend (Port 5173 / 3000)
+# Start Frontend (Port 5000)
 pnpm --filter @workspace/shothik run dev
 ```
 

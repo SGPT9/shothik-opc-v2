@@ -30,6 +30,7 @@ export * from "./twin-research-dispatcher";
 export * from "./unified-web-agent.service";
 export * from "./wallet.service";
 export * from "./writing-studio.service";
+export * from "./agent-team.service";
 
 // Core canonical function exports expected by services test suite and consumer surfaces
 export const checkAiContent = aiDetectorCheck;

@@ -13,7 +13,15 @@ export interface WebhookSecurityOptions {
 
 export function createWebhookSignatureGuard(options: WebhookSecurityOptions) {
   return (req: Request, res: Response, next: NextFunction): void => {
-    const rawSecret = process.env[options.secretEnvVar] || options.defaultSecret || "shothik_default_dev_secret_2026";
+    const isProd = process.env.NODE_ENV === "production";
+    const rawSecret = process.env[options.secretEnvVar] || (!isProd ? (options.defaultSecret || "shothik_default_dev_secret_2026") : undefined);
+
+    if (!rawSecret) {
+      logger.error({ provider: options.providerName, envVar: options.secretEnvVar }, "[webhook-security] Missing required webhook secret in production");
+      res.status(500).json({ success: false, error: "Webhook signature secret not configured on server" });
+      return;
+    }
+
     const signature = req.header(options.headerName);
 
     if (!signature) {

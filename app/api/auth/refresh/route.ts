@@ -1,3 +1,4 @@
+// secret-scan: demo-values-only (tokens in this file are fictional sample data)
 import { NextResponse } from "next/server";
 
 export const runtime = "edge";

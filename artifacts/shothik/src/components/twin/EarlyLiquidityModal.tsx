@@ -38,6 +38,7 @@ export const EarlyLiquidityModal: React.FC<EarlyLiquidityModalProps> = ({ isOpen
 
   // Keyboard shortcut ⌘L / Ctrl+L
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "l") {
         e.preventDefault();

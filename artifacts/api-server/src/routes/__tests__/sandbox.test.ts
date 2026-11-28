@@ -50,7 +50,7 @@ describe("Isolated Code Interpreter Sandbox (/api/v1/sandbox)", () => {
     expect(json.result.exitCode).toBe(0);
   });
 
-  it("POST /api/v1/sandbox/run enforces security guard against dangerous shell commands", async () => {
+  it("POST /api/v1/sandbox/run enforces security guard against dangerous shell commands and process.env access", async () => {
     const res = await fetch(`${baseUrl}/api/v1/sandbox/run`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -64,6 +64,19 @@ describe("Isolated Code Interpreter Sandbox (/api/v1/sandbox)", () => {
     const json = (await res.json()) as any;
     expect(json.success).toBe(false);
     expect(json.result.error).toBe("SECURITY_VIOLATION");
+
+    const envRes = await fetch(`${baseUrl}/api/v1/sandbox/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        language: "javascript",
+        code: `console.log(process.env.JWT_SECRET)`,
+      }),
+    });
+    expect(envRes.status).toBe(200);
+    const envJson = (await envRes.json()) as any;
+    expect(envJson.success).toBe(false);
+    expect(envJson.result.error).toBe("SECURITY_VIOLATION");
   });
 
   it("POST /api/v1/sandbox/deerflow-calc calculates exact Mushak 6.3 VAT and withholding taxes", async () => {

@@ -121,10 +121,11 @@ export default function BkashCheckoutModal({
 
         {/* TrxID / OCR Form */}
         <div className="space-y-3">
-          <label className="text-xs font-medium text-slate-300 block">
+          <label htmlFor="bkash-trx-id" className="text-xs font-medium text-slate-300 block cursor-pointer">
             Enter bKash Transaction ID (or Paste TrxID):
           </label>
           <input
+            id="bkash-trx-id"
             type="text"
             placeholder="e.g. 9X87Y12300"
             value={trxIdInput}
