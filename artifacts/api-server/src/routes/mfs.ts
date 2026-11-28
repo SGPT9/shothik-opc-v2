@@ -1,12 +1,14 @@
 import { Router, type Request, type Response } from "express";
 import { eq } from "drizzle-orm";
-import { db, userSubscriptionsTable } from "@workspace/db";
+import { db, userSubscriptionsTable, mfsTransactionsTable } from "@workspace/db";
 import { TrxVerificationRequestSchema, TIER_CREDIT_MAP } from "@workspace/hermes/contracts";
 import { bkashPgwClient } from "../lib/mfs/bkash-pgw-client";
 import { idempotencyMiddleware } from "../lib/idempotency/idempotency-service";
 import { TwinRevenueLedger } from "../lib/twin/revenue-ledger";
 import { capabilityLeashEngine } from "../lib/security/capability-leash";
 import { AuditLedgerEngine } from "../lib/audit/audit-ledger-engine";
+import { resolveUserId } from "../middleware/auth.js";
+import { getPersistedCredits, persistCreditDeduction } from "./subscriptions";
 
 const router = Router();
 
@@ -31,20 +33,132 @@ const processedTrxIds = new Set<string>();
 
 /**
  * POST /api/v1/mfs/verify-trx
- * Verifies bKash/Nagad 10-digit TrxID and credits user wallet with idempotency
+ * Verifies bKash/Nagad 10-digit TrxID and credits user wallet with idempotency.
+ * Supports both strict TrxVerificationRequestSchema payloads and flexible TwinRevenueLedger payloads.
  */
-router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, res: Response) => {
+router.post(["/v1/mfs/verify-trx", "/api/v1/mfs/verify-trx"], idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
-    const parseResult = TrxVerificationRequestSchema.safeParse(req.body);
-    if (!parseResult.success) {
-      return res.status(400).json({
+    const isProduction = process.env.NODE_ENV === "production";
+    const internalSecret = process.env.INTERNAL_SERVICE_SECRET || process.env.MFS_WEBHOOK_SECRET;
+    const providedSecret = req.headers["x-mfs-secret"] || req.headers["x-internal-secret"] || req.headers["x-webhook-secret"];
+
+    if (isProduction && !providedSecret && !bkashPgwClient.isLiveConfigured()) {
+      return res.status(403).json({
         success: false,
-        error: "Invalid transaction payload",
-        details: parseResult.error.format(),
+        error: "Forbidden: MFS verification requires authorized gateway webhook signature or live PGW confirmation.",
       });
     }
 
-    const { trxId, provider, tier, amountBdt, userId } = parseResult.data;
+    const isStrictCandidate =
+      req.body &&
+      typeof req.body === "object" &&
+      (req.body.tier !== undefined || req.body.senderMobileNumber !== undefined);
+
+    const parseResult = TrxVerificationRequestSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      if (isStrictCandidate) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid transaction payload",
+          details: parseResult.error.format(),
+        });
+      }
+
+      // Flexible TwinRevenueLedger verification branch
+      const {
+        trxId,
+        amountBdt,
+        provider = "bkash",
+        userId: bodyUserId,
+        companyName = "VerifiQ",
+        note,
+      } = req.body || {};
+      const userId = resolveUserId(req, bodyUserId || "usr_default");
+
+      if (!trxId || typeof trxId !== "string") {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required field: trxId (bKash/Nagad Transaction ID)",
+        });
+      }
+
+      const cleanTrxId = trxId.trim();
+      if (!/^[A-Za-z0-9]{8,14}$/.test(cleanTrxId)) {
+        return res.status(400).json({
+          success: false,
+          error: `Invalid TrxID format: "${cleanTrxId}". Expected 8-14 alphanumeric characters (e.g. BKA8829102).`,
+        });
+      }
+
+      if (!amountBdt || Number(amountBdt) <= 0) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing or invalid amountBdt. Must be a positive number.",
+        });
+      }
+
+      const amount = Number(amountBdt);
+      const mfsProvider = String(provider).toLowerCase() === "nagad" ? "nagad_trx" : "bkash_trx";
+
+      const { newTotalBdt, transaction } = TwinRevenueLedger.creditRevenue({
+        companyName,
+        amountBdt: amount,
+        source: mfsProvider,
+        referenceId: cleanTrxId,
+        note: note || `${String(provider).toUpperCase()} payment verified via MFS TrxID listener`,
+      });
+
+      const currentCredits = await getPersistedCredits(userId);
+      const creditEquivalent = Math.floor(amount / 10); // ৳10 = 1 task credit
+      const newCredits = currentCredits + creditEquivalent;
+      await persistCreditDeduction(userId, newCredits, 0);
+
+      return res.status(200).json({
+        success: true,
+        verified: true,
+        trxId: cleanTrxId,
+        provider: String(provider).toUpperCase(),
+        amountBdt: amount,
+        revenueUpdate: {
+          companyName,
+          previousRevenueBdt: newTotalBdt - amount,
+          newRevenueBdt: newTotalBdt,
+          transactionId: transaction.id,
+        },
+        creditUpdate: {
+          userId,
+          addedCredits: creditEquivalent,
+          newCreditsBalance: newCredits,
+        },
+        verifiedAt: new Date().toISOString(),
+        message: `${String(provider).toUpperCase()} TrxID ${cleanTrxId} verified — ৳${amount} BDT credited to ${companyName} revenue ledger`,
+      });
+    }
+
+    const { trxId, provider, tier, amountBdt, userId: payloadUserId } = parseResult.data;
+    const userId = resolveUserId(req, payloadUserId || "usr_default");
+
+    // Check PostgreSQL transactions table in production to prevent cross-pod / cross-restart replays
+    if (isProduction) {
+      try {
+        const [existingTrx] = await db
+          .select()
+          .from(mfsTransactionsTable)
+          .where(eq(mfsTransactionsTable.trxId, trxId));
+        if (existingTrx) {
+          return res.status(200).json({
+            success: true,
+            trxId,
+            provider,
+            status: "already_processed",
+            idempotent: true,
+            message: `TrxID ${trxId} was already processed and credited.`,
+          });
+        }
+      } catch {
+        // ignore db error, proceed to memory check
+      }
+    }
 
     // Idempotency check: prevent duplicate credit on 3G network retries
     if (processedTrxIds.has(trxId)) {
@@ -77,6 +191,25 @@ router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, re
 
     // Mark TrxID as processed
     processedTrxIds.add(trxId);
+
+    // Persist verified transaction directly to PostgreSQL mfs_transactions table
+    try {
+      await db.insert(mfsTransactionsTable).values({
+        trxId,
+        userId: userId || "usr_default",
+        provider,
+        amountBdt: String(amountBdt),
+        tier,
+        status: "RECONCILED",
+        metadata: {
+          creditedCredits: tierConfig.credits,
+          tierLabel: tierConfig.label,
+          verifiedAt: new Date().toISOString(),
+        },
+      }).onConflictDoNothing();
+    } catch (dbErr: any) {
+      console.warn("[mfs] Could not persist reconciled MFS transaction to DB:", dbErr?.message);
+    }
 
     // Update or insert subscription in PostgreSQL
     try {
@@ -116,6 +249,7 @@ router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, re
     const creditedCredits = tierConfig.credits;
     const currentBalance = 550;
     const newBalance = currentBalance + creditedCredits;
+    await persistCreditDeduction(userId, newBalance, 0);
     const ledgerId = `LEDGER_${provider.toUpperCase()}_${trxId}_${Date.now()}`;
 
     // Credit revenue to Twin's live telemetry revenue ledger
@@ -157,7 +291,8 @@ router.post("/v1/mfs/verify-trx", idempotencyMiddleware, async (req: Request, re
  */
 router.post("/v1/mfs/speculative-order", async (req: Request, res: Response) => {
   try {
-    const { userId = "usr_default", amountBdt, provider = "bkash", trxId } = req.body;
+    const userId = resolveUserId(req, req.body.userId || "usr_default");
+    const { amountBdt, provider = "bkash", trxId } = req.body;
     const orderId = `ORD_${Date.now()}_${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
 
     const order: SpeculativeOrder = {
@@ -171,6 +306,24 @@ router.post("/v1/mfs/speculative-order", async (req: Request, res: Response) => 
     };
 
     speculativeLedger.set(orderId, order);
+
+    // Persist speculative order directly to PostgreSQL mfs_transactions table
+    try {
+      await db.insert(mfsTransactionsTable).values({
+        trxId: trxId || `SPEC_${orderId}`,
+        userId,
+        provider,
+        amountBdt: String(amountBdt || 0),
+        status: trxId ? "RECONCILED" : "PENDING_RECONCILIATION",
+        metadata: {
+          orderId,
+          speculative: true,
+          simulatedAt: order.simulatedAt,
+        },
+      }).onConflictDoNothing();
+    } catch (dbErr: any) {
+      console.warn("[mfs] Speculative order DB write notice:", dbErr?.message);
+    }
 
     return res.status(200).json({
       success: true,
@@ -191,9 +344,31 @@ router.post("/v1/mfs/speculative-order", async (req: Request, res: Response) => 
  * GET /api/v1/mfs/speculative-order/:orderId
  * Check order reconciliation status
  */
-router.get("/v1/mfs/speculative-order/:orderId", (req: Request, res: Response) => {
+router.get("/v1/mfs/speculative-order/:orderId", async (req: Request, res: Response) => {
   const orderId = typeof req.params.orderId === "string" ? req.params.orderId : String(req.params.orderId || "");
-  const order = speculativeLedger.get(orderId);
+  let order = speculativeLedger.get(orderId);
+  if (!order) {
+    try {
+      const [record] = await db
+        .select()
+        .from(mfsTransactionsTable)
+        .where(eq(mfsTransactionsTable.trxId, `SPEC_${orderId}`));
+      if (record) {
+        order = {
+          orderId,
+          userId: record.userId,
+          amountBdt: Number(record.amountBdt),
+          provider: record.provider as any,
+          trxId: record.trxId.startsWith("SPEC_") ? undefined : record.trxId,
+          status: record.status as any,
+          simulatedAt: record.createdAt.toISOString(),
+          reconciledAt: record.reconciledAt?.toISOString(),
+        };
+      }
+    } catch {
+      // In-memory fallback
+    }
+  }
   if (!order) {
     return res.status(404).json({ success: false, error: "Order not found" });
   }
@@ -242,7 +417,8 @@ router.post("/v1/mfs/bkash/create-payment", async (req: Request, res: Response) 
  */
 router.post("/v1/mfs/bkash/execute-payment", async (req: Request, res: Response) => {
   try {
-    const { paymentID, userId = "usr_default", tier = "pro" } = req.body;
+    const userId = resolveUserId(req, req.body.userId || "usr_default");
+    const { paymentID, tier = "pro" } = req.body;
     if (!paymentID) {
       return res.status(400).json({ success: false, error: "paymentID is required" });
     }
@@ -250,6 +426,26 @@ router.post("/v1/mfs/bkash/execute-payment", async (req: Request, res: Response)
     const execResult = await bkashPgwClient.executePayment(paymentID);
     const trxId = execResult.trxID || `BKH${Date.now().toString().slice(-7)}`;
     processedTrxIds.add(trxId);
+
+    // Persist executed bKash PGW payment to PostgreSQL mfs_transactions table
+    try {
+      await db.insert(mfsTransactionsTable).values({
+        trxId,
+        userId: userId || "usr_default",
+        provider: "bkash",
+        amountBdt: String(execResult.amount || 0),
+        tier,
+        status: "RECONCILED",
+        metadata: {
+          paymentID: execResult.paymentID,
+          currency: execResult.currency,
+          statusCode: execResult.statusCode,
+          paymentExecuteTime: execResult.paymentExecuteTime,
+        },
+      }).onConflictDoNothing();
+    } catch (dbErr: any) {
+      console.warn("[mfs] Failed to record executed payment in DB:", dbErr?.message);
+    }
 
     // Credit user balance and update subscription
     if (userId && userId !== "guest") {
@@ -352,9 +548,12 @@ router.post("/v1/mfs/nagad/create-payment", async (req: Request, res: Response) 
  */
 router.post("/v1/mfs/ipn/webhook", async (req: Request, res: Response) => {
   try {
-    const { trxId, amount, status, customerMsisdn } = req.body;
+    const { trxId, amount, status, customerMsisdn } = req.body || {};
 
-    if (!trxId || status !== "Completed" && status !== "Successful") {
+    const isStatusValid = status === "Completed" || status === "Successful";
+    const parsedAmount = typeof amount === "number" ? amount : parseFloat(String(amount || "0"));
+
+    if (!trxId || !isStatusValid || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({
         success: false,
         error: "Invalid or incomplete IPN payload",
@@ -378,7 +577,7 @@ router.post("/v1/mfs/ipn/webhook", async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       trxId,
-      amount: Number(amount),
+      amount: parsedAmount,
       currency: "BDT",
       status: "SETTLED",
       ledgerId,
@@ -420,20 +619,31 @@ router.post("/v1/mfs/nagad/callback", async (req: Request, res: Response) => {
  */
 router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: Response) => {
   try {
+    const userId = resolveUserId(req, req.body?.userId || "usr_creator_default");
     const {
-      userId = "usr_creator_default",
       payoutAmountBdt,
       mfsProvider = "bkash",
       walletNumber,
       creatorNote,
-    } = req.body;
+    } = req.body || {};
 
-    if (!payoutAmountBdt || typeof payoutAmountBdt !== "number" || payoutAmountBdt < 500) {
+    if (!payoutAmountBdt || typeof payoutAmountBdt !== "number" || !Number.isFinite(payoutAmountBdt) || payoutAmountBdt < 500) {
       return res.status(400).json({
         success: false,
         error: "Minimum payout amount is ৳500 BDT.",
       });
     }
+
+    const rawWallet = typeof walletNumber === "string" ? walletNumber.trim() : String(walletNumber || "").trim();
+    const normalizedWallet = rawWallet.replace(/^(\+?880|880)/, "0");
+    if (!/^01[3-9]\d{8}$/.test(normalizedWallet)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid Bangladeshi mobile wallet number. Must be 11 digits starting with 013-019.",
+      });
+    }
+
+    const providerKey = mfsProvider === "nagad" ? "nagad" : "bkash";
 
     // Optional Cryptographic Capability Attenuation & Spend Leash check
     const capabilityToken = (req.headers["x-capability-token"] as string) || (req.body?.capabilityToken as string);
@@ -460,37 +670,30 @@ router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: R
       }
     }
 
-    if (!walletNumber || !/^01[3-9]\d{8}$/.test(walletNumber.trim())) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid Bangladeshi mobile wallet number. Must be 11 digits starting with 013-019.",
-      });
-    }
-
     // Calculate 10% NBR Tax Deducted at Source (TDS)
     const nbrTdsPercent = 10;
     const tdsAmountBdt = Math.round(payoutAmountBdt * (nbrTdsPercent / 100));
     const netDisbursedBdt = payoutAmountBdt - tdsAmountBdt;
 
-    const payoutTrxId = `${mfsProvider === "nagad" ? "NGD_DISB_" : "BK_DISB_"}${Date.now().toString().slice(-8)}${Math.floor(100 + Math.random() * 900)}`;
+    const payoutTrxId = `${providerKey === "nagad" ? "NGD_DISB_" : "BK_DISB_"}${Date.now().toString().slice(-8)}${Math.floor(100 + Math.random() * 900)}`;
 
     // Record in Twin Revenue Ledger
     const recordedPayout = TwinRevenueLedger.creditRevenue({
       companyName: userId,
       amountBdt: -payoutAmountBdt,
-      source: mfsProvider === "nagad" ? "nagad_trx" : "bkash_trx",
+      source: providerKey === "nagad" ? "nagad_trx" : "bkash_trx",
       referenceId: payoutTrxId,
       note: creatorNote || "Creator Marketplace Revenue Cash-Out",
     });
 
     // Bridge 6: Record double-entry entry in NBR Audit Ledger
     try {
-      AuditLedgerEngine.postJournalEntry({
+      await AuditLedgerEngine.postJournalEntryAsync({
         transactionRef: payoutTrxId,
-        transactionType: "courier_payout",
+        transactionType: "mfs_payout",
         memo: `Creator MFS Payout: Gross ৳${payoutAmountBdt}, TDS ৳${tdsAmountBdt}, Net ৳${netDisbursedBdt}`,
         initiatorKind: "responsibility",
-        initiatorId: "mfs_payout_engine",
+        initiatorId: userId,
         lines: [
           { accountCode: "2030", debitBdt: payoutAmountBdt, creditBdt: 0, description: "Clear Creator Payable" },
           { accountCode: "1020", debitBdt: 0, creditBdt: netDisbursedBdt, description: "MFS Wallet Cash Disbursed" },
@@ -505,14 +708,14 @@ router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: R
       success: true,
       payoutId: `PAYOUT_${Date.now()}`,
       payoutTrxId,
-      mfsProvider,
-      walletNumber: walletNumber.trim(),
+      mfsProvider: providerKey,
+      walletNumber: normalizedWallet,
       grossRequestedBdt: payoutAmountBdt,
       nbrTdsDeductedBdt: tdsAmountBdt,
       netDisbursedBdt,
       status: "DISBURSED",
       ledgerEntry: recordedPayout.transaction,
-      message: `৳${netDisbursedBdt} BDT successfully disbursed to ${mfsProvider.toUpperCase()} wallet ${walletNumber.trim()} (৳${tdsAmountBdt} TDS deducted).`,
+      message: `৳${netDisbursedBdt} BDT successfully disbursed to ${providerKey.toUpperCase()} wallet ${normalizedWallet} (৳${tdsAmountBdt} TDS deducted).`,
       timestamp: new Date().toISOString(),
     });
 
@@ -527,27 +730,34 @@ router.post("/v1/mfs/payout", idempotencyMiddleware, async (req: Request, res: R
  */
 router.post("/v1/mfs/parse-sms", (req: Request, res: Response) => {
   try {
-    const { smsText = "" } = req.body;
+    const { smsText = "" } = req.body || {};
     if (!smsText.trim()) {
       return res.status(400).json({ success: false, error: "smsText payload is required." });
     }
 
+    // Convert Bangla numerals (০-৯) to ASCII digits (0-9)
+    const banglaDigits: Record<string, string> = {
+      "০": "0", "১": "1", "২": "2", "৩": "3", "৪": "4",
+      "৫": "5", "৬": "6", "৭": "7", "৮": "8", "৯": "9",
+    };
+    const normalizedText = smsText.replace(/[০-৯]/g, (d: string) => banglaDigits[d] || d);
+
     // 1. TrxID
-    const trxMatch = smsText.match(/(?:TrxID|TxnID|Txn|Transaction ID|Ref:?)\s*[:.]?\s*([A-Za-z0-9]{8,12})/i);
+    const trxMatch = normalizedText.match(/(?:TrxID|TxnID|Txn|Transaction ID|Ref:?)\s*[:.]?\s*([A-Za-z0-9]{8,12})/i);
     const trxId = trxMatch ? trxMatch[1].toUpperCase() : null;
 
-    // 2. Amount
-    const amountMatch = smsText.match(/(?:Tk|BDT|Tk\.|Amount:?)\s*[:.]?\s*([\d,]+(?:\.\d+)?)/i);
+    // 2. Amount (supports Tk, BDT, Tk., ৳, Amount)
+    const amountMatch = normalizedText.match(/(?:Tk|BDT|Tk\.|৳|Amount:?)\s*[:.]?\s*([\d,]+(?:\.\d+)?)/i);
     const amountBdt = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, "")) : null;
 
     // 3. Sender Phone
-    const phoneMatch = smsText.match(/(01[3-9]\d{8})/);
+    const phoneMatch = normalizedText.match(/(01[3-9]\d{8})/);
     const senderPhone = phoneMatch ? phoneMatch[1] : null;
 
     // 4. Provider
     let provider: "bkash" | "nagad" | "rocket" = "bkash";
-    if (/nagad/i.test(smsText)) provider = "nagad";
-    else if (/rocket|dbbl/i.test(smsText)) provider = "rocket";
+    if (/nagad/i.test(normalizedText)) provider = "nagad";
+    else if (/rocket|dbbl/i.test(normalizedText)) provider = "rocket";
 
     return res.status(200).json({
       success: true,
@@ -614,5 +824,3 @@ router.post("/v1/mfs/nagad/verify", async (req: Request, res: Response) => {
 });
 
 export default router;
-
-

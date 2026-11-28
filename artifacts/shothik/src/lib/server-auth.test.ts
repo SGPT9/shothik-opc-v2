@@ -17,6 +17,7 @@ vi.mock("next/headers", () => ({
 vi.mock("@/lib/insforge/server", () => ({
   createInsforgeServerClient: vi.fn(async () => ({
     auth: {
+      getUser: mockGetCurrentUser,
       getCurrentUser: mockGetCurrentUser,
     },
   })),

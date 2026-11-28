@@ -1,5 +1,5 @@
 # Multi-Stage Production Dockerfile for Shothik Hermes
-# Targets: Lightweight Node.js 22 Alpine (<120MB final footprint)
+# Targets: Lightweight Node.js 22 Slim
 
 # ── Stage 1: Dependency & Builder ──
 FROM node:22-slim AS builder
@@ -27,25 +27,28 @@ COPY lib/office-engine/package.json ./lib/office-engine/
 COPY scripts/package.json ./scripts/
 
 # Install dependencies
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # Copy source tree
 COPY . .
 
-# Build API Server and Frontend bundle
-RUN pnpm --filter @workspace/api-server run build || true
+# Build API Server and Frontend bundle (fail fast on build errors)
+RUN pnpm --filter @workspace/api-server run build
 RUN pnpm --filter @workspace/shothik run build
 
 # ── Stage 2: Production Runtime ──
 FROM node:22-slim AS runner
 
 WORKDIR /app
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y openssl wget && rm -rf /var/lib/apt/lists/*
 ENV NODE_ENV=production
 ENV PORT=8080
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 hermes
+
+# Install externalized runtime dependencies required by artifacts/api-server/dist/index.mjs
+RUN npm install --no-package-lock --no-save @libsql/client @pinojs/redact pino pino-pretty express cors cookie-parser pg
 
 # Copy built frontend assets and bundled API server
 COPY --from=builder --chown=hermes:nodejs /app/artifacts/shothik/dist ./artifacts/shothik/dist
@@ -54,6 +57,6 @@ COPY --from=builder --chown=hermes:nodejs /app/package.json ./package.json
 
 USER hermes
 
-EXPOSE 8080 5000 3000
+EXPOSE 8080
 
 CMD ["node", "artifacts/api-server/dist/index.mjs"]

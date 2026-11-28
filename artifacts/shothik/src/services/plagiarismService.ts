@@ -53,10 +53,12 @@ export interface AnalyzePlagiarismParams {
   token?: string;
   signal?: AbortSignal;
   baseUrl?: string;
+  liveWeb?: boolean;
   options?: {
     analysisType?: "basic" | "full" | "deep";
     maxChunks?: number;
     sourcesPerChunk?: number;
+    liveWeb?: boolean;
   };
 }
 
@@ -65,10 +67,12 @@ export interface AnalyzePlagiarismFileParams {
   token?: string;
   signal?: AbortSignal;
   baseUrl?: string;
+  liveWeb?: boolean;
   options?: {
     analysisType?: "basic" | "full" | "deep";
     maxChunks?: number;
     sourcesPerChunk?: number;
+    liveWeb?: boolean;
   };
 }
 
@@ -87,6 +91,7 @@ export const analyzePlagiarism = async ({
   token,
   signal,
   baseUrl = DEFAULT_API_BASE,
+  liveWeb,
   options,
 }: AnalyzePlagiarismParams): Promise<PlagiarismReport> => {
   if (!text?.trim()) {
@@ -100,7 +105,19 @@ export const analyzePlagiarism = async ({
     );
   }
 
-  const hash = await computeContentHash(text, options?.analysisType, options?.maxChunks, options?.sourcesPerChunk);
+  const effectiveLiveWeb = options?.liveWeb ?? liveWeb ?? true;
+  const mergedOptions = {
+    ...options,
+    liveWeb: effectiveLiveWeb,
+  };
+
+  const hash = await computeContentHash(
+    text,
+    options?.analysisType,
+    options?.maxChunks,
+    options?.sourcesPerChunk,
+    effectiveLiveWeb
+  );
   const cached = getCachedResult<PlagiarismReport>("plagiarism", hash);
   if (cached && !cached.stale) {
     return cached.data;
@@ -129,7 +146,8 @@ export const analyzePlagiarism = async ({
           headers,
           body: JSON.stringify({
             text,
-            ...(options && { options }),
+            liveWeb: effectiveLiveWeb,
+            options: mergedOptions,
           }),
           signal: combinedSignal,
         });
@@ -268,6 +286,7 @@ export const analyzePlagiarismFile = async ({
   token,
   signal,
   baseUrl = DEFAULT_API_BASE,
+  liveWeb,
   options,
 }: AnalyzePlagiarismFileParams): Promise<PlagiarismReport> => {
   if (!file) {
@@ -281,12 +300,16 @@ export const analyzePlagiarismFile = async ({
     );
   }
 
+  const effectiveLiveWeb = options?.liveWeb ?? liveWeb ?? true;
+  const mergedOptions = {
+    ...options,
+    liveWeb: effectiveLiveWeb,
+  };
+
   const formData = new FormData();
   formData.append("file", file);
-
-  if (options) {
-    formData.append("options", JSON.stringify(options));
-  }
+  formData.append("liveWeb", String(effectiveLiveWeb));
+  formData.append("options", JSON.stringify(mergedOptions));
 
   const headers: Record<string, string> = {};
 

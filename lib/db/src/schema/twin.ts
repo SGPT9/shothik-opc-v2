@@ -1,6 +1,12 @@
-import { boolean, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { bigint, boolean, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
+
+export interface TwinSeedTask {
+  id: number;
+  title: string;
+  completed: boolean;
+}
 
 /**
  * Twins table — AI digital clone profiles, permissions, and lifecycle states.
@@ -137,3 +143,79 @@ export const insertCompanySchema = createInsertSchema(companiesTable).omit({
 });
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Company = typeof companiesTable.$inferSelect;
+
+/**
+ * Twin Seeds table — server-side copy of generated Twin workspace seed.
+ */
+export const twinSeedsTable = pgTable(
+  "twin_seeds",
+  {
+    id: serial("id").primaryKey(),
+    identity: text("identity").notNull(),
+    conversationId: text("conversation_id").notNull(),
+    companyName: text("company_name").notNull(),
+    summary: text("summary").notNull().default(""),
+    businessPlan: text("business_plan").notNull().default(""),
+    tasks: jsonb("tasks").$type<TwinSeedTask[]>().notNull().default([]),
+    revision: bigint("revision", { mode: "number" }).notNull().default(0),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("twin_seeds_identity_conversation_idx").on(t.identity, t.conversationId)],
+);
+
+export const insertTwinSeedSchema = createInsertSchema(twinSeedsTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertTwinSeed = z.infer<typeof insertTwinSeedSchema>;
+export type TwinSeed = typeof twinSeedsTable.$inferSelect;
+
+/**
+ * Key custody table — stores sealed BYOK provider credentials at rest.
+ */
+export const keyCustodyTable = pgTable(
+  "second_me_key_custody",
+  {
+    id: serial("id").primaryKey(),
+    userId: text("user_id").notNull(),
+    purpose: text("purpose").notNull(),
+    provider: text("provider"),
+    sealedKey: text("sealed_key").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("key_custody_user_purpose_idx").on(t.userId, t.purpose)],
+);
+
+export const insertKeyCustodySchema = createInsertSchema(keyCustodyTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertKeyCustody = z.infer<typeof insertKeyCustodySchema>;
+export type KeyCustody = typeof keyCustodyTable.$inferSelect;
+
+/**
+ * Writing profiles table — links users to their Letta memory agent and WRITING.md state.
+ */
+export const writingProfilesTable = pgTable("second_me_writing_profiles", {
+  id: serial("id").primaryKey(),
+  userId: text("user_id").notNull().unique(),
+  lettaAgentId: text("letta_agent_id").notNull(),
+  blockLabel: text("block_label").notNull().default("WRITING.md"),
+  modelHandle: text("model_handle"),
+  lastContentLength: integer("last_content_length").notNull().default(0),
+  lastSyncedAt: timestamp("last_synced_at").notNull().defaultNow(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const insertWritingProfileSchema = createInsertSchema(writingProfilesTable).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertWritingProfile = z.infer<typeof insertWritingProfileSchema>;
+export type WritingProfile = typeof writingProfilesTable.$inferSelect;

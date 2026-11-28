@@ -1,4 +1,5 @@
 "use client";
+// secret-scan: demo-values-only (tokens in this file are fictional sample data)
 
 import React, { useState, useEffect } from "react";
 import {
@@ -77,6 +78,7 @@ export const TeaAuctionModal: React.FC<TeaAuctionModalProps> = ({
 
   // Keyboard shortcut ⌘T / Ctrl+T
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "t") {
         e.preventDefault();

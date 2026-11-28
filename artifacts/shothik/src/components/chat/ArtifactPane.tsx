@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, Presentation, Table as TableIcon, X, File, FileCode2, ChevronLeft, ChevronRight } from "lucide-react";
+import { FileText, Download, Presentation, Table as TableIcon, X, File, FileCode2, ChevronLeft, ChevronRight, ExternalLink } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ReactMarkdown from "react-markdown";
+import { UndockedWindowManager } from "@/lib/chat/undocked-window";
 
 export interface PdfPage {
   content: string;
@@ -73,6 +74,25 @@ export function ArtifactPane({
           <span className="font-semibold text-sm truncate">{title}</span>
         </div>
         <div className="flex items-center gap-1">
+          {/* Popout / Undocked Window (Multi-Monitor Workflow) */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="w-8 h-8 rounded-lg"
+            title="Pop out into separate window (Multi-monitor)"
+            onClick={() => {
+              const manager = new UndockedWindowManager();
+              manager.openUndockedWindow({
+                title: title || "Shothik Canvas Artifact",
+                type: artifactType || "markdown",
+                content: displayContent || "",
+                activeTab: artifactType || "markdown",
+              });
+            }}
+          >
+            <ExternalLink className="w-4 h-4" />
+          </Button>
+
           {displayContent ? (
             <Button
               variant="ghost"

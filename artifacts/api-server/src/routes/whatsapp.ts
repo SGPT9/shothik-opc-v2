@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from "express";
 import crypto from "crypto";
 import { logger } from "../lib/logger.js";
+import { persistEngineSnapshot } from "../lib/novel-engine/suite-manifest-store.js";
 import { analyzeCustomerMessage, type NlpAnalysisResult } from "../lib/whatsapp/banglish-nlp.js";
 import { whatsAppCommerceEngine, type DialectCode, type CartItem } from "../lib/whatsapp/whatsapp-commerce-engine.js";
 import {
@@ -17,8 +18,9 @@ import {
 
 const router = Router();
 
-const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || "shothik_whatsapp_verify_token_2026";
-const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET || "shothik_app_secret_secure_key";
+const isProd = process.env.NODE_ENV === "production";
+const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || (!isProd ? "shothik_whatsapp_verify_token_2026" : undefined);
+const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET || (!isProd ? "shothik_app_secret_secure_key" : undefined);
 
 // In-memory sessions store for WhatsApp conversations
 interface ManagedSession {
@@ -84,6 +86,11 @@ router.get("/v1/whatsapp/webhook", (req: Request, res: Response) => {
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
 
+  if (!WHATSAPP_VERIFY_TOKEN) {
+    logger.error("[whatsapp-webhook] WHATSAPP_VERIFY_TOKEN not configured on server");
+    return res.status(500).json({ error: "Webhook verify token not configured" });
+  }
+
   if (mode === "subscribe" && token === WHATSAPP_VERIFY_TOKEN) {
     logger.info("[whatsapp-webhook] Meta webhook subscription verified successfully");
     return res.status(200).send(challenge);
@@ -102,7 +109,15 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
     const signature = req.headers?.["x-hub-signature-256"] as string | undefined;
     const rawPayload = JSON.stringify(req.body);
 
-    if (signature && process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "production") {
+      if (!signature) {
+        logger.warn("[whatsapp-webhook] Rejected inbound webhook: missing x-hub-signature-256 header");
+        return res.status(401).json({ error: "Missing required webhook signature" });
+      }
+      if (!WHATSAPP_APP_SECRET) {
+        logger.error("[whatsapp-webhook] WHATSAPP_APP_SECRET not configured on server");
+        return res.status(500).json({ error: "Webhook secret not configured" });
+      }
       const expectedSignature = `sha256=${crypto
         .createHmac("sha256", WHATSAPP_APP_SECRET)
         .update(rawPayload)
@@ -183,6 +198,8 @@ router.post("/v1/whatsapp/webhook", async (req: Request, res: Response) => {
             };
 
             activeSessions.set(sessionKey, managedSession);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, managedSession);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, managedSession);
 
             responses.push({
               recipientPhone: senderPhone,
@@ -279,6 +296,8 @@ router.post("/v1/whatsapp/orders/approve", (req: Request, res: Response) => {
     });
 
     activeSessions.set(sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
 
     return res.status(200).json({
       success: true,
@@ -329,6 +348,8 @@ router.post("/v1/whatsapp/interactive/reply", (req: Request, res: Response) => {
     });
 
     activeSessions.set(sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
+            void persistEngineSnapshot("whatsapp_sessions", sessionKey, session);
 
     return res.status(200).json({
       success: true,

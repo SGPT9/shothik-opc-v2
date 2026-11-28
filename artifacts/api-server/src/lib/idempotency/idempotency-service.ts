@@ -63,7 +63,16 @@ export class IdempotencyService {
     const now = Date.now();
     const expiresAt = new Date(now + ttlHours * 60 * 60 * 1000);
 
-    // Check circuit breaker status
+    // Fast-path: Check in-memory store first for completed mutations
+    const localHit = localMemoryIdempotencyStore.get(key);
+    if (localHit && localHit.state === "completed") {
+      logger.info({ key, endpoint }, "[idempotency] Memory cache HIT for completed mutation");
+      return {
+        status: "HIT",
+        responseStatus: localHit.responseStatus,
+        responseBody: localHit.responseBody,
+      };
+    }
     const shouldProbePostgres =
       isPostgresAvailable || now - lastPostgresFailureTime > POSTGRES_CIRCUIT_BREAKER_TTL_MS;
 
@@ -165,23 +174,7 @@ export class IdempotencyService {
   }): Promise<void> {
     const { key, responseStatus, responseBody } = params;
 
-    if (isPostgresAvailable) {
-      try {
-        await db
-          .update(idempotencyKeysTable)
-          .set({
-            state: "completed",
-            responseStatus,
-            responseBody,
-          })
-          .where(eq(idempotencyKeysTable.key, key));
-      } catch (err: any) {
-        isPostgresAvailable = false;
-        lastPostgresFailureTime = Date.now();
-      }
-    }
-
-    // Always keep memory fallback in sync
+    // Immediately update in-memory record so subsequent reads never see stale 'processing'
     const local = localMemoryIdempotencyStore.get(key);
     if (local) {
       local.state = "completed";
@@ -198,6 +191,22 @@ export class IdempotencyService {
         createdAt: Date.now(),
         expiresAt: Date.now() + 24 * 60 * 60 * 1000,
       });
+    }
+
+    if (isPostgresAvailable) {
+      try {
+        await db
+          .update(idempotencyKeysTable)
+          .set({
+            state: "completed",
+            responseStatus,
+            responseBody,
+          })
+          .where(eq(idempotencyKeysTable.key, key));
+      } catch (err: any) {
+        isPostgresAvailable = false;
+        lastPostgresFailureTime = Date.now();
+      }
     }
   }
 

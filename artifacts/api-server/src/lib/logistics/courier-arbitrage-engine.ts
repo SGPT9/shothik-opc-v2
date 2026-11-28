@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { db, courierConsignmentsTable } from "@workspace/db";
 import { SteadfastClient, steadfastClient } from "./steadfast-client.js";
 import { PathaoClient, pathaoClient } from "./pathao-client.js";
 import { RedxClient, redxClient } from "./redx-client.js";
@@ -365,6 +366,27 @@ export class CourierArbitrageEngine {
     };
 
     this.consignments.set(consignment.consignmentId, consignment);
+    try {
+      db.insert(courierConsignmentsTable)
+        .values({
+          consignmentId: consignment.consignmentId,
+          orderId: consignment.orderRef,
+          courierProvider: consignment.carrier,
+          trackingCode: consignment.trackingCode,
+          customerName: consignment.customerName,
+          customerPhone: consignment.customerPhone,
+          deliveryAddress: consignment.deliveryAddress,
+          zone: consignment.zone,
+          codAmountBDT: String(consignment.codAmountBdt),
+          deliveryChargeBDT: String(consignment.deliveryFeeBdt),
+          status: consignment.status,
+          verificationHashSha256: createHash("sha256").update(consignment.barcodeData).digest("hex"),
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     return {
       success: true,
@@ -512,6 +534,27 @@ export class CourierArbitrageEngine {
     };
 
     this.consignments.set(consignment.consignmentId, consignment);
+    try {
+      db.insert(courierConsignmentsTable)
+        .values({
+          consignmentId: consignment.consignmentId,
+          orderId: consignment.orderRef,
+          courierProvider: consignment.carrier,
+          trackingCode: consignment.trackingCode,
+          customerName: consignment.customerName,
+          customerPhone: consignment.customerPhone,
+          deliveryAddress: consignment.deliveryAddress,
+          zone: consignment.zone,
+          codAmountBDT: String(consignment.codAmountBdt),
+          deliveryChargeBDT: String(consignment.deliveryFeeBdt),
+          status: consignment.status,
+          verificationHashSha256: createHash("sha256").update(consignment.barcodeData).digest("hex"),
+        })
+        .onConflictDoNothing()
+        .catch(() => {});
+    } catch {
+      // non-blocking
+    }
 
     return {
       success: true,

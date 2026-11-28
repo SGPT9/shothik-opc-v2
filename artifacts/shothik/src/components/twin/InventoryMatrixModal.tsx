@@ -46,6 +46,7 @@ export const InventoryMatrixModal: React.FC<InventoryMatrixModalProps> = ({ isOp
 
   // Keyboard shortcut ⌘I / Ctrl+I
   useEffect(() => {
+    if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "i") {
         e.preventDefault();

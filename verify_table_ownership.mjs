@@ -1,9 +1,13 @@
 import pg from "pg";
 import { createClient } from "@insforge/sdk";
 
-const DATABASE_URL = "postgresql://postgres:13ff0168da9026128eaf9c8df528eeed@ers8j28a.ap-southeast.database.insforge.app:5432/insforge?sslmode=require";
-const BASE_URL = "https://ers8j28a.ap-southeast.insforge.app";
-const ANON_KEY = "anon_09a9f554a6d1ef3abb1eb3691c0224e22c30b4bfe25809c6222a8301bfa80f7b";
+const DATABASE_URL = process.env.INSFORGE_DATABASE_URL;
+if (!DATABASE_URL) {
+  console.error("INSFORGE_DATABASE_URL is not set. Export it before running this script.");
+  process.exit(1);
+}
+const BASE_URL = process.env.INSFORGE_BASE_URL || "";
+const ANON_KEY = process.env.INSFORGE_ANON_KEY || "";
 
 async function verifyOwnershipAndRLS() {
   console.log("=================================================");

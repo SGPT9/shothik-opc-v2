@@ -68,7 +68,7 @@ describe('BookAgentStart', () => {
       )
     ).toBeInTheDocument();
     expect(
-      screen.getByText('Best for journal papers, conference submissions, theses, and literature reviews.')
+      screen.getByText("Best for journal papers, conference submissions, honors/master's theses, and literature reviews.")
     ).toBeInTheDocument();
   });
 

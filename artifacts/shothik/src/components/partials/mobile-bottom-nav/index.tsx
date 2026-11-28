@@ -8,15 +8,15 @@ import {
   User,
 } from 'lucide-react';
 import { Link } from 'wouter';
-import { usePathname } from '@/lib/navigation';
+import { usePathname, useSearchParams } from '@/lib/navigation';
 
 const NAV_ITEMS = [
   {
     labelKey: 'nav.chat',
     defaultLabel: 'Chat',
     icon: MessageSquare,
-    href: '/agents/chat',
-    match: ['/agents', '/chat'],
+    href: '/',
+    match: ['/', '/agents', '/chat'],
   },
   {
     labelKey: 'nav.tools',
@@ -52,11 +52,17 @@ export default function MobileBottomNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
 
+  const searchParams = useSearchParams();
+
+  // '/' must match exactly, otherwise Chat would be highlighted on every route
   const isActive = (matches: string[]) =>
-    matches.some((m) => pathname.startsWith(m));
+    matches.some((m) => (m === '/' ? pathname === '/' : pathname.startsWith(m)));
 
   // Hide bottom nav when deep inside the full-screen writing studio editor
-  if (pathname.startsWith('/writing-studio') && pathname.includes('doc')) return null;
+  if (
+    pathname.startsWith('/writing-studio') &&
+    (pathname.includes('doc') || searchParams.get('projectId') || searchParams.get('docId'))
+  ) return null;
 
   return (
     <nav
